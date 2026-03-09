@@ -1,0 +1,440 @@
+"use client";
+
+import { useState, useEffect, useMemo } from "react";
+import {
+  Plus,
+  Search,
+  Edit2,
+  Trash2,
+  Building2,
+  CheckCircle,
+  XCircle,
+  X,
+  ChevronUp,
+  ChevronDown,
+} from "lucide-react";
+import { bankService, BankFilters } from "@/services/bankService";
+import { Bank } from "@/types/bank";
+import BankModal from "@/components/BankModal";
+import Pagination from "@/components/Pagination";
+import FeedbackAlert from "@/components/FeedbackAlert";
+import ConfirmDeleteModal from "@/components/ConfirmDeleteModal";
+
+export default function BanksPage() {
+  const [banks, setBanks] = useState<Bank[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [total, setTotal] = useState(0);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
+  const [showModal, setShowModal] = useState(false);
+  const [editingBank, setEditingBank] = useState<Bank | null>(null);
+  const [filterAtivo, setFilterAtivo] = useState<boolean | undefined>(
+    undefined,
+  );
+  const [feedback, setFeedback] = useState<{
+    type: "success" | "error";
+    message: string;
+  } | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<Bank | null>(null);
+  const [sortBy, setSortBy] = useState<"nome" | "codigo" | "saldo" | "status">(
+    "nome",
+  );
+  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
+
+  const handleSort = (column: "nome" | "codigo" | "saldo" | "status") => {
+    if (sortBy === column) {
+      setSortDirection((prev) => (prev === "asc" ? "desc" : "asc"));
+      return;
+    }
+    setSortBy(column);
+    setSortDirection("asc");
+  };
+
+  const sortedBanks = useMemo(() => {
+    const direction = sortDirection === "asc" ? 1 : -1;
+    return [...banks].sort((a, b) => {
+      if (sortBy === "nome") {
+        return a.nome.localeCompare(b.nome, "pt-BR") * direction;
+      }
+      if (sortBy === "codigo") {
+        return (
+          (a.codigo || "").localeCompare(b.codigo || "", "pt-BR") * direction
+        );
+      }
+      if (sortBy === "saldo") {
+        return (Number(a.saldo_inicial) - Number(b.saldo_inicial)) * direction;
+      }
+      return Number(a.ativo === true) === Number(b.ativo === true)
+        ? 0
+        : (a.ativo ? 1 : -1) * direction;
+    });
+  }, [banks, sortBy, sortDirection]);
+
+  const formatCurrencyBRL = (value: number) =>
+    new Intl.NumberFormat("pt-BR", {
+      style: "currency",
+      currency: "BRL",
+    }).format(value);
+
+  const showFeedback = (type: "success" | "error", message: string) => {
+    setFeedback({ type, message });
+    window.setTimeout(() => setFeedback(null), 4000);
+  };
+
+  const loadBanks = async () => {
+    try {
+      setLoading(true);
+      const filters: BankFilters = {
+        page: currentPage,
+        limit: itemsPerPage,
+        search: searchTerm || undefined,
+        ativo: filterAtivo,
+      };
+
+      const response = await bankService.getAll(filters);
+      setBanks(response.data || []);
+      setTotal(response.pagination?.total || 0);
+      setTotalPages(response.pagination?.totalPages || 1);
+    } catch (error) {
+      console.error("Erro ao carregar bancos:", error);
+      showFeedback(
+        "error",
+        "Não foi possível carregar os bancos. Verifique a conexão com a API.",
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadBanks();
+  }, [currentPage, searchTerm, filterAtivo, itemsPerPage]);
+
+  const handleSearch = (value: string) => {
+    setSearchTerm(value);
+    setCurrentPage(1);
+  };
+
+  const handleDelete = (bank: Bank) => {
+    setDeleteTarget(bank);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!deleteTarget) {
+      return;
+    }
+
+    try {
+      await bankService.delete(deleteTarget.id);
+      showFeedback(
+        "success",
+        "Banco excluído com sucesso. A ação foi concluída.",
+      );
+      setDeleteTarget(null);
+      await loadBanks();
+    } catch (error) {
+      console.error("Erro ao excluir banco:", error);
+      const apiMessage = (error as any)?.response?.data?.message;
+      showFeedback(
+        "error",
+        apiMessage || "Não foi possível excluir o banco. Tente novamente.",
+      );
+    }
+  };
+
+  const handleEdit = (bank: Bank) => {
+    setEditingBank(bank);
+    setShowModal(true);
+  };
+
+  const handleCreate = () => {
+    setEditingBank(null);
+    setShowModal(true);
+  };
+
+  const handleCloseModal = () => {
+    setShowModal(false);
+    setEditingBank(null);
+  };
+
+  const handleSaveSuccess = async (message: string): Promise<void> => {
+    showFeedback("success", message);
+    await loadBanks();
+    handleCloseModal();
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-50 py-8">
+      <div className="mx-auto max-w-7xl space-y-6 px-4 sm:px-6 lg:px-8">
+        <FeedbackAlert feedback={feedback} onClose={() => setFeedback(null)} />
+
+        {/* Header */}
+        <div className="mb-8">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
+                <Building2 size={32} className="text-blue-600" />
+                Gerenciamento de Bancos
+              </h1>
+              <p className="mt-2 text-sm text-gray-600">
+                Gerencie suas instituições financeiras e contas
+              </p>
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={handleCreate}
+                className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+              >
+                <Plus size={20} />
+                Novo Banco
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Filters */}
+        <div className="mb-6 rounded-lg bg-white p-4 shadow-sm">
+          <div className="flex flex-col md:flex-row gap-4">
+            <div className="flex-1 relative">
+              <Search
+                className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+                size={20}
+              />
+              <input
+                type="text"
+                placeholder="Buscar por nome ou código do banco..."
+                value={searchTerm}
+                onChange={(e) => handleSearch(e.target.value)}
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 text-gray-900 placeholder:text-gray-400 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              />
+              {searchTerm && (
+                <button
+                  onClick={() => handleSearch("")}
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                  aria-label="Limpar pesquisa"
+                >
+                  <X size={20} />
+                </button>
+              )}
+            </div>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setFilterAtivo(undefined)}
+                className={`px-4 py-2 rounded-lg transition-colors ${
+                  filterAtivo === undefined
+                    ? "bg-blue-600 text-white"
+                    : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                }`}
+              >
+                Todos
+              </button>
+              <button
+                onClick={() => setFilterAtivo(true)}
+                className={`px-4 py-2 rounded-lg transition-colors ${
+                  filterAtivo === true
+                    ? "bg-green-600 text-white"
+                    : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                }`}
+              >
+                Ativos
+              </button>
+              <button
+                onClick={() => setFilterAtivo(false)}
+                className={`px-4 py-2 rounded-lg transition-colors ${
+                  filterAtivo === false
+                    ? "bg-red-600 text-white"
+                    : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                }`}
+              >
+                Inativos
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Table */}
+        <div className="overflow-hidden rounded-lg bg-white shadow-sm">
+          {loading ? (
+            <div className="text-center py-12">
+              <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+              <p className="mt-2 text-gray-600">Carregando dados...</p>
+            </div>
+          ) : banks.length === 0 ? (
+            <div className="text-center py-12">
+              <Building2 size={48} className="mx-auto text-gray-400 mb-4" />
+              <p className="text-gray-600">Nenhum registro encontrado</p>
+              <button
+                onClick={handleCreate}
+                className="mt-4 text-blue-600 hover:text-blue-700 font-medium"
+              >
+                Criar novo registro
+              </button>
+            </div>
+          ) : (
+            <>
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <button
+                        type="button"
+                        onClick={() => handleSort("nome")}
+                        className="inline-flex items-center gap-1"
+                      >
+                        Banco
+                        {sortBy === "nome" && sortDirection === "asc" ? (
+                          <ChevronUp size={14} />
+                        ) : sortBy === "nome" ? (
+                          <ChevronDown size={14} />
+                        ) : null}
+                      </button>
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <button
+                        type="button"
+                        onClick={() => handleSort("codigo")}
+                        className="inline-flex items-center gap-1"
+                      >
+                        Código
+                        {sortBy === "codigo" && sortDirection === "asc" ? (
+                          <ChevronUp size={14} />
+                        ) : sortBy === "codigo" ? (
+                          <ChevronDown size={14} />
+                        ) : null}
+                      </button>
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <button
+                        type="button"
+                        onClick={() => handleSort("saldo")}
+                        className="inline-flex items-center gap-1"
+                      >
+                        Saldo Inicial
+                        {sortBy === "saldo" && sortDirection === "asc" ? (
+                          <ChevronUp size={14} />
+                        ) : sortBy === "saldo" ? (
+                          <ChevronDown size={14} />
+                        ) : null}
+                      </button>
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <button
+                        type="button"
+                        onClick={() => handleSort("status")}
+                        className="inline-flex items-center gap-1"
+                      >
+                        Status
+                        {sortBy === "status" && sortDirection === "asc" ? (
+                          <ChevronUp size={14} />
+                        ) : sortBy === "status" ? (
+                          <ChevronDown size={14} />
+                        ) : null}
+                      </button>
+                    </th>
+                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Ações
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {sortedBanks.map((bank) => (
+                    <tr
+                      key={bank.id}
+                      className="hover:bg-gray-50 transition-colors"
+                    >
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="flex items-center">
+                          <div
+                            className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold mr-3"
+                            style={{ backgroundColor: bank.cor }}
+                          >
+                            {bank.nome.substring(0, 2).toUpperCase()}
+                          </div>
+                          <div className="text-sm font-medium text-gray-900">
+                            {bank.nome}
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm text-gray-900">
+                          {bank.codigo || "-"}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm text-gray-900">
+                          {formatCurrencyBRL(bank.saldo_inicial)}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        {bank.ativo ? (
+                          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                            <CheckCircle size={14} />
+                            Ativo
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                            <XCircle size={14} />
+                            Inativo
+                          </span>
+                        )}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                        <button
+                          onClick={() => handleEdit(bank)}
+                          className="text-blue-600 hover:text-blue-900 mr-4"
+                          title="Editar"
+                        >
+                          <Edit2 size={18} />
+                        </button>
+                        <button
+                          onClick={() => handleDelete(bank)}
+                          className="text-red-600 hover:text-red-900"
+                          title="Excluir"
+                        >
+                          <Trash2 size={18} />
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+
+              <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                total={total}
+                itemsPerPage={itemsPerPage}
+                onPageChange={setCurrentPage}
+                onItemsPerPageChange={setItemsPerPage}
+              />
+            </>
+          )}
+        </div>
+      </div>
+
+      {/* Modal */}
+      {showModal && (
+        <BankModal
+          bank={editingBank}
+          onClose={handleCloseModal}
+          onSave={handleSaveSuccess}
+        />
+      )}
+
+      <ConfirmDeleteModal
+        isOpen={!!deleteTarget}
+        title="Confirmar exclusão"
+        description={
+          <>
+            Esta ação removerá o banco <strong>{deleteTarget?.nome}</strong>.
+          </>
+        }
+        confirmLabel="Excluir banco"
+        onCancel={() => setDeleteTarget(null)}
+        onConfirm={handleConfirmDelete}
+      />
+    </div>
+  );
+}
