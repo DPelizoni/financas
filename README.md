@@ -12,11 +12,15 @@ O projeto está dividido em duas aplicações:
 ## Funcionalidades
 
 - Dashboard executivo com indicadores financeiros
-- Gráficos de evolução, saldo acumulado, categorias e distribuições (Pago e Provisão)
+- Gráfico comparativo `Pago vs Provisão` com labels de valores
+- Gráfico unificado de `Evolução no Tempo + Saldo` (3 linhas)
+- Filtro global do dashboard por período (`3/6/12 meses`), mês específico e ano
 - CRUD de Bancos
 - CRUD de Categorias
 - CRUD de Descrições
 - CRUD de Transações
+- Rotina para copiar transações de um mês para múltiplos meses (com ajuste automático de vencimento)
+- Rotina para excluir transações por um mês ou seleção de meses
 - Filtros por mês, tipo, situação, banco, categoria e busca textual
 - Ordenação em tabelas e paginação padronizada
 - Resumo consolidado de transações via endpoint dedicado (`/api/transacoes/summary`)
@@ -134,7 +138,63 @@ npm install
 npm run dev
 ```
 
+Se quiser definir a URL da API explicitamente:
+
+```env
+# frontend/.env.local
+NEXT_PUBLIC_API_URL=http://localhost:3001
+```
+
 Frontend disponível em `http://localhost:3000`.
+
+## Execução com Docker
+
+O projeto possui containerização individual (`frontend` e `backend`) e orquestração via Docker Compose, com volume persistente para MySQL.
+
+### Serviços
+
+- `db` (MySQL 8)
+- `backend` (Node.js/Express)
+- `frontend` (Next.js)
+
+### Subir ambiente completo
+
+Na raiz do projeto:
+
+```bash
+docker compose up -d --build
+```
+
+### Endpoints após subir os containers
+
+- Frontend: `http://localhost:3000`
+- Backend: `http://localhost:3001`
+- Swagger: `http://localhost:3001/api-docs`
+- Health: `http://localhost:3001/health`
+
+### Banco de dados (host)
+
+Para evitar conflito com MySQL local, o container publica:
+
+- Host: `localhost`
+- Porta: `3307`
+- Banco: `financas_db`
+- Usuário: `root`
+- Senha: `root`
+
+Os dados do banco ficam persistidos no volume Docker `mysql_data`.
+
+### Parar ambiente
+
+```bash
+docker compose down
+```
+
+Para remover também o volume de dados:
+
+```bash
+docker compose down -v
+```
 
 ## Documentação da API
 
@@ -142,6 +202,7 @@ Com backend em execução:
 
 - Swagger UI: `http://localhost:3001/api-docs`
 - Health check: `http://localhost:3001/health`
+- Raiz da API: `http://localhost:3001/`
 
 ## Scripts
 
