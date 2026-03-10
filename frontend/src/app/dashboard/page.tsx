@@ -600,8 +600,10 @@ export default function DashboardPage() {
                 <YAxis
                   hide
                   domain={[
-                    (dataMin: number) => Math.floor(dataMin * 1.2),
-                    (dataMax: number) => Math.ceil(dataMax * 1.2),
+                    (dataMin: number) =>
+                      dataMin >= 0 ? 0 : Math.floor(dataMin * 1.2),
+                    (dataMax: number) =>
+                      dataMax <= 0 ? 0 : Math.ceil(dataMax * 1.2),
                   ]}
                 />
                 <Tooltip formatter={(v) => currency(Number(v || 0))} />
