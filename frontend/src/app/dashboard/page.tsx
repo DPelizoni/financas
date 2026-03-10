@@ -3,27 +3,22 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import {
-  AlertCircle,
   ArrowLeftRight,
   BarChart3,
-  CheckCircle2,
   DollarSign,
   Filter,
   ChevronUp,
   ChevronDown,
 } from "lucide-react";
 import {
-  Area,
-  AreaChart,
   Bar,
   BarChart,
   CartesianGrid,
   Cell,
+  LabelList,
   Legend,
   Line,
   LineChart,
-  Pie,
-  PieChart,
   ResponsiveContainer,
   Tooltip,
   XAxis,
@@ -289,30 +284,25 @@ export default function DashboardPage() {
       .slice(0, 6);
   }, [filteredTransacoes]);
 
-  const byPago = useMemo(
+  const comparisonData = useMemo(
     () => [
-      { name: "Pago Receita", value: summaryCards.pago_receita },
-      { name: "Pago Despesa", value: summaryCards.pago_despesa },
+      {
+        name: "Receita",
+        Pago: summaryCards.pago_receita,
+        Provisão: summaryCards.provisao_receita,
+      },
+      {
+        name: "Despesa",
+        Pago: summaryCards.pago_despesa,
+        Provisão: summaryCards.provisao_despesa,
+      },
+      {
+        name: "Líquido",
+        Pago: summaryCards.pago_liquido,
+        Provisão: summaryCards.provisao_liquido,
+      },
     ],
     [summaryCards],
-  );
-
-  const byProvisao = useMemo(
-    () => [
-      { name: "Provisão Receita", value: summaryCards.provisao_receita },
-      { name: "Provisão Despesa", value: summaryCards.provisao_despesa },
-    ],
-    [summaryCards],
-  );
-
-  const hasPagoData = useMemo(
-    () => byPago.some((item) => Number(item.value) > 0),
-    [byPago],
-  );
-
-  const hasProvisaoData = useMemo(
-    () => byProvisao.some((item) => Number(item.value) > 0),
-    [byProvisao],
   );
 
   const sortedCategories = useMemo(
@@ -563,117 +553,81 @@ export default function DashboardPage() {
               />
             </div>
           </div>
+        </div>
 
-          <div className="rounded-lg bg-white p-6 shadow-sm">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-600">Pago - Receita</p>
-                <p className="text-2xl font-bold text-blue-600">
-                  {currency(summaryCards.pago_receita)}
-                </p>
-              </div>
-              <CheckCircle2 size={30} className="text-blue-500" />
-            </div>
-          </div>
-
-          <div className="rounded-lg bg-white p-6 shadow-sm">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-600">Pago - Despesa</p>
-                <p className="text-2xl font-bold text-blue-600">
-                  {currency(summaryCards.pago_despesa)}
-                </p>
-              </div>
-              <CheckCircle2 size={30} className="text-blue-500" />
-            </div>
-          </div>
-
-          <div className="rounded-lg bg-white p-6 shadow-sm">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-600">Pago - Líquido</p>
-                <p
-                  className={`text-2xl font-bold ${
-                    summaryCards.pago_liquido >= 0
-                      ? "text-green-600"
-                      : "text-red-600"
-                  }`}
+        <div className="rounded-lg bg-white p-4 shadow-sm">
+          <h3 className="mb-3 text-sm font-semibold text-gray-700">
+            Comparativo: Pago vs Provisão
+          </h3>
+          <div className="h-80">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={comparisonData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="name" tick={{ fontSize: 10 }} />
+                <YAxis
+                  hide
+                  domain={[
+                    (dataMin: number) => Math.floor(dataMin * 1.2),
+                    (dataMax: number) => Math.ceil(dataMax * 1.2),
+                  ]}
+                />
+                <Tooltip formatter={(v) => currency(Number(v || 0))} />
+                <Legend />
+                <Bar
+                  dataKey="Pago"
+                  fill={chartColors.pago}
+                  radius={[6, 6, 0, 0]}
                 >
-                  {currency(summaryCards.pago_liquido)}
-                </p>
-              </div>
-              <DollarSign
-                size={30}
-                className={
-                  summaryCards.pago_liquido >= 0
-                    ? "text-green-500"
-                    : "text-red-500"
-                }
-              />
-            </div>
-          </div>
-
-          <div className="rounded-lg bg-white p-6 shadow-sm">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-600">Provisão Receita</p>
-                <p className="text-2xl font-bold text-yellow-600">
-                  {currency(summaryCards.provisao_receita)}
-                </p>
-              </div>
-              <AlertCircle size={30} className="text-yellow-500" />
-            </div>
-          </div>
-
-          <div className="rounded-lg bg-white p-6 shadow-sm">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-600">Provisão Despesa</p>
-                <p className="text-2xl font-bold text-yellow-600">
-                  {currency(summaryCards.provisao_despesa)}
-                </p>
-              </div>
-              <AlertCircle size={30} className="text-yellow-500" />
-            </div>
-          </div>
-
-          <div className="rounded-lg bg-white p-6 shadow-sm">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-600">Provisão Líquido</p>
-                <p
-                  className={`text-2xl font-bold ${
-                    summaryCards.provisao_liquido >= 0
-                      ? "text-green-600"
-                      : "text-red-600"
-                  }`}
+                  <LabelList
+                    dataKey="Pago"
+                    position="top"
+                    formatter={(value: any) => currency(Number(value))}
+                    style={{
+                      fontSize: 10,
+                      fontWeight: 600,
+                      fill: chartColors.pago,
+                    }}
+                  />
+                </Bar>
+                <Bar
+                  dataKey="Provisão"
+                  fill={chartColors.pendente}
+                  radius={[6, 6, 0, 0]}
                 >
-                  {currency(summaryCards.provisao_liquido)}
-                </p>
-              </div>
-              <DollarSign
-                size={30}
-                className={
-                  summaryCards.provisao_liquido >= 0
-                    ? "text-green-500"
-                    : "text-red-500"
-                }
-              />
-            </div>
+                  <LabelList
+                    dataKey="Provisão"
+                    position="top"
+                    formatter={(value: any) => currency(Number(value))}
+                    style={{
+                      fontSize: 10,
+                      fontWeight: 600,
+                      fill: chartColors.pendente,
+                    }}
+                  />
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
+        <div className="space-y-4">
           <div className="rounded-lg bg-white p-4 shadow-sm">
             <h3 className="mb-3 text-sm font-semibold text-gray-700">
-              Evolução no Tempo (Linha)
+              Evolução no Tempo e Saldo (12 meses)
             </h3>
-            <div className="h-72">
+            <div className="h-96">
               <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={timeline}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="monthLabel" />
-                  <YAxis />
+                <LineChart
+                  data={timeline}
+                  margin={{ top: 30, right: 28, left: 20, bottom: 12 }}
+                >
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                  <XAxis
+                    dataKey="monthLabel"
+                    tick={{ fontSize: 10 }}
+                    padding={{ left: 10, right: 10 }}
+                  />
+                  <YAxis hide />
                   <Tooltip formatter={(v) => currency(Number(v || 0))} />
                   <Legend />
                   <Line
@@ -681,101 +635,35 @@ export default function DashboardPage() {
                     dataKey="receitas"
                     stroke={chartColors.receitas}
                     strokeWidth={2}
+                    dot={{ r: 3 }}
                   />
                   <Line
                     type="monotone"
                     dataKey="despesas"
                     stroke={chartColors.despesas}
                     strokeWidth={2}
+                    dot={{ r: 3 }}
                   />
-                </LineChart>
-              </ResponsiveContainer>
-            </div>
-          </div>
-
-          <div className="rounded-lg bg-white p-4 shadow-sm">
-            <h3 className="mb-3 text-sm font-semibold text-gray-700">
-              Saldo Acumulado (Área)
-            </h3>
-            <div className="h-72">
-              <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={timeline}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="monthLabel" />
-                  <YAxis />
-                  <Tooltip formatter={(v) => currency(Number(v || 0))} />
-                  <Area
+                  <Line
                     type="monotone"
                     dataKey="saldo"
                     stroke={chartColors.saldo}
-                    fill={chartColors.saldo}
-                    fillOpacity={0.2}
                     strokeWidth={2}
-                  />
-                </AreaChart>
+                    dot={{ r: 3 }}
+                  >
+                    <LabelList
+                      dataKey="saldo"
+                      position="top"
+                      formatter={(value: any) => currency(Number(value))}
+                      style={{
+                        fontSize: 8,
+                        fill: chartColors.saldo,
+                        fontWeight: 600,
+                      }}
+                    />
+                  </Line>
+                </LineChart>
               </ResponsiveContainer>
-            </div>
-          </div>
-
-          <div className="rounded-lg bg-white p-4 shadow-sm">
-            <h3 className="mb-3 text-sm font-semibold text-gray-700">
-              Distribuição Pago (Donut)
-            </h3>
-            <div className="h-72">
-              {hasPagoData ? (
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Tooltip formatter={(v) => currency(Number(v || 0))} />
-                    <Legend />
-                    <Pie
-                      data={byPago}
-                      dataKey="value"
-                      nameKey="name"
-                      innerRadius={65}
-                      outerRadius={95}
-                      paddingAngle={2}
-                    >
-                      <Cell fill={chartColors.pago} />
-                      <Cell fill={chartColors.despesas} />
-                    </Pie>
-                  </PieChart>
-                </ResponsiveContainer>
-              ) : (
-                <div className="flex h-full items-center justify-center text-sm text-gray-500">
-                  Sem dados para o período filtrado.
-                </div>
-              )}
-            </div>
-          </div>
-
-          <div className="rounded-lg bg-white p-4 shadow-sm">
-            <h3 className="mb-3 text-sm font-semibold text-gray-700">
-              Distribuição Provisão (Donut)
-            </h3>
-            <div className="h-72">
-              {hasProvisaoData ? (
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Tooltip formatter={(v) => currency(Number(v || 0))} />
-                    <Legend />
-                    <Pie
-                      data={byProvisao}
-                      dataKey="value"
-                      nameKey="name"
-                      innerRadius={65}
-                      outerRadius={95}
-                      paddingAngle={2}
-                    >
-                      <Cell fill={chartColors.pendente} />
-                      <Cell fill={chartColors.pieE} />
-                    </Pie>
-                  </PieChart>
-                </ResponsiveContainer>
-              ) : (
-                <div className="flex h-full items-center justify-center text-sm text-gray-500">
-                  Sem dados para o período filtrado.
-                </div>
-              )}
             </div>
           </div>
 
@@ -787,14 +675,35 @@ export default function DashboardPage() {
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={byCategory}>
                   <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="name" tick={{ fontSize: 11 }} />
-                  <YAxis />
-                  <Tooltip formatter={(v) => currency(Number(v || 0))} />
-                  <Bar
-                    dataKey="value"
-                    fill={chartColors.pieA}
-                    radius={[6, 6, 0, 0]}
+                  <XAxis dataKey="name" tick={{ fontSize: 10 }} />
+                  <YAxis
+                    hide
+                    domain={[0, (dataMax: number) => Math.ceil(dataMax * 1.2)]}
                   />
+                  <Tooltip formatter={(v) => currency(Number(v || 0))} />
+                  <Bar dataKey="value" radius={[6, 6, 0, 0]}>
+                    {byCategory.map((_, index) => {
+                      const colors = [
+                        chartColors.pieA,
+                        chartColors.pieB,
+                        chartColors.pieC,
+                        chartColors.pieD,
+                        chartColors.pieE,
+                      ];
+                      return (
+                        <Cell
+                          key={`cell-${index}`}
+                          fill={colors[index % colors.length]}
+                        />
+                      );
+                    })}
+                    <LabelList
+                      dataKey="value"
+                      position="top"
+                      formatter={(value: any) => currency(Number(value))}
+                      style={{ fontSize: 10, fontWeight: 600 }}
+                    />
+                  </Bar>
                 </BarChart>
               </ResponsiveContainer>
             </div>
