@@ -86,6 +86,7 @@ const currency = (value: number): string =>
   }).format(value);
 
 export default function DashboardPage() {
+  const currentYear = String(new Date().getFullYear());
   const [loading, setLoading] = useState(true);
   const [feedback, setFeedback] = useState<{
     type: "success" | "error";
@@ -97,7 +98,7 @@ export default function DashboardPage() {
   const [banks, setBanks] = useState<Bank[]>([]);
 
   // Filtros globais
-  const [periodMonths, setPeriodMonths] = useState(6);
+  const [periodMonths, setPeriodMonths] = useState(12);
   const [filterTipo, setFilterTipo] = useState<"" | "DESPESA" | "RECEITA">("");
   const [filterSituacao, setFilterSituacao] = useState<
     "" | "PENDENTE" | "PAGO"
@@ -105,6 +106,7 @@ export default function DashboardPage() {
   const [filterCategoria, setFilterCategoria] = useState<number | "">("");
   const [filterBanco, setFilterBanco] = useState<number | "">("");
   const [filterMesAno, setFilterMesAno] = useState("");
+  const [filterAno, setFilterAno] = useState(currentYear);
   const [search, setSearch] = useState("");
   const [tableSortBy, setTableSortBy] = useState<
     "mes" | "tipo" | "categoria" | "banco" | "situacao" | "valor"
@@ -163,6 +165,7 @@ export default function DashboardPage() {
           categoria_id: filterCategoria ? Number(filterCategoria) : undefined,
           banco_id: filterBanco ? Number(filterBanco) : undefined,
           mes: monthInputToApi(filterMesAno),
+          ano: !filterMesAno && filterAno ? filterAno : undefined,
         });
         setSummary(summaryResponse);
       } catch (error) {
@@ -178,6 +181,7 @@ export default function DashboardPage() {
     filterCategoria,
     filterBanco,
     filterMesAno,
+    filterAno,
   ]);
 
   const filteredTransacoes = useMemo(() => {
@@ -192,6 +196,8 @@ export default function DashboardPage() {
       if (filterCategoria && t.categoria_id !== filterCategoria) return false;
       if (filterBanco && t.banco_id !== filterBanco) return false;
       if (filterMesAno && mesKey !== filterMesAno) return false;
+      if (filterAno && !filterMesAno && !mesKey.startsWith(`${filterAno}-`))
+        return false;
 
       if (normalizedSearch) {
         const searchText = [
@@ -217,8 +223,20 @@ export default function DashboardPage() {
     filterCategoria,
     filterBanco,
     filterMesAno,
+    filterAno,
     search,
   ]);
+
+  const availableYears = useMemo(() => {
+    const years = new Set<string>();
+    years.add(currentYear);
+    transacoes.forEach((t) => {
+      const key = parseMesToKey(t.mes);
+      if (!key) return;
+      years.add(key.slice(0, 4));
+    });
+    return Array.from(years).sort((a, b) => b.localeCompare(a));
+  }, [transacoes, currentYear]);
 
   const timeline = useMemo(() => {
     const allMonthsSet = new Set<string>();
@@ -404,7 +422,7 @@ export default function DashboardPage() {
             Filtros Globais
           </div>
 
-          <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-7">
+          <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-8">
             <select
               value={periodMonths}
               onChange={(e) => setPeriodMonths(Number(e.target.value))}
@@ -423,6 +441,20 @@ export default function DashboardPage() {
               className="rounded-lg border border-gray-300 px-3 py-2 text-sm"
               title="Mês/Ano específico"
             />
+
+            <select
+              value={filterAno}
+              onChange={(e) => setFilterAno(e.target.value)}
+              disabled={Boolean(filterMesAno)}
+              className="rounded-lg border border-gray-300 px-3 py-2 text-sm disabled:bg-gray-100 disabled:text-gray-500"
+            >
+              <option value="">Ano: todos</option>
+              {availableYears.map((year) => (
+                <option key={year} value={year}>
+                  {year}
+                </option>
+              ))}
+            </select>
 
             <select
               value={filterTipo}
@@ -490,12 +522,13 @@ export default function DashboardPage() {
               type="button"
               onClick={() => {
                 setFilterMesAno("");
+                setFilterAno(currentYear);
                 setSearch("");
                 setFilterTipo("");
                 setFilterSituacao("");
                 setFilterCategoria("");
                 setFilterBanco("");
-                setPeriodMonths(6);
+                setPeriodMonths(12);
               }}
               className="rounded-lg border border-gray-300 px-3 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-50"
             >

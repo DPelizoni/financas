@@ -12,6 +12,7 @@ interface TransacaoFilters {
   banco_id?: number;
   situacao?: "PENDENTE" | "PAGO";
   mes?: string;
+  ano?: string;
 }
 
 export class TransacaoRepository {
@@ -111,6 +112,9 @@ export class TransacaoRepository {
     if (filters.mes) {
       query += ` AND t.mes = ?`;
       params.push(filters.mes);
+    } else if (filters.ano) {
+      query += ` AND RIGHT(t.mes, 4) = ?`;
+      params.push(filters.ano);
     }
 
     // Count total
@@ -298,6 +302,9 @@ export class TransacaoRepository {
     if (filters.mes) {
       query += ` AND t.mes = ?`;
       params.push(filters.mes);
+    } else if (filters.ano) {
+      query += ` AND RIGHT(t.mes, 4) = ?`;
+      params.push(filters.ano);
     }
 
     const [rows] = await pool.query<RowDataPacket[]>(query, params);

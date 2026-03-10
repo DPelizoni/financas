@@ -27,6 +27,7 @@ export const transacaoService = {
       params.append("banco_id", filters.banco_id.toString());
     if (filters.situacao) params.append("situacao", filters.situacao);
     if (filters.mes) params.append("mes", filters.mes);
+    if (filters.ano) params.append("ano", filters.ano);
 
     const response = await axios.get<TransacaoResponse>(
       `${API_URL}/transacoes?${params}`,
@@ -74,6 +75,7 @@ export const transacaoService = {
       params.append("banco_id", filters.banco_id.toString());
     if (filters.situacao) params.append("situacao", filters.situacao);
     if (filters.mes) params.append("mes", filters.mes);
+    if (filters.ano) params.append("ano", filters.ano);
 
     const response = await axios.get<{
       success: boolean;

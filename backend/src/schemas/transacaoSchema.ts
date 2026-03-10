@@ -37,6 +37,10 @@ export const transacaoFiltersSchema = z.object({
   banco_id: z.number().int().optional(),
   situacao: z.enum(["PENDENTE", "PAGO"]).optional(),
   mes: z.string().optional(),
+  ano: z
+    .string()
+    .regex(/^\d{4}$/)
+    .optional(),
 });
 
 export const transacaoCopyMonthSchema = z.object({

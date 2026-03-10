@@ -18,6 +18,7 @@ export const transacaoController = {
       : undefined;
     const situacao = req.query.situacao as "PENDENTE" | "PAGO" | undefined;
     const mes = req.query.mes as string | undefined;
+    const ano = req.query.ano as string | undefined;
 
     const filters = {
       page,
@@ -28,6 +29,7 @@ export const transacaoController = {
       banco_id,
       situacao,
       mes,
+      ano,
     };
 
     const { transacoes, total } =
@@ -82,6 +84,7 @@ export const transacaoController = {
       : undefined;
     const situacao = req.query.situacao as "PENDENTE" | "PAGO" | undefined;
     const mes = req.query.mes as string | undefined;
+    const ano = req.query.ano as string | undefined;
 
     const summary = await transacaoService.getSummary({
       search,
@@ -90,6 +93,7 @@ export const transacaoController = {
       banco_id,
       situacao,
       mes,
+      ano,
     });
     res.json(successResponse("Resumo", summary));
   },

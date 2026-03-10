@@ -14,6 +14,7 @@ interface TransacaoFilters {
   banco_id?: number;
   situacao?: "PENDENTE" | "PAGO";
   mes?: string;
+  ano?: string;
 }
 
 interface CopyMonthResult {
@@ -176,6 +177,7 @@ export class TransacaoService {
       banco_id?: number;
       situacao?: "PENDENTE" | "PAGO";
       mes?: string;
+      ano?: string;
     } = {},
   ) {
     return this.transacaoRepository.getSummary(filters);

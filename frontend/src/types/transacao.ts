@@ -35,6 +35,7 @@ export interface TransacaoFilters {
   banco_id?: number;
   situacao?: "PENDENTE" | "PAGO";
   mes?: string;
+  ano?: string;
 }
 
 export interface TransacaoResponse {

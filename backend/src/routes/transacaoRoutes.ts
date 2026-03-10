@@ -60,6 +60,11 @@ const router = Router();
  *         schema:
  *           type: string
  *         description: Filter by month (MM/AAAA)
+ *       - in: query
+ *         name: ano
+ *         schema:
+ *           type: string
+ *         description: Filter by year (AAAA)
  *     responses:
  *       200:
  *         description: List of transactions with pagination
@@ -120,6 +125,11 @@ router.get("/", transacaoController.getAll);
  *         schema:
  *           type: string
  *         description: Filter by month (MM/AAAA)
+ *       - in: query
+ *         name: ano
+ *         schema:
+ *           type: string
+ *         description: Filter by year (AAAA)
  *     responses:
  *       200:
  *         description: Summary of transactions
