@@ -15,59 +15,59 @@ const router = Router();
  * @swagger
  * /api/transacoes:
  *   get:
- *     summary: List all transactions
+ *     summary: Listar todas as transações
  *     tags: [Transações]
  *     parameters:
  *       - in: query
  *         name: page
  *         schema:
  *           type: integer
- *         description: Page number (default 1)
+ *         description: Número da página (padrão 1)
  *       - in: query
  *         name: limit
  *         schema:
  *           type: integer
- *         description: Items per page (default 10)
+ *         description: Itens por página (padrão 10)
  *       - in: query
  *         name: search
  *         schema:
  *           type: string
- *         description: Search by category, description or bank name
+ *         description: Busca por categoria, descrição ou nome do banco
  *       - in: query
  *         name: tipo
  *         schema:
  *           type: string
  *           enum: [DESPESA, RECEITA]
- *         description: Filter by type
+ *         description: Filtrar por tipo
  *       - in: query
  *         name: categoria_id
  *         schema:
  *           type: integer
- *         description: Filter by category ID
+ *         description: Filtrar por ID da categoria
  *       - in: query
  *         name: banco_id
  *         schema:
  *           type: integer
- *         description: Filter by bank ID
+ *         description: Filtrar por ID do banco
  *       - in: query
  *         name: situacao
  *         schema:
  *           type: string
  *           enum: [PENDENTE, PAGO]
- *         description: Filter by status
+ *         description: Filtrar por situação
  *       - in: query
  *         name: mes
  *         schema:
  *           type: string
- *         description: Filter by month (MM/AAAA)
+ *         description: Filtrar por mês (MM/AAAA)
  *       - in: query
  *         name: ano
  *         schema:
  *           type: string
- *         description: Filter by year (AAAA)
+ *         description: Filtrar por ano (AAAA)
  *     responses:
  *       200:
- *         description: List of transactions with pagination
+ *         description: Lista de transações com paginação
  *         content:
  *           application/json:
  *             schema:
@@ -90,49 +90,49 @@ router.get("/", transacaoController.getAll);
  * @swagger
  * /api/transacoes/summary:
  *   get:
- *     summary: Get transaction summary
+ *     summary: Obter resumo das transações
  *     tags: [Transações]
  *     parameters:
  *       - in: query
  *         name: search
  *         schema:
  *           type: string
- *         description: Search by category, description or bank name
+ *         description: Busca por categoria, descrição ou nome do banco
  *       - in: query
  *         name: tipo
  *         schema:
  *           type: string
  *           enum: [DESPESA, RECEITA]
- *         description: Filter by transaction type
+ *         description: Filtrar por tipo da transação
  *       - in: query
  *         name: categoria_id
  *         schema:
  *           type: integer
- *         description: Filter by category ID
+ *         description: Filtrar por ID da categoria
  *       - in: query
  *         name: banco_id
  *         schema:
  *           type: integer
- *         description: Filter by bank ID
+ *         description: Filtrar por ID do banco
  *       - in: query
  *         name: situacao
  *         schema:
  *           type: string
  *           enum: [PENDENTE, PAGO]
- *         description: Filter by status
+ *         description: Filtrar por situação
  *       - in: query
  *         name: mes
  *         schema:
  *           type: string
- *         description: Filter by month (MM/AAAA)
+ *         description: Filtrar por mês (MM/AAAA)
  *       - in: query
  *         name: ano
  *         schema:
  *           type: string
- *         description: Filter by year (AAAA)
+ *         description: Filtrar por ano (AAAA)
  *     responses:
  *       200:
- *         description: Summary of transactions
+ *         description: Resumo das transações
  *         content:
  *           application/json:
  *             schema:
@@ -176,7 +176,7 @@ router.get("/summary", transacaoController.getSummary);
  * @swagger
  * /api/transacoes/copy-month:
  *   post:
- *     summary: Copy transactions from source month to one or more target months
+ *     summary: Copiar transações de um mês de origem para um ou mais meses de destino
  *     tags: [Transações]
  *     requestBody:
  *       required: true
@@ -198,7 +198,7 @@ router.get("/summary", transacaoController.getSummary);
  *                 example: ["04/2026", "05/2026"]
  *     responses:
  *       201:
- *         description: Transactions copied successfully
+ *         description: Transações copiadas com sucesso
  */
 router.post(
   "/copy-month",
@@ -209,8 +209,8 @@ router.post(
 /**
  * @swagger
  * /api/transacoes/delete-months:
- *   post:
- *     summary: Delete transactions by one or more months
+ *   delete:
+ *     summary: Excluir transações por um ou mais meses
  *     tags: [Transações]
  *     requestBody:
  *       required: true
@@ -228,9 +228,9 @@ router.post(
  *                 example: ["03/2026", "04/2026"]
  *     responses:
  *       200:
- *         description: Transactions deleted successfully
+ *         description: Transações excluídas com sucesso
  */
-router.post(
+router.delete(
   "/delete-months",
   validate(transacaoDeleteMonthsSchema),
   transacaoController.deleteByMonths,
@@ -240,7 +240,7 @@ router.post(
  * @swagger
  * /api/transacoes/{id}:
  *   get:
- *     summary: Get a transaction by ID
+ *     summary: Obter transação por ID
  *     tags: [Transações]
  *     parameters:
  *       - in: path
@@ -250,7 +250,7 @@ router.post(
  *           type: integer
  *     responses:
  *       200:
- *         description: Transaction found
+ *         description: Transação encontrada
  *         content:
  *           application/json:
  *             schema:
@@ -263,7 +263,7 @@ router.post(
  *                 data:
  *                   $ref: '#/components/schemas/Transacao'
  *       404:
- *         description: Transaction not found
+ *         description: Transação não encontrada
  */
 router.get("/:id", transacaoController.getById);
 
@@ -271,7 +271,7 @@ router.get("/:id", transacaoController.getById);
  * @swagger
  * /api/transacoes:
  *   post:
- *     summary: Create a new transaction
+ *     summary: Criar uma nova transação
  *     tags: [Transações]
  *     requestBody:
  *       required: true
@@ -311,7 +311,7 @@ router.get("/:id", transacaoController.getById);
  *                 type: number
  *     responses:
  *       201:
- *         description: Transaction created successfully
+ *         description: Transação criada com sucesso
  */
 router.post("/", validate(transacaoCreateSchema), transacaoController.create);
 
@@ -319,7 +319,7 @@ router.post("/", validate(transacaoCreateSchema), transacaoController.create);
  * @swagger
  * /api/transacoes/{id}:
  *   put:
- *     summary: Update a transaction
+ *     summary: Atualizar uma transação
  *     tags: [Transações]
  *     parameters:
  *       - in: path
@@ -354,7 +354,7 @@ router.post("/", validate(transacaoCreateSchema), transacaoController.create);
  *                 type: number
  *     responses:
  *       200:
- *         description: Transaction updated successfully
+ *         description: Transação atualizada com sucesso
  */
 router.put("/:id", validate(transacaoUpdateSchema), transacaoController.update);
 
@@ -362,7 +362,7 @@ router.put("/:id", validate(transacaoUpdateSchema), transacaoController.update);
  * @swagger
  * /api/transacoes/{id}:
  *   delete:
- *     summary: Delete a transaction
+ *     summary: Excluir uma transação
  *     tags: [Transações]
  *     parameters:
  *       - in: path
@@ -372,7 +372,7 @@ router.put("/:id", validate(transacaoUpdateSchema), transacaoController.update);
  *           type: integer
  *     responses:
  *       200:
- *         description: Transaction deleted successfully
+ *         description: Transação excluída com sucesso
  */
 router.delete("/:id", transacaoController.delete);
 

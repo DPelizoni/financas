@@ -111,10 +111,10 @@ export const transacaoService = {
   async deleteByMonths(
     payload: DeleteMonthsPayload,
   ): Promise<DeleteMonthsResult> {
-    const response = await axios.post<{
+    const response = await axios.delete<{
       success: boolean;
       data: DeleteMonthsResult;
-    }>(`${API_URL}/transacoes/delete-months`, payload);
+    }>(`${API_URL}/transacoes/delete-months`, { data: payload });
 
     return response.data.data;
   },
