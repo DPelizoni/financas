@@ -561,8 +561,8 @@ export default function DashboardPage() {
           </h3>
           <div className="h-80">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={comparisonData}>
-                <CartesianGrid strokeDasharray="3 3" />
+              <BarChart data={comparisonData} barGap={4} barCategoryGap="20%">
+                <CartesianGrid strokeDasharray="3 3" vertical={false} />
                 <XAxis dataKey="name" tick={{ fontSize: 10 }} />
                 <YAxis
                   hide
@@ -674,7 +674,7 @@ export default function DashboardPage() {
             <div className="h-72">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={byCategory}>
-                  <CartesianGrid strokeDasharray="3 3" />
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} />
                   <XAxis dataKey="name" tick={{ fontSize: 10 }} />
                   <YAxis
                     hide
