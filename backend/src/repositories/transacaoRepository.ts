@@ -15,6 +15,49 @@ interface TransacaoFilters {
 }
 
 export class TransacaoRepository {
+  async findByMes(
+    mes: string,
+  ): Promise<Omit<Transacao, "created_at" | "updated_at">[]> {
+    const query = `
+      SELECT
+        id, mes, vencimento, tipo, categoria_id,
+        descricao_id, banco_id, situacao, valor
+      FROM transacoes
+      WHERE mes = ?
+      ORDER BY STR_TO_DATE(vencimento, '%d/%m/%Y') ASC, id ASC
+    `;
+
+    const [rows] = await pool.query<RowDataPacket[]>(query, [mes]);
+    return rows as Omit<Transacao, "created_at" | "updated_at">[];
+  }
+
+  async createMany(
+    records: Omit<Transacao, "id" | "created_at" | "updated_at">[],
+  ): Promise<number> {
+    if (records.length === 0) return 0;
+
+    const values = records.map((record) => [
+      record.mes,
+      record.vencimento,
+      record.tipo,
+      record.categoria_id,
+      record.descricao_id,
+      record.banco_id,
+      record.situacao,
+      record.valor,
+    ]);
+
+    const query = `
+      INSERT INTO transacoes
+      (mes, vencimento, tipo, categoria_id, descricao_id, banco_id, situacao, valor)
+      VALUES ?
+    `;
+
+    const [result] = await pool.query(query, [values]);
+    const insertResult = result as { affectedRows: number };
+    return insertResult.affectedRows || 0;
+  }
+
   async findAll(
     filters: TransacaoFilters,
   ): Promise<{ transacoes: TransacaoComDetalhes[]; total: number }> {

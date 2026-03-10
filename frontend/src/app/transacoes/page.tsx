@@ -5,6 +5,7 @@ import {
   Transacao,
   TransacaoFilters,
   TransacaoSummary,
+  CopyMonthResult,
 } from "@/types/transacao";
 import { Category } from "@/types/category";
 import { Bank } from "@/types/bank";
@@ -38,6 +39,31 @@ interface FeedbackMessage {
   type: "success" | "error";
   message: string;
 }
+
+const monthInputToApi = (value: string): string | undefined => {
+  if (!value) return undefined;
+  const [year, month] = value.split("-");
+  if (!year || !month) return undefined;
+  return `${month}/${year}`;
+};
+
+const monthApiToInput = (value: string): string => {
+  if (/^\d{2}\/\d{4}$/.test(value)) {
+    const [month, year] = value.split("/");
+    return `${year}-${month}`;
+  }
+  return "";
+};
+
+const addMonthsToApiMonth = (apiMonth: string, offset: number): string => {
+  const [monthStr, yearStr] = apiMonth.split("/");
+  const month = Number(monthStr);
+  const year = Number(yearStr);
+  const date = new Date(year, month - 1 + offset, 1);
+  const nextMonth = String(date.getMonth() + 1).padStart(2, "0");
+  const nextYear = String(date.getFullYear());
+  return `${nextMonth}/${nextYear}`;
+};
 
 export default function TransacoesPage() {
   const [transacoes, setTransacoes] = useState<Transacao[]>([]);
@@ -80,6 +106,10 @@ export default function TransacoesPage() {
     | "situacao"
   >("mes");
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
+  const [copyMesOrigem, setCopyMesOrigem] = useState("");
+  const [copyMesDestinoInput, setCopyMesDestinoInput] = useState("");
+  const [copyMesesDestino, setCopyMesesDestino] = useState<string[]>([]);
+  const [copyLoading, setCopyLoading] = useState(false);
 
   const handleSort = (
     column:
@@ -103,13 +133,6 @@ export default function TransacoesPage() {
   const showFeedback = (type: "success" | "error", message: string) => {
     setFeedback({ type, message });
     window.setTimeout(() => setFeedback(null), 4000);
-  };
-
-  const formatMonthToApi = (value: string) => {
-    if (!value) return undefined;
-    const [year, month] = value.split("-");
-    if (!year || !month) return undefined;
-    return `${month}/${year}`;
   };
 
   // Load initial data
@@ -153,7 +176,7 @@ export default function TransacoesPage() {
       if (filterCategoria) filters.categoria_id = filterCategoria as number;
       if (filterBanco) filters.banco_id = filterBanco as number;
       if (filterSituacao) filters.situacao = filterSituacao;
-      const mesApi = formatMonthToApi(filterMes);
+      const mesApi = monthInputToApi(filterMes);
       if (mesApi) filters.mes = mesApi;
 
       const response = await transacaoService.getAll(filters);
@@ -302,6 +325,97 @@ export default function TransacoesPage() {
 
   const handleFilterChange = () => {
     setCurrentPage(1);
+  };
+
+  const handleAddDestinoMes = () => {
+    const mesApi = monthInputToApi(copyMesDestinoInput);
+    if (!mesApi) {
+      showFeedback("error", "Selecione um mês de destino válido.");
+      return;
+    }
+
+    setCopyMesesDestino((prev) => {
+      if (prev.includes(mesApi)) return prev;
+      return [...prev, mesApi].sort((a, b) => {
+        const [ma, ya] = a.split("/");
+        const [mb, yb] = b.split("/");
+        return `${ya}-${ma}`.localeCompare(`${yb}-${mb}`);
+      });
+    });
+    setCopyMesDestinoInput("");
+  };
+
+  const handleRemoveDestinoMes = (mes: string) => {
+    setCopyMesesDestino((prev) => prev.filter((item) => item !== mes));
+  };
+
+  const handleAddNextMonths = (count: number) => {
+    const origemApi = monthInputToApi(copyMesOrigem);
+    if (!origemApi) {
+      showFeedback("error", "Selecione o mês de origem para usar o atalho.");
+      return;
+    }
+
+    const generated = Array.from({ length: count }, (_, index) =>
+      addMonthsToApiMonth(origemApi, index + 1),
+    );
+
+    setCopyMesesDestino((prev) => {
+      const merged = Array.from(new Set([...prev, ...generated]));
+      return merged.sort((a, b) => {
+        const [ma, ya] = a.split("/");
+        const [mb, yb] = b.split("/");
+        return `${ya}-${ma}`.localeCompare(`${yb}-${mb}`);
+      });
+    });
+  };
+
+  const handleCopyByMonth = async () => {
+    const origemApi = monthInputToApi(copyMesOrigem);
+    if (!origemApi) {
+      showFeedback("error", "Selecione o mês de origem.");
+      return;
+    }
+
+    if (copyMesesDestino.length === 0) {
+      showFeedback("error", "Adicione ao menos um mês de destino.");
+      return;
+    }
+
+    const destinoSemOrigem = copyMesesDestino.filter((m) => m !== origemApi);
+    if (destinoSemOrigem.length === 0) {
+      showFeedback(
+        "error",
+        "O mês de destino deve ser diferente do mês de origem.",
+      );
+      return;
+    }
+
+    try {
+      setCopyLoading(true);
+      const result: CopyMonthResult = await transacaoService.copyByMonth({
+        mes_origem: origemApi,
+        meses_destino: destinoSemOrigem,
+      });
+
+      showFeedback(
+        "success",
+        `Cópia concluída: ${result.total_criadas} transações criadas para ${result.meses_destino.length} mês(es) de destino.`,
+      );
+
+      setCopyMesesDestino([]);
+      setCopyMesDestinoInput("");
+      setCurrentPage(1);
+      await loadTransacoes();
+    } catch (error) {
+      const apiMessage = (error as any)?.response?.data?.message;
+      showFeedback(
+        "error",
+        apiMessage || "Não foi possível copiar as transações por mês.",
+      );
+    } finally {
+      setCopyLoading(false);
+    }
   };
 
   const formatCurrency = (valor: number) => {
@@ -504,6 +618,104 @@ export default function TransacoesPage() {
 
         {/* Filters */}
         <div className="mb-6 rounded-lg bg-white p-4 shadow-sm">
+          <div className="mb-4 rounded-lg border border-dashed border-blue-200 bg-blue-50 p-4">
+            <h3 className="mb-3 text-sm font-semibold text-blue-900">
+              Copiar Transações Por Mês
+            </h3>
+            <div className="grid grid-cols-1 gap-3 lg:grid-cols-5">
+              <div>
+                <label className="mb-1 block text-xs font-medium text-blue-900">
+                  Mês origem
+                </label>
+                <input
+                  type="month"
+                  value={copyMesOrigem}
+                  onChange={(e) => setCopyMesOrigem(e.target.value)}
+                  className="w-full rounded-lg border border-blue-200 px-3 py-2 text-sm focus:outline-none focus:border-blue-500"
+                />
+              </div>
+
+              <div>
+                <label className="mb-1 block text-xs font-medium text-blue-900">
+                  Mês destino
+                </label>
+                <input
+                  type="month"
+                  value={copyMesDestinoInput}
+                  onChange={(e) => setCopyMesDestinoInput(e.target.value)}
+                  className="w-full rounded-lg border border-blue-200 px-3 py-2 text-sm focus:outline-none focus:border-blue-500"
+                />
+              </div>
+
+              <div className="flex items-end">
+                <button
+                  type="button"
+                  onClick={handleAddDestinoMes}
+                  className="w-full rounded-lg border border-blue-300 bg-white px-3 py-2 text-sm font-medium text-blue-700 transition hover:bg-blue-100"
+                >
+                  Adicionar destino
+                </button>
+              </div>
+
+              <div className="lg:col-span-2 flex items-end">
+                <button
+                  type="button"
+                  onClick={handleCopyByMonth}
+                  disabled={copyLoading}
+                  className="w-full rounded-lg bg-blue-600 px-3 py-2 text-sm font-medium text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  {copyLoading
+                    ? "Copiando..."
+                    : "Copiar para meses selecionados"}
+                </button>
+              </div>
+            </div>
+
+            <div className="mt-3 flex flex-wrap gap-2">
+              <button
+                type="button"
+                onClick={() => handleAddNextMonths(3)}
+                className="rounded-lg border border-blue-300 bg-white px-3 py-1 text-xs font-medium text-blue-700 transition hover:bg-blue-100"
+              >
+                + 3 meses
+              </button>
+              <button
+                type="button"
+                onClick={() => handleAddNextMonths(6)}
+                className="rounded-lg border border-blue-300 bg-white px-3 py-1 text-xs font-medium text-blue-700 transition hover:bg-blue-100"
+              >
+                + 6 meses
+              </button>
+              <button
+                type="button"
+                onClick={() => handleAddNextMonths(12)}
+                className="rounded-lg border border-blue-300 bg-white px-3 py-1 text-xs font-medium text-blue-700 transition hover:bg-blue-100"
+              >
+                + 12 meses
+              </button>
+            </div>
+
+            <div className="mt-2 flex flex-wrap gap-2">
+              {copyMesesDestino.length === 0 ? (
+                <span className="text-xs text-blue-800">
+                  Nenhum mês de destino selecionado.
+                </span>
+              ) : (
+                copyMesesDestino.map((mes) => (
+                  <button
+                    key={mes}
+                    type="button"
+                    onClick={() => handleRemoveDestinoMes(mes)}
+                    className="rounded-full border border-blue-300 bg-white px-3 py-1 text-xs font-medium text-blue-800 hover:bg-blue-100"
+                    title="Remover mês destino"
+                  >
+                    {monthApiToInput(mes)} ×
+                  </button>
+                ))
+              )}
+            </div>
+          </div>
+
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
             {/* Search */}
             <div className="lg:col-span-2">

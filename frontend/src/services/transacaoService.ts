@@ -5,6 +5,8 @@ import {
   TransacaoFilters,
   TransacaoResponse,
   TransacaoSummary,
+  CopyMonthPayload,
+  CopyMonthResult,
 } from "@/types/transacao";
 
 const API_URL = "http://localhost:3001/api";
@@ -91,5 +93,14 @@ export const transacaoService = {
       provisao_despesa: Number(raw.provisao_despesa || 0),
       provisao_liquido: Number(raw.provisao_liquido || 0),
     };
+  },
+
+  async copyByMonth(payload: CopyMonthPayload): Promise<CopyMonthResult> {
+    const response = await axios.post<{
+      success: boolean;
+      data: CopyMonthResult;
+    }>(`${API_URL}/transacoes/copy-month`, payload);
+
+    return response.data.data;
   },
 };

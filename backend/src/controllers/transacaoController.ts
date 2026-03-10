@@ -93,4 +93,16 @@ export const transacaoController = {
     });
     res.json(successResponse("Resumo", summary));
   },
+
+  copyByMonth: async (req: Request, res: Response) => {
+    const { mes_origem, meses_destino } = req.body;
+    const result = await transacaoService.copyTransacoesByMes(
+      mes_origem,
+      meses_destino,
+    );
+
+    res
+      .status(201)
+      .json(successResponse("Transações copiadas com sucesso", result));
+  },
 };

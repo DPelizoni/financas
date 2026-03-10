@@ -38,3 +38,19 @@ export const transacaoFiltersSchema = z.object({
   situacao: z.enum(["PENDENTE", "PAGO"]).optional(),
   mes: z.string().optional(),
 });
+
+export const transacaoCopyMonthSchema = z.object({
+  mes_origem: z
+    .string()
+    .regex(mesRegex, "Mês origem deve estar no formato MM/AAAA (ou YYYY-MM)"),
+  meses_destino: z
+    .array(
+      z
+        .string()
+        .regex(
+          mesRegex,
+          "Mês destino deve estar no formato MM/AAAA (ou YYYY-MM)",
+        ),
+    )
+    .min(1, "Informe ao menos um mês de destino"),
+});

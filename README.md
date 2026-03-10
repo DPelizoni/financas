@@ -158,26 +158,6 @@ Com backend em execução:
 - `npm start`: executa build de produção
 - `npm run lint`: análise estática
 
-## Publicação no GitHub (repositório público)
-
-Checklist recomendado:
-
-- Confirmar que arquivos sensíveis não serão versionados (`.env`, `node_modules`, `dist`, `.next`)
-- Revisar `.env.example` para conter apenas placeholders
-- Validar build local de backend e frontend
-- Atualizar README com instruções de setup
-
-Comandos básicos:
-
-```bash
-git init
-git branch -M main
-git add .
-git commit -m "chore: initial public release"
-git remote add origin https://github.com/<usuario>/<repositorio>.git
-git push -u origin main
-```
-
 ## Licença
 
 Este projeto está licenciado sob a licença MIT.

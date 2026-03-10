@@ -63,3 +63,15 @@ export interface TransacaoSummary {
   provisao_despesa: number;
   provisao_liquido: number;
 }
+
+export interface CopyMonthPayload {
+  mes_origem: string;
+  meses_destino: string[];
+}
+
+export interface CopyMonthResult {
+  mes_origem: string;
+  meses_destino: string[];
+  total_origem: number;
+  total_criadas: number;
+}

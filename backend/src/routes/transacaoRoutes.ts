@@ -5,6 +5,7 @@ import {
   transacaoCreateSchema,
   transacaoUpdateSchema,
   transacaoFiltersSchema,
+  transacaoCopyMonthSchema,
 } from "../schemas/transacaoSchema";
 
 const router = Router();
@@ -159,6 +160,40 @@ router.get("/", transacaoController.getAll);
  *                       type: number
  */
 router.get("/summary", transacaoController.getSummary);
+
+/**
+ * @swagger
+ * /api/transacoes/copy-month:
+ *   post:
+ *     summary: Copy transactions from source month to one or more target months
+ *     tags: [Transações]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - mes_origem
+ *               - meses_destino
+ *             properties:
+ *               mes_origem:
+ *                 type: string
+ *                 example: "03/2026"
+ *               meses_destino:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *                 example: ["04/2026", "05/2026"]
+ *     responses:
+ *       201:
+ *         description: Transactions copied successfully
+ */
+router.post(
+  "/copy-month",
+  validate(transacaoCopyMonthSchema),
+  transacaoController.copyByMonth,
+);
 
 /**
  * @swagger

@@ -16,6 +16,13 @@ interface TransacaoFilters {
   mes?: string;
 }
 
+interface CopyMonthResult {
+  mes_origem: string;
+  meses_destino: string[];
+  total_origem: number;
+  total_criadas: number;
+}
+
 export class TransacaoService {
   private transacaoRepository = new TransacaoRepository();
   private bankRepository = new BankRepository();
@@ -167,5 +174,95 @@ export class TransacaoService {
     } = {},
   ) {
     return this.transacaoRepository.getSummary(filters);
+  }
+
+  async copyTransacoesByMes(
+    mesOrigemInput: string,
+    mesesDestinoInput: string[],
+  ): Promise<CopyMonthResult> {
+    const mesOrigem = this.normalizeMes(mesOrigemInput);
+    const mesesDestino = Array.from(
+      new Set(mesesDestinoInput.map((mes) => this.normalizeMes(mes))),
+    ).filter((mes) => mes !== mesOrigem);
+
+    if (mesesDestino.length === 0) {
+      throw new AppError(
+        400,
+        "Informe ao menos um mês de destino diferente do mês de origem",
+      );
+    }
+
+    const origem = await this.transacaoRepository.findByMes(mesOrigem);
+    if (origem.length === 0) {
+      throw new AppError(404, "Não há transações no mês de origem informado");
+    }
+
+    const novosRegistros: Omit<
+      Transacao,
+      "id" | "created_at" | "updated_at"
+    >[] = [];
+
+    for (const mesDestino of mesesDestino) {
+      for (const transacao of origem) {
+        novosRegistros.push({
+          mes: mesDestino,
+          vencimento: this.buildVencimento(transacao.vencimento, mesDestino),
+          tipo: transacao.tipo,
+          categoria_id: Number(transacao.categoria_id),
+          descricao_id: Number(transacao.descricao_id),
+          banco_id: Number(transacao.banco_id),
+          situacao: transacao.situacao,
+          valor: Number(transacao.valor),
+        });
+      }
+    }
+
+    const totalCriadas =
+      await this.transacaoRepository.createMany(novosRegistros);
+
+    return {
+      mes_origem: mesOrigem,
+      meses_destino: mesesDestino,
+      total_origem: origem.length,
+      total_criadas: totalCriadas,
+    };
+  }
+
+  private normalizeMes(mes: string): string {
+    if (/^\d{2}\/\d{4}$/.test(mes)) return mes;
+    if (/^\d{4}-\d{2}$/.test(mes)) {
+      const [year, month] = mes.split("-");
+      return `${month}/${year}`;
+    }
+    throw new AppError(400, "Mês inválido. Use MM/AAAA ou YYYY-MM");
+  }
+
+  private buildVencimento(
+    vencimentoOriginal: string,
+    mesDestino: string,
+  ): string {
+    const day = this.extractDay(vencimentoOriginal);
+    const [monthStr, yearStr] = mesDestino.split("/");
+    const month = Number(monthStr);
+    const year = Number(yearStr);
+    const lastDay = new Date(year, month, 0).getDate();
+    const safeDay = Math.min(day, lastDay);
+
+    return `${String(safeDay).padStart(2, "0")}/${String(month).padStart(2, "0")}/${year}`;
+  }
+
+  private extractDay(vencimento: string): number {
+    if (/^\d{2}\/\d{2}\/\d{4}$/.test(vencimento)) {
+      return Number(vencimento.split("/")[0]);
+    }
+
+    if (/^\d{4}-\d{2}-\d{2}$/.test(vencimento)) {
+      return Number(vencimento.split("-")[2]);
+    }
+
+    throw new AppError(
+      400,
+      "Vencimento inválido para cópia. Use DD/MM/AAAA ou YYYY-MM-DD",
+    );
   }
 }
