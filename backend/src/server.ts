@@ -29,6 +29,16 @@ app.get("/health", (req, res) => {
   });
 });
 
+// Rota raiz da API
+app.get("/", (req, res) => {
+  res.json({
+    success: true,
+    message: "API de Finanças Pessoais online.",
+    docs: "/api-docs",
+    health: "/health",
+  });
+});
+
 // Documentação Swagger
 app.use(
   "/api-docs",
