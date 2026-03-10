@@ -54,3 +54,13 @@ export const transacaoCopyMonthSchema = z.object({
     )
     .min(1, "Informe ao menos um mês de destino"),
 });
+
+export const transacaoDeleteMonthsSchema = z.object({
+  meses: z
+    .array(
+      z
+        .string()
+        .regex(mesRegex, "Mês deve estar no formato MM/AAAA (ou YYYY-MM)"),
+    )
+    .min(1, "Informe ao menos um mês para exclusão"),
+});

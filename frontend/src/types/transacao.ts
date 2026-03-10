@@ -75,3 +75,12 @@ export interface CopyMonthResult {
   total_origem: number;
   total_criadas: number;
 }
+
+export interface DeleteMonthsPayload {
+  meses: string[];
+}
+
+export interface DeleteMonthsResult {
+  meses: string[];
+  total_excluidas: number;
+}

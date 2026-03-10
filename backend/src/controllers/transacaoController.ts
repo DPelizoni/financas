@@ -105,4 +105,11 @@ export const transacaoController = {
       .status(201)
       .json(successResponse("Transações copiadas com sucesso", result));
   },
+
+  deleteByMonths: async (req: Request, res: Response) => {
+    const { meses } = req.body;
+    const result = await transacaoService.deleteTransacoesByMeses(meses);
+
+    res.json(successResponse("Transações excluídas com sucesso", result));
+  },
 };

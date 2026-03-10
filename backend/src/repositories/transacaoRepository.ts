@@ -228,6 +228,16 @@ export class TransacaoRepository {
     return deleteResult.affectedRows > 0;
   }
 
+  async deleteByMeses(meses: string[]): Promise<number> {
+    if (meses.length === 0) return 0;
+
+    const placeholders = meses.map(() => "?").join(", ");
+    const query = `DELETE FROM transacoes WHERE mes IN (${placeholders})`;
+    const [result] = await pool.query(query, meses);
+    const deleteResult = result as { affectedRows: number };
+    return deleteResult.affectedRows || 0;
+  }
+
   async exists(id: number): Promise<boolean> {
     const [rows] = await pool.query("SELECT 1 FROM transacoes WHERE id = ?", [
       id,

@@ -6,6 +6,7 @@ import {
   TransacaoFilters,
   TransacaoSummary,
   CopyMonthResult,
+  DeleteMonthsResult,
 } from "@/types/transacao";
 import { Category } from "@/types/category";
 import { Bank } from "@/types/bank";
@@ -110,6 +111,10 @@ export default function TransacoesPage() {
   const [copyMesDestinoInput, setCopyMesDestinoInput] = useState("");
   const [copyMesesDestino, setCopyMesesDestino] = useState<string[]>([]);
   const [copyLoading, setCopyLoading] = useState(false);
+  const [deleteMesInput, setDeleteMesInput] = useState("");
+  const [deleteMeses, setDeleteMeses] = useState<string[]>([]);
+  const [deleteMonthsLoading, setDeleteMonthsLoading] = useState(false);
+  const [deleteMonthsConfirmOpen, setDeleteMonthsConfirmOpen] = useState(false);
 
   const handleSort = (
     column:
@@ -418,6 +423,93 @@ export default function TransacoesPage() {
     }
   };
 
+  const handleAddDeleteMes = () => {
+    const mesApi = monthInputToApi(deleteMesInput);
+    if (!mesApi) {
+      showFeedback("error", "Selecione um mês válido para exclusão.");
+      return;
+    }
+
+    setDeleteMeses((prev) => {
+      if (prev.includes(mesApi)) return prev;
+      return [...prev, mesApi].sort((a, b) => {
+        const [ma, ya] = a.split("/");
+        const [mb, yb] = b.split("/");
+        return `${ya}-${ma}`.localeCompare(`${yb}-${mb}`);
+      });
+    });
+    setDeleteMesInput("");
+  };
+
+  const handleRemoveDeleteMes = (mes: string) => {
+    setDeleteMeses((prev) => prev.filter((item) => item !== mes));
+  };
+
+  const handleAddDeleteNextMonths = (count: number) => {
+    const baseMesApi = monthInputToApi(deleteMesInput);
+    if (!baseMesApi) {
+      showFeedback(
+        "error",
+        "Para usar este atalho, selecione o mês na rotina de exclusão.",
+      );
+      return;
+    }
+
+    const generated = Array.from({ length: count }, (_, index) =>
+      addMonthsToApiMonth(baseMesApi, index),
+    );
+
+    setDeleteMeses((prev) => {
+      const merged = Array.from(new Set([...prev, ...generated]));
+      return merged.sort((a, b) => {
+        const [ma, ya] = a.split("/");
+        const [mb, yb] = b.split("/");
+        return `${ya}-${ma}`.localeCompare(`${yb}-${mb}`);
+      });
+    });
+  };
+
+  const handleDeleteByMonths = async () => {
+    if (deleteMeses.length === 0) {
+      showFeedback("error", "Adicione ao menos um mês para exclusão.");
+      return;
+    }
+
+    try {
+      setDeleteMonthsLoading(true);
+      const result: DeleteMonthsResult = await transacaoService.deleteByMonths({
+        meses: deleteMeses,
+      });
+
+      showFeedback(
+        "success",
+        `Exclusão concluída: ${result.total_excluidas} transações removidas em ${result.meses.length} mês(es).`,
+      );
+
+      setDeleteMeses([]);
+      setDeleteMesInput("");
+      setCurrentPage(1);
+      await loadTransacoes();
+    } catch (error) {
+      const apiMessage = (error as any)?.response?.data?.message;
+      showFeedback(
+        "error",
+        apiMessage || "Não foi possível excluir as transações por mês.",
+      );
+    } finally {
+      setDeleteMonthsLoading(false);
+    }
+  };
+
+  const requestDeleteByMonths = () => {
+    if (deleteMeses.length === 0) {
+      showFeedback("error", "Adicione ao menos um mês para exclusão.");
+      return;
+    }
+
+    setDeleteMonthsConfirmOpen(true);
+  };
+
   const formatCurrency = (valor: number) => {
     return new Intl.NumberFormat("pt-BR", {
       style: "currency",
@@ -708,6 +800,92 @@ export default function TransacoesPage() {
                     onClick={() => handleRemoveDestinoMes(mes)}
                     className="rounded-full border border-blue-300 bg-white px-3 py-1 text-xs font-medium text-blue-800 hover:bg-blue-100"
                     title="Remover mês destino"
+                  >
+                    {monthApiToInput(mes)} ×
+                  </button>
+                ))
+              )}
+            </div>
+          </div>
+
+          <div className="mb-4 rounded-lg border border-dashed border-red-200 bg-red-50 p-4">
+            <h3 className="mb-3 text-sm font-semibold text-red-900">
+              Excluir Transações Por Mês
+            </h3>
+            <div className="grid grid-cols-1 gap-3 lg:grid-cols-5">
+              <div>
+                <label className="mb-1 block text-xs font-medium text-red-900">
+                  Mês para excluir
+                </label>
+                <input
+                  type="month"
+                  value={deleteMesInput}
+                  onChange={(e) => setDeleteMesInput(e.target.value)}
+                  className="w-full rounded-lg border border-red-200 px-3 py-2 text-sm focus:outline-none focus:border-red-500"
+                />
+              </div>
+
+              <div className="flex items-end">
+                <button
+                  type="button"
+                  onClick={handleAddDeleteMes}
+                  className="w-full rounded-lg border border-red-300 bg-white px-3 py-2 text-sm font-medium text-red-700 transition hover:bg-red-100"
+                >
+                  Adicionar mês
+                </button>
+              </div>
+
+              <div className="flex items-end">
+                <button
+                  type="button"
+                  onClick={requestDeleteByMonths}
+                  disabled={deleteMonthsLoading}
+                  className="w-full rounded-lg bg-red-600 px-3 py-2 text-sm font-medium text-white transition hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-50 lg:col-span-3"
+                >
+                  {deleteMonthsLoading
+                    ? "Excluindo..."
+                    : "Excluir meses selecionados"}
+                </button>
+              </div>
+            </div>
+
+            <div className="mt-3 flex flex-wrap gap-2">
+              <button
+                type="button"
+                onClick={() => handleAddDeleteNextMonths(3)}
+                className="rounded-lg border border-red-300 bg-white px-3 py-1 text-xs font-medium text-red-700 transition hover:bg-red-100"
+              >
+                + 3 meses
+              </button>
+              <button
+                type="button"
+                onClick={() => handleAddDeleteNextMonths(6)}
+                className="rounded-lg border border-red-300 bg-white px-3 py-1 text-xs font-medium text-red-700 transition hover:bg-red-100"
+              >
+                + 6 meses
+              </button>
+              <button
+                type="button"
+                onClick={() => handleAddDeleteNextMonths(12)}
+                className="rounded-lg border border-red-300 bg-white px-3 py-1 text-xs font-medium text-red-700 transition hover:bg-red-100"
+              >
+                + 12 meses
+              </button>
+            </div>
+
+            <div className="mt-2 flex flex-wrap gap-2">
+              {deleteMeses.length === 0 ? (
+                <span className="text-xs text-red-800">
+                  Nenhum mês selecionado para exclusão.
+                </span>
+              ) : (
+                deleteMeses.map((mes) => (
+                  <button
+                    key={`delete-${mes}`}
+                    type="button"
+                    onClick={() => handleRemoveDeleteMes(mes)}
+                    className="rounded-full border border-red-300 bg-white px-3 py-1 text-xs font-medium text-red-800 hover:bg-red-100"
+                    title="Remover mês"
                   >
                     {monthApiToInput(mes)} ×
                   </button>
@@ -1096,6 +1274,30 @@ export default function TransacoesPage() {
             })
           }
           onConfirm={confirmDelete}
+        />
+
+        <ConfirmDeleteModal
+          isOpen={deleteMonthsConfirmOpen}
+          title="Confirmar exclusão por meses"
+          description={
+            deleteMeses.length === 1 ? (
+              <>
+                Esta ação removerá todas as transações do mês{" "}
+                <strong>{deleteMeses[0]}</strong>.
+              </>
+            ) : (
+              <>
+                Esta ação removerá todas as transações de{" "}
+                <strong>{deleteMeses.length} meses</strong> selecionados.
+              </>
+            )
+          }
+          confirmLabel="Excluir transações"
+          onCancel={() => setDeleteMonthsConfirmOpen(false)}
+          onConfirm={async () => {
+            setDeleteMonthsConfirmOpen(false);
+            await handleDeleteByMonths();
+          }}
         />
       </div>
     </div>

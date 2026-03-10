@@ -7,6 +7,8 @@ import {
   TransacaoSummary,
   CopyMonthPayload,
   CopyMonthResult,
+  DeleteMonthsPayload,
+  DeleteMonthsResult,
 } from "@/types/transacao";
 
 const API_URL = "http://localhost:3001/api";
@@ -100,6 +102,17 @@ export const transacaoService = {
       success: boolean;
       data: CopyMonthResult;
     }>(`${API_URL}/transacoes/copy-month`, payload);
+
+    return response.data.data;
+  },
+
+  async deleteByMonths(
+    payload: DeleteMonthsPayload,
+  ): Promise<DeleteMonthsResult> {
+    const response = await axios.post<{
+      success: boolean;
+      data: DeleteMonthsResult;
+    }>(`${API_URL}/transacoes/delete-months`, payload);
 
     return response.data.data;
   },

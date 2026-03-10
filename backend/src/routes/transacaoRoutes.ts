@@ -6,6 +6,7 @@ import {
   transacaoUpdateSchema,
   transacaoFiltersSchema,
   transacaoCopyMonthSchema,
+  transacaoDeleteMonthsSchema,
 } from "../schemas/transacaoSchema";
 
 const router = Router();
@@ -193,6 +194,36 @@ router.post(
   "/copy-month",
   validate(transacaoCopyMonthSchema),
   transacaoController.copyByMonth,
+);
+
+/**
+ * @swagger
+ * /api/transacoes/delete-months:
+ *   post:
+ *     summary: Delete transactions by one or more months
+ *     tags: [Transações]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - meses
+ *             properties:
+ *               meses:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *                 example: ["03/2026", "04/2026"]
+ *     responses:
+ *       200:
+ *         description: Transactions deleted successfully
+ */
+router.post(
+  "/delete-months",
+  validate(transacaoDeleteMonthsSchema),
+  transacaoController.deleteByMonths,
 );
 
 /**

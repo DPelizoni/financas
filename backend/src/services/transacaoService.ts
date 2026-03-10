@@ -23,6 +23,11 @@ interface CopyMonthResult {
   total_criadas: number;
 }
 
+interface DeleteMonthsResult {
+  meses: string[];
+  total_excluidas: number;
+}
+
 export class TransacaoService {
   private transacaoRepository = new TransacaoRepository();
   private bankRepository = new BankRepository();
@@ -225,6 +230,25 @@ export class TransacaoService {
       meses_destino: mesesDestino,
       total_origem: origem.length,
       total_criadas: totalCriadas,
+    };
+  }
+
+  async deleteTransacoesByMeses(
+    mesesInput: string[],
+  ): Promise<DeleteMonthsResult> {
+    const meses = Array.from(
+      new Set(mesesInput.map((mes) => this.normalizeMes(mes))),
+    );
+
+    if (meses.length === 0) {
+      throw new AppError(400, "Informe ao menos um mês para exclusão");
+    }
+
+    const totalExcluidas = await this.transacaoRepository.deleteByMeses(meses);
+
+    return {
+      meses,
+      total_excluidas: totalExcluidas,
     };
   }
 
