@@ -572,7 +572,7 @@ export default function DashboardPage() {
                   ]}
                 />
                 <Tooltip formatter={(v) => currency(Number(v || 0))} />
-                <Legend />
+                <Legend iconSize={10} wrapperStyle={{ fontSize: "12px" }} />
                 <Bar
                   dataKey="Pago"
                   fill={chartColors.pago}
@@ -629,7 +629,7 @@ export default function DashboardPage() {
                   />
                   <YAxis hide />
                   <Tooltip formatter={(v) => currency(Number(v || 0))} />
-                  <Legend />
+                  <Legend iconSize={10} wrapperStyle={{ fontSize: "12px" }} />
                   <Line
                     type="monotone"
                     dataKey="receitas"
