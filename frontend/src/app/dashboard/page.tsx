@@ -752,7 +752,13 @@ export default function DashboardPage() {
                     </div>
                   </div>
 
-                  <div className="flex h-full items-center justify-center rounded-lg border border-dashed border-gray-300 bg-white p-3">
+                  <div
+                    className={`flex h-full items-center justify-center rounded-lg border border-dashed p-3 ${
+                      singleMonthSaldo >= 0
+                        ? "border-blue-200 bg-blue-50"
+                        : "border-red-200 bg-red-50"
+                    }`}
+                  >
                     <div className="text-center">
                       <p className="text-sm font-semibold text-gray-700">
                         Líquido

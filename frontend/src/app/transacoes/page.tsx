@@ -626,7 +626,7 @@ export default function TransacoesPage() {
                   <p
                     className={`mt-1 text-xl font-bold ${
                       summary.total_liquido >= 0
-                        ? "text-green-600"
+                        ? "text-blue-600"
                         : "text-red-600"
                     }`}
                   >
@@ -660,7 +660,7 @@ export default function TransacoesPage() {
                   <p
                     className={`mt-1 text-xl font-bold ${
                       summary.pago_liquido >= 0
-                        ? "text-green-600"
+                        ? "text-blue-600"
                         : "text-red-600"
                     }`}
                   >
@@ -694,7 +694,7 @@ export default function TransacoesPage() {
                   <p
                     className={`mt-1 text-xl font-bold ${
                       summary.provisao_liquido >= 0
-                        ? "text-green-600"
+                        ? "text-blue-600"
                         : "text-red-600"
                     }`}
                   >
