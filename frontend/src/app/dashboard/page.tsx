@@ -883,9 +883,9 @@ export default function DashboardPage() {
 
           <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
+              <thead className="border-b bg-gray-100">
                 <tr>
-                  <th className="px-4 py-2 text-left text-xs font-medium uppercase text-gray-500">
+                  <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">
                     <button
                       type="button"
                       onClick={() => handleTableSort("mes")}
@@ -899,7 +899,7 @@ export default function DashboardPage() {
                       ) : null}
                     </button>
                   </th>
-                  <th className="px-4 py-2 text-left text-xs font-medium uppercase text-gray-500">
+                  <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">
                     <button
                       type="button"
                       onClick={() => handleTableSort("tipo")}
@@ -914,7 +914,7 @@ export default function DashboardPage() {
                       ) : null}
                     </button>
                   </th>
-                  <th className="px-4 py-2 text-left text-xs font-medium uppercase text-gray-500">
+                  <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">
                     <button
                       type="button"
                       onClick={() => handleTableSort("categoria")}
@@ -929,7 +929,7 @@ export default function DashboardPage() {
                       ) : null}
                     </button>
                   </th>
-                  <th className="px-4 py-2 text-left text-xs font-medium uppercase text-gray-500">
+                  <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">
                     <button
                       type="button"
                       onClick={() => handleTableSort("banco")}
@@ -944,7 +944,7 @@ export default function DashboardPage() {
                       ) : null}
                     </button>
                   </th>
-                  <th className="px-4 py-2 text-left text-xs font-medium uppercase text-gray-500">
+                  <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">
                     <button
                       type="button"
                       onClick={() => handleTableSort("situacao")}
@@ -959,7 +959,7 @@ export default function DashboardPage() {
                       ) : null}
                     </button>
                   </th>
-                  <th className="px-4 py-2 text-right text-xs font-medium uppercase text-gray-500">
+                  <th className="px-6 py-3 text-right text-sm font-semibold text-gray-900">
                     <button
                       type="button"
                       onClick={() => handleTableSort("valor")}

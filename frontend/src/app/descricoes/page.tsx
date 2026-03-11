@@ -325,9 +325,9 @@ export default function DescricoesPage() {
           ) : (
             <>
               <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
+                <thead className="border-b bg-gray-100">
                   <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+                    <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">
                       <button
                         type="button"
                         onClick={() => handleSort("nome")}
@@ -341,7 +341,7 @@ export default function DescricoesPage() {
                         ) : null}
                       </button>
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+                    <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">
                       <button
                         type="button"
                         onClick={() => handleSort("categoria")}
@@ -355,7 +355,7 @@ export default function DescricoesPage() {
                         ) : null}
                       </button>
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+                    <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">
                       <button
                         type="button"
                         onClick={() => handleSort("status")}
@@ -369,7 +369,7 @@ export default function DescricoesPage() {
                         ) : null}
                       </button>
                     </th>
-                    <th className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500">
+                    <th className="px-6 py-3 text-right text-sm font-semibold text-gray-900">
                       Ações
                     </th>
                   </tr>
