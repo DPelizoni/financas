@@ -18,6 +18,8 @@ import {
   Legend,
   Line,
   LineChart,
+  Pie,
+  PieChart,
   ResponsiveContainer,
   Tooltip,
   XAxis,
@@ -364,7 +366,7 @@ export default function DashboardPage() {
   }, [filteredTransacoes, tableSortBy, tableSortDirection]);
 
   const hasSingleTimelineMonth = timeline.length === 1;
-  const singleMonthEvolutionData = hasSingleTimelineMonth
+  const singleMonthDonutData = hasSingleTimelineMonth
     ? [
         {
           indicador: "Receita",
@@ -376,13 +378,10 @@ export default function DashboardPage() {
           valor: timeline[0].despesas,
           fill: chartColors.despesas,
         },
-        {
-          indicador: "Líquido",
-          valor: timeline[0].saldo,
-          fill: chartColors.saldo,
-        },
       ]
     : [];
+
+  const singleMonthSaldo = hasSingleTimelineMonth ? timeline[0].saldo : 0;
 
   if (loading) {
     return (
@@ -702,42 +701,76 @@ export default function DashboardPage() {
           <div className="rounded-lg bg-white p-4 shadow-sm">
             <h3 className="mb-3 text-sm font-semibold text-gray-700">
               {hasSingleTimelineMonth
-                ? "Resumo Mensal: Receita, Despesa e Líquido"
+                ? "Resumo Mensal"
                 : "Evolução no Tempo e Saldo (12 meses)"}
             </h3>
             <div className="h-96">
-              <ResponsiveContainer width="100%" height="100%">
-                {hasSingleTimelineMonth ? (
-                  <BarChart
-                    data={singleMonthEvolutionData}
-                    margin={{ top: 30, right: 28, left: 20, bottom: 12 }}
-                    barCategoryGap="25%"
-                  >
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                    <XAxis dataKey="indicador" tick={{ fontSize: 10 }} />
-                    <YAxis
-                      hide
-                      domain={[
-                        (dataMin: number) =>
-                          dataMin >= 0 ? 0 : Math.floor(dataMin * 1.2),
-                        (dataMax: number) =>
-                          dataMax <= 0 ? 0 : Math.ceil(dataMax * 1.2),
-                      ]}
-                    />
-                    <Tooltip formatter={(v) => currency(Number(v || 0))} />
-                    <Bar dataKey="valor" radius={[6, 6, 0, 0]}>
-                      {singleMonthEvolutionData.map((entry) => (
-                        <Cell key={entry.indicador} fill={entry.fill} />
-                      ))}
-                      <LabelList
-                        dataKey="valor"
-                        position="top"
-                        formatter={(value: any) => currency(Number(value))}
-                        style={{ fontSize: 10, fontWeight: 600 }}
-                      />
-                    </Bar>
-                  </BarChart>
-                ) : (
+              {hasSingleTimelineMonth ? (
+                <div className="grid h-full grid-cols-1 gap-4 lg:grid-cols-2">
+                  <div className="h-full rounded-lg border border-dashed border-gray-300 bg-gray-50 p-3">
+                    <div className="h-[70%]">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <PieChart>
+                          <Pie
+                            data={singleMonthDonutData}
+                            dataKey="valor"
+                            nameKey="indicador"
+                            cx="50%"
+                            cy="50%"
+                            innerRadius={55}
+                            outerRadius={88}
+                            paddingAngle={3}
+                          >
+                            {singleMonthDonutData.map((entry) => (
+                              <Cell key={entry.indicador} fill={entry.fill} />
+                            ))}
+                          </Pie>
+                          <Tooltip
+                            formatter={(v) => currency(Number(v || 0))}
+                          />
+                        </PieChart>
+                      </ResponsiveContainer>
+                    </div>
+
+                    <div className="mt-2 space-y-1 text-sm">
+                      <div className="flex items-center justify-between">
+                        <span className="font-medium text-gray-700">
+                          🟢 Receita
+                        </span>
+                        <span className="font-semibold text-green-600">
+                          {currency(timeline[0].receitas)}
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="font-medium text-gray-700">
+                          🔴 Despesa
+                        </span>
+                        <span className="font-semibold text-red-600">
+                          {currency(timeline[0].despesas)}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex h-full items-center justify-center rounded-lg border border-dashed border-gray-300 bg-white p-3">
+                    <div className="text-center">
+                      <p className="text-sm font-semibold text-gray-700">
+                        Líquido
+                      </p>
+                      <p
+                        className={`mt-2 text-3xl font-bold ${
+                          singleMonthSaldo >= 0
+                            ? "text-blue-600"
+                            : "text-red-600"
+                        }`}
+                      >
+                        {currency(singleMonthSaldo)}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <ResponsiveContainer width="100%" height="100%">
                   <LineChart
                     data={timeline}
                     margin={{ top: 30, right: 28, left: 20, bottom: 12 }}
@@ -784,8 +817,8 @@ export default function DashboardPage() {
                       />
                     </Line>
                   </LineChart>
-                )}
-              </ResponsiveContainer>
+                </ResponsiveContainer>
+              )}
             </div>
           </div>
 
