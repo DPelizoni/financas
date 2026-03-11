@@ -68,13 +68,13 @@ const toneStyles: Record<
 };
 
 const baseInputClass =
-  "w-56 max-w-full rounded-lg border px-3 py-2 text-sm focus:outline-none";
+  "w-full md:w-56 xl:w-full max-w-full rounded-lg border px-3 py-2 text-sm focus:outline-none";
 const baseSecondaryButtonClass =
-  "rounded-lg border px-3 py-2 text-sm font-medium whitespace-nowrap transition";
+  "w-full md:w-auto xl:w-full rounded-lg border px-3 py-2 text-sm font-medium whitespace-nowrap transition";
 const baseShortcutButtonClass =
   "rounded-lg border px-3 py-1 text-xs font-medium transition";
 const basePrimaryButtonClass =
-  "rounded-lg px-3 py-2 text-sm font-medium whitespace-nowrap transition disabled:cursor-not-allowed disabled:opacity-50";
+  "w-full md:w-auto xl:w-full rounded-lg px-3 py-2 text-sm font-medium whitespace-nowrap transition disabled:cursor-not-allowed disabled:opacity-50";
 const basePrimaryCompactButtonClass =
   "rounded-lg px-3 py-2 text-sm font-medium whitespace-nowrap transition disabled:cursor-not-allowed disabled:opacity-50";
 const baseChipClass =

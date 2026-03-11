@@ -1023,22 +1023,12 @@ export default function TransacoesPage() {
                       className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
                     />
                     <input
-                      type="text"
+                      type="search"
                       placeholder="Buscar..."
                       value={searchTerm}
                       onChange={(e) => handleSearch(e.target.value)}
-                      className={`${searchSectionClasses.input} py-2 pl-10 pr-10`}
+                      className={`${searchSectionClasses.input} py-2 pl-10 pr-3`}
                     />
-                    {searchTerm && (
-                      <button
-                        type="button"
-                        onClick={() => handleSearch("")}
-                        className="absolute right-3 top-1/2 flex h-5 w-5 -translate-y-1/2 items-center justify-center rounded-full text-gray-400 transition hover:bg-gray-200 hover:text-gray-700"
-                        title="Limpar busca"
-                      >
-                        <span className="text-base leading-none">×</span>
-                      </button>
-                    )}
                   </div>
                 </div>
 
