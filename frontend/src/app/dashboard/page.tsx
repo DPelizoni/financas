@@ -363,6 +363,27 @@ export default function DashboardPage() {
       .slice(0, 12);
   }, [filteredTransacoes, tableSortBy, tableSortDirection]);
 
+  const hasSingleTimelineMonth = timeline.length === 1;
+  const singleMonthEvolutionData = hasSingleTimelineMonth
+    ? [
+        {
+          indicador: "Receita",
+          valor: timeline[0].receitas,
+          fill: chartColors.receitas,
+        },
+        {
+          indicador: "Despesa",
+          valor: timeline[0].despesas,
+          fill: chartColors.despesas,
+        },
+        {
+          indicador: "Líquido",
+          valor: timeline[0].saldo,
+          fill: chartColors.saldo,
+        },
+      ]
+    : [];
+
   if (loading) {
     return (
       <div className="flex h-screen flex-col items-center justify-center gap-2">
@@ -680,56 +701,90 @@ export default function DashboardPage() {
         <div className="space-y-4">
           <div className="rounded-lg bg-white p-4 shadow-sm">
             <h3 className="mb-3 text-sm font-semibold text-gray-700">
-              Evolução no Tempo e Saldo (12 meses)
+              {hasSingleTimelineMonth
+                ? "Resumo Mensal: Receita, Despesa e Líquido"
+                : "Evolução no Tempo e Saldo (12 meses)"}
             </h3>
             <div className="h-96">
               <ResponsiveContainer width="100%" height="100%">
-                <LineChart
-                  data={timeline}
-                  margin={{ top: 30, right: 28, left: 20, bottom: 12 }}
-                >
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                  <XAxis
-                    dataKey="monthLabel"
-                    tick={{ fontSize: 10 }}
-                    padding={{ left: 10, right: 10 }}
-                  />
-                  <YAxis hide />
-                  <Tooltip formatter={(v) => currency(Number(v || 0))} />
-                  <Legend iconSize={10} wrapperStyle={{ fontSize: "12px" }} />
-                  <Line
-                    type="monotone"
-                    dataKey="receitas"
-                    stroke={chartColors.receitas}
-                    strokeWidth={2}
-                    dot={{ r: 3 }}
-                  />
-                  <Line
-                    type="monotone"
-                    dataKey="despesas"
-                    stroke={chartColors.despesas}
-                    strokeWidth={2}
-                    dot={{ r: 3 }}
-                  />
-                  <Line
-                    type="monotone"
-                    dataKey="saldo"
-                    stroke={chartColors.saldo}
-                    strokeWidth={2}
-                    dot={{ r: 3 }}
+                {hasSingleTimelineMonth ? (
+                  <BarChart
+                    data={singleMonthEvolutionData}
+                    margin={{ top: 30, right: 28, left: 20, bottom: 12 }}
+                    barCategoryGap="25%"
                   >
-                    <LabelList
-                      dataKey="saldo"
-                      position="top"
-                      formatter={(value: any) => currency(Number(value))}
-                      style={{
-                        fontSize: 8,
-                        fill: chartColors.saldo,
-                        fontWeight: 600,
-                      }}
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                    <XAxis dataKey="indicador" tick={{ fontSize: 10 }} />
+                    <YAxis
+                      hide
+                      domain={[
+                        (dataMin: number) =>
+                          dataMin >= 0 ? 0 : Math.floor(dataMin * 1.2),
+                        (dataMax: number) =>
+                          dataMax <= 0 ? 0 : Math.ceil(dataMax * 1.2),
+                      ]}
                     />
-                  </Line>
-                </LineChart>
+                    <Tooltip formatter={(v) => currency(Number(v || 0))} />
+                    <Bar dataKey="valor" radius={[6, 6, 0, 0]}>
+                      {singleMonthEvolutionData.map((entry) => (
+                        <Cell key={entry.indicador} fill={entry.fill} />
+                      ))}
+                      <LabelList
+                        dataKey="valor"
+                        position="top"
+                        formatter={(value: any) => currency(Number(value))}
+                        style={{ fontSize: 10, fontWeight: 600 }}
+                      />
+                    </Bar>
+                  </BarChart>
+                ) : (
+                  <LineChart
+                    data={timeline}
+                    margin={{ top: 30, right: 28, left: 20, bottom: 12 }}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                    <XAxis
+                      dataKey="monthLabel"
+                      tick={{ fontSize: 10 }}
+                      padding={{ left: 10, right: 10 }}
+                    />
+                    <YAxis hide />
+                    <Tooltip formatter={(v) => currency(Number(v || 0))} />
+                    <Legend iconSize={10} wrapperStyle={{ fontSize: "12px" }} />
+                    <Line
+                      type="monotone"
+                      dataKey="receitas"
+                      stroke={chartColors.receitas}
+                      strokeWidth={2}
+                      dot={{ r: 3 }}
+                    />
+                    <Line
+                      type="monotone"
+                      dataKey="despesas"
+                      stroke={chartColors.despesas}
+                      strokeWidth={2}
+                      dot={{ r: 3 }}
+                    />
+                    <Line
+                      type="monotone"
+                      dataKey="saldo"
+                      stroke={chartColors.saldo}
+                      strokeWidth={2}
+                      dot={{ r: 3 }}
+                    >
+                      <LabelList
+                        dataKey="saldo"
+                        position="top"
+                        formatter={(value: any) => currency(Number(value))}
+                        style={{
+                          fontSize: 8,
+                          fill: chartColors.saldo,
+                          fontWeight: 600,
+                        }}
+                      />
+                    </Line>
+                  </LineChart>
+                )}
               </ResponsiveContainer>
             </div>
           </div>
