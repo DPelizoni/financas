@@ -71,6 +71,20 @@ const addMonthsToApiMonth = (apiMonth: string, offset: number): string => {
   return `${nextMonth}/${nextYear}`;
 };
 
+const parseDateToTimestamp = (value: string): number => {
+  if (/^\d{2}\/\d{2}\/\d{4}$/.test(value)) {
+    const [day, month, year] = value.split("/").map(Number);
+    return new Date(year, month - 1, day).getTime();
+  }
+
+  if (/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+    const [year, month, day] = value.split("-").map(Number);
+    return new Date(year, month - 1, day).getTime();
+  }
+
+  return 0;
+};
+
 export default function TransacoesPage() {
   const copySectionClasses = getTransactionSectionClasses("blue");
   const deleteSectionClasses = getTransactionSectionClasses("red");
@@ -303,8 +317,11 @@ export default function TransacoesPage() {
     return [...transacoes].sort((a, b) => {
       if (sortBy === "mes")
         return a.mes.localeCompare(b.mes, "pt-BR") * direction;
-      if (sortBy === "vencimento")
-        return a.vencimento.localeCompare(b.vencimento, "pt-BR") * direction;
+      if (sortBy === "vencimento") {
+        const dateA = parseDateToTimestamp(a.vencimento);
+        const dateB = parseDateToTimestamp(b.vencimento);
+        return (dateA - dateB) * direction;
+      }
       if (sortBy === "tipo")
         return a.tipo.localeCompare(b.tipo, "pt-BR") * direction;
       if (sortBy === "categoria")
