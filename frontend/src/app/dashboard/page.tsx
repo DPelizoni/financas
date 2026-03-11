@@ -415,7 +415,7 @@ export default function DashboardPage() {
                 href="/transacoes"
                 className="inline-flex items-center justify-center rounded-lg border border-gray-300 bg-gray-100 px-3 py-2 text-center text-sm font-medium text-gray-700 transition hover:bg-gray-200"
               >
-                Transação
+                Transações
               </Link>
               <Link
                 href="/banks"
