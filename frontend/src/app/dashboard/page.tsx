@@ -1024,37 +1024,6 @@ export default function DashboardPage() {
             </table>
           </div>
         </div>
-
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
-          <Link
-            href="/transacoes"
-            className="rounded-lg border border-gray-200 bg-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow"
-          >
-            <p className="text-sm font-semibold text-gray-800">Ação Rápida</p>
-            <p className="mt-1 text-xs text-gray-500">Ir para transações</p>
-          </Link>
-          <Link
-            href="/banks"
-            className="rounded-lg border border-gray-200 bg-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow"
-          >
-            <p className="text-sm font-semibold text-gray-800">Ação Rápida</p>
-            <p className="mt-1 text-xs text-gray-500">Gerenciar bancos</p>
-          </Link>
-          <Link
-            href="/categories"
-            className="rounded-lg border border-gray-200 bg-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow"
-          >
-            <p className="text-sm font-semibold text-gray-800">Ação Rápida</p>
-            <p className="mt-1 text-xs text-gray-500">Gerenciar categorias</p>
-          </Link>
-          <Link
-            href="/descricoes"
-            className="rounded-lg border border-gray-200 bg-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow"
-          >
-            <p className="text-sm font-semibold text-gray-800">Ação Rápida</p>
-            <p className="mt-1 text-xs text-gray-500">Gerenciar descrições</p>
-          </Link>
-        </div>
       </div>
     </div>
   );
