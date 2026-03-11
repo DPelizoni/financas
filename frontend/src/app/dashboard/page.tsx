@@ -413,25 +413,25 @@ export default function DashboardPage() {
             <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-4">
               <Link
                 href="/transacoes"
-                className="rounded-lg border border-gray-300 px-3 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-50"
+                className="inline-flex items-center justify-center rounded-lg border border-gray-300 bg-gray-100 px-3 py-2 text-center text-sm font-medium text-gray-700 transition hover:bg-gray-200"
               >
                 Transação
               </Link>
               <Link
                 href="/banks"
-                className="rounded-lg border border-gray-300 px-3 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-50"
+                className="inline-flex items-center justify-center rounded-lg border border-gray-300 bg-gray-100 px-3 py-2 text-center text-sm font-medium text-gray-700 transition hover:bg-gray-200"
               >
                 Bancos
               </Link>
               <Link
                 href="/categories"
-                className="rounded-lg border border-gray-300 px-3 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-50"
+                className="inline-flex items-center justify-center rounded-lg border border-gray-300 bg-gray-100 px-3 py-2 text-center text-sm font-medium text-gray-700 transition hover:bg-gray-200"
               >
                 Categorias
               </Link>
               <Link
                 href="/descricoes"
-                className="rounded-lg border border-gray-300 px-3 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-50"
+                className="inline-flex items-center justify-center rounded-lg border border-gray-300 bg-gray-100 px-3 py-2 text-center text-sm font-medium text-gray-700 transition hover:bg-gray-200"
               >
                 Descrições
               </Link>
@@ -580,7 +580,7 @@ export default function DashboardPage() {
                     setFilterBanco("");
                     setPeriodMonths(12);
                   }}
-                  className={filterSectionClasses.primaryCompactButton}
+                  className="rounded-lg border border-gray-300 bg-gray-100 px-3 py-2 text-center text-sm font-medium text-gray-700 transition hover:bg-gray-200"
                 >
                   Limpar filtros
                 </button>
