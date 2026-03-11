@@ -601,37 +601,30 @@ export default function TransacoesPage() {
 
         {/* Summary Cards */}
         {summary && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            <div className="bg-white p-6 rounded-lg shadow">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-gray-600 text-sm">Total Receita</p>
-                  <p className="text-2xl font-bold text-green-600">
+          <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+            <div className="rounded-lg border border-dashed border-blue-200 bg-blue-50 p-4">
+              <h3 className="mb-3 text-sm font-semibold text-blue-900">
+                Totais
+              </h3>
+              <div className="space-y-3">
+                <div className="rounded-lg bg-white p-4 shadow-sm">
+                  <p className="text-xs font-medium text-gray-600">Receita</p>
+                  <p className="mt-1 text-xl font-bold text-green-600">
                     {formatCurrency(summary.total_receita)}
                   </p>
                 </div>
-                <ArrowLeftRight size={32} className="text-green-500" />
-              </div>
-            </div>
 
-            <div className="bg-white p-6 rounded-lg shadow">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-gray-600 text-sm">Total Despesa</p>
-                  <p className="text-2xl font-bold text-red-600">
+                <div className="rounded-lg bg-white p-4 shadow-sm">
+                  <p className="text-xs font-medium text-gray-600">Despesa</p>
+                  <p className="mt-1 text-xl font-bold text-red-600">
                     {formatCurrency(summary.total_despesa)}
                   </p>
                 </div>
-                <ArrowLeftRight size={32} className="text-red-500" />
-              </div>
-            </div>
 
-            <div className="bg-white p-6 rounded-lg shadow">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-gray-600 text-sm">Total Líquido</p>
+                <div className="rounded-lg bg-white p-4 shadow-sm">
+                  <p className="text-xs font-medium text-gray-600">Líquido</p>
                   <p
-                    className={`text-2xl font-bold ${
+                    className={`mt-1 text-xl font-bold ${
                       summary.total_liquido >= 0
                         ? "text-green-600"
                         : "text-red-600"
@@ -640,47 +633,32 @@ export default function TransacoesPage() {
                     {formatCurrency(summary.total_liquido)}
                   </p>
                 </div>
-                <DollarSign
-                  size={32}
-                  className={
-                    summary.total_liquido >= 0
-                      ? "text-green-500"
-                      : "text-red-500"
-                  }
-                />
               </div>
             </div>
 
-            <div className="bg-white p-6 rounded-lg shadow">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-gray-600 text-sm">Pago - Receita</p>
-                  <p className="text-2xl font-bold text-blue-600">
+            <div className="rounded-lg border border-dashed border-green-200 bg-green-50 p-4">
+              <h3 className="mb-3 text-sm font-semibold text-green-900">
+                Pagos
+              </h3>
+              <div className="space-y-3">
+                <div className="rounded-lg bg-white p-4 shadow-sm">
+                  <p className="text-xs font-medium text-gray-600">Receita</p>
+                  <p className="mt-1 text-xl font-bold text-blue-600">
                     {formatCurrency(summary.pago_receita)}
                   </p>
                 </div>
-                <CheckCircle2 size={32} className="text-blue-500" />
-              </div>
-            </div>
 
-            <div className="bg-white p-6 rounded-lg shadow">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-gray-600 text-sm">Pago - Despesa</p>
-                  <p className="text-2xl font-bold text-blue-600">
+                <div className="rounded-lg bg-white p-4 shadow-sm">
+                  <p className="text-xs font-medium text-gray-600">Despesa</p>
+                  <p className="mt-1 text-xl font-bold text-blue-600">
                     {formatCurrency(summary.pago_despesa)}
                   </p>
                 </div>
-                <CheckCircle2 size={32} className="text-blue-500" />
-              </div>
-            </div>
 
-            <div className="bg-white p-6 rounded-lg shadow">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-gray-600 text-sm">Pago - Líquido</p>
+                <div className="rounded-lg bg-white p-4 shadow-sm">
+                  <p className="text-xs font-medium text-gray-600">Líquido</p>
                   <p
-                    className={`text-2xl font-bold ${
+                    className={`mt-1 text-xl font-bold ${
                       summary.pago_liquido >= 0
                         ? "text-green-600"
                         : "text-red-600"
@@ -689,47 +667,32 @@ export default function TransacoesPage() {
                     {formatCurrency(summary.pago_liquido)}
                   </p>
                 </div>
-                <DollarSign
-                  size={32}
-                  className={
-                    summary.pago_liquido >= 0
-                      ? "text-green-500"
-                      : "text-red-500"
-                  }
-                />
               </div>
             </div>
 
-            <div className="bg-white p-6 rounded-lg shadow">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-gray-600 text-sm">Provisão Receita</p>
-                  <p className="text-2xl font-bold text-yellow-600">
+            <div className="rounded-lg border border-dashed border-yellow-300 bg-yellow-50 p-4">
+              <h3 className="mb-3 text-sm font-semibold text-yellow-900">
+                Provisões
+              </h3>
+              <div className="space-y-3">
+                <div className="rounded-lg bg-white p-4 shadow-sm">
+                  <p className="text-xs font-medium text-gray-600">Receita</p>
+                  <p className="mt-1 text-xl font-bold text-yellow-600">
                     {formatCurrency(summary.provisao_receita)}
                   </p>
                 </div>
-                <AlertCircle size={32} className="text-yellow-500" />
-              </div>
-            </div>
 
-            <div className="bg-white p-6 rounded-lg shadow">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-gray-600 text-sm">Provisão Despesa</p>
-                  <p className="text-2xl font-bold text-yellow-600">
+                <div className="rounded-lg bg-white p-4 shadow-sm">
+                  <p className="text-xs font-medium text-gray-600">Despesa</p>
+                  <p className="mt-1 text-xl font-bold text-yellow-600">
                     {formatCurrency(summary.provisao_despesa)}
                   </p>
                 </div>
-                <AlertCircle size={32} className="text-yellow-500" />
-              </div>
-            </div>
 
-            <div className="bg-white p-6 rounded-lg shadow">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-gray-600 text-sm">Provisão Líquido</p>
+                <div className="rounded-lg bg-white p-4 shadow-sm">
+                  <p className="text-xs font-medium text-gray-600">Líquido</p>
                   <p
-                    className={`text-2xl font-bold ${
+                    className={`mt-1 text-xl font-bold ${
                       summary.provisao_liquido >= 0
                         ? "text-green-600"
                         : "text-red-600"
@@ -738,14 +701,6 @@ export default function TransacoesPage() {
                     {formatCurrency(summary.provisao_liquido)}
                   </p>
                 </div>
-                <DollarSign
-                  size={32}
-                  className={
-                    summary.provisao_liquido >= 0
-                      ? "text-green-500"
-                      : "text-red-500"
-                  }
-                />
               </div>
             </div>
           </div>
