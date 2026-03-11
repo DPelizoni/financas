@@ -286,7 +286,7 @@ export default function DescricoesPage() {
                     : "bg-gray-200 text-gray-700 hover:bg-gray-300"
                 }`}
               >
-                Ativas
+                Ativos
               </button>
               <button
                 onClick={() => {
@@ -299,7 +299,7 @@ export default function DescricoesPage() {
                     : "bg-gray-200 text-gray-700 hover:bg-gray-300"
                 }`}
               >
-                Inativas
+                Inativos
               </button>
             </div>
           </div>
