@@ -22,9 +22,11 @@ import {
 } from "@/components/TransactionSection";
 import {
   Plus,
+  Copy,
   Edit2,
   Trash2,
   Search,
+  X,
   DollarSign,
   AlertCircle,
   CheckCircle2,
@@ -145,6 +147,9 @@ export default function TransacoesPage() {
   const [deleteMeses, setDeleteMeses] = useState<string[]>([]);
   const [deleteMonthsLoading, setDeleteMonthsLoading] = useState(false);
   const [deleteMonthsConfirmOpen, setDeleteMonthsConfirmOpen] = useState(false);
+  const [advancedActionsOpen, setAdvancedActionsOpen] = useState(false);
+  const [copyModalOpen, setCopyModalOpen] = useState(false);
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
 
   const handleSort = (
     column:
@@ -441,8 +446,10 @@ export default function TransacoesPage() {
         `Cópia concluída: ${result.total_criadas} transações criadas para ${result.meses_destino.length} mês(es) de destino.`,
       );
 
+      setCopyMesOrigem("");
       setCopyMesesDestino([]);
       setCopyMesDestinoInput("");
+      setCopyModalOpen(false);
       setCurrentPage(1);
       await loadTransacoes();
     } catch (error) {
@@ -541,6 +548,7 @@ export default function TransacoesPage() {
     }
 
     setDeleteMonthsConfirmOpen(true);
+    setDeleteModalOpen(false);
   };
 
   const handleClearFilters = () => {
@@ -584,16 +592,56 @@ export default function TransacoesPage() {
                 Controle seus lançamentos de receitas e despesas
               </p>
             </div>
-            <button
-              onClick={() => {
-                setEditingTransacao(undefined);
-                setIsModalOpen(true);
-              }}
-              className="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-white transition-colors hover:bg-blue-700"
-            >
-              <Plus size={20} />
-              Nova Transação
-            </button>
+            <div className="flex items-center gap-2">
+              <div className="relative">
+                <button
+                  type="button"
+                  onClick={() => setAdvancedActionsOpen((prev) => !prev)}
+                  className="flex h-10 items-center gap-2 rounded-lg border border-gray-300 bg-gray-200 px-4 py-2 text-sm font-semibold text-gray-800 transition hover:bg-gray-300"
+                >
+                  Ações Avançadas
+                  <ChevronDown size={18} />
+                </button>
+
+                {advancedActionsOpen && (
+                  <div className="absolute right-0 z-20 mt-2 w-72 rounded-lg border border-gray-200 bg-white p-2 shadow-lg">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setAdvancedActionsOpen(false);
+                        setCopyModalOpen(true);
+                      }}
+                      className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-left text-sm font-medium text-blue-700 transition hover:bg-blue-50"
+                    >
+                      <Copy size={16} />
+                      Copiar transações por mês
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setAdvancedActionsOpen(false);
+                        setDeleteModalOpen(true);
+                      }}
+                      className="mt-1 flex w-full items-center gap-2 rounded-md px-3 py-2 text-left text-sm font-medium text-red-700 transition hover:bg-red-50"
+                    >
+                      <Trash2 size={16} />
+                      Excluir transações por mês
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              <button
+                onClick={() => {
+                  setEditingTransacao(undefined);
+                  setIsModalOpen(true);
+                }}
+                className="flex h-10 items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-white transition-colors hover:bg-blue-700"
+              >
+                <Plus size={20} />
+                Nova Transação
+              </button>
+            </div>
           </div>
         </div>
 
@@ -708,184 +756,6 @@ export default function TransacoesPage() {
 
         {/* Filters */}
         <div className="mb-6 rounded-lg bg-white p-4 shadow-sm">
-          <TransactionSection title="Copiar Transações Por Mês" tone="blue">
-            <div className="grid grid-cols-1 gap-3 lg:grid-cols-5">
-              <div>
-                <TransactionSectionLabel tone="blue">
-                  Mês origem
-                </TransactionSectionLabel>
-                <input
-                  type="month"
-                  value={copyMesOrigem}
-                  onChange={(e) => setCopyMesOrigem(e.target.value)}
-                  className={copySectionClasses.input}
-                />
-              </div>
-
-              <div>
-                <TransactionSectionLabel tone="blue">
-                  Mês destino
-                </TransactionSectionLabel>
-                <input
-                  type="month"
-                  value={copyMesDestinoInput}
-                  onChange={(e) => setCopyMesDestinoInput(e.target.value)}
-                  className={copySectionClasses.input}
-                />
-              </div>
-
-              <div className="flex items-end">
-                <button
-                  type="button"
-                  onClick={handleAddDestinoMes}
-                  className={copySectionClasses.secondaryButton}
-                >
-                  Adicionar destino
-                </button>
-              </div>
-
-              <div className="lg:col-span-2 flex items-end">
-                <button
-                  type="button"
-                  onClick={handleCopyByMonth}
-                  disabled={copyLoading}
-                  className={`${copySectionClasses.primaryCompactButton} whitespace-nowrap`}
-                >
-                  {copyLoading
-                    ? "Copiando..."
-                    : "Copiar para meses selecionados"}
-                </button>
-              </div>
-            </div>
-
-            <div className="mt-3 flex flex-wrap gap-2">
-              <button
-                type="button"
-                onClick={() => handleAddNextMonths(3)}
-                className={copySectionClasses.shortcutButton}
-              >
-                + 3 meses
-              </button>
-              <button
-                type="button"
-                onClick={() => handleAddNextMonths(6)}
-                className={copySectionClasses.shortcutButton}
-              >
-                + 6 meses
-              </button>
-              <button
-                type="button"
-                onClick={() => handleAddNextMonths(12)}
-                className={copySectionClasses.shortcutButton}
-              >
-                + 12 meses
-              </button>
-            </div>
-
-            <div className="mt-2 flex flex-wrap gap-2">
-              {copyMesesDestino.length === 0 ? (
-                <span className="text-xs text-blue-800">
-                  Nenhum mês de destino selecionado.
-                </span>
-              ) : (
-                copyMesesDestino.map((mes) => (
-                  <button
-                    key={mes}
-                    type="button"
-                    onClick={() => handleRemoveDestinoMes(mes)}
-                    className={copySectionClasses.chip}
-                    title="Remover mês destino"
-                  >
-                    {monthApiToInput(mes)} ×
-                  </button>
-                ))
-              )}
-            </div>
-          </TransactionSection>
-
-          <TransactionSection title="Excluir Transações Por Mês" tone="red">
-            <div className="grid grid-cols-1 gap-3 lg:grid-cols-5">
-              <div>
-                <TransactionSectionLabel tone="red">
-                  Mês para excluir
-                </TransactionSectionLabel>
-                <input
-                  type="month"
-                  value={deleteMesInput}
-                  onChange={(e) => setDeleteMesInput(e.target.value)}
-                  className={deleteSectionClasses.input}
-                />
-              </div>
-
-              <div className="flex items-end">
-                <button
-                  type="button"
-                  onClick={handleAddDeleteMes}
-                  className={deleteSectionClasses.secondaryButton}
-                >
-                  Adicionar mês
-                </button>
-              </div>
-
-              <div className="flex items-end">
-                <button
-                  type="button"
-                  onClick={requestDeleteByMonths}
-                  disabled={deleteMonthsLoading}
-                  className={`${deleteSectionClasses.primaryButton} lg:col-span-3`}
-                >
-                  {deleteMonthsLoading
-                    ? "Excluindo..."
-                    : "Excluir meses selecionados"}
-                </button>
-              </div>
-            </div>
-
-            <div className="mt-3 flex flex-wrap gap-2">
-              <button
-                type="button"
-                onClick={() => handleAddDeleteNextMonths(3)}
-                className={deleteSectionClasses.shortcutButton}
-              >
-                + 3 meses
-              </button>
-              <button
-                type="button"
-                onClick={() => handleAddDeleteNextMonths(6)}
-                className={deleteSectionClasses.shortcutButton}
-              >
-                + 6 meses
-              </button>
-              <button
-                type="button"
-                onClick={() => handleAddDeleteNextMonths(12)}
-                className={deleteSectionClasses.shortcutButton}
-              >
-                + 12 meses
-              </button>
-            </div>
-
-            <div className="mt-2 flex flex-wrap gap-2">
-              {deleteMeses.length === 0 ? (
-                <span className="text-xs text-red-800">
-                  Nenhum mês selecionado para exclusão.
-                </span>
-              ) : (
-                deleteMeses.map((mes) => (
-                  <button
-                    key={`delete-${mes}`}
-                    type="button"
-                    onClick={() => handleRemoveDeleteMes(mes)}
-                    className={deleteSectionClasses.chip}
-                    title="Remover mês"
-                  >
-                    {monthApiToInput(mes)} ×
-                  </button>
-                ))
-              )}
-            </div>
-          </TransactionSection>
-
           <TransactionSection title="Buscar Transações" tone="gray">
             <div className="space-y-3">
               <div className="grid grid-cols-1 gap-3 lg:grid-cols-5">
@@ -1238,6 +1108,222 @@ export default function TransacoesPage() {
             </table>
           </div>
         </div>
+
+        {copyModalOpen && (
+          <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/50 p-4">
+            <div className="w-full max-w-3xl rounded-xl bg-white shadow-xl">
+              <div className="flex items-center justify-between border-b border-gray-200 px-6 py-4">
+                <h3 className="text-base font-semibold text-blue-700">
+                  Copiar Transações Por Mês
+                </h3>
+                <button
+                  type="button"
+                  onClick={() => setCopyModalOpen(false)}
+                  className="rounded-md p-1 text-gray-500 transition hover:bg-gray-100 hover:text-gray-700"
+                >
+                  <X size={18} />
+                </button>
+              </div>
+
+              <div className="p-6">
+                <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
+                  <div>
+                    <TransactionSectionLabel tone="blue">
+                      Mês origem
+                    </TransactionSectionLabel>
+                    <input
+                      type="month"
+                      value={copyMesOrigem}
+                      onChange={(e) => setCopyMesOrigem(e.target.value)}
+                      className={`${copySectionClasses.input} md:w-full`}
+                    />
+                  </div>
+
+                  <div>
+                    <TransactionSectionLabel tone="blue">
+                      Mês destino
+                    </TransactionSectionLabel>
+                    <input
+                      type="month"
+                      value={copyMesDestinoInput}
+                      onChange={(e) => setCopyMesDestinoInput(e.target.value)}
+                      className={`${copySectionClasses.input} md:w-full`}
+                    />
+                  </div>
+
+                  <div className="flex items-end">
+                    <button
+                      type="button"
+                      onClick={handleAddDestinoMes}
+                      className={copySectionClasses.secondaryButton}
+                    >
+                      Adicionar destino
+                    </button>
+                  </div>
+                </div>
+
+                <div className="mt-3 flex flex-wrap gap-2">
+                  <button
+                    type="button"
+                    onClick={() => handleAddNextMonths(3)}
+                    className={copySectionClasses.shortcutButton}
+                  >
+                    + 3 meses
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleAddNextMonths(6)}
+                    className={copySectionClasses.shortcutButton}
+                  >
+                    + 6 meses
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleAddNextMonths(12)}
+                    className={copySectionClasses.shortcutButton}
+                  >
+                    + 12 meses
+                  </button>
+                </div>
+
+                <div className="mt-2 flex flex-wrap gap-2">
+                  {copyMesesDestino.length === 0 ? (
+                    <span className="text-xs text-blue-800">
+                      Nenhum mês de destino selecionado.
+                    </span>
+                  ) : (
+                    copyMesesDestino.map((mes) => (
+                      <button
+                        key={mes}
+                        type="button"
+                        onClick={() => handleRemoveDestinoMes(mes)}
+                        className={copySectionClasses.chip}
+                        title="Remover mês destino"
+                      >
+                        {monthApiToInput(mes)} ×
+                      </button>
+                    ))
+                  )}
+                </div>
+
+                <div className="mt-5 flex justify-end">
+                  <button
+                    type="button"
+                    onClick={handleCopyByMonth}
+                    disabled={copyLoading}
+                    className={`${copySectionClasses.primaryCompactButton} whitespace-nowrap`}
+                  >
+                    {copyLoading
+                      ? "Copiando..."
+                      : "Copiar para meses selecionados"}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {deleteModalOpen && (
+          <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/50 p-4">
+            <div className="w-full max-w-3xl rounded-xl bg-white shadow-xl">
+              <div className="flex items-center justify-between border-b border-gray-200 px-6 py-4">
+                <h3 className="text-base font-semibold text-red-700">
+                  Excluir Transações Por Mês
+                </h3>
+                <button
+                  type="button"
+                  onClick={() => setDeleteModalOpen(false)}
+                  className="rounded-md p-1 text-gray-500 transition hover:bg-gray-100 hover:text-gray-700"
+                >
+                  <X size={18} />
+                </button>
+              </div>
+
+              <div className="p-6">
+                <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+                  <div>
+                    <TransactionSectionLabel tone="red">
+                      Mês para excluir
+                    </TransactionSectionLabel>
+                    <input
+                      type="month"
+                      value={deleteMesInput}
+                      onChange={(e) => setDeleteMesInput(e.target.value)}
+                      className={`${deleteSectionClasses.input} md:w-full`}
+                    />
+                  </div>
+
+                  <div className="flex items-end">
+                    <button
+                      type="button"
+                      onClick={handleAddDeleteMes}
+                      className={deleteSectionClasses.secondaryButton}
+                    >
+                      Adicionar mês
+                    </button>
+                  </div>
+                </div>
+
+                <div className="mt-3 flex flex-wrap gap-2">
+                  <button
+                    type="button"
+                    onClick={() => handleAddDeleteNextMonths(3)}
+                    className={deleteSectionClasses.shortcutButton}
+                  >
+                    + 3 meses
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleAddDeleteNextMonths(6)}
+                    className={deleteSectionClasses.shortcutButton}
+                  >
+                    + 6 meses
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleAddDeleteNextMonths(12)}
+                    className={deleteSectionClasses.shortcutButton}
+                  >
+                    + 12 meses
+                  </button>
+                </div>
+
+                <div className="mt-2 flex flex-wrap gap-2">
+                  {deleteMeses.length === 0 ? (
+                    <span className="text-xs text-red-800">
+                      Nenhum mês selecionado para exclusão.
+                    </span>
+                  ) : (
+                    deleteMeses.map((mes) => (
+                      <button
+                        key={`delete-${mes}`}
+                        type="button"
+                        onClick={() => handleRemoveDeleteMes(mes)}
+                        className={deleteSectionClasses.chip}
+                        title="Remover mês"
+                      >
+                        {monthApiToInput(mes)} ×
+                      </button>
+                    ))
+                  )}
+                </div>
+
+                <div className="mt-5 flex justify-end">
+                  <button
+                    type="button"
+                    onClick={requestDeleteByMonths}
+                    disabled={deleteMonthsLoading}
+                    className={deleteSectionClasses.primaryCompactButton}
+                  >
+                    {deleteMonthsLoading
+                      ? "Excluindo..."
+                      : "Excluir meses selecionados"}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Pagination */}
         <Pagination
