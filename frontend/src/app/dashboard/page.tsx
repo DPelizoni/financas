@@ -621,7 +621,7 @@ export default function DashboardPage() {
                 <p
                   className={`text-2xl font-bold ${
                     summaryCards.total_liquido >= 0
-                      ? "text-green-600"
+                      ? "text-blue-600"
                       : "text-red-600"
                   }`}
                 >
@@ -632,7 +632,7 @@ export default function DashboardPage() {
                 size={30}
                 className={
                   summaryCards.total_liquido >= 0
-                    ? "text-green-500"
+                    ? "text-blue-500"
                     : "text-red-500"
                 }
               />
