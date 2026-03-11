@@ -16,6 +16,11 @@ import { bankService } from "@/services/bankService";
 import { TransacaoModal } from "@/components/TransacaoModal";
 import Pagination from "@/components/Pagination";
 import {
+  getTransactionSectionClasses,
+  TransactionSection,
+  TransactionSectionLabel,
+} from "@/components/TransactionSection";
+import {
   Plus,
   Edit2,
   Trash2,
@@ -67,6 +72,10 @@ const addMonthsToApiMonth = (apiMonth: string, offset: number): string => {
 };
 
 export default function TransacoesPage() {
+  const copySectionClasses = getTransactionSectionClasses("blue");
+  const deleteSectionClasses = getTransactionSectionClasses("red");
+  const searchSectionClasses = getTransactionSectionClasses("gray");
+
   const [transacoes, setTransacoes] = useState<Transacao[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [banks, setBanks] = useState<Bank[]>([]);
@@ -510,6 +519,16 @@ export default function TransacoesPage() {
     setDeleteMonthsConfirmOpen(true);
   };
 
+  const handleClearFilters = () => {
+    setSearchTerm("");
+    setFilterTipo("");
+    setFilterCategoria("");
+    setFilterBanco("");
+    setFilterSituacao("");
+    setFilterMes("");
+    setCurrentPage(1);
+  };
+
   const formatCurrency = (valor: number) => {
     return new Intl.NumberFormat("pt-BR", {
       style: "currency",
@@ -710,32 +729,29 @@ export default function TransacoesPage() {
 
         {/* Filters */}
         <div className="mb-6 rounded-lg bg-white p-4 shadow-sm">
-          <div className="mb-4 rounded-lg border border-dashed border-blue-200 bg-blue-50 p-4">
-            <h3 className="mb-3 text-sm font-semibold text-blue-900">
-              Copiar Transações Por Mês
-            </h3>
+          <TransactionSection title="Copiar Transações Por Mês" tone="blue">
             <div className="grid grid-cols-1 gap-3 lg:grid-cols-5">
               <div>
-                <label className="mb-1 block text-xs font-medium text-blue-900">
+                <TransactionSectionLabel tone="blue">
                   Mês origem
-                </label>
+                </TransactionSectionLabel>
                 <input
                   type="month"
                   value={copyMesOrigem}
                   onChange={(e) => setCopyMesOrigem(e.target.value)}
-                  className="w-full rounded-lg border border-blue-200 px-3 py-2 text-sm focus:outline-none focus:border-blue-500"
+                  className={copySectionClasses.input}
                 />
               </div>
 
               <div>
-                <label className="mb-1 block text-xs font-medium text-blue-900">
+                <TransactionSectionLabel tone="blue">
                   Mês destino
-                </label>
+                </TransactionSectionLabel>
                 <input
                   type="month"
                   value={copyMesDestinoInput}
                   onChange={(e) => setCopyMesDestinoInput(e.target.value)}
-                  className="w-full rounded-lg border border-blue-200 px-3 py-2 text-sm focus:outline-none focus:border-blue-500"
+                  className={copySectionClasses.input}
                 />
               </div>
 
@@ -743,7 +759,7 @@ export default function TransacoesPage() {
                 <button
                   type="button"
                   onClick={handleAddDestinoMes}
-                  className="w-full rounded-lg border border-blue-300 bg-white px-3 py-2 text-sm font-medium text-blue-700 transition hover:bg-blue-100"
+                  className={copySectionClasses.secondaryButton}
                 >
                   Adicionar destino
                 </button>
@@ -754,7 +770,7 @@ export default function TransacoesPage() {
                   type="button"
                   onClick={handleCopyByMonth}
                   disabled={copyLoading}
-                  className="w-full rounded-lg bg-blue-600 px-3 py-2 text-sm font-medium text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+                  className={`${copySectionClasses.primaryCompactButton} whitespace-nowrap`}
                 >
                   {copyLoading
                     ? "Copiando..."
@@ -767,21 +783,21 @@ export default function TransacoesPage() {
               <button
                 type="button"
                 onClick={() => handleAddNextMonths(3)}
-                className="rounded-lg border border-blue-300 bg-white px-3 py-1 text-xs font-medium text-blue-700 transition hover:bg-blue-100"
+                className={copySectionClasses.shortcutButton}
               >
                 + 3 meses
               </button>
               <button
                 type="button"
                 onClick={() => handleAddNextMonths(6)}
-                className="rounded-lg border border-blue-300 bg-white px-3 py-1 text-xs font-medium text-blue-700 transition hover:bg-blue-100"
+                className={copySectionClasses.shortcutButton}
               >
                 + 6 meses
               </button>
               <button
                 type="button"
                 onClick={() => handleAddNextMonths(12)}
-                className="rounded-lg border border-blue-300 bg-white px-3 py-1 text-xs font-medium text-blue-700 transition hover:bg-blue-100"
+                className={copySectionClasses.shortcutButton}
               >
                 + 12 meses
               </button>
@@ -798,7 +814,7 @@ export default function TransacoesPage() {
                     key={mes}
                     type="button"
                     onClick={() => handleRemoveDestinoMes(mes)}
-                    className="rounded-full border border-blue-300 bg-white px-3 py-1 text-xs font-medium text-blue-800 hover:bg-blue-100"
+                    className={copySectionClasses.chip}
                     title="Remover mês destino"
                   >
                     {monthApiToInput(mes)} ×
@@ -806,22 +822,19 @@ export default function TransacoesPage() {
                 ))
               )}
             </div>
-          </div>
+          </TransactionSection>
 
-          <div className="mb-4 rounded-lg border border-dashed border-red-200 bg-red-50 p-4">
-            <h3 className="mb-3 text-sm font-semibold text-red-900">
-              Excluir Transações Por Mês
-            </h3>
+          <TransactionSection title="Excluir Transações Por Mês" tone="red">
             <div className="grid grid-cols-1 gap-3 lg:grid-cols-5">
               <div>
-                <label className="mb-1 block text-xs font-medium text-red-900">
+                <TransactionSectionLabel tone="red">
                   Mês para excluir
-                </label>
+                </TransactionSectionLabel>
                 <input
                   type="month"
                   value={deleteMesInput}
                   onChange={(e) => setDeleteMesInput(e.target.value)}
-                  className="w-full rounded-lg border border-red-200 px-3 py-2 text-sm focus:outline-none focus:border-red-500"
+                  className={deleteSectionClasses.input}
                 />
               </div>
 
@@ -829,7 +842,7 @@ export default function TransacoesPage() {
                 <button
                   type="button"
                   onClick={handleAddDeleteMes}
-                  className="w-full rounded-lg border border-red-300 bg-white px-3 py-2 text-sm font-medium text-red-700 transition hover:bg-red-100"
+                  className={deleteSectionClasses.secondaryButton}
                 >
                   Adicionar mês
                 </button>
@@ -840,7 +853,7 @@ export default function TransacoesPage() {
                   type="button"
                   onClick={requestDeleteByMonths}
                   disabled={deleteMonthsLoading}
-                  className="w-full rounded-lg bg-red-600 px-3 py-2 text-sm font-medium text-white transition hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-50 lg:col-span-3"
+                  className={`${deleteSectionClasses.primaryButton} lg:col-span-3`}
                 >
                   {deleteMonthsLoading
                     ? "Excluindo..."
@@ -853,21 +866,21 @@ export default function TransacoesPage() {
               <button
                 type="button"
                 onClick={() => handleAddDeleteNextMonths(3)}
-                className="rounded-lg border border-red-300 bg-white px-3 py-1 text-xs font-medium text-red-700 transition hover:bg-red-100"
+                className={deleteSectionClasses.shortcutButton}
               >
                 + 3 meses
               </button>
               <button
                 type="button"
                 onClick={() => handleAddDeleteNextMonths(6)}
-                className="rounded-lg border border-red-300 bg-white px-3 py-1 text-xs font-medium text-red-700 transition hover:bg-red-100"
+                className={deleteSectionClasses.shortcutButton}
               >
                 + 6 meses
               </button>
               <button
                 type="button"
                 onClick={() => handleAddDeleteNextMonths(12)}
-                className="rounded-lg border border-red-300 bg-white px-3 py-1 text-xs font-medium text-red-700 transition hover:bg-red-100"
+                className={deleteSectionClasses.shortcutButton}
               >
                 + 12 meses
               </button>
@@ -884,7 +897,7 @@ export default function TransacoesPage() {
                     key={`delete-${mes}`}
                     type="button"
                     onClick={() => handleRemoveDeleteMes(mes)}
-                    className="rounded-full border border-red-300 bg-white px-3 py-1 text-xs font-medium text-red-800 hover:bg-red-100"
+                    className={deleteSectionClasses.chip}
                     title="Remover mês"
                   >
                     {monthApiToInput(mes)} ×
@@ -892,129 +905,155 @@ export default function TransacoesPage() {
                 ))
               )}
             </div>
-          </div>
+          </TransactionSection>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
-            {/* Search */}
-            <div className="lg:col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Buscar
-              </label>
-              <div className="relative">
-                <Search
-                  size={18}
-                  className="absolute left-3 top-3 text-gray-400"
-                />
-                <input
-                  type="text"
-                  placeholder="Buscar..."
-                  value={searchTerm}
-                  onChange={(e) => handleSearch(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
-                />
+          <TransactionSection title="Buscar Transações" tone="gray">
+            <div className="space-y-3">
+              <div className="grid grid-cols-1 gap-3 lg:grid-cols-5">
+                <div>
+                  <TransactionSectionLabel tone="gray">
+                    Mês/Ano
+                  </TransactionSectionLabel>
+                  <input
+                    type="month"
+                    value={filterMes}
+                    onChange={(e) => {
+                      setFilterMes(e.target.value);
+                      handleFilterChange();
+                    }}
+                    className={searchSectionClasses.input}
+                  />
+                </div>
+
+                {/* Tipo */}
+                <div>
+                  <TransactionSectionLabel tone="gray">
+                    Tipo
+                  </TransactionSectionLabel>
+                  <select
+                    value={filterTipo}
+                    onChange={(e) => {
+                      setFilterTipo(e.target.value as any);
+                      handleFilterChange();
+                    }}
+                    className={searchSectionClasses.input}
+                  >
+                    <option value="">Todos</option>
+                    <option value="DESPESA">Despesa</option>
+                    <option value="RECEITA">Receita</option>
+                  </select>
+                </div>
+
+                {/* Categoria */}
+                <div>
+                  <TransactionSectionLabel tone="gray">
+                    Categoria
+                  </TransactionSectionLabel>
+                  <select
+                    value={filterCategoria}
+                    onChange={(e) => {
+                      setFilterCategoria(
+                        e.target.value ? Number(e.target.value) : "",
+                      );
+                      handleFilterChange();
+                    }}
+                    className={searchSectionClasses.input}
+                  >
+                    <option value="">Todas</option>
+                    {sortedCategories.map((cat) => (
+                      <option key={cat.id} value={cat.id}>
+                        {cat.nome}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Banco */}
+                <div>
+                  <TransactionSectionLabel tone="gray">
+                    Banco
+                  </TransactionSectionLabel>
+                  <select
+                    value={filterBanco}
+                    onChange={(e) => {
+                      setFilterBanco(
+                        e.target.value ? Number(e.target.value) : "",
+                      );
+                      handleFilterChange();
+                    }}
+                    className={searchSectionClasses.input}
+                  >
+                    <option value="">Todos</option>
+                    {sortedBanks.map((bank) => (
+                      <option key={bank.id} value={bank.id}>
+                        {bank.nome}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Situação */}
+                <div>
+                  <TransactionSectionLabel tone="gray">
+                    Situação
+                  </TransactionSectionLabel>
+                  <select
+                    value={filterSituacao}
+                    onChange={(e) => {
+                      setFilterSituacao(e.target.value as any);
+                      handleFilterChange();
+                    }}
+                    className={searchSectionClasses.input}
+                  >
+                    <option value="">Todas</option>
+                    <option value="PAGO">Pago</option>
+                    <option value="PENDENTE">Pendente</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 gap-3 lg:grid-cols-5">
+                <div className="lg:col-span-4">
+                  <TransactionSectionLabel tone="gray">
+                    Buscar
+                  </TransactionSectionLabel>
+                  <div className="relative">
+                    <Search
+                      size={18}
+                      className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+                    />
+                    <input
+                      type="text"
+                      placeholder="Buscar..."
+                      value={searchTerm}
+                      onChange={(e) => handleSearch(e.target.value)}
+                      className={`${searchSectionClasses.input} py-2 pl-10 pr-10`}
+                    />
+                    {searchTerm && (
+                      <button
+                        type="button"
+                        onClick={() => handleSearch("")}
+                        className="absolute right-3 top-1/2 flex h-5 w-5 -translate-y-1/2 items-center justify-center rounded-full text-gray-400 transition hover:bg-gray-200 hover:text-gray-700"
+                        title="Limpar busca"
+                      >
+                        <span className="text-base leading-none">×</span>
+                      </button>
+                    )}
+                  </div>
+                </div>
+
+                <div className="flex items-end">
+                  <button
+                    type="button"
+                    onClick={handleClearFilters}
+                    className={searchSectionClasses.primaryCompactButton}
+                  >
+                    Limpar Filtros
+                  </button>
+                </div>
               </div>
             </div>
-
-            {/* Tipo */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Tipo
-              </label>
-              <select
-                value={filterTipo}
-                onChange={(e) => {
-                  setFilterTipo(e.target.value as any);
-                  handleFilterChange();
-                }}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
-              >
-                <option value="">Todos</option>
-                <option value="DESPESA">Despesa</option>
-                <option value="RECEITA">Receita</option>
-              </select>
-            </div>
-
-            {/* Categoria */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Categoria
-              </label>
-              <select
-                value={filterCategoria}
-                onChange={(e) => {
-                  setFilterCategoria(
-                    e.target.value ? Number(e.target.value) : "",
-                  );
-                  handleFilterChange();
-                }}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
-              >
-                <option value="">Todas</option>
-                {sortedCategories.map((cat) => (
-                  <option key={cat.id} value={cat.id}>
-                    {cat.nome}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            {/* Banco */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Banco
-              </label>
-              <select
-                value={filterBanco}
-                onChange={(e) => {
-                  setFilterBanco(e.target.value ? Number(e.target.value) : "");
-                  handleFilterChange();
-                }}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
-              >
-                <option value="">Todos</option>
-                {sortedBanks.map((bank) => (
-                  <option key={bank.id} value={bank.id}>
-                    {bank.nome}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            {/* Mês */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Mês
-              </label>
-              <input
-                type="month"
-                value={filterMes}
-                onChange={(e) => {
-                  setFilterMes(e.target.value);
-                  handleFilterChange();
-                }}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
-              />
-            </div>
-
-            {/* Situação */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Situação
-              </label>
-              <select
-                value={filterSituacao}
-                onChange={(e) => {
-                  setFilterSituacao(e.target.value as any);
-                  handleFilterChange();
-                }}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
-              >
-                <option value="">Todas</option>
-                <option value="PAGO">Pago</option>
-                <option value="PENDENTE">Pendente</option>
-              </select>
-            </div>
-          </div>
+          </TransactionSection>
         </div>
 
         {/* Table */}
