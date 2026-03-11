@@ -6,7 +6,6 @@ import {
   ArrowLeftRight,
   BarChart3,
   DollarSign,
-  Filter,
   ChevronUp,
   ChevronDown,
 } from "lucide-react";
@@ -27,10 +26,15 @@ import {
 import { transacaoService } from "@/services/transacaoService";
 import { categoryService } from "@/services/categoryService";
 import { bankService } from "@/services/bankService";
-import { Transacao, TransacaoSummary } from "@/types/transacao";
+import { Transacao } from "@/types/transacao";
 import { Category } from "@/types/category";
 import { Bank } from "@/types/bank";
 import FeedbackAlert from "@/components/FeedbackAlert";
+import {
+  getTransactionSectionClasses,
+  TransactionSection,
+  TransactionSectionLabel,
+} from "@/components/TransactionSection";
 
 interface MonthlyPoint {
   monthKey: string;
@@ -86,6 +90,7 @@ const currency = (value: number): string =>
   }).format(value);
 
 export default function DashboardPage() {
+  const filterSectionClasses = getTransactionSectionClasses("gray");
   const currentYear = String(new Date().getFullYear());
   const [loading, setLoading] = useState(true);
   const [feedback, setFeedback] = useState<{
@@ -93,7 +98,6 @@ export default function DashboardPage() {
     message: string;
   } | null>(null);
   const [transacoes, setTransacoes] = useState<Transacao[]>([]);
-  const [summary, setSummary] = useState<TransacaoSummary | null>(null);
   const [categories, setCategories] = useState<Category[]>([]);
   const [banks, setBanks] = useState<Bank[]>([]);
 
@@ -107,7 +111,6 @@ export default function DashboardPage() {
   const [filterBanco, setFilterBanco] = useState<number | "">("");
   const [filterMesAno, setFilterMesAno] = useState("");
   const [filterAno, setFilterAno] = useState(currentYear);
-  const [search, setSearch] = useState("");
   const [tableSortBy, setTableSortBy] = useState<
     "mes" | "tipo" | "categoria" | "banco" | "situacao" | "valor"
   >("mes");
@@ -155,38 +158,7 @@ export default function DashboardPage() {
     loadDashboard();
   }, []);
 
-  useEffect(() => {
-    const loadSummary = async () => {
-      try {
-        const summaryResponse = await transacaoService.getSummary({
-          search: search.trim() || undefined,
-          tipo: filterTipo || undefined,
-          situacao: filterSituacao || undefined,
-          categoria_id: filterCategoria ? Number(filterCategoria) : undefined,
-          banco_id: filterBanco ? Number(filterBanco) : undefined,
-          mes: monthInputToApi(filterMesAno),
-          ano: !filterMesAno && filterAno ? filterAno : undefined,
-        });
-        setSummary(summaryResponse);
-      } catch (error) {
-        console.error("Erro ao carregar resumo do dashboard:", error);
-      }
-    };
-
-    loadSummary();
-  }, [
-    search,
-    filterTipo,
-    filterSituacao,
-    filterCategoria,
-    filterBanco,
-    filterMesAno,
-    filterAno,
-  ]);
-
   const filteredTransacoes = useMemo(() => {
-    const normalizedSearch = search.trim().toLowerCase();
-
     return transacoes.filter((t) => {
       const mesKey = parseMesToKey(t.mes);
       if (!mesKey) return false;
@@ -199,21 +171,6 @@ export default function DashboardPage() {
       if (filterAno && !filterMesAno && !mesKey.startsWith(`${filterAno}-`))
         return false;
 
-      if (normalizedSearch) {
-        const searchText = [
-          t.categoria_nome || "",
-          t.descricao_nome || "",
-          t.banco_nome || "",
-          t.tipo,
-          t.situacao,
-          t.mes,
-        ]
-          .join(" ")
-          .toLowerCase();
-
-        if (!searchText.includes(normalizedSearch)) return false;
-      }
-
       return true;
     });
   }, [
@@ -224,7 +181,6 @@ export default function DashboardPage() {
     filterBanco,
     filterMesAno,
     filterAno,
-    search,
   ]);
 
   const availableYears = useMemo(() => {
@@ -274,19 +230,66 @@ export default function DashboardPage() {
     return points;
   }, [filteredTransacoes, periodMonths]);
 
+  const periodFilteredTransacoes = useMemo(() => {
+    if (filterMesAno) {
+      return filteredTransacoes;
+    }
+
+    const months = Array.from(
+      new Set(
+        filteredTransacoes
+          .map((t) => parseMesToKey(t.mes))
+          .filter((m): m is string => Boolean(m)),
+      ),
+    )
+      .sort()
+      .slice(-periodMonths);
+
+    const selectedMonths = new Set(months);
+
+    return filteredTransacoes.filter((t) => {
+      const key = parseMesToKey(t.mes);
+      return key ? selectedMonths.has(key) : false;
+    });
+  }, [filteredTransacoes, filterMesAno, periodMonths]);
+
   const summaryCards = useMemo(() => {
+    const totalReceita = periodFilteredTransacoes
+      .filter((t) => t.tipo === "RECEITA")
+      .reduce((acc, t) => acc + Number(t.valor), 0);
+
+    const totalDespesa = periodFilteredTransacoes
+      .filter((t) => t.tipo === "DESPESA")
+      .reduce((acc, t) => acc + Number(t.valor), 0);
+
+    const pagoReceita = periodFilteredTransacoes
+      .filter((t) => t.tipo === "RECEITA" && t.situacao === "PAGO")
+      .reduce((acc, t) => acc + Number(t.valor), 0);
+
+    const pagoDespesa = periodFilteredTransacoes
+      .filter((t) => t.tipo === "DESPESA" && t.situacao === "PAGO")
+      .reduce((acc, t) => acc + Number(t.valor), 0);
+
+    const provisaoReceita = periodFilteredTransacoes
+      .filter((t) => t.tipo === "RECEITA" && t.situacao === "PENDENTE")
+      .reduce((acc, t) => acc + Number(t.valor), 0);
+
+    const provisaoDespesa = periodFilteredTransacoes
+      .filter((t) => t.tipo === "DESPESA" && t.situacao === "PENDENTE")
+      .reduce((acc, t) => acc + Number(t.valor), 0);
+
     return {
-      total_receita: summary?.total_receita || 0,
-      total_despesa: summary?.total_despesa || 0,
-      total_liquido: summary?.total_liquido || 0,
-      pago_receita: summary?.pago_receita || 0,
-      pago_despesa: summary?.pago_despesa || 0,
-      pago_liquido: summary?.pago_liquido || 0,
-      provisao_receita: summary?.provisao_receita || 0,
-      provisao_despesa: summary?.provisao_despesa || 0,
-      provisao_liquido: summary?.provisao_liquido || 0,
+      total_receita: totalReceita,
+      total_despesa: totalDespesa,
+      total_liquido: totalReceita - totalDespesa,
+      pago_receita: pagoReceita,
+      pago_despesa: pagoDespesa,
+      pago_liquido: pagoReceita - pagoDespesa,
+      provisao_receita: provisaoReceita,
+      provisao_despesa: provisaoDespesa,
+      provisao_liquido: provisaoReceita - provisaoDespesa,
     };
-  }, [summary]);
+  }, [periodFilteredTransacoes]);
 
   const byCategory = useMemo(() => {
     const map = new Map<string, number>();
@@ -417,124 +420,153 @@ export default function DashboardPage() {
         </div>
 
         <div className="rounded-lg bg-white p-4 shadow-sm">
-          <div className="mb-3 flex items-center gap-2 text-sm font-semibold text-gray-700">
-            <Filter size={16} />
-            Filtros Globais
-          </div>
+          <TransactionSection title="Filtros Globais" tone="gray">
+            <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-4">
+              <div>
+                <TransactionSectionLabel tone="gray">
+                  Período
+                </TransactionSectionLabel>
+                <select
+                  value={periodMonths}
+                  onChange={(e) => setPeriodMonths(Number(e.target.value))}
+                  disabled={Boolean(filterMesAno)}
+                  className={`${filterSectionClasses.input} disabled:bg-gray-100 disabled:text-gray-500`}
+                >
+                  <option value={3}>Últimos 3 meses</option>
+                  <option value={6}>Últimos 6 meses</option>
+                  <option value={12}>Últimos 12 meses</option>
+                </select>
+              </div>
 
-          <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-8">
-            <select
-              value={periodMonths}
-              onChange={(e) => setPeriodMonths(Number(e.target.value))}
-              disabled={Boolean(filterMesAno)}
-              className="rounded-lg border border-gray-300 px-3 py-2 text-sm disabled:bg-gray-100 disabled:text-gray-500"
-            >
-              <option value={3}>Últimos 3 meses</option>
-              <option value={6}>Últimos 6 meses</option>
-              <option value={12}>Últimos 12 meses</option>
-            </select>
+              <div>
+                <TransactionSectionLabel tone="gray">
+                  Mês/Ano
+                </TransactionSectionLabel>
+                <input
+                  type="month"
+                  value={filterMesAno}
+                  onChange={(e) => setFilterMesAno(e.target.value)}
+                  className={filterSectionClasses.input}
+                  title="Mês/Ano específico"
+                />
+              </div>
 
-            <input
-              type="month"
-              value={filterMesAno}
-              onChange={(e) => setFilterMesAno(e.target.value)}
-              className="rounded-lg border border-gray-300 px-3 py-2 text-sm"
-              title="Mês/Ano específico"
-            />
+              <div>
+                <TransactionSectionLabel tone="gray">
+                  Ano
+                </TransactionSectionLabel>
+                <select
+                  value={filterAno}
+                  onChange={(e) => setFilterAno(e.target.value)}
+                  disabled={Boolean(filterMesAno)}
+                  className={`${filterSectionClasses.input} disabled:bg-gray-100 disabled:text-gray-500`}
+                >
+                  <option value="">Todos</option>
+                  {availableYears.map((year) => (
+                    <option key={year} value={year}>
+                      {year}
+                    </option>
+                  ))}
+                </select>
+              </div>
 
-            <select
-              value={filterAno}
-              onChange={(e) => setFilterAno(e.target.value)}
-              disabled={Boolean(filterMesAno)}
-              className="rounded-lg border border-gray-300 px-3 py-2 text-sm disabled:bg-gray-100 disabled:text-gray-500"
-            >
-              <option value="">Ano: todos</option>
-              {availableYears.map((year) => (
-                <option key={year} value={year}>
-                  {year}
-                </option>
-              ))}
-            </select>
+              <div>
+                <TransactionSectionLabel tone="gray">
+                  Tipo
+                </TransactionSectionLabel>
+                <select
+                  value={filterTipo}
+                  onChange={(e) =>
+                    setFilterTipo(e.target.value as "" | "DESPESA" | "RECEITA")
+                  }
+                  className={filterSectionClasses.input}
+                >
+                  <option value="">Todos</option>
+                  <option value="DESPESA">Despesa</option>
+                  <option value="RECEITA">Receita</option>
+                </select>
+              </div>
 
-            <select
-              value={filterTipo}
-              onChange={(e) =>
-                setFilterTipo(e.target.value as "" | "DESPESA" | "RECEITA")
-              }
-              className="rounded-lg border border-gray-300 px-3 py-2 text-sm"
-            >
-              <option value="">Tipo: todos</option>
-              <option value="DESPESA">Despesa</option>
-              <option value="RECEITA">Receita</option>
-            </select>
+              <div>
+                <TransactionSectionLabel tone="gray">
+                  Situação
+                </TransactionSectionLabel>
+                <select
+                  value={filterSituacao}
+                  onChange={(e) =>
+                    setFilterSituacao(
+                      e.target.value as "" | "PENDENTE" | "PAGO",
+                    )
+                  }
+                  className={filterSectionClasses.input}
+                >
+                  <option value="">Todas</option>
+                  <option value="PAGO">Pago</option>
+                  <option value="PENDENTE">Pendente</option>
+                </select>
+              </div>
 
-            <select
-              value={filterSituacao}
-              onChange={(e) =>
-                setFilterSituacao(e.target.value as "" | "PENDENTE" | "PAGO")
-              }
-              className="rounded-lg border border-gray-300 px-3 py-2 text-sm"
-            >
-              <option value="">Situação: todas</option>
-              <option value="PAGO">Pago</option>
-              <option value="PENDENTE">Pendente</option>
-            </select>
+              <div>
+                <TransactionSectionLabel tone="gray">
+                  Banco
+                </TransactionSectionLabel>
+                <select
+                  value={filterBanco}
+                  onChange={(e) =>
+                    setFilterBanco(e.target.value ? Number(e.target.value) : "")
+                  }
+                  className={filterSectionClasses.input}
+                >
+                  <option value="">Todos</option>
+                  {sortedBanks.map((bank) => (
+                    <option key={bank.id} value={bank.id}>
+                      {bank.nome}
+                    </option>
+                  ))}
+                </select>
+              </div>
 
-            <select
-              value={filterBanco}
-              onChange={(e) =>
-                setFilterBanco(e.target.value ? Number(e.target.value) : "")
-              }
-              className="rounded-lg border border-gray-300 px-3 py-2 text-sm"
-            >
-              <option value="">Banco: todos</option>
-              {sortedBanks.map((bank) => (
-                <option key={bank.id} value={bank.id}>
-                  {bank.nome}
-                </option>
-              ))}
-            </select>
+              <div>
+                <TransactionSectionLabel tone="gray">
+                  Categoria
+                </TransactionSectionLabel>
+                <select
+                  value={filterCategoria}
+                  onChange={(e) =>
+                    setFilterCategoria(
+                      e.target.value ? Number(e.target.value) : "",
+                    )
+                  }
+                  className={filterSectionClasses.input}
+                >
+                  <option value="">Todas</option>
+                  {sortedCategories.map((category) => (
+                    <option key={category.id} value={category.id}>
+                      {category.nome}
+                    </option>
+                  ))}
+                </select>
+              </div>
 
-            <select
-              value={filterCategoria}
-              onChange={(e) =>
-                setFilterCategoria(e.target.value ? Number(e.target.value) : "")
-              }
-              className="rounded-lg border border-gray-300 px-3 py-2 text-sm"
-            >
-              <option value="">Categoria: todas</option>
-              {sortedCategories.map((category) => (
-                <option key={category.id} value={category.id}>
-                  {category.nome}
-                </option>
-              ))}
-            </select>
-
-            <input
-              type="text"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Buscar..."
-              className="rounded-lg border border-gray-300 px-3 py-2 text-sm"
-            />
-
-            <button
-              type="button"
-              onClick={() => {
-                setFilterMesAno("");
-                setFilterAno(currentYear);
-                setSearch("");
-                setFilterTipo("");
-                setFilterSituacao("");
-                setFilterCategoria("");
-                setFilterBanco("");
-                setPeriodMonths(12);
-              }}
-              className="rounded-lg border border-gray-300 px-3 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-50"
-            >
-              Limpar filtros
-            </button>
-          </div>
+              <div className="flex items-end">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setFilterMesAno("");
+                    setFilterAno(currentYear);
+                    setFilterTipo("");
+                    setFilterSituacao("");
+                    setFilterCategoria("");
+                    setFilterBanco("");
+                    setPeriodMonths(12);
+                  }}
+                  className={filterSectionClasses.primaryCompactButton}
+                >
+                  Limpar filtros
+                </button>
+              </div>
+            </div>
+          </TransactionSection>
         </div>
 
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
