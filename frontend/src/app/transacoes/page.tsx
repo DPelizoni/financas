@@ -643,14 +643,14 @@ export default function TransacoesPage() {
               <div className="space-y-3">
                 <div className="rounded-lg bg-white p-4 shadow-sm">
                   <p className="text-xs font-medium text-gray-600">Receita</p>
-                  <p className="mt-1 text-xl font-bold text-blue-600">
+                  <p className="mt-1 text-xl font-bold text-green-600">
                     {formatCurrency(summary.pago_receita)}
                   </p>
                 </div>
 
                 <div className="rounded-lg bg-white p-4 shadow-sm">
                   <p className="text-xs font-medium text-gray-600">Despesa</p>
-                  <p className="mt-1 text-xl font-bold text-blue-600">
+                  <p className="mt-1 text-xl font-bold text-red-600">
                     {formatCurrency(summary.pago_despesa)}
                   </p>
                 </div>
@@ -677,14 +677,14 @@ export default function TransacoesPage() {
               <div className="space-y-3">
                 <div className="rounded-lg bg-white p-4 shadow-sm">
                   <p className="text-xs font-medium text-gray-600">Receita</p>
-                  <p className="mt-1 text-xl font-bold text-yellow-600">
+                  <p className="mt-1 text-xl font-bold text-green-600">
                     {formatCurrency(summary.provisao_receita)}
                   </p>
                 </div>
 
                 <div className="rounded-lg bg-white p-4 shadow-sm">
                   <p className="text-xs font-medium text-gray-600">Despesa</p>
-                  <p className="mt-1 text-xl font-bold text-yellow-600">
+                  <p className="mt-1 text-xl font-bold text-red-600">
                     {formatCurrency(summary.provisao_despesa)}
                   </p>
                 </div>
