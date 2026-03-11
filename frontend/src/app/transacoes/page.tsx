@@ -71,6 +71,13 @@ const addMonthsToApiMonth = (apiMonth: string, offset: number): string => {
   return `${nextMonth}/${nextYear}`;
 };
 
+const currentMonthInputValue = (): string => {
+  const now = new Date();
+  const month = String(now.getMonth() + 1).padStart(2, "0");
+  const year = String(now.getFullYear());
+  return `${year}-${month}`;
+};
+
 const parseDateToTimestamp = (value: string): number => {
   if (/^\d{2}\/\d{2}\/\d{4}$/.test(value)) {
     const [day, month, year] = value.split("/").map(Number);
@@ -108,7 +115,7 @@ export default function TransacoesPage() {
   const [filterSituacao, setFilterSituacao] = useState<
     "PENDENTE" | "PAGO" | ""
   >("");
-  const [filterMes, setFilterMes] = useState("");
+  const [filterMes, setFilterMes] = useState(currentMonthInputValue);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingTransacao, setEditingTransacao] = useState<Transacao>();
