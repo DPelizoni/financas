@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import Link from "next/link";
 import {
   ArrowLeftRight,
   BarChart3,
@@ -398,7 +397,7 @@ export default function DashboardPage() {
         <FeedbackAlert feedback={feedback} onClose={() => setFeedback(null)} />
 
         <div className="rounded-lg bg-white p-6 shadow-sm">
-          <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+          <div>
             <div>
               <h1 className="flex items-center gap-3 text-3xl font-bold text-gray-900">
                 <BarChart3 size={32} className="text-blue-600" />
@@ -408,33 +407,6 @@ export default function DashboardPage() {
                 Visão consolidada de desempenho financeiro com indicadores e
                 análises.
               </p>
-            </div>
-
-            <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-4">
-              <Link
-                href="/transacoes"
-                className="inline-flex items-center justify-center rounded-lg border border-gray-300 bg-gray-100 px-3 py-2 text-center text-sm font-medium text-gray-700 transition hover:bg-gray-200"
-              >
-                Transações
-              </Link>
-              <Link
-                href="/banks"
-                className="inline-flex items-center justify-center rounded-lg border border-gray-300 bg-gray-100 px-3 py-2 text-center text-sm font-medium text-gray-700 transition hover:bg-gray-200"
-              >
-                Bancos
-              </Link>
-              <Link
-                href="/categories"
-                className="inline-flex items-center justify-center rounded-lg border border-gray-300 bg-gray-100 px-3 py-2 text-center text-sm font-medium text-gray-700 transition hover:bg-gray-200"
-              >
-                Categorias
-              </Link>
-              <Link
-                href="/descricoes"
-                className="inline-flex items-center justify-center rounded-lg border border-gray-300 bg-gray-100 px-3 py-2 text-center text-sm font-medium text-gray-700 transition hover:bg-gray-200"
-              >
-                Descrições
-              </Link>
             </div>
           </div>
         </div>
