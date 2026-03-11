@@ -902,6 +902,9 @@ export default function DashboardPage() {
                     </button>
                   </th>
                   <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">
+                    Descrição
+                  </th>
+                  <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">
                     <button
                       type="button"
                       onClick={() => handleTableSort("banco")}
@@ -952,7 +955,7 @@ export default function DashboardPage() {
                 {detailedRows.length === 0 ? (
                   <tr>
                     <td
-                      colSpan={6}
+                      colSpan={7}
                       className="px-4 py-8 text-center text-sm text-gray-500"
                     >
                       Nenhum registro encontrado com os filtros atuais.
@@ -977,6 +980,9 @@ export default function DashboardPage() {
                       </td>
                       <td className="px-4 py-3 text-sm text-gray-700">
                         {t.categoria_nome || "-"}
+                      </td>
+                      <td className="px-4 py-3 text-sm text-gray-700">
+                        {t.descricao_nome || "-"}
                       </td>
                       <td className="px-4 py-3 text-sm text-gray-700">
                         {t.banco_nome || "-"}
