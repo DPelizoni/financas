@@ -31,6 +31,8 @@ services:
       DB_USER: root
       DB_PASSWORD: root
       DB_NAME: financas_db
+      MANAGER_EMAILS: ${MANAGER_EMAILS}
+      ADMIN_EMAILS: ${ADMIN_EMAILS}
     depends_on:
       db:
         condition: service_healthy

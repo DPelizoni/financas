@@ -1,19 +1,10 @@
-import axios from "axios";
+import apiClient from "@/services/apiClient";
 import {
   Category,
   CategoryInput,
   CategoryType,
   PaginatedResponse,
 } from "@/types/category";
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
-
-const api = axios.create({
-  baseURL: API_URL,
-  headers: {
-    "Content-Type": "application/json",
-  },
-});
 
 export interface CategoryFilters {
   page?: number;
@@ -35,21 +26,21 @@ export const categoryService = {
       params.append("ativo", filters.ativo.toString());
     if (filters?.tipo) params.append("tipo", filters.tipo);
 
-    const response = await api.get<PaginatedResponse<Category[]>>(
+    const response = await apiClient.get<PaginatedResponse<Category[]>>(
       `/api/categories?${params}`,
     );
     return response.data;
   },
 
   async getById(id: number): Promise<Category> {
-    const response = await api.get<{ success: boolean; data: Category }>(
+    const response = await apiClient.get<{ success: boolean; data: Category }>(
       `/api/categories/${id}`,
     );
     return response.data.data;
   },
 
   async create(category: CategoryInput): Promise<Category> {
-    const response = await api.post<{ success: boolean; data: Category }>(
+    const response = await apiClient.post<{ success: boolean; data: Category }>(
       "/api/categories",
       category,
     );
@@ -60,7 +51,7 @@ export const categoryService = {
     id: number,
     category: Partial<CategoryInput>,
   ): Promise<Category> {
-    const response = await api.put<{ success: boolean; data: Category }>(
+    const response = await apiClient.put<{ success: boolean; data: Category }>(
       `/api/categories/${id}`,
       category,
     );
@@ -68,6 +59,6 @@ export const categoryService = {
   },
 
   async delete(id: number): Promise<void> {
-    await api.delete(`/api/categories/${id}`);
+    await apiClient.delete(`/api/categories/${id}`);
   },
 };

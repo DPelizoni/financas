@@ -31,6 +31,60 @@ export const initDatabase = async (): Promise<void> => {
   try {
     const connection = await pool.getConnection();
 
+    // Cria a tabela de usuários
+    await connection.query(`
+      CREATE TABLE IF NOT EXISTS users (
+        id INT PRIMARY KEY AUTO_INCREMENT,
+        nome VARCHAR(120) NOT NULL,
+        email VARCHAR(255) NOT NULL UNIQUE,
+        senha VARCHAR(255) NOT NULL,
+        status ENUM('ATIVO', 'INATIVO') DEFAULT 'ATIVO',
+        role ENUM('USUARIO', 'GESTOR', 'ADMIN') NOT NULL DEFAULT 'USUARIO',
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        INDEX idx_users_email (email),
+        INDEX idx_users_status (status),
+        INDEX idx_users_role (role)
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+    `);
+
+    try {
+      await connection.query(`
+        ALTER TABLE users
+        ADD COLUMN role ENUM('USUARIO', 'GESTOR', 'ADMIN') NOT NULL DEFAULT 'USUARIO' AFTER status;
+      `);
+    } catch {
+      // Ignora quando a coluna role ja existe.
+    }
+
+    const managerEmailsRaw =
+      process.env.MANAGER_EMAILS || "gestor_admin@example.com";
+    const adminEmailsRaw = process.env.ADMIN_EMAILS || "";
+    const managerEmails = managerEmailsRaw
+      .split(",")
+      .map((email) => email.trim().toLowerCase())
+      .filter((email) => email.length > 0);
+    const adminEmails = adminEmailsRaw
+      .split(",")
+      .map((email) => email.trim().toLowerCase())
+      .filter((email) => email.length > 0);
+
+    if (adminEmails.length > 0) {
+      const adminPlaceholders = adminEmails.map(() => "?").join(",");
+      await connection.query(
+        `UPDATE users SET role = 'ADMIN' WHERE LOWER(email) IN (${adminPlaceholders})`,
+        adminEmails,
+      );
+    }
+
+    if (managerEmails.length > 0) {
+      const placeholders = managerEmails.map(() => "?").join(",");
+      await connection.query(
+        `UPDATE users SET role = 'GESTOR' WHERE LOWER(email) IN (${placeholders}) AND role <> 'ADMIN'`,
+        managerEmails,
+      );
+    }
+
     // Cria a tabela de bancos
     await connection.query(`
       CREATE TABLE IF NOT EXISTS banks (

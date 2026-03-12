@@ -1,19 +1,21 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
-import { usePathname } from "next/navigation";
+import { useEffect, useMemo, useState } from "react";
+import { usePathname, useRouter } from "next/navigation";
 import {
   LayoutDashboard,
   Landmark,
   Tags,
   FileText,
   ArrowLeftRight,
+  Users,
   Menu,
-  Bell,
   X,
+  LogOut,
   LucideIcon,
 } from "lucide-react";
+import { authService } from "@/services/authService";
 
 interface AppShellProps {
   children: React.ReactNode;
@@ -31,6 +33,7 @@ const navItems: NavItem[] = [
   { label: "Categorias", href: "/categories", icon: Tags },
   { label: "Descrições", href: "/descricoes", icon: FileText },
   { label: "Transações", href: "/transacoes", icon: ArrowLeftRight },
+  { label: "Usuários", href: "/usuarios", icon: Users },
 ];
 
 const getPageTitle = (pathname: string): string => {
@@ -39,14 +42,39 @@ const getPageTitle = (pathname: string): string => {
   if (pathname.startsWith("/categories")) return "Categorias";
   if (pathname.startsWith("/descricoes")) return "Descrições";
   if (pathname.startsWith("/transacoes")) return "Transações";
+  if (pathname.startsWith("/usuarios")) return "Usuários";
   return "Finanças";
 };
 
 export default function AppShell({ children }: AppShellProps) {
+  const router = useRouter();
   const pathname = usePathname();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [userName, setUserName] = useState("Usuário");
+  const [isManager, setIsManager] = useState(false);
 
   const pageTitle = useMemo(() => getPageTitle(pathname), [pathname]);
+
+  useEffect(() => {
+    const user = authService.getStoredUser();
+    if (!user) return;
+
+    if (user.nome) {
+      setUserName(user.nome);
+    }
+
+    setIsManager(user.role === "GESTOR" || user.role === "ADMIN");
+  }, []);
+
+  const visibleNavItems = useMemo(() => {
+    return navItems.filter((item) => item.href !== "/usuarios" || isManager);
+  }, [isManager]);
+
+  const handleLogout = async () => {
+    await authService.logout();
+    router.replace("/login");
+    router.refresh();
+  };
 
   return (
     <div className="min-h-screen bg-slate-100">
@@ -83,7 +111,7 @@ export default function AppShell({ children }: AppShellProps) {
           </div>
 
           <nav className="space-y-1 px-3 py-5">
-            {navItems.map((item) => {
+            {visibleNavItems.map((item) => {
               const isActive = pathname.startsWith(item.href);
               const Icon = item.icon;
 
@@ -137,17 +165,18 @@ export default function AppShell({ children }: AppShellProps) {
                 </div>
               </div>
 
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-3">
+                <div className="hidden rounded-full bg-blue-600 px-3 py-1 text-xs font-semibold text-white sm:block">
+                  {userName}
+                </div>
                 <button
                   type="button"
-                  className="rounded-lg border border-slate-200 p-2 text-slate-600 hover:bg-slate-50"
-                  aria-label="Notificações"
+                  onClick={handleLogout}
+                  className="inline-flex items-center gap-2 rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-50"
                 >
-                  <Bell size={18} />
+                  <LogOut size={14} />
+                  Sair
                 </button>
-                <div className="hidden rounded-full bg-blue-600 px-3 py-1 text-xs font-semibold text-white sm:block">
-                  Admin
-                </div>
               </div>
             </div>
           </header>

@@ -1,4 +1,4 @@
-import axios from "axios";
+import apiClient from "@/services/apiClient";
 import {
   Transacao,
   TransacaoInput,
@@ -10,8 +10,6 @@ import {
   DeleteMonthsPayload,
   DeleteMonthsResult,
 } from "@/types/transacao";
-
-const API_URL = `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001"}/api`;
 
 export const transacaoService = {
   async getAll(filters: TransacaoFilters): Promise<TransacaoResponse> {
@@ -29,37 +27,37 @@ export const transacaoService = {
     if (filters.mes) params.append("mes", filters.mes);
     if (filters.ano) params.append("ano", filters.ano);
 
-    const response = await axios.get<TransacaoResponse>(
-      `${API_URL}/transacoes?${params}`,
+    const response = await apiClient.get<TransacaoResponse>(
+      `/api/transacoes?${params}`,
     );
     return response.data;
   },
 
   async getById(id: number): Promise<Transacao> {
-    const response = await axios.get<{ success: boolean; data: Transacao }>(
-      `${API_URL}/transacoes/${id}`,
+    const response = await apiClient.get<{ success: boolean; data: Transacao }>(
+      `/api/transacoes/${id}`,
     );
     return response.data.data;
   },
 
   async create(data: TransacaoInput): Promise<Transacao> {
-    const response = await axios.post<{ success: boolean; data: Transacao }>(
-      `${API_URL}/transacoes`,
-      data,
-    );
+    const response = await apiClient.post<{
+      success: boolean;
+      data: Transacao;
+    }>(`/api/transacoes`, data);
     return response.data.data;
   },
 
   async update(id: number, data: Partial<TransacaoInput>): Promise<Transacao> {
-    const response = await axios.put<{ success: boolean; data: Transacao }>(
-      `${API_URL}/transacoes/${id}`,
+    const response = await apiClient.put<{ success: boolean; data: Transacao }>(
+      `/api/transacoes/${id}`,
       data,
     );
     return response.data.data;
   },
 
   async delete(id: number): Promise<void> {
-    await axios.delete(`${API_URL}/transacoes/${id}`);
+    await apiClient.delete(`/api/transacoes/${id}`);
   },
 
   async getSummary(
@@ -77,10 +75,10 @@ export const transacaoService = {
     if (filters.mes) params.append("mes", filters.mes);
     if (filters.ano) params.append("ano", filters.ano);
 
-    const response = await axios.get<{
+    const response = await apiClient.get<{
       success: boolean;
       data: TransacaoSummary;
-    }>(`${API_URL}/transacoes/summary?${params}`);
+    }>(`/api/transacoes/summary?${params}`);
 
     const raw = response.data.data as any;
     return {
@@ -100,10 +98,10 @@ export const transacaoService = {
   },
 
   async copyByMonth(payload: CopyMonthPayload): Promise<CopyMonthResult> {
-    const response = await axios.post<{
+    const response = await apiClient.post<{
       success: boolean;
       data: CopyMonthResult;
-    }>(`${API_URL}/transacoes/copy-month`, payload);
+    }>(`/api/transacoes/copy-month`, payload);
 
     return response.data.data;
   },
@@ -111,10 +109,10 @@ export const transacaoService = {
   async deleteByMonths(
     payload: DeleteMonthsPayload,
   ): Promise<DeleteMonthsResult> {
-    const response = await axios.delete<{
+    const response = await apiClient.delete<{
       success: boolean;
       data: DeleteMonthsResult;
-    }>(`${API_URL}/transacoes/delete-months`, { data: payload });
+    }>(`/api/transacoes/delete-months`, { data: payload });
 
     return response.data.data;
   },

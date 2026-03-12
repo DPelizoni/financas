@@ -5,10 +5,13 @@ import swaggerUi from "swagger-ui-express";
 import { swaggerSpec } from "./config/swagger";
 import { testConnection, initDatabase } from "./config/database";
 import { errorHandler, notFoundHandler } from "./middlewares/errorHandler";
+import { authenticateToken } from "./middlewares/authMiddleware";
+import authRoutes from "./routes/authRoutes";
 import bankRoutes from "./routes/bankRoutes";
 import categoryRoutes from "./routes/categoryRoutes";
 import descricaoRoutes from "./routes/descricaoRoutes";
 import transacaoRoutes from "./routes/transacaoRoutes";
+import userRoutes from "./routes/userRoutes";
 
 dotenv.config();
 
@@ -50,10 +53,13 @@ app.use(
 );
 
 // Rotas da API
+app.use("/api/auth", authRoutes);
+app.use("/api", authenticateToken);
 app.use("/api/banks", bankRoutes);
 app.use("/api/categories", categoryRoutes);
 app.use("/api/descricoes", descricaoRoutes);
 app.use("/api/transacoes", transacaoRoutes);
+app.use("/api/users", userRoutes);
 
 // Handlers de erro
 app.use(notFoundHandler);

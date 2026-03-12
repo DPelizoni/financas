@@ -1,12 +1,10 @@
-import axios from "axios";
+import apiClient from "@/services/apiClient";
 import {
   Descricao,
   DescricaoInput,
   DescricaoFilters,
   DescricaoResponse,
 } from "@/types/descricao";
-
-const API_BASE_URL = `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001"}/api`;
 
 export const descricaoService = {
   async getAll(filters: DescricaoFilters): Promise<DescricaoResponse> {
@@ -19,37 +17,32 @@ export const descricaoService = {
     if (filters.categoria_id)
       params.append("categoria_id", String(filters.categoria_id));
 
-    const response = await axios.get<DescricaoResponse>(
-      `${API_BASE_URL}/descricoes${params.toString() ? `?${params}` : ""}`,
+    const response = await apiClient.get<DescricaoResponse>(
+      `/api/descricoes${params.toString() ? `?${params}` : ""}`,
     );
     return response.data;
   },
 
   async getById(id: number): Promise<Descricao> {
-    const response = await axios.get<Descricao>(
-      `${API_BASE_URL}/descricoes/${id}`,
-    );
+    const response = await apiClient.get<Descricao>(`/api/descricoes/${id}`);
     return response.data;
   },
 
   async create(input: DescricaoInput): Promise<Descricao> {
-    const response = await axios.post<Descricao>(
-      `${API_BASE_URL}/descricoes`,
-      input,
-    );
+    const response = await apiClient.post<Descricao>(`/api/descricoes`, input);
     return response.data;
   },
 
   async update(id: number, input: Partial<DescricaoInput>): Promise<Descricao> {
-    const response = await axios.put<Descricao>(
-      `${API_BASE_URL}/descricoes/${id}`,
+    const response = await apiClient.put<Descricao>(
+      `/api/descricoes/${id}`,
       input,
     );
     return response.data;
   },
 
   async delete(id: number): Promise<void> {
-    await axios.delete(`${API_BASE_URL}/descricoes/${id}`);
+    await apiClient.delete(`/api/descricoes/${id}`);
   },
 };
 

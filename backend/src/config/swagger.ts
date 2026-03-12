@@ -22,6 +22,10 @@ const options: swaggerJsdoc.Options = {
     ],
     tags: [
       {
+        name: "Auth",
+        description: "Operações de autenticação e sessão de usuários",
+      },
+      {
         name: "Banks",
         description:
           "Operações relacionadas a bancos e instituições financeiras",
@@ -42,7 +46,95 @@ const options: swaggerJsdoc.Options = {
       },
     ],
     components: {
+      securitySchemes: {
+        bearerAuth: {
+          type: "http",
+          scheme: "bearer",
+          bearerFormat: "JWT",
+          description: "Token JWT no formato Bearer",
+        },
+      },
       schemas: {
+        UserPublic: {
+          type: "object",
+          properties: {
+            id: {
+              type: "integer",
+              example: 1,
+            },
+            nome: {
+              type: "string",
+              example: "Maria Silva",
+            },
+            email: {
+              type: "string",
+              example: "maria@empresa.com",
+            },
+            status: {
+              type: "string",
+              enum: ["ATIVO", "INATIVO"],
+              example: "ATIVO",
+            },
+            created_at: {
+              type: "string",
+              format: "date-time",
+            },
+            updated_at: {
+              type: "string",
+              format: "date-time",
+            },
+          },
+        },
+        AuthSession: {
+          type: "object",
+          properties: {
+            token: {
+              type: "string",
+              description: "Token JWT de autenticação",
+              example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+            },
+            usuario: {
+              $ref: "#/components/schemas/UserPublic",
+            },
+          },
+        },
+        AuthRegisterInput: {
+          type: "object",
+          required: ["nome", "email", "senha"],
+          properties: {
+            nome: {
+              type: "string",
+              example: "Maria Silva",
+            },
+            email: {
+              type: "string",
+              example: "maria@empresa.com",
+            },
+            senha: {
+              type: "string",
+              example: "123456",
+            },
+            status: {
+              type: "string",
+              enum: ["ATIVO", "INATIVO"],
+              example: "ATIVO",
+            },
+          },
+        },
+        AuthLoginInput: {
+          type: "object",
+          required: ["email", "senha"],
+          properties: {
+            email: {
+              type: "string",
+              example: "maria@empresa.com",
+            },
+            senha: {
+              type: "string",
+              example: "123456",
+            },
+          },
+        },
         Bank: {
           type: "object",
           required: ["nome"],
