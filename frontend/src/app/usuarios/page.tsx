@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import FeedbackAlert from "@/components/FeedbackAlert";
 import Pagination from "@/components/Pagination";
+import PageContainer from "@/components/PageContainer";
 import { userService } from "@/services/userService";
 import { User, UserRole, UserStatus } from "@/types/user";
 import { authService } from "@/services/authService";
@@ -191,7 +192,7 @@ export default function UsuariosPage() {
       <div className="mx-auto max-w-7xl space-y-6 px-4 sm:px-6 lg:px-8">
         <FeedbackAlert feedback={feedback} onClose={() => setFeedback(null)} />
 
-        <div className="rounded-lg bg-white p-6 shadow-sm">
+        <PageContainer>
           <h1 className="flex items-center gap-3 text-3xl font-bold text-gray-900">
             <ShieldCheck size={32} className="text-blue-600" />
             Gestão de Usuários
@@ -199,7 +200,7 @@ export default function UsuariosPage() {
           <p className="mt-2 text-sm text-gray-600">
             Gerencie o status de acesso dos usuários do sistema.
           </p>
-        </div>
+        </PageContainer>
 
         <div className="rounded-lg bg-white p-4 shadow-sm">
           <div className="flex flex-col gap-3 md:flex-row">

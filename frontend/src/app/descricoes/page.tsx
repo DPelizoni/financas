@@ -24,6 +24,7 @@ import DescricaoModal from "@/components/DescricaoModal";
 import Pagination from "@/components/Pagination";
 import FeedbackAlert from "@/components/FeedbackAlert";
 import ConfirmDeleteModal from "@/components/ConfirmDeleteModal";
+import PageContainer from "@/components/PageContainer";
 
 export default function DescricoesPage() {
   const [descricoes, setDescricoes] = useState<Descricao[]>([]);
@@ -197,8 +198,8 @@ export default function DescricoesPage() {
       <div className="mx-auto max-w-7xl space-y-6 px-4 sm:px-6 lg:px-8">
         <FeedbackAlert feedback={feedback} onClose={() => setFeedback(null)} />
 
-        <div className="mb-8">
-          <div className="flex items-center justify-between">
+        <PageContainer>
+          <div className="flex items-center justify-between gap-4">
             <div>
               <h1 className="flex items-center gap-3 text-3xl font-bold text-gray-900">
                 <FileText size={32} className="text-blue-600" />
@@ -216,9 +217,9 @@ export default function DescricoesPage() {
               Nova Descrição
             </button>
           </div>
-        </div>
+        </PageContainer>
 
-        <div className="mb-6 rounded-lg bg-white p-4 shadow-sm">
+        <div className="rounded-lg bg-white p-4 shadow-sm">
           <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
             <div className="relative md:col-span-2">
               <Search

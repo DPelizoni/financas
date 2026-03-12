@@ -31,6 +31,7 @@ import { Transacao } from "@/types/transacao";
 import { Category } from "@/types/category";
 import { Bank } from "@/types/bank";
 import FeedbackAlert from "@/components/FeedbackAlert";
+import PageContainer from "@/components/PageContainer";
 import {
   getTransactionSectionClasses,
   TransactionSection,
@@ -396,20 +397,16 @@ export default function DashboardPage() {
       <div className="mx-auto max-w-7xl space-y-6 px-4 sm:px-6 lg:px-8">
         <FeedbackAlert feedback={feedback} onClose={() => setFeedback(null)} />
 
-        <div className="rounded-lg bg-white p-6 shadow-sm">
-          <div>
-            <div>
-              <h1 className="flex items-center gap-3 text-3xl font-bold text-gray-900">
-                <BarChart3 size={32} className="text-blue-600" />
-                Dashboard Executivo
-              </h1>
-              <p className="mt-2 text-sm text-gray-600">
-                Visão consolidada de desempenho financeiro com indicadores e
-                análises.
-              </p>
-            </div>
-          </div>
-        </div>
+        <PageContainer>
+          <h1 className="flex items-center gap-3 text-3xl font-bold text-gray-900">
+            <BarChart3 size={32} className="text-blue-600" />
+            Dashboard Executivo
+          </h1>
+          <p className="mt-2 text-sm text-gray-600">
+            Visão consolidada de desempenho financeiro com indicadores e
+            análises.
+          </p>
+        </PageContainer>
 
         <div className="rounded-lg bg-white p-4 shadow-sm">
           <TransactionSection title="Filtros Globais" tone="gray">

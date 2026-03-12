@@ -36,6 +36,7 @@ import {
 } from "lucide-react";
 import FeedbackAlert from "@/components/FeedbackAlert";
 import ConfirmDeleteModal from "@/components/ConfirmDeleteModal";
+import PageContainer from "@/components/PageContainer";
 
 interface DeleteConfirmation {
   isOpen: boolean;
@@ -580,9 +581,8 @@ export default function TransacoesPage() {
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 space-y-6">
-        {/* Header */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between">
+        <PageContainer>
+          <div className="flex items-center justify-between gap-4">
             <div>
               <h1 className="flex items-center gap-3 text-3xl font-bold text-gray-900">
                 <ArrowLeftRight size={32} className="text-blue-600" />
@@ -643,7 +643,7 @@ export default function TransacoesPage() {
               </button>
             </div>
           </div>
-        </div>
+        </PageContainer>
 
         <FeedbackAlert feedback={feedback} onClose={() => setFeedback(null)} />
 
@@ -755,7 +755,7 @@ export default function TransacoesPage() {
         )}
 
         {/* Filters */}
-        <div className="mb-6 rounded-lg bg-white p-4 shadow-sm">
+        <div className="rounded-lg bg-white p-4 shadow-sm">
           <TransactionSection title="Buscar Transações" tone="gray">
             <div className="space-y-3">
               <div className="grid grid-cols-1 gap-3 lg:grid-cols-5">

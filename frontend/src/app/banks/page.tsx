@@ -19,6 +19,7 @@ import BankModal from "@/components/BankModal";
 import Pagination from "@/components/Pagination";
 import FeedbackAlert from "@/components/FeedbackAlert";
 import ConfirmDeleteModal from "@/components/ConfirmDeleteModal";
+import PageContainer from "@/components/PageContainer";
 
 export default function BanksPage() {
   const [banks, setBanks] = useState<Bank[]>([]);
@@ -170,9 +171,8 @@ export default function BanksPage() {
       <div className="mx-auto max-w-7xl space-y-6 px-4 sm:px-6 lg:px-8">
         <FeedbackAlert feedback={feedback} onClose={() => setFeedback(null)} />
 
-        {/* Header */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between">
+        <PageContainer>
+          <div className="flex items-center justify-between gap-4">
             <div>
               <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
                 <Building2 size={32} className="text-blue-600" />
@@ -182,20 +182,18 @@ export default function BanksPage() {
                 Gerencie suas instituições financeiras e contas
               </p>
             </div>
-            <div className="flex items-center gap-2">
-              <button
-                onClick={handleCreate}
-                className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
-              >
-                <Plus size={20} />
-                Novo Banco
-              </button>
-            </div>
+            <button
+              onClick={handleCreate}
+              className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+            >
+              <Plus size={20} />
+              Novo Banco
+            </button>
           </div>
-        </div>
+        </PageContainer>
 
         {/* Filters */}
-        <div className="mb-6 rounded-lg bg-white p-4 shadow-sm">
+        <div className="rounded-lg bg-white p-4 shadow-sm">
           <div className="flex flex-col md:flex-row gap-4">
             <div className="flex-1 relative">
               <Search
