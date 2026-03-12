@@ -382,6 +382,17 @@ export default function DashboardPage() {
     : [];
 
   const singleMonthSaldo = hasSingleTimelineMonth ? timeline[0].saldo : 0;
+  const singleMonthTotal = hasSingleTimelineMonth
+    ? timeline[0].receitas + timeline[0].despesas
+    : 0;
+  const receitaPercent =
+    singleMonthTotal > 0
+      ? Math.round((timeline[0].receitas / singleMonthTotal) * 100)
+      : 0;
+  const despesaPercent =
+    singleMonthTotal > 0
+      ? Math.round((timeline[0].despesas / singleMonthTotal) * 100)
+      : 0;
 
   if (loading) {
     return (
@@ -689,13 +700,25 @@ export default function DashboardPage() {
                             innerRadius={55}
                             outerRadius={88}
                             paddingAngle={3}
+                            labelLine={false}
+                            label={({ percent }) =>
+                              `${Math.round((percent || 0) * 100)}%`
+                            }
                           >
                             {singleMonthDonutData.map((entry) => (
                               <Cell key={entry.indicador} fill={entry.fill} />
                             ))}
                           </Pie>
                           <Tooltip
-                            formatter={(v) => currency(Number(v || 0))}
+                            formatter={(v) => {
+                              const total =
+                                (timeline[0]?.receitas || 0) +
+                                (timeline[0]?.despesas || 0);
+                              const value = Number(v || 0);
+                              const percent =
+                                total > 0 ? (value / total) * 100 : 0;
+                              return `${currency(value)} (${Math.round(percent)}%)`;
+                            }}
                           />
                         </PieChart>
                       </ResponsiveContainer>
@@ -707,7 +730,9 @@ export default function DashboardPage() {
                           🟢 Receita
                         </span>
                         <span className="font-semibold text-green-600">
-                          {currency(timeline[0].receitas)}
+                          <span className="inline-block min-w-[170px] text-right tabular-nums">
+                            {currency(timeline[0].receitas)} ({receitaPercent}%)
+                          </span>
                         </span>
                       </div>
                       <div className="flex items-center justify-between">
@@ -715,7 +740,9 @@ export default function DashboardPage() {
                           🔴 Despesa
                         </span>
                         <span className="font-semibold text-red-600">
-                          {currency(timeline[0].despesas)}
+                          <span className="inline-block min-w-[170px] text-right tabular-nums">
+                            {currency(timeline[0].despesas)} ({despesaPercent}%)
+                          </span>
                         </span>
                       </div>
                     </div>
