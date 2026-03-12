@@ -10,12 +10,47 @@ export const authenticateToken = (
   next: NextFunction,
 ): void => {
   const authHeader = req.headers.authorization;
+  const xAccessTokenHeader = req.headers["x-access-token"];
+  const cookieToken = req.headers.cookie
+    ?.split(";")
+    .map((part) => part.trim())
+    .find((part) => part.startsWith("auth_token="))
+    ?.split("=")[1];
+  const queryToken =
+    typeof req.query.token === "string" ? req.query.token : undefined;
 
-  if (!authHeader?.startsWith("Bearer ")) {
+  const normalizeToken = (value?: string): string | undefined => {
+    if (!value) return undefined;
+
+    let parsed = value.trim();
+    if (!parsed) return undefined;
+
+    if (
+      (parsed.startsWith('"') && parsed.endsWith('"')) ||
+      (parsed.startsWith("'") && parsed.endsWith("'"))
+    ) {
+      parsed = parsed.slice(1, -1).trim();
+    }
+
+    const bearerMatch = parsed.match(/^Bearer\s+(.+)$/i);
+    if (bearerMatch?.[1]) {
+      parsed = bearerMatch[1].trim();
+    }
+
+    return parsed || undefined;
+  };
+
+  const token =
+    normalizeToken(authHeader) ||
+    normalizeToken(
+      typeof xAccessTokenHeader === "string" ? xAccessTokenHeader : undefined,
+    ) ||
+    normalizeToken(cookieToken) ||
+    normalizeToken(queryToken);
+
+  if (!token) {
     return next(new AppError(401, "Token de autenticação não informado"));
   }
-
-  const token = authHeader.split(" ")[1];
 
   const processAuth = async () => {
     const payload = authService.verifyToken(token);

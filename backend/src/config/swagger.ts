@@ -20,6 +20,14 @@ const options: swaggerJsdoc.Options = {
         description: "Servidor de Desenvolvimento",
       },
     ],
+    security: [
+      {
+        bearerAuth: [],
+      },
+      {
+        tokenHeader: [],
+      },
+    ],
     tags: [
       {
         name: "Auth",
@@ -52,6 +60,13 @@ const options: swaggerJsdoc.Options = {
           scheme: "bearer",
           bearerFormat: "JWT",
           description: "Token JWT no formato Bearer",
+        },
+        tokenHeader: {
+          type: "apiKey",
+          in: "header",
+          name: "x-access-token",
+          description:
+            "Alternativa ao Bearer: informe apenas o token JWT no header x-access-token",
         },
       },
       schemas: {
