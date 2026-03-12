@@ -10,6 +10,7 @@ import {
   FileText,
   ArrowLeftRight,
   Users,
+  Wallet,
   Menu,
   X,
   LogOut,
@@ -94,11 +95,16 @@ export default function AppShell({ children }: AppShellProps) {
           }`}
         >
           <div className="flex h-16 items-center justify-between border-b border-slate-200 px-5">
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
-                Sistema
-              </p>
-              <h1 className="text-lg font-bold text-slate-900">Finanças</h1>
+            <div className="flex items-center gap-3">
+              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-600 text-white">
+                <Wallet size={18} />
+              </div>
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+                  Sistema
+                </p>
+                <h1 className="text-lg font-bold text-slate-900">Finanças</h1>
+              </div>
             </div>
             <button
               type="button"
