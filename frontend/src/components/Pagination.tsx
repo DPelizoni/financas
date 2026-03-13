@@ -6,6 +6,7 @@ import {
   ChevronRight,
   ChevronsRight,
 } from "lucide-react";
+import { MenuItem, TextField } from "@mui/material";
 
 interface PaginationProps {
   currentPage: number;
@@ -14,6 +15,8 @@ interface PaginationProps {
   itemsPerPage: number;
   onPageChange: (page: number) => void;
   onItemsPerPageChange: (items: number) => void;
+  itemsPerPageOptions?: number[];
+  centeredLayout?: boolean;
 }
 
 export default function Pagination({
@@ -23,7 +26,15 @@ export default function Pagination({
   itemsPerPage,
   onPageChange,
   onItemsPerPageChange,
+  itemsPerPageOptions = [5, 10, 20, 50],
+  centeredLayout = false,
 }: PaginationProps) {
+  const itemsFieldSx = {
+    "& .MuiOutlinedInput-root": {
+      backgroundColor: "#fff",
+    },
+  };
+
   const getVisiblePages = (): number[] => {
     const maxVisible = 5;
     if (totalPages <= maxVisible) {
@@ -56,42 +67,53 @@ export default function Pagination({
         </button>
       </div>
 
-      <div className="hidden flex-1 items-center justify-between sm:flex">
-        <div className="flex items-center gap-4">
-          <p className="text-sm text-gray-700">
-            Mostrando{" "}
+      <div
+        className={`hidden flex-1 sm:flex ${
+          centeredLayout ? "items-center" : "items-center justify-between"
+        }`}
+      >
+        <div
+          className={`flex items-center gap-2 ${
+            centeredLayout ? "w-1/3 justify-start" : ""
+          }`}
+        >
+          <p className="whitespace-nowrap text-sm text-gray-700">
+            Registros:{" "}
             <span className="font-medium">
               {total === 0 ? 0 : (currentPage - 1) * itemsPerPage + 1}
-            </span>{" "}
-            até{" "}
+            </span>
+            -
             <span className="font-medium">
               {Math.min(currentPage * itemsPerPage, total)}
             </span>{" "}
-            de <span className="font-medium">{total}</span> resultados
+            de <span className="font-medium">{total}</span>
           </p>
 
-          <div className="flex items-center gap-2 text-sm text-gray-700">
-            <span>Itens por página</span>
-            <select
-              value={itemsPerPage}
-              onChange={(e) => {
-                const nextItems = Number(e.target.value);
-                onItemsPerPageChange(nextItems);
-                if (currentPage !== 1) {
-                  onPageChange(1);
-                }
-              }}
-              className="rounded-md border border-gray-300 px-2 py-1 text-sm text-gray-900 focus:border-transparent focus:ring-2 focus:ring-blue-500"
-            >
-              <option value={5}>5</option>
-              <option value={10}>10</option>
-              <option value={20}>20</option>
-              <option value={50}>50</option>
-            </select>
-          </div>
+          <TextField
+            select
+            label="Quantidade"
+            variant="outlined"
+            size="small"
+            sx={{ ...itemsFieldSx, minWidth: 110 }}
+            value={itemsPerPage}
+            onChange={(e) => {
+              const nextItems = Number(e.target.value);
+              onItemsPerPageChange(nextItems);
+              if (currentPage !== 1) {
+                onPageChange(1);
+              }
+            }}
+            InputLabelProps={{ shrink: true }}
+          >
+            {itemsPerPageOptions.map((option) => (
+              <MenuItem key={option} value={option}>
+                {option}
+              </MenuItem>
+            ))}
+          </TextField>
         </div>
 
-        <div>
+        <div className={centeredLayout ? "w-1/3 flex justify-center" : ""}>
           <nav className="relative z-0 inline-flex -space-x-px rounded-md shadow-sm">
             <button
               onClick={() => onPageChange(1)}
@@ -146,6 +168,8 @@ export default function Pagination({
             </button>
           </nav>
         </div>
+
+        {centeredLayout && <div className="w-1/3" />}
       </div>
     </div>
   );

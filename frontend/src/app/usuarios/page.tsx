@@ -441,6 +441,8 @@ export default function UsuariosPage() {
                 itemsPerPage={itemsPerPage}
                 onPageChange={setCurrentPage}
                 onItemsPerPageChange={setItemsPerPage}
+                itemsPerPageOptions={[5, 10, 20, 50, 100]}
+                centeredLayout
               />
             </>
           )}
