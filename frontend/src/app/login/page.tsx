@@ -5,8 +5,17 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { authService } from "@/services/authService";
 import FeedbackAlert from "@/components/FeedbackAlert";
+import { TextField } from "@mui/material";
 
 export default function LoginPage() {
+  const authFieldSx = {
+    "& .MuiOutlinedInput-root": {
+      backgroundColor: "#fff",
+      "&.Mui-focused fieldset": {
+        borderColor: "#06b6d4",
+      },
+    },
+  };
   const router = useRouter();
   const [nextRoute, setNextRoute] = useState("/dashboard");
 
@@ -75,38 +84,36 @@ export default function LoginPage() {
 
         <form onSubmit={handleSubmit} className="mt-4 space-y-4">
           <div>
-            <label
-              htmlFor="email"
-              className="mb-1 block text-sm font-medium text-slate-700"
-            >
-              Email
-            </label>
-            <input
+            <TextField
               id="email"
               type="email"
+              label="Email"
+              variant="outlined"
+              size="small"
+              fullWidth
+              sx={authFieldSx}
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               autoComplete="email"
-              className="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm outline-none transition focus:border-cyan-500 focus:ring-2 focus:ring-cyan-200"
               placeholder="voce@empresa.com"
+              InputLabelProps={{ shrink: true }}
             />
           </div>
 
           <div>
-            <label
-              htmlFor="senha"
-              className="mb-1 block text-sm font-medium text-slate-700"
-            >
-              Senha
-            </label>
-            <input
+            <TextField
               id="senha"
               type="password"
+              label="Senha"
+              variant="outlined"
+              size="small"
+              fullWidth
+              sx={authFieldSx}
               value={senha}
               onChange={(e) => setSenha(e.target.value)}
               autoComplete="current-password"
-              className="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm outline-none transition focus:border-cyan-500 focus:ring-2 focus:ring-cyan-200"
               placeholder="••••••••"
+              InputLabelProps={{ shrink: true }}
             />
           </div>
 

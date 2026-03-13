@@ -5,8 +5,17 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import FeedbackAlert from "@/components/FeedbackAlert";
 import { authService } from "@/services/authService";
+import { TextField } from "@mui/material";
 
 export default function RegisterPage() {
+  const authFieldSx = {
+    "& .MuiOutlinedInput-root": {
+      backgroundColor: "#fff",
+      "&.Mui-focused fieldset": {
+        borderColor: "#10b981",
+      },
+    },
+  };
   const router = useRouter();
 
   const [nome, setNome] = useState("");
@@ -92,70 +101,66 @@ export default function RegisterPage() {
           className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2"
         >
           <div className="md:col-span-2">
-            <label
-              htmlFor="nome"
-              className="mb-1 block text-sm font-medium text-slate-700"
-            >
-              Nome
-            </label>
-            <input
+            <TextField
               id="nome"
               type="text"
+              label="Nome"
+              variant="outlined"
+              size="small"
+              fullWidth
+              sx={authFieldSx}
               value={nome}
               onChange={(e) => setNome(e.target.value)}
-              className="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200"
               placeholder="Nome completo"
+              InputLabelProps={{ shrink: true }}
             />
           </div>
 
           <div className="md:col-span-2">
-            <label
-              htmlFor="email"
-              className="mb-1 block text-sm font-medium text-slate-700"
-            >
-              Email
-            </label>
-            <input
+            <TextField
               id="email"
               type="email"
+              label="Email"
+              variant="outlined"
+              size="small"
+              fullWidth
+              sx={authFieldSx}
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200"
               placeholder="voce@empresa.com"
+              InputLabelProps={{ shrink: true }}
             />
           </div>
 
           <div>
-            <label
-              htmlFor="senha"
-              className="mb-1 block text-sm font-medium text-slate-700"
-            >
-              Senha
-            </label>
-            <input
+            <TextField
               id="senha"
               type="password"
+              label="Senha"
+              variant="outlined"
+              size="small"
+              fullWidth
+              sx={authFieldSx}
               value={senha}
               onChange={(e) => setSenha(e.target.value)}
-              className="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200"
               placeholder="Mínimo de 6 caracteres"
+              InputLabelProps={{ shrink: true }}
             />
           </div>
 
           <div>
-            <label
-              htmlFor="confirmarSenha"
-              className="mb-1 block text-sm font-medium text-slate-700"
-            >
-              Confirmar senha
-            </label>
-            <input
+            <TextField
               id="confirmarSenha"
               type="password"
+              label="Confirmar senha"
+              variant="outlined"
+              size="small"
+              fullWidth
+              sx={authFieldSx}
               value={confirmarSenha}
               onChange={(e) => setConfirmarSenha(e.target.value)}
-              className="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200"
               placeholder="Repita a senha"
+              InputLabelProps={{ shrink: true }}
             />
           </div>
           <div className="md:col-span-2">
