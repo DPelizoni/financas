@@ -1,6 +1,7 @@
 "use client";
 
-import { AlertCircle, CheckCircle, X } from "lucide-react";
+import { Alert, Snackbar } from "@mui/material";
+import { SyntheticEvent } from "react";
 
 interface FeedbackMessage {
   type: "success" | "error";
@@ -20,29 +21,30 @@ export default function FeedbackAlert({
 }: FeedbackAlertProps) {
   if (!feedback) return null;
 
+  const handleClose = (_event?: SyntheticEvent | Event, reason?: string) => {
+    if (reason === "clickaway") {
+      return;
+    }
+
+    onClose();
+  };
+
   return (
-    <div
-      className={`${className} flex items-start justify-between gap-3 rounded-lg border px-4 py-3 ${
-        feedback.type === "success"
-          ? "border-emerald-200 bg-emerald-50 text-emerald-800"
-          : "border-red-200 bg-red-50 text-red-800"
-      }`}
+    <Snackbar
+      className={className}
+      open
+      autoHideDuration={4000}
+      onClose={handleClose}
+      anchorOrigin={{ vertical: "top", horizontal: "right" }}
     >
-      <div className="flex items-start gap-2 text-sm font-medium">
-        {feedback.type === "success" ? (
-          <CheckCircle size={18} className="mt-0.5" />
-        ) : (
-          <AlertCircle size={18} className="mt-0.5" />
-        )}
-        <span>{feedback.message}</span>
-      </div>
-      <button
-        onClick={onClose}
-        className="rounded p-1 hover:bg-black/5"
-        aria-label="Fechar notificação"
+      <Alert
+        onClose={handleClose}
+        severity={feedback.type === "success" ? "success" : "error"}
+        variant="filled"
+        sx={{ width: "100%" }}
       >
-        <X size={16} />
-      </button>
-    </div>
+        {feedback.message}
+      </Alert>
+    </Snackbar>
   );
 }

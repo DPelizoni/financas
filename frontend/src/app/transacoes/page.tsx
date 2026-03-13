@@ -34,6 +34,7 @@ import {
   ChevronUp,
   ChevronDown,
 } from "lucide-react";
+import { InputAdornment, MenuItem, TextField } from "@mui/material";
 import FeedbackAlert from "@/components/FeedbackAlert";
 import ConfirmDeleteModal from "@/components/ConfirmDeleteModal";
 import PageContainer from "@/components/PageContainer";
@@ -99,6 +100,11 @@ export default function TransacoesPage() {
   const copySectionClasses = getTransactionSectionClasses("blue");
   const deleteSectionClasses = getTransactionSectionClasses("red");
   const searchSectionClasses = getTransactionSectionClasses("gray");
+  const filterFieldSx = {
+    "& .MuiOutlinedInput-root": {
+      backgroundColor: "#fff",
+    },
+  };
 
   const [transacoes, setTransacoes] = useState<Transacao[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
@@ -757,128 +763,180 @@ export default function TransacoesPage() {
         {/* Filters */}
         <div className="rounded-lg bg-white p-4 shadow-sm">
           <TransactionSection title="Buscar Transações" tone="gray">
-            <div className="space-y-3">
+            <div className="mt-4 space-y-3">
               <div className="grid grid-cols-1 gap-3 lg:grid-cols-5">
                 <div>
-                  <TransactionSectionLabel tone="gray">
-                    Mês/Ano
-                  </TransactionSectionLabel>
-                  <input
+                  <TextField
                     type="month"
+                    label="Mês/Ano"
+                    variant="outlined"
+                    size="small"
+                    fullWidth
+                    sx={filterFieldSx}
                     value={filterMes}
                     onChange={(e) => {
                       setFilterMes(e.target.value);
                       handleFilterChange();
                     }}
-                    className={searchSectionClasses.input}
+                    InputLabelProps={{ shrink: true }}
                   />
                 </div>
 
                 {/* Tipo */}
                 <div>
-                  <TransactionSectionLabel tone="gray">
-                    Tipo
-                  </TransactionSectionLabel>
-                  <select
+                  <TextField
+                    select
+                    label="Tipo"
+                    variant="outlined"
+                    size="small"
+                    fullWidth
+                    sx={filterFieldSx}
+                    InputLabelProps={{ shrink: true }}
                     value={filterTipo}
                     onChange={(e) => {
                       setFilterTipo(e.target.value as any);
                       handleFilterChange();
                     }}
-                    className={searchSectionClasses.input}
+                    SelectProps={{
+                      displayEmpty: true,
+                      renderValue: (selected) => {
+                        if (selected === "") return "Todos";
+                        return selected === "DESPESA" ? "Despesa" : "Receita";
+                      },
+                    }}
                   >
-                    <option value="">Todos</option>
-                    <option value="DESPESA">Despesa</option>
-                    <option value="RECEITA">Receita</option>
-                  </select>
+                    <MenuItem value="">Todos</MenuItem>
+                    <MenuItem value="DESPESA">Despesa</MenuItem>
+                    <MenuItem value="RECEITA">Receita</MenuItem>
+                  </TextField>
                 </div>
 
                 {/* Categoria */}
                 <div>
-                  <TransactionSectionLabel tone="gray">
-                    Categoria
-                  </TransactionSectionLabel>
-                  <select
-                    value={filterCategoria}
+                  <TextField
+                    select
+                    label="Categoria"
+                    variant="outlined"
+                    size="small"
+                    fullWidth
+                    sx={filterFieldSx}
+                    InputLabelProps={{ shrink: true }}
+                    value={
+                      filterCategoria === "" ? "" : String(filterCategoria)
+                    }
                     onChange={(e) => {
                       setFilterCategoria(
                         e.target.value ? Number(e.target.value) : "",
                       );
                       handleFilterChange();
                     }}
-                    className={searchSectionClasses.input}
+                    SelectProps={{
+                      displayEmpty: true,
+                      renderValue: (selected) => {
+                        if (selected === "") return "Todos";
+                        const category = sortedCategories.find(
+                          (cat) => String(cat.id) === selected,
+                        );
+                        return category?.nome ?? "Todos";
+                      },
+                    }}
                   >
-                    <option value="">Todas</option>
+                    <MenuItem value="">Todos</MenuItem>
                     {sortedCategories.map((cat) => (
-                      <option key={cat.id} value={cat.id}>
+                      <MenuItem key={cat.id} value={cat.id}>
                         {cat.nome}
-                      </option>
+                      </MenuItem>
                     ))}
-                  </select>
+                  </TextField>
                 </div>
 
                 {/* Banco */}
                 <div>
-                  <TransactionSectionLabel tone="gray">
-                    Banco
-                  </TransactionSectionLabel>
-                  <select
-                    value={filterBanco}
+                  <TextField
+                    select
+                    label="Banco"
+                    variant="outlined"
+                    size="small"
+                    fullWidth
+                    sx={filterFieldSx}
+                    InputLabelProps={{ shrink: true }}
+                    value={filterBanco === "" ? "" : String(filterBanco)}
                     onChange={(e) => {
                       setFilterBanco(
                         e.target.value ? Number(e.target.value) : "",
                       );
                       handleFilterChange();
                     }}
-                    className={searchSectionClasses.input}
+                    SelectProps={{
+                      displayEmpty: true,
+                      renderValue: (selected) => {
+                        if (selected === "") return "Todos";
+                        const bank = sortedBanks.find(
+                          (item) => String(item.id) === selected,
+                        );
+                        return bank?.nome ?? "Todos";
+                      },
+                    }}
                   >
-                    <option value="">Todos</option>
+                    <MenuItem value="">Todos</MenuItem>
                     {sortedBanks.map((bank) => (
-                      <option key={bank.id} value={bank.id}>
+                      <MenuItem key={bank.id} value={bank.id}>
                         {bank.nome}
-                      </option>
+                      </MenuItem>
                     ))}
-                  </select>
+                  </TextField>
                 </div>
 
                 {/* Situação */}
                 <div>
-                  <TransactionSectionLabel tone="gray">
-                    Situação
-                  </TransactionSectionLabel>
-                  <select
+                  <TextField
+                    select
+                    label="Situação"
+                    variant="outlined"
+                    size="small"
+                    fullWidth
+                    sx={filterFieldSx}
+                    InputLabelProps={{ shrink: true }}
                     value={filterSituacao}
                     onChange={(e) => {
                       setFilterSituacao(e.target.value as any);
                       handleFilterChange();
                     }}
-                    className={searchSectionClasses.input}
+                    SelectProps={{
+                      displayEmpty: true,
+                      renderValue: (selected) => {
+                        if (selected === "") return "Todos";
+                        return selected === "PAGO" ? "Pago" : "Pendente";
+                      },
+                    }}
                   >
-                    <option value="">Todas</option>
-                    <option value="PAGO">Pago</option>
-                    <option value="PENDENTE">Pendente</option>
-                  </select>
+                    <MenuItem value="">Todos</MenuItem>
+                    <MenuItem value="PAGO">Pago</MenuItem>
+                    <MenuItem value="PENDENTE">Pendente</MenuItem>
+                  </TextField>
                 </div>
               </div>
 
               <div className="grid grid-cols-1 gap-3 lg:grid-cols-5">
                 <div className="lg:col-span-4">
-                  <TransactionSectionLabel tone="gray">
-                    Buscar
-                  </TransactionSectionLabel>
-                  <div className="relative">
-                    <Search
-                      size={18}
-                      className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
-                    />
-                    <input
-                      type="search"
-                      placeholder="Buscar..."
-                      value={searchTerm}
-                      onChange={(e) => handleSearch(e.target.value)}
-                      className={`${searchSectionClasses.input} py-2 pl-10 pr-3`}
-                    />
-                  </div>
+                  <TextField
+                    type="search"
+                    label="Buscar"
+                    placeholder="Digitar..."
+                    variant="outlined"
+                    size="small"
+                    fullWidth
+                    sx={filterFieldSx}
+                    value={searchTerm}
+                    onChange={(e) => handleSearch(e.target.value)}
+                    InputProps={{
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <Search size={18} className="text-gray-400" />
+                        </InputAdornment>
+                      ),
+                    }}
+                  />
                 </div>
 
                 <div className="flex items-end">

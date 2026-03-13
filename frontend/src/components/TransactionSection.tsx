@@ -84,7 +84,7 @@ export function getTransactionSectionClasses(tone: TransactionSectionTone) {
   const palette = toneStyles[tone];
 
   return {
-    container: `mb-4 rounded-lg border border-dashed p-4 ${palette.container}`,
+    container: `rounded-lg border border-dashed p-4 ${palette.container}`,
     title: `mb-3 text-sm font-semibold ${palette.title}`,
     label: `mb-1 block text-xs font-medium ${palette.label}`,
     input: `${baseInputClass} ${palette.input}`,
