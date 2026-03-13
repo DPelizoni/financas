@@ -6,6 +6,7 @@ import { descricaoService } from "@/services/descricaoService";
 import { categoryService } from "@/services/categoryService";
 import { Descricao, DescricaoInput } from "@/types/descricao";
 import { Category } from "@/types/category";
+import { MenuItem, TextField } from "@mui/material";
 
 interface DescricaoModalProps {
   descricao: Descricao | null;
@@ -18,6 +19,11 @@ export default function DescricaoModal({
   onClose,
   onSave,
 }: DescricaoModalProps) {
+  const modalFieldSx = {
+    "& .MuiOutlinedInput-root": {
+      backgroundColor: "#fff",
+    },
+  };
   const [formData, setFormData] = useState<DescricaoInput>({
     nome: "",
     categoria_id: 0,
@@ -181,28 +187,24 @@ export default function DescricaoModal({
           )}
 
           <div>
-            <label className="mb-1 block text-sm font-medium text-gray-700">
-              Nome da Descrição <span className="text-red-500">*</span>
-            </label>
-            <input
+            <TextField
               type="text"
+              label="Nome da Descrição *"
               autoFocus
+              variant="outlined"
+              size="small"
+              fullWidth
+              sx={modalFieldSx}
               value={formData.nome}
               onChange={(e) => handleChange("nome", e.target.value)}
-              className={`w-full rounded-lg border px-3 py-2 text-gray-900 placeholder:text-gray-400 focus:border-transparent focus:ring-2 focus:ring-blue-500 ${
-                errors.nome ? "border-red-500" : "border-gray-300"
-              }`}
               placeholder="Ex: Supermercado, Padaria"
+              InputLabelProps={{ shrink: true }}
+              error={Boolean(errors.nome)}
+              helperText={errors.nome}
             />
-            {errors.nome && (
-              <p className="mt-1 text-sm text-red-600">{errors.nome}</p>
-            )}
           </div>
 
           <div>
-            <label className="mb-1 block text-sm font-medium text-gray-700">
-              Categoria <span className="text-red-500">*</span>
-            </label>
             {categoriesLoading ? (
               <div className="flex h-10 items-center justify-center rounded-lg border border-gray-300 bg-gray-50">
                 <p className="text-sm text-gray-500">
@@ -216,22 +218,27 @@ export default function DescricaoModal({
                 </p>
               </div>
             ) : (
-              <select
+              <TextField
+                select
+                label="Categoria *"
+                variant="outlined"
+                size="small"
+                fullWidth
+                sx={modalFieldSx}
                 value={formData.categoria_id}
                 onChange={(e) =>
                   handleChange("categoria_id", Number(e.target.value))
                 }
-                className={`w-full rounded-lg border px-3 py-2 text-gray-900 focus:border-transparent focus:ring-2 focus:ring-blue-500 ${
-                  errors.categoria_id ? "border-red-500" : "border-gray-300"
-                }`}
+                InputLabelProps={{ shrink: true }}
+                error={Boolean(errors.categoria_id)}
               >
-                <option value={0}>Selecione uma categoria</option>
+                <MenuItem value={0}>Selecione uma categoria</MenuItem>
                 {sortedCategories.map((cat) => (
-                  <option key={cat.id} value={cat.id}>
+                  <MenuItem key={cat.id} value={cat.id}>
                     {cat.nome} ({cat.tipo})
-                  </option>
+                  </MenuItem>
                 ))}
-              </select>
+              </TextField>
             )}
             {errors.categoria_id && (
               <p className="mt-1 text-sm text-red-600">{errors.categoria_id}</p>

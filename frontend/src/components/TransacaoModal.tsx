@@ -10,6 +10,7 @@ import { categoryService } from "@/services/categoryService";
 import { descricaoService } from "@/services/descricaoService";
 import { bankService } from "@/services/bankService";
 import { X } from "lucide-react";
+import { MenuItem, TextField } from "@mui/material";
 
 interface TransacaoModalProps {
   isOpen: boolean;
@@ -26,6 +27,11 @@ export const TransacaoModal: React.FC<TransacaoModalProps> = ({
   transacao,
   isEditing = false,
 }) => {
+  const modalFieldSx = {
+    "& .MuiOutlinedInput-root": {
+      backgroundColor: "#fff",
+    },
+  };
   const [formData, setFormData] = useState<TransacaoInput>({
     mes: "",
     vencimento: "",
@@ -287,11 +293,13 @@ export const TransacaoModal: React.FC<TransacaoModalProps> = ({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* Mês */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Mês (MM/AAAA)
-              </label>
-              <input
+              <TextField
                 type="month"
+                label="Mês"
+                variant="outlined"
+                size="small"
+                fullWidth
+                sx={modalFieldSx}
                 value={toMonthInput(formData.mes)}
                 onChange={(e) =>
                   setFormData((prev) => ({
@@ -299,24 +307,21 @@ export const TransacaoModal: React.FC<TransacaoModalProps> = ({
                     mes: fromMonthInput(e.target.value),
                   }))
                 }
-                className={`w-full px-3 py-2 border rounded-lg text-sm focus:outline-none ${
-                  errors.mes
-                    ? "border-red-500"
-                    : "border-gray-300 focus:border-blue-500"
-                }`}
+                InputLabelProps={{ shrink: true }}
+                error={Boolean(errors.mes)}
+                helperText={errors.mes}
               />
-              {errors.mes && (
-                <p className="text-red-500 text-xs mt-1">{errors.mes}</p>
-              )}
             </div>
 
             {/* Vencimento */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Vencimento (DD/MM/AAAA)
-              </label>
-              <input
+              <TextField
                 type="date"
+                label="Vencimento"
+                variant="outlined"
+                size="small"
+                fullWidth
+                sx={modalFieldSx}
                 value={toDateInput(formData.vencimento)}
                 onChange={(e) =>
                   setFormData((prev) => ({
@@ -324,50 +329,46 @@ export const TransacaoModal: React.FC<TransacaoModalProps> = ({
                     vencimento: fromDateInput(e.target.value),
                   }))
                 }
-                className={`w-full px-3 py-2 border rounded-lg text-sm focus:outline-none ${
-                  errors.vencimento
-                    ? "border-red-500"
-                    : "border-gray-300 focus:border-blue-500"
-                }`}
+                InputLabelProps={{ shrink: true }}
+                error={Boolean(errors.vencimento)}
+                helperText={errors.vencimento}
               />
-              {errors.vencimento && (
-                <p className="text-red-500 text-xs mt-1">{errors.vencimento}</p>
-              )}
             </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* Tipo */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Tipo
-              </label>
-              <select
+              <TextField
+                select
+                label="Tipo"
+                variant="outlined"
+                size="small"
+                fullWidth
+                sx={modalFieldSx}
                 value={formData.tipo}
                 onChange={(e) =>
                   handleTypeChange(e.target.value as "DESPESA" | "RECEITA")
                 }
-                className={`w-full px-3 py-2 border rounded-lg text-sm focus:outline-none ${
-                  errors.tipo
-                    ? "border-red-500"
-                    : "border-gray-300 focus:border-blue-500"
-                }`}
+                InputLabelProps={{ shrink: true }}
+                error={Boolean(errors.tipo)}
+                helperText={errors.tipo}
               >
-                <option value="">Selecione...</option>
-                <option value="DESPESA">Despesa</option>
-                <option value="RECEITA">Receita</option>
-              </select>
-              {errors.tipo && (
-                <p className="text-red-500 text-xs mt-1">{errors.tipo}</p>
-              )}
+                <MenuItem value="">Selecione...</MenuItem>
+                <MenuItem value="DESPESA">Despesa</MenuItem>
+                <MenuItem value="RECEITA">Receita</MenuItem>
+              </TextField>
             </div>
 
             {/* Situação */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Situação
-              </label>
-              <select
+              <TextField
+                select
+                label="Situação"
+                variant="outlined"
+                size="small"
+                fullWidth
+                sx={modalFieldSx}
                 value={formData.situacao}
                 onChange={(e) =>
                   setFormData((prev) => ({
@@ -375,49 +376,48 @@ export const TransacaoModal: React.FC<TransacaoModalProps> = ({
                     situacao: e.target.value as "PENDENTE" | "PAGO",
                   }))
                 }
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-blue-500"
+                InputLabelProps={{ shrink: true }}
               >
-                <option value="PAGO">Pago</option>
-                <option value="PENDENTE">Pendente</option>
-              </select>
+                <MenuItem value="PAGO">Pago</MenuItem>
+                <MenuItem value="PENDENTE">Pendente</MenuItem>
+              </TextField>
             </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* Categoria */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Categoria
-              </label>
-              <select
+              <TextField
+                select
+                label="Categoria"
+                variant="outlined"
+                size="small"
+                fullWidth
+                sx={modalFieldSx}
                 value={formData.categoria_id}
                 onChange={(e) => handleCategoryChange(Number(e.target.value))}
-                className={`w-full px-3 py-2 border rounded-lg text-sm focus:outline-none ${
-                  errors.categoria_id
-                    ? "border-red-500"
-                    : "border-gray-300 focus:border-blue-500"
-                }`}
+                InputLabelProps={{ shrink: true }}
+                error={Boolean(errors.categoria_id)}
+                helperText={errors.categoria_id}
               >
-                <option value="">Selecione...</option>
+                <MenuItem value="">Selecione...</MenuItem>
                 {sortedCategories.map((cat) => (
-                  <option key={cat.id} value={cat.id}>
+                  <MenuItem key={cat.id} value={cat.id}>
                     {cat.nome}
-                  </option>
+                  </MenuItem>
                 ))}
-              </select>
-              {errors.categoria_id && (
-                <p className="text-red-500 text-xs mt-1">
-                  {errors.categoria_id}
-                </p>
-              )}
+              </TextField>
             </div>
 
             {/* Descrição */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Descrição
-              </label>
-              <select
+              <TextField
+                select
+                label="Descrição"
+                variant="outlined"
+                size="small"
+                fullWidth
+                sx={modalFieldSx}
                 value={formData.descricao_id}
                 onChange={(e) =>
                   setFormData((prev) => ({
@@ -426,34 +426,30 @@ export const TransacaoModal: React.FC<TransacaoModalProps> = ({
                   }))
                 }
                 disabled={formData.categoria_id <= 0}
-                className={`w-full px-3 py-2 border rounded-lg text-sm focus:outline-none ${
-                  errors.descricao_id
-                    ? "border-red-500"
-                    : "border-gray-300 focus:border-blue-500"
-                } ${formData.categoria_id <= 0 ? "bg-gray-100 cursor-not-allowed" : ""}`}
+                InputLabelProps={{ shrink: true }}
+                error={Boolean(errors.descricao_id)}
+                helperText={errors.descricao_id}
               >
-                <option value="">Selecione uma categoria primeiro</option>
+                <MenuItem value="">Selecione uma categoria primeiro</MenuItem>
                 {sortedDescricoes.map((desc) => (
-                  <option key={desc.id} value={desc.id}>
+                  <MenuItem key={desc.id} value={desc.id}>
                     {desc.nome}
-                  </option>
+                  </MenuItem>
                 ))}
-              </select>
-              {errors.descricao_id && (
-                <p className="text-red-500 text-xs mt-1">
-                  {errors.descricao_id}
-                </p>
-              )}
+              </TextField>
             </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* Banco */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Banco
-              </label>
-              <select
+              <TextField
+                select
+                label="Banco"
+                variant="outlined"
+                size="small"
+                fullWidth
+                sx={modalFieldSx}
                 value={formData.banco_id}
                 onChange={(e) =>
                   setFormData((prev) => ({
@@ -461,33 +457,30 @@ export const TransacaoModal: React.FC<TransacaoModalProps> = ({
                     banco_id: Number(e.target.value),
                   }))
                 }
-                className={`w-full px-3 py-2 border rounded-lg text-sm focus:outline-none ${
-                  errors.banco_id
-                    ? "border-red-500"
-                    : "border-gray-300 focus:border-blue-500"
-                }`}
+                InputLabelProps={{ shrink: true }}
+                error={Boolean(errors.banco_id)}
+                helperText={errors.banco_id}
               >
-                <option value="">Selecione...</option>
+                <MenuItem value="">Selecione...</MenuItem>
                 {sortedBanks.map((bank) => (
-                  <option key={bank.id} value={bank.id}>
+                  <MenuItem key={bank.id} value={bank.id}>
                     {bank.nome}
-                  </option>
+                  </MenuItem>
                 ))}
-              </select>
-              {errors.banco_id && (
-                <p className="text-red-500 text-xs mt-1">{errors.banco_id}</p>
-              )}
+              </TextField>
             </div>
 
             {/* Valor */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Valor
-              </label>
-              <input
+              <TextField
                 type="number"
+                label="Valor"
                 placeholder="0.00"
-                step="0.01"
+                variant="outlined"
+                size="small"
+                fullWidth
+                sx={modalFieldSx}
+                inputProps={{ step: "0.01" }}
                 value={formData.valor || ""}
                 onChange={(e) =>
                   setFormData((prev) => ({
@@ -495,15 +488,10 @@ export const TransacaoModal: React.FC<TransacaoModalProps> = ({
                     valor: Number(e.target.value),
                   }))
                 }
-                className={`w-full px-3 py-2 border rounded-lg text-sm focus:outline-none ${
-                  errors.valor
-                    ? "border-red-500"
-                    : "border-gray-300 focus:border-blue-500"
-                }`}
+                InputLabelProps={{ shrink: true }}
+                error={Boolean(errors.valor)}
+                helperText={errors.valor}
               />
-              {errors.valor && (
-                <p className="text-red-500 text-xs mt-1">{errors.valor}</p>
-              )}
             </div>
           </div>
 

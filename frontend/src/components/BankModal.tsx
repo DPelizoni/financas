@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { X } from "lucide-react";
 import { bankService } from "@/services/bankService";
 import { Bank, BankInput } from "@/types/bank";
+import { TextField } from "@mui/material";
 
 interface BankModalProps {
   bank: Bank | null;
@@ -12,6 +13,11 @@ interface BankModalProps {
 }
 
 export default function BankModal({ bank, onClose, onSave }: BankModalProps) {
+  const modalFieldSx = {
+    "& .MuiOutlinedInput-root": {
+      backgroundColor: "#fff",
+    },
+  };
   const [formData, setFormData] = useState<BankInput>({
     nome: "",
     codigo: "",
@@ -229,43 +235,41 @@ export default function BankModal({ bank, onClose, onSave }: BankModalProps) {
 
           {/* Nome */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Nome do Banco <span className="text-red-500">*</span>
-            </label>
-            <input
+            <TextField
               type="text"
+              label="Nome do Banco *"
               autoFocus
+              variant="outlined"
+              size="small"
+              fullWidth
+              sx={modalFieldSx}
               value={formData.nome}
               onChange={(e) => handleChange("nome", e.target.value)}
-              className={`w-full px-3 py-2 border text-gray-900 placeholder:text-gray-400 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                errors.nome ? "border-red-500" : "border-gray-300"
-              }`}
               placeholder="Ex: Nubank, Itaú, Bradesco"
+              InputLabelProps={{ shrink: true }}
+              error={Boolean(errors.nome)}
+              helperText={errors.nome}
             />
-            {errors.nome && (
-              <p className="mt-1 text-sm text-red-600">{errors.nome}</p>
-            )}
           </div>
 
           {/* Código */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Código do Banco
-            </label>
-            <input
+            <TextField
               type="text"
+              label="Código do Banco"
+              variant="outlined"
+              size="small"
+              fullWidth
+              sx={modalFieldSx}
               value={formData.codigo}
               onChange={(e) => handleChange("codigo", e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 text-gray-900 placeholder:text-gray-400 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               placeholder="Ex: 260, 341"
+              InputLabelProps={{ shrink: true }}
             />
           </div>
 
           {/* Cor */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Cor
-            </label>
             <div className="flex gap-2">
               <input
                 type="color"
@@ -273,29 +277,33 @@ export default function BankModal({ bank, onClose, onSave }: BankModalProps) {
                 onChange={(e) => handleChange("cor", e.target.value)}
                 className="h-10 w-20 rounded border border-gray-300 cursor-pointer"
               />
-              <input
+              <TextField
                 type="text"
+                label="Cor"
+                variant="outlined"
+                size="small"
+                fullWidth
+                sx={modalFieldSx}
                 value={formData.cor}
                 onChange={(e) => handleChange("cor", e.target.value)}
-                className={`flex-1 px-3 py-2 border text-gray-900 placeholder:text-gray-400 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                  errors.cor ? "border-red-500" : "border-gray-300"
-                }`}
                 placeholder="#3B82F6"
+                InputLabelProps={{ shrink: true }}
+                error={Boolean(errors.cor)}
+                helperText={errors.cor}
               />
             </div>
-            {errors.cor && (
-              <p className="mt-1 text-sm text-red-600">{errors.cor}</p>
-            )}
           </div>
 
           {/* Saldo Inicial */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Saldo Inicial
-            </label>
-            <input
+            <TextField
               type="text"
+              label="Saldo Inicial"
               inputMode="decimal"
+              variant="outlined"
+              size="small"
+              fullWidth
+              sx={modalFieldSx}
               value={saldoDisplay}
               onChange={(e) => {
                 const inputValue = e.target.value;
@@ -307,16 +315,11 @@ export default function BankModal({ bank, onClose, onSave }: BankModalProps) {
                 const formatted = formatBrlInput(formData.saldo_inicial || 0);
                 setSaldoDisplay(formatted);
               }}
-              className={`w-full px-3 py-2 border text-gray-900 placeholder:text-gray-400 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                errors.saldo_inicial ? "border-red-500" : "border-gray-300"
-              }`}
               placeholder="0,00"
+              InputLabelProps={{ shrink: true }}
+              error={Boolean(errors.saldo_inicial)}
+              helperText={errors.saldo_inicial}
             />
-            {errors.saldo_inicial && (
-              <p className="mt-1 text-sm text-red-600">
-                {errors.saldo_inicial}
-              </p>
-            )}
           </div>
 
           {/* Ativo */}
