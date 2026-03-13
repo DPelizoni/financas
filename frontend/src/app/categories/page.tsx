@@ -381,7 +381,7 @@ export default function CategoriesPage() {
               </div>
 
               <div className="hidden overflow-x-auto md:block">
-                <table className="min-w-[850px] divide-y divide-gray-200">
+                <table className="min-w-[850px] w-full divide-y divide-gray-200">
                   <thead className="border-b bg-gray-100">
                     <tr>
                       <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">
