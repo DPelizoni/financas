@@ -173,14 +173,14 @@ export default function BanksPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
+    <div className="min-h-screen bg-gray-50 py-4 sm:py-8">
       <div className="mx-auto max-w-7xl space-y-6 px-4 sm:px-6 lg:px-8">
         <FeedbackAlert feedback={feedback} onClose={() => setFeedback(null)} />
 
         <PageContainer>
-          <div className="flex items-center justify-between gap-4">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
+              <h1 className="flex items-center gap-3 text-2xl font-bold text-gray-900 sm:text-3xl">
                 <Building2 size={32} className="text-blue-600" />
                 Gerenciamento de Bancos
               </h1>
@@ -190,7 +190,7 @@ export default function BanksPage() {
             </div>
             <button
               onClick={handleCreate}
-              className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+              className="flex w-full items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-white transition-colors hover:bg-blue-700 sm:w-auto"
             >
               <Plus size={20} />
               Novo Banco
@@ -233,7 +233,7 @@ export default function BanksPage() {
                 }}
               />
             </div>
-            <div className="flex gap-2">
+            <div className="flex flex-wrap gap-2">
               <button
                 onClick={() => setFilterAtivo(undefined)}
                 className={`px-4 py-2 rounded-lg transition-colors ${
@@ -288,132 +288,195 @@ export default function BanksPage() {
             </div>
           ) : (
             <>
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="border-b bg-gray-100">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">
-                      <button
-                        type="button"
-                        onClick={() => handleSort("nome")}
-                        className="inline-flex items-center gap-1"
-                      >
-                        Banco
-                        {sortBy === "nome" && sortDirection === "asc" ? (
-                          <ChevronUp size={14} />
-                        ) : sortBy === "nome" ? (
-                          <ChevronDown size={14} />
-                        ) : null}
-                      </button>
-                    </th>
-                    <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">
-                      <button
-                        type="button"
-                        onClick={() => handleSort("codigo")}
-                        className="inline-flex items-center gap-1"
-                      >
-                        Código
-                        {sortBy === "codigo" && sortDirection === "asc" ? (
-                          <ChevronUp size={14} />
-                        ) : sortBy === "codigo" ? (
-                          <ChevronDown size={14} />
-                        ) : null}
-                      </button>
-                    </th>
-                    <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">
-                      <button
-                        type="button"
-                        onClick={() => handleSort("saldo")}
-                        className="inline-flex items-center gap-1"
-                      >
-                        Saldo Inicial
-                        {sortBy === "saldo" && sortDirection === "asc" ? (
-                          <ChevronUp size={14} />
-                        ) : sortBy === "saldo" ? (
-                          <ChevronDown size={14} />
-                        ) : null}
-                      </button>
-                    </th>
-                    <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">
-                      <button
-                        type="button"
-                        onClick={() => handleSort("status")}
-                        className="inline-flex items-center gap-1"
-                      >
-                        Status
-                        {sortBy === "status" && sortDirection === "asc" ? (
-                          <ChevronUp size={14} />
-                        ) : sortBy === "status" ? (
-                          <ChevronDown size={14} />
-                        ) : null}
-                      </button>
-                    </th>
-                    <th className="px-6 py-3 text-right text-sm font-semibold text-gray-900">
-                      Ações
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {sortedBanks.map((bank) => (
-                    <tr
-                      key={bank.id}
-                      className="hover:bg-gray-50 transition-colors"
-                    >
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="flex items-center">
-                          <div
-                            className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold mr-3"
-                            style={{ backgroundColor: bank.cor }}
-                          >
-                            {bank.nome.substring(0, 2).toUpperCase()}
-                          </div>
-                          <div className="text-sm font-medium text-gray-900">
+              <div className="space-y-2 p-2 sm:p-3 md:hidden">
+                {sortedBanks.map((bank) => (
+                  <div
+                    key={bank.id}
+                    className="rounded-xl border border-gray-200/80 bg-gradient-to-b from-white to-gray-50 p-4 shadow-[0_1px_2px_rgba(0,0,0,0.06)]"
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex items-center gap-3">
+                        <div
+                          className="flex h-10 w-10 items-center justify-center rounded-full font-bold text-white"
+                          style={{ backgroundColor: bank.cor }}
+                        >
+                          {bank.nome.substring(0, 2).toUpperCase()}
+                        </div>
+                        <div>
+                          <p className="text-sm font-semibold text-gray-900">
                             {bank.nome}
-                          </div>
+                          </p>
+                          <p className="text-xs text-gray-600">
+                            Código: {bank.codigo || "-"}
+                          </p>
                         </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-900">
-                          {bank.codigo || "-"}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-900">
-                          {formatCurrencyBRL(bank.saldo_inicial)}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        {bank.ativo ? (
-                          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                            <CheckCircle size={14} />
-                            Ativo
-                          </span>
-                        ) : (
-                          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
-                            <XCircle size={14} />
-                            Inativo
-                          </span>
-                        )}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                      </div>
+                      {bank.ativo ? (
+                        <span className="inline-flex items-center gap-1 rounded-full bg-green-100 px-2.5 py-1 text-[11px] font-semibold leading-none text-green-800">
+                          <CheckCircle size={14} />
+                          Ativo
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1 rounded-full bg-red-100 px-2.5 py-1 text-[11px] font-semibold leading-none text-red-800">
+                          <XCircle size={14} />
+                          Inativo
+                        </span>
+                      )}
+                    </div>
+
+                    <div className="mt-3 text-sm text-gray-700">
+                      <span className="font-medium">Saldo Inicial: </span>
+                      {formatCurrencyBRL(bank.saldo_inicial)}
+                    </div>
+
+                    <div className="mt-3 flex items-center justify-end gap-2 border-t border-gray-100 pt-3">
+                      <button
+                        onClick={() => handleEdit(bank)}
+                        className="inline-flex h-11 w-11 items-center justify-center rounded-lg text-blue-600 transition hover:bg-blue-50 hover:text-blue-900"
+                        title="Editar"
+                      >
+                        <Edit2 size={18} />
+                      </button>
+                      <button
+                        onClick={() => handleDelete(bank)}
+                        className="inline-flex h-11 w-11 items-center justify-center rounded-lg text-red-600 transition hover:bg-red-50 hover:text-red-900"
+                        title="Excluir"
+                      >
+                        <Trash2 size={18} />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div className="hidden overflow-x-auto md:block">
+                <table className="min-w-[900px] divide-y divide-gray-200">
+                  <thead className="border-b bg-gray-100">
+                    <tr>
+                      <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">
                         <button
-                          onClick={() => handleEdit(bank)}
-                          className="text-blue-600 hover:text-blue-900 mr-4"
-                          title="Editar"
+                          type="button"
+                          onClick={() => handleSort("nome")}
+                          className="inline-flex items-center gap-1"
                         >
-                          <Edit2 size={18} />
+                          Banco
+                          {sortBy === "nome" && sortDirection === "asc" ? (
+                            <ChevronUp size={14} />
+                          ) : sortBy === "nome" ? (
+                            <ChevronDown size={14} />
+                          ) : null}
                         </button>
+                      </th>
+                      <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">
                         <button
-                          onClick={() => handleDelete(bank)}
-                          className="text-red-600 hover:text-red-900"
-                          title="Excluir"
+                          type="button"
+                          onClick={() => handleSort("codigo")}
+                          className="inline-flex items-center gap-1"
                         >
-                          <Trash2 size={18} />
+                          Código
+                          {sortBy === "codigo" && sortDirection === "asc" ? (
+                            <ChevronUp size={14} />
+                          ) : sortBy === "codigo" ? (
+                            <ChevronDown size={14} />
+                          ) : null}
                         </button>
-                      </td>
+                      </th>
+                      <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">
+                        <button
+                          type="button"
+                          onClick={() => handleSort("saldo")}
+                          className="inline-flex items-center gap-1"
+                        >
+                          Saldo Inicial
+                          {sortBy === "saldo" && sortDirection === "asc" ? (
+                            <ChevronUp size={14} />
+                          ) : sortBy === "saldo" ? (
+                            <ChevronDown size={14} />
+                          ) : null}
+                        </button>
+                      </th>
+                      <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">
+                        <button
+                          type="button"
+                          onClick={() => handleSort("status")}
+                          className="inline-flex items-center gap-1"
+                        >
+                          Status
+                          {sortBy === "status" && sortDirection === "asc" ? (
+                            <ChevronUp size={14} />
+                          ) : sortBy === "status" ? (
+                            <ChevronDown size={14} />
+                          ) : null}
+                        </button>
+                      </th>
+                      <th className="px-6 py-3 text-right text-sm font-semibold text-gray-900">
+                        Ações
+                      </th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {sortedBanks.map((bank) => (
+                      <tr
+                        key={bank.id}
+                        className="hover:bg-gray-50 transition-colors"
+                      >
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="flex items-center">
+                            <div
+                              className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold mr-3"
+                              style={{ backgroundColor: bank.cor }}
+                            >
+                              {bank.nome.substring(0, 2).toUpperCase()}
+                            </div>
+                            <div className="text-sm font-medium text-gray-900">
+                              {bank.nome}
+                            </div>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="text-sm text-gray-900">
+                            {bank.codigo || "-"}
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="text-sm text-gray-900">
+                            {formatCurrencyBRL(bank.saldo_inicial)}
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          {bank.ativo ? (
+                            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                              <CheckCircle size={14} />
+                              Ativo
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                              <XCircle size={14} />
+                              Inativo
+                            </span>
+                          )}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                          <button
+                            onClick={() => handleEdit(bank)}
+                            className="text-blue-600 hover:text-blue-900 mr-4"
+                            title="Editar"
+                          >
+                            <Edit2 size={18} />
+                          </button>
+                          <button
+                            onClick={() => handleDelete(bank)}
+                            className="text-red-600 hover:text-red-900"
+                            title="Excluir"
+                          >
+                            <Trash2 size={18} />
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
 
               <Pagination
                 currentPage={currentPage}

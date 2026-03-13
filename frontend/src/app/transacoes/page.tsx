@@ -585,12 +585,12 @@ export default function TransacoesPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 space-y-6">
+    <div className="min-h-screen bg-gray-50 py-4 sm:py-8">
+      <div className="mx-auto max-w-7xl space-y-6 px-4 sm:px-6 lg:px-8">
         <PageContainer>
-          <div className="flex items-center justify-between gap-4">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <h1 className="flex items-center gap-3 text-3xl font-bold text-gray-900">
+              <h1 className="flex items-center gap-3 text-2xl font-bold text-gray-900 sm:text-3xl">
                 <ArrowLeftRight size={32} className="text-blue-600" />
                 Gerenciamento de Transações
               </h1>
@@ -598,19 +598,19 @@ export default function TransacoesPage() {
                 Controle seus lançamentos de receitas e despesas
               </p>
             </div>
-            <div className="flex items-center gap-2">
-              <div className="relative">
+            <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center">
+              <div className="relative w-full sm:w-auto">
                 <button
                   type="button"
                   onClick={() => setAdvancedActionsOpen((prev) => !prev)}
-                  className="flex h-10 items-center gap-2 rounded-lg border border-gray-300 bg-gray-200 px-4 py-2 text-sm font-semibold text-gray-800 transition hover:bg-gray-300"
+                  className="flex h-10 w-full items-center justify-center gap-2 rounded-lg border border-gray-300 bg-gray-200 px-4 py-2 text-sm font-semibold text-gray-800 transition hover:bg-gray-300 sm:w-auto"
                 >
                   Ações Avançadas
                   <ChevronDown size={18} />
                 </button>
 
                 {advancedActionsOpen && (
-                  <div className="absolute right-0 z-20 mt-2 w-72 rounded-lg border border-gray-200 bg-white p-2 shadow-lg">
+                  <div className="absolute right-0 z-20 mt-2 w-full rounded-lg border border-gray-200 bg-white p-2 shadow-lg sm:w-72">
                     <button
                       type="button"
                       onClick={() => {
@@ -642,7 +642,7 @@ export default function TransacoesPage() {
                   setEditingTransacao(undefined);
                   setIsModalOpen(true);
                 }}
-                className="flex h-10 items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-white transition-colors hover:bg-blue-700"
+                className="flex h-10 w-full items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-white transition-colors hover:bg-blue-700 sm:w-auto"
               >
                 <Plus size={20} />
                 Nova Transação
@@ -955,8 +955,103 @@ export default function TransacoesPage() {
 
         {/* Table */}
         <div className="overflow-hidden rounded-lg bg-white shadow-sm">
-          <div className="overflow-x-auto">
-            <table className="w-full">
+          <div className="p-2 sm:p-3 md:hidden">
+            {transacoes.length === 0 ? (
+              <div className="rounded-lg border border-dashed border-gray-300 p-6 text-center text-gray-500">
+                <div className="flex flex-col items-center gap-3">
+                  <span>Nenhum registro encontrado</span>
+                  <button
+                    onClick={() => {
+                      setEditingTransacao(undefined);
+                      setIsModalOpen(true);
+                    }}
+                    className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-700"
+                  >
+                    Criar novo registro
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                {sortedTransacoes.map((transacao) => (
+                  <div
+                    key={transacao.id}
+                    className="rounded-xl border border-gray-200/80 bg-gradient-to-b from-white to-gray-50 p-4 shadow-[0_1px_2px_rgba(0,0,0,0.06)]"
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <p className="text-sm font-semibold text-gray-900">
+                          {transacao.descricao_nome || "Sem descrição"}
+                        </p>
+                        <p className="mt-1 text-xs text-gray-600">
+                          {transacao.mes} • Vencimento {transacao.vencimento}
+                        </p>
+                      </div>
+
+                      <span
+                        className={`inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-semibold leading-none ${
+                          transacao.tipo === "DESPESA"
+                            ? "bg-red-100 text-red-800"
+                            : "bg-green-100 text-green-800"
+                        }`}
+                      >
+                        {transacao.tipo}
+                      </span>
+                    </div>
+
+                    <div className="mt-3 space-y-1 text-sm text-gray-700">
+                      <p>
+                        <span className="font-medium">Categoria: </span>
+                        {transacao.categoria_nome || "-"}
+                      </p>
+                      <p>
+                        <span className="font-medium">Banco: </span>
+                        {transacao.banco_nome || "-"}
+                      </p>
+                    </div>
+
+                    <div className="mt-3 flex items-center justify-between">
+                      <button
+                        onClick={() => handleToggleSituacao(transacao)}
+                        className={`inline-flex min-h-8 items-center rounded-full px-2.5 py-1 text-[11px] font-semibold leading-none transition ${
+                          transacao.situacao === "PAGO"
+                            ? "bg-green-100 text-green-800 hover:bg-green-200"
+                            : "bg-yellow-100 text-yellow-800 hover:bg-yellow-200"
+                        }`}
+                      >
+                        {transacao.situacao}
+                      </button>
+                      <p className="text-sm font-bold text-gray-900">
+                        {formatCurrency(transacao.valor)}
+                      </p>
+                    </div>
+
+                    <div className="mt-3 flex items-center justify-end gap-2 border-t border-gray-100 pt-3">
+                      <button
+                        onClick={() => handleEdit(transacao)}
+                        className="inline-flex h-11 w-11 items-center justify-center rounded-lg text-blue-600 transition hover:bg-blue-50 hover:text-blue-800"
+                        title="Editar"
+                      >
+                        <Edit2 size={18} />
+                      </button>
+                      <button
+                        onClick={() =>
+                          handleDelete(transacao.id, transacao.mes)
+                        }
+                        className="inline-flex h-11 w-11 items-center justify-center rounded-lg text-red-600 transition hover:bg-red-50 hover:text-red-800"
+                        title="Excluir"
+                      >
+                        <Trash2 size={18} />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <div className="hidden overflow-x-auto md:block">
+            <table className="min-w-[1100px] w-full">
               <thead className="bg-gray-100 border-b">
                 <tr>
                   <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">

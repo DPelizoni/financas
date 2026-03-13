@@ -171,14 +171,14 @@ export default function CategoriesPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
+    <div className="min-h-screen bg-gray-50 py-4 sm:py-8">
       <div className="mx-auto max-w-7xl space-y-6 px-4 sm:px-6 lg:px-8">
         <FeedbackAlert feedback={feedback} onClose={() => setFeedback(null)} />
 
         <PageContainer>
-          <div className="flex items-center justify-between gap-4">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <h1 className="flex items-center gap-3 text-3xl font-bold text-gray-900">
+              <h1 className="flex items-center gap-3 text-2xl font-bold text-gray-900 sm:text-3xl">
                 <Tags size={32} className="text-blue-600" />
                 Gerenciamento de Categorias
               </h1>
@@ -188,7 +188,7 @@ export default function CategoriesPage() {
             </div>
             <button
               onClick={handleCreate}
-              className="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-white transition-colors hover:bg-blue-700"
+              className="flex w-full items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-white transition-colors hover:bg-blue-700 sm:w-auto"
             >
               <Plus size={20} />
               Nova Categoria
@@ -254,7 +254,7 @@ export default function CategoriesPage() {
               <MenuItem value="RECEITA">Receita</MenuItem>
             </TextField>
 
-            <div className="flex gap-2 md:col-span-4">
+            <div className="flex flex-wrap gap-2 md:col-span-4">
               <button
                 onClick={() => {
                   setFilterAtivo(undefined);
@@ -317,117 +317,184 @@ export default function CategoriesPage() {
             </div>
           ) : (
             <>
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="border-b bg-gray-100">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">
-                      <button
-                        type="button"
-                        onClick={() => handleSort("nome")}
-                        className="inline-flex items-center gap-1"
-                      >
-                        Categoria
-                        {sortBy === "nome" && sortDirection === "asc" ? (
-                          <ChevronUp size={14} />
-                        ) : sortBy === "nome" ? (
-                          <ChevronDown size={14} />
-                        ) : null}
-                      </button>
-                    </th>
-                    <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">
-                      <button
-                        type="button"
-                        onClick={() => handleSort("tipo")}
-                        className="inline-flex items-center gap-1"
-                      >
-                        Tipo
-                        {sortBy === "tipo" && sortDirection === "asc" ? (
-                          <ChevronUp size={14} />
-                        ) : sortBy === "tipo" ? (
-                          <ChevronDown size={14} />
-                        ) : null}
-                      </button>
-                    </th>
-                    <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">
-                      <button
-                        type="button"
-                        onClick={() => handleSort("status")}
-                        className="inline-flex items-center gap-1"
-                      >
-                        Status
-                        {sortBy === "status" && sortDirection === "asc" ? (
-                          <ChevronUp size={14} />
-                        ) : sortBy === "status" ? (
-                          <ChevronDown size={14} />
-                        ) : null}
-                      </button>
-                    </th>
-                    <th className="px-6 py-3 text-right text-sm font-semibold text-gray-900">
-                      Ações
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-200 bg-white">
-                  {sortedCategories.map((category) => (
-                    <tr
-                      key={category.id}
-                      className="transition-colors hover:bg-gray-50"
-                    >
-                      <td className="whitespace-nowrap px-6 py-4">
-                        <div className="flex items-center">
-                          <div
-                            className="mr-3 flex h-10 w-10 items-center justify-center rounded-full font-bold text-white"
-                            style={{ backgroundColor: category.cor }}
-                          >
-                            {category.nome.substring(0, 2).toUpperCase()}
-                          </div>
-                          <div className="text-sm font-medium text-gray-900">
-                            {category.nome}
-                          </div>
+              <div className="space-y-2 p-2 sm:p-3 md:hidden">
+                {sortedCategories.map((category) => (
+                  <div
+                    key={category.id}
+                    className="rounded-xl border border-gray-200/80 bg-gradient-to-b from-white to-gray-50 p-4 shadow-[0_1px_2px_rgba(0,0,0,0.06)]"
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex items-center gap-3">
+                        <div
+                          className="flex h-10 w-10 items-center justify-center rounded-full font-bold text-white"
+                          style={{ backgroundColor: category.cor }}
+                        >
+                          {category.nome.substring(0, 2).toUpperCase()}
                         </div>
-                      </td>
-                      <td className="whitespace-nowrap px-6 py-4">
-                        <span
-                          className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium ${tipoBadge(
-                            category.tipo,
-                          )}`}
-                        >
-                          {category.tipo === "RECEITA" ? "Receita" : "Despesa"}
+                        <div>
+                          <p className="text-sm font-semibold text-gray-900">
+                            {category.nome}
+                          </p>
+                          <span
+                            className={`inline-flex rounded-full px-2.5 py-1 text-[11px] font-semibold leading-none ${tipoBadge(
+                              category.tipo,
+                            )}`}
+                          >
+                            {category.tipo === "RECEITA"
+                              ? "Receita"
+                              : "Despesa"}
+                          </span>
+                        </div>
+                      </div>
+
+                      {category.ativo ? (
+                        <span className="inline-flex items-center gap-1 rounded-full bg-green-100 px-2.5 py-1 text-[11px] font-semibold leading-none text-green-800">
+                          <CheckCircle size={14} />
+                          Ativo
                         </span>
-                      </td>
-                      <td className="whitespace-nowrap px-6 py-4">
-                        {category.ativo ? (
-                          <span className="inline-flex items-center gap-1 rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-800">
-                            <CheckCircle size={14} />
-                            Ativo
-                          </span>
-                        ) : (
-                          <span className="inline-flex items-center gap-1 rounded-full bg-red-100 px-2.5 py-0.5 text-xs font-medium text-red-800">
-                            <XCircle size={14} />
-                            Inativo
-                          </span>
-                        )}
-                      </td>
-                      <td className="whitespace-nowrap px-6 py-4 text-right text-sm font-medium">
+                      ) : (
+                        <span className="inline-flex items-center gap-1 rounded-full bg-red-100 px-2.5 py-1 text-[11px] font-semibold leading-none text-red-800">
+                          <XCircle size={14} />
+                          Inativo
+                        </span>
+                      )}
+                    </div>
+
+                    <div className="mt-3 flex items-center justify-end gap-2 border-t border-gray-100 pt-3">
+                      <button
+                        onClick={() => handleEdit(category)}
+                        className="inline-flex h-11 w-11 items-center justify-center rounded-lg text-blue-600 transition hover:bg-blue-50 hover:text-blue-900"
+                        title="Editar"
+                      >
+                        <Edit2 size={18} />
+                      </button>
+                      <button
+                        onClick={() => handleDelete(category)}
+                        className="inline-flex h-11 w-11 items-center justify-center rounded-lg text-red-600 transition hover:bg-red-50 hover:text-red-900"
+                        title="Excluir"
+                      >
+                        <Trash2 size={18} />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div className="hidden overflow-x-auto md:block">
+                <table className="min-w-[850px] divide-y divide-gray-200">
+                  <thead className="border-b bg-gray-100">
+                    <tr>
+                      <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">
                         <button
-                          onClick={() => handleEdit(category)}
-                          className="mr-4 text-blue-600 hover:text-blue-900"
-                          title="Editar"
+                          type="button"
+                          onClick={() => handleSort("nome")}
+                          className="inline-flex items-center gap-1"
                         >
-                          <Edit2 size={18} />
+                          Categoria
+                          {sortBy === "nome" && sortDirection === "asc" ? (
+                            <ChevronUp size={14} />
+                          ) : sortBy === "nome" ? (
+                            <ChevronDown size={14} />
+                          ) : null}
                         </button>
+                      </th>
+                      <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">
                         <button
-                          onClick={() => handleDelete(category)}
-                          className="text-red-600 hover:text-red-900"
-                          title="Excluir"
+                          type="button"
+                          onClick={() => handleSort("tipo")}
+                          className="inline-flex items-center gap-1"
                         >
-                          <Trash2 size={18} />
+                          Tipo
+                          {sortBy === "tipo" && sortDirection === "asc" ? (
+                            <ChevronUp size={14} />
+                          ) : sortBy === "tipo" ? (
+                            <ChevronDown size={14} />
+                          ) : null}
                         </button>
-                      </td>
+                      </th>
+                      <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">
+                        <button
+                          type="button"
+                          onClick={() => handleSort("status")}
+                          className="inline-flex items-center gap-1"
+                        >
+                          Status
+                          {sortBy === "status" && sortDirection === "asc" ? (
+                            <ChevronUp size={14} />
+                          ) : sortBy === "status" ? (
+                            <ChevronDown size={14} />
+                          ) : null}
+                        </button>
+                      </th>
+                      <th className="px-6 py-3 text-right text-sm font-semibold text-gray-900">
+                        Ações
+                      </th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody className="divide-y divide-gray-200 bg-white">
+                    {sortedCategories.map((category) => (
+                      <tr
+                        key={category.id}
+                        className="transition-colors hover:bg-gray-50"
+                      >
+                        <td className="whitespace-nowrap px-6 py-4">
+                          <div className="flex items-center">
+                            <div
+                              className="mr-3 flex h-10 w-10 items-center justify-center rounded-full font-bold text-white"
+                              style={{ backgroundColor: category.cor }}
+                            >
+                              {category.nome.substring(0, 2).toUpperCase()}
+                            </div>
+                            <div className="text-sm font-medium text-gray-900">
+                              {category.nome}
+                            </div>
+                          </div>
+                        </td>
+                        <td className="whitespace-nowrap px-6 py-4">
+                          <span
+                            className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium ${tipoBadge(
+                              category.tipo,
+                            )}`}
+                          >
+                            {category.tipo === "RECEITA"
+                              ? "Receita"
+                              : "Despesa"}
+                          </span>
+                        </td>
+                        <td className="whitespace-nowrap px-6 py-4">
+                          {category.ativo ? (
+                            <span className="inline-flex items-center gap-1 rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-800">
+                              <CheckCircle size={14} />
+                              Ativo
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center gap-1 rounded-full bg-red-100 px-2.5 py-0.5 text-xs font-medium text-red-800">
+                              <XCircle size={14} />
+                              Inativo
+                            </span>
+                          )}
+                        </td>
+                        <td className="whitespace-nowrap px-6 py-4 text-right text-sm font-medium">
+                          <button
+                            onClick={() => handleEdit(category)}
+                            className="mr-4 text-blue-600 hover:text-blue-900"
+                            title="Editar"
+                          >
+                            <Edit2 size={18} />
+                          </button>
+                          <button
+                            onClick={() => handleDelete(category)}
+                            className="text-red-600 hover:text-red-900"
+                            title="Excluir"
+                          >
+                            <Trash2 size={18} />
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
 
               <Pagination
                 currentPage={currentPage}

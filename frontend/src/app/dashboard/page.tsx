@@ -405,12 +405,12 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
+    <div className="min-h-screen bg-gray-50 py-4 sm:py-8">
       <div className="mx-auto max-w-7xl space-y-6 px-4 sm:px-6 lg:px-8">
         <FeedbackAlert feedback={feedback} onClose={() => setFeedback(null)} />
 
         <PageContainer>
-          <h1 className="flex items-center gap-3 text-3xl font-bold text-gray-900">
+          <h1 className="flex items-center gap-3 text-2xl font-bold text-gray-900 sm:text-3xl">
             <BarChart3 size={32} className="text-blue-600" />
             Dashboard Executivo
           </h1>
@@ -705,7 +705,7 @@ export default function DashboardPage() {
                 ? "Resumo Mensal"
                 : "Evolução no Tempo e Saldo (12 meses)"}
             </h3>
-            <div className="h-96">
+            <div className="h-[520px] sm:h-96">
               {hasSingleTimelineMonth ? (
                 <div className="grid h-full grid-cols-1 gap-4 lg:grid-cols-2">
                   <div className="h-full rounded-lg border border-dashed border-gray-300 bg-gray-50 p-3">
@@ -751,7 +751,7 @@ export default function DashboardPage() {
                           🟢 Receita
                         </span>
                         <span className="font-semibold text-green-600">
-                          <span className="inline-block min-w-[170px] text-right tabular-nums">
+                          <span className="inline-block min-w-[145px] text-right tabular-nums sm:min-w-[170px]">
                             {currency(timeline[0].receitas)} ({receitaPercent}%)
                           </span>
                         </span>
@@ -761,7 +761,7 @@ export default function DashboardPage() {
                           🔴 Despesa
                         </span>
                         <span className="font-semibold text-red-600">
-                          <span className="inline-block min-w-[170px] text-right tabular-nums">
+                          <span className="inline-block min-w-[145px] text-right tabular-nums sm:min-w-[170px]">
                             {currency(timeline[0].despesas)} ({despesaPercent}%)
                           </span>
                         </span>
@@ -898,8 +898,67 @@ export default function DashboardPage() {
             </span>
           </div>
 
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
+          <div className="space-y-2 px-2 sm:px-0 md:hidden">
+            {detailedRows.length === 0 ? (
+              <div className="rounded-lg border border-dashed border-gray-300 px-4 py-8 text-center text-sm text-gray-500">
+                Nenhum registro encontrado com os filtros atuais.
+              </div>
+            ) : (
+              detailedRows.map((t) => (
+                <div
+                  key={t.id}
+                  className="rounded-xl border border-gray-200/80 bg-gradient-to-b from-white to-gray-50 p-4 shadow-[0_1px_2px_rgba(0,0,0,0.06)]"
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <p className="text-sm font-semibold text-gray-900">
+                        {t.descricao_nome || "Sem descrição"}
+                      </p>
+                      <p className="mt-1 text-xs text-gray-600">{t.mes}</p>
+                    </div>
+                    <span
+                      className={`inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-semibold leading-none ${
+                        t.tipo === "RECEITA"
+                          ? "bg-emerald-100 text-emerald-700"
+                          : "bg-red-100 text-red-700"
+                      }`}
+                    >
+                      {t.tipo}
+                    </span>
+                  </div>
+
+                  <div className="mt-3 space-y-1 text-sm text-gray-700">
+                    <p>
+                      <span className="font-medium">Categoria: </span>
+                      {t.categoria_nome || "-"}
+                    </p>
+                    <p>
+                      <span className="font-medium">Banco: </span>
+                      {t.banco_nome || "-"}
+                    </p>
+                  </div>
+
+                  <div className="mt-3 flex items-center justify-between">
+                    <span
+                      className={`inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-semibold leading-none ${
+                        t.situacao === "PAGO"
+                          ? "bg-green-100 text-green-700"
+                          : "bg-yellow-100 text-yellow-700"
+                      }`}
+                    >
+                      {t.situacao}
+                    </span>
+                    <span className="text-sm font-semibold text-gray-900">
+                      {currency(Number(t.valor))}
+                    </span>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+
+          <div className="hidden overflow-x-auto md:block">
+            <table className="min-w-[1100px] divide-y divide-gray-200">
               <thead className="border-b bg-gray-100">
                 <tr>
                   <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">
