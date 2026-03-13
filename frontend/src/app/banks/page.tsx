@@ -20,8 +20,14 @@ import Pagination from "@/components/Pagination";
 import FeedbackAlert from "@/components/FeedbackAlert";
 import ConfirmDeleteModal from "@/components/ConfirmDeleteModal";
 import PageContainer from "@/components/PageContainer";
+import { IconButton, InputAdornment, TextField } from "@mui/material";
 
 export default function BanksPage() {
+  const filterFieldSx = {
+    "& .MuiOutlinedInput-root": {
+      backgroundColor: "#fff",
+    },
+  };
   const [banks, setBanks] = useState<Bank[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
@@ -195,27 +201,37 @@ export default function BanksPage() {
         {/* Filters */}
         <div className="rounded-lg bg-white p-4 shadow-sm">
           <div className="flex flex-col md:flex-row gap-4">
-            <div className="flex-1 relative">
-              <Search
-                className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
-                size={20}
-              />
-              <input
+            <div className="flex-1">
+              <TextField
                 type="text"
-                placeholder="Buscar por nome ou código do banco..."
+                label="Buscar"
+                placeholder="Digitar..."
+                variant="outlined"
+                size="small"
+                fullWidth
+                sx={filterFieldSx}
                 value={searchTerm}
                 onChange={(e) => handleSearch(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 text-gray-900 placeholder:text-gray-400 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                InputLabelProps={{ shrink: true }}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <Search size={20} className="text-gray-400" />
+                    </InputAdornment>
+                  ),
+                  endAdornment: searchTerm ? (
+                    <InputAdornment position="end">
+                      <IconButton
+                        size="small"
+                        onClick={() => handleSearch("")}
+                        aria-label="Limpar pesquisa"
+                      >
+                        <X size={16} />
+                      </IconButton>
+                    </InputAdornment>
+                  ) : undefined,
+                }}
               />
-              {searchTerm && (
-                <button
-                  onClick={() => handleSearch("")}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
-                  aria-label="Limpar pesquisa"
-                >
-                  <X size={20} />
-                </button>
-              )}
             </div>
             <div className="flex gap-2">
               <button

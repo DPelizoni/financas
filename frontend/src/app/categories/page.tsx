@@ -20,8 +20,14 @@ import Pagination from "@/components/Pagination";
 import FeedbackAlert from "@/components/FeedbackAlert";
 import ConfirmDeleteModal from "@/components/ConfirmDeleteModal";
 import PageContainer from "@/components/PageContainer";
+import { IconButton, InputAdornment, MenuItem, TextField } from "@mui/material";
 
 export default function CategoriesPage() {
+  const filterFieldSx = {
+    "& .MuiOutlinedInput-root": {
+      backgroundColor: "#fff",
+    },
+  };
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
@@ -192,30 +198,47 @@ export default function CategoriesPage() {
 
         <div className="rounded-lg bg-white p-4 shadow-sm">
           <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
-            <div className="relative md:col-span-2">
-              <Search
-                className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
-                size={20}
-              />
-              <input
+            <div className="md:col-span-2">
+              <TextField
                 type="text"
-                placeholder="Buscar categoria..."
+                label="Buscar"
+                placeholder="Digitar..."
+                variant="outlined"
+                size="small"
+                fullWidth
+                sx={filterFieldSx}
                 value={searchTerm}
                 onChange={(e) => handleSearch(e.target.value)}
-                className="w-full rounded-lg border border-gray-300 py-2 pl-10 pr-10 text-gray-900 placeholder:text-gray-400 focus:border-transparent focus:ring-2 focus:ring-blue-500"
+                InputLabelProps={{ shrink: true }}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <Search size={20} className="text-gray-400" />
+                    </InputAdornment>
+                  ),
+                  endAdornment: searchTerm ? (
+                    <InputAdornment position="end">
+                      <IconButton
+                        size="small"
+                        onClick={() => handleSearch("")}
+                        aria-label="Limpar pesquisa"
+                      >
+                        <X size={16} />
+                      </IconButton>
+                    </InputAdornment>
+                  ) : undefined,
+                }}
               />
-              {searchTerm && (
-                <button
-                  onClick={() => handleSearch("")}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 transition-colors hover:text-gray-600"
-                  aria-label="Limpar pesquisa"
-                >
-                  <X size={20} />
-                </button>
-              )}
             </div>
 
-            <select
+            <TextField
+              select
+              label="Tipo"
+              variant="outlined"
+              size="small"
+              fullWidth
+              sx={filterFieldSx}
+              InputLabelProps={{ shrink: true }}
               value={filterTipo ?? ""}
               onChange={(e) => {
                 setFilterTipo(
@@ -225,12 +248,11 @@ export default function CategoriesPage() {
                 );
                 setCurrentPage(1);
               }}
-              className="rounded-lg border border-gray-300 px-3 py-2 text-gray-900 focus:border-transparent focus:ring-2 focus:ring-blue-500"
             >
-              <option value="">Todos os tipos</option>
-              <option value="DESPESA">Despesa</option>
-              <option value="RECEITA">Receita</option>
-            </select>
+              <MenuItem value="">Todos</MenuItem>
+              <MenuItem value="DESPESA">Despesa</MenuItem>
+              <MenuItem value="RECEITA">Receita</MenuItem>
+            </TextField>
 
             <div className="flex gap-2 md:col-span-4">
               <button

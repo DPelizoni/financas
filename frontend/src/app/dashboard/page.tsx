@@ -32,11 +32,8 @@ import { Category } from "@/types/category";
 import { Bank } from "@/types/bank";
 import FeedbackAlert from "@/components/FeedbackAlert";
 import PageContainer from "@/components/PageContainer";
-import {
-  getTransactionSectionClasses,
-  TransactionSection,
-  TransactionSectionLabel,
-} from "@/components/TransactionSection";
+import { TransactionSection } from "@/components/TransactionSection";
+import { MenuItem, TextField } from "@mui/material";
 
 interface MonthlyPoint {
   monthKey: string;
@@ -92,7 +89,11 @@ const currency = (value: number): string =>
   }).format(value);
 
 export default function DashboardPage() {
-  const filterSectionClasses = getTransactionSectionClasses("gray");
+  const filterFieldSx = {
+    "& .MuiOutlinedInput-root": {
+      backgroundColor: "#fff",
+    },
+  };
   const currentYear = String(new Date().getFullYear());
   const [loading, setLoading] = useState(true);
   const [feedback, setFeedback] = useState<{
@@ -423,129 +424,149 @@ export default function DashboardPage() {
           <TransactionSection title="Filtros Globais" tone="gray">
             <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-4">
               <div>
-                <TransactionSectionLabel tone="gray">
-                  Período
-                </TransactionSectionLabel>
-                <select
+                <TextField
+                  select
+                  label="Período"
+                  variant="outlined"
+                  size="small"
+                  fullWidth
+                  InputLabelProps={{ shrink: true }}
+                  sx={filterFieldSx}
                   value={periodMonths}
                   onChange={(e) => setPeriodMonths(Number(e.target.value))}
                   disabled={Boolean(filterMesAno)}
-                  className={`${filterSectionClasses.input} disabled:bg-gray-100 disabled:text-gray-500`}
                 >
-                  <option value={3}>Últimos 3 meses</option>
-                  <option value={6}>Últimos 6 meses</option>
-                  <option value={12}>Últimos 12 meses</option>
-                </select>
+                  <MenuItem value={3}>Últimos 3 meses</MenuItem>
+                  <MenuItem value={6}>Últimos 6 meses</MenuItem>
+                  <MenuItem value={12}>Últimos 12 meses</MenuItem>
+                </TextField>
               </div>
 
               <div>
-                <TransactionSectionLabel tone="gray">
-                  Mês/Ano
-                </TransactionSectionLabel>
-                <input
+                <TextField
                   type="month"
+                  label="Mês/Ano"
+                  variant="outlined"
+                  size="small"
+                  fullWidth
+                  sx={filterFieldSx}
                   value={filterMesAno}
                   onChange={(e) => setFilterMesAno(e.target.value)}
-                  className={filterSectionClasses.input}
                   title="Mês/Ano específico"
+                  InputLabelProps={{ shrink: true }}
                 />
               </div>
 
               <div>
-                <TransactionSectionLabel tone="gray">
-                  Ano
-                </TransactionSectionLabel>
-                <select
+                <TextField
+                  select
+                  label="Ano"
+                  variant="outlined"
+                  size="small"
+                  fullWidth
+                  InputLabelProps={{ shrink: true }}
+                  sx={filterFieldSx}
                   value={filterAno}
                   onChange={(e) => setFilterAno(e.target.value)}
                   disabled={Boolean(filterMesAno)}
-                  className={`${filterSectionClasses.input} disabled:bg-gray-100 disabled:text-gray-500`}
                 >
-                  <option value="">Todos</option>
+                  <MenuItem value="">Todos</MenuItem>
                   {availableYears.map((year) => (
-                    <option key={year} value={year}>
+                    <MenuItem key={year} value={year}>
                       {year}
-                    </option>
+                    </MenuItem>
                   ))}
-                </select>
+                </TextField>
               </div>
 
               <div>
-                <TransactionSectionLabel tone="gray">
-                  Tipo
-                </TransactionSectionLabel>
-                <select
+                <TextField
+                  select
+                  label="Tipo"
+                  variant="outlined"
+                  size="small"
+                  fullWidth
+                  InputLabelProps={{ shrink: true }}
+                  sx={filterFieldSx}
                   value={filterTipo}
                   onChange={(e) =>
                     setFilterTipo(e.target.value as "" | "DESPESA" | "RECEITA")
                   }
-                  className={filterSectionClasses.input}
                 >
-                  <option value="">Todos</option>
-                  <option value="DESPESA">Despesa</option>
-                  <option value="RECEITA">Receita</option>
-                </select>
+                  <MenuItem value="">Todos</MenuItem>
+                  <MenuItem value="DESPESA">Despesa</MenuItem>
+                  <MenuItem value="RECEITA">Receita</MenuItem>
+                </TextField>
               </div>
 
               <div>
-                <TransactionSectionLabel tone="gray">
-                  Situação
-                </TransactionSectionLabel>
-                <select
+                <TextField
+                  select
+                  label="Situação"
+                  variant="outlined"
+                  size="small"
+                  fullWidth
+                  InputLabelProps={{ shrink: true }}
+                  sx={filterFieldSx}
                   value={filterSituacao}
                   onChange={(e) =>
                     setFilterSituacao(
                       e.target.value as "" | "PENDENTE" | "PAGO",
                     )
                   }
-                  className={filterSectionClasses.input}
                 >
-                  <option value="">Todas</option>
-                  <option value="PAGO">Pago</option>
-                  <option value="PENDENTE">Pendente</option>
-                </select>
+                  <MenuItem value="">Todos</MenuItem>
+                  <MenuItem value="PAGO">Pago</MenuItem>
+                  <MenuItem value="PENDENTE">Pendente</MenuItem>
+                </TextField>
               </div>
 
               <div>
-                <TransactionSectionLabel tone="gray">
-                  Banco
-                </TransactionSectionLabel>
-                <select
+                <TextField
+                  select
+                  label="Banco"
+                  variant="outlined"
+                  size="small"
+                  fullWidth
+                  InputLabelProps={{ shrink: true }}
+                  sx={filterFieldSx}
                   value={filterBanco}
                   onChange={(e) =>
                     setFilterBanco(e.target.value ? Number(e.target.value) : "")
                   }
-                  className={filterSectionClasses.input}
                 >
-                  <option value="">Todos</option>
+                  <MenuItem value="">Todos</MenuItem>
                   {sortedBanks.map((bank) => (
-                    <option key={bank.id} value={bank.id}>
+                    <MenuItem key={bank.id} value={bank.id}>
                       {bank.nome}
-                    </option>
+                    </MenuItem>
                   ))}
-                </select>
+                </TextField>
               </div>
 
               <div>
-                <TransactionSectionLabel tone="gray">
-                  Categoria
-                </TransactionSectionLabel>
-                <select
+                <TextField
+                  select
+                  label="Categoria"
+                  variant="outlined"
+                  size="small"
+                  fullWidth
+                  InputLabelProps={{ shrink: true }}
+                  sx={filterFieldSx}
                   value={filterCategoria}
                   onChange={(e) =>
                     setFilterCategoria(
                       e.target.value ? Number(e.target.value) : "",
                     )
                   }
-                  className={filterSectionClasses.input}
                 >
-                  <option value="">Todas</option>
+                  <MenuItem value="">Todos</MenuItem>
                   {sortedCategories.map((category) => (
-                    <option key={category.id} value={category.id}>
+                    <MenuItem key={category.id} value={category.id}>
                       {category.nome}
-                    </option>
+                    </MenuItem>
                   ))}
-                </select>
+                </TextField>
               </div>
 
               <div className="flex items-end">
@@ -560,7 +581,7 @@ export default function DashboardPage() {
                     setFilterBanco("");
                     setPeriodMonths(12);
                   }}
-                  className="rounded-lg border border-gray-300 bg-gray-100 px-3 py-2 text-center text-sm font-medium text-gray-700 transition hover:bg-gray-200"
+                  className="rounded-lg bg-gray-500 px-3 py-2 text-sm font-medium whitespace-nowrap text-white transition hover:bg-gray-600"
                 >
                   Limpar filtros
                 </button>

@@ -17,9 +17,15 @@ import PageContainer from "@/components/PageContainer";
 import { userService } from "@/services/userService";
 import { User, UserRole, UserStatus } from "@/types/user";
 import { authService } from "@/services/authService";
+import { IconButton, InputAdornment, MenuItem, TextField } from "@mui/material";
 
 export default function UsuariosPage() {
   const router = useRouter();
+  const filterFieldSx = {
+    "& .MuiOutlinedInput-root": {
+      backgroundColor: "#fff",
+    },
+  };
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [updatingId, setUpdatingId] = useState<number | null>(null);
@@ -203,63 +209,88 @@ export default function UsuariosPage() {
         </PageContainer>
 
         <div className="rounded-lg bg-white p-4 shadow-sm">
-          <div className="flex flex-col gap-3 md:flex-row">
-            <div className="relative flex-1">
-              <Search
-                className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
-                size={18}
-              />
-              <input
+          <div className="grid grid-cols-1 gap-3 md:grid-cols-4">
+            <div className="md:col-span-2">
+              <TextField
                 type="text"
-                placeholder="Buscar por nome ou email..."
+                label="Buscar"
+                placeholder="Digitar..."
+                variant="outlined"
+                size="small"
+                fullWidth
+                sx={filterFieldSx}
                 value={searchTerm}
                 onChange={(e) => {
                   setCurrentPage(1);
                   setSearchTerm(e.target.value);
                 }}
-                className="w-full rounded-lg border border-gray-300 py-2 pl-9 pr-9 text-sm text-gray-900 placeholder:text-gray-400 focus:border-transparent focus:ring-2 focus:ring-blue-500"
+                InputLabelProps={{ shrink: true }}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <Search size={18} className="text-gray-400" />
+                    </InputAdornment>
+                  ),
+                  endAdornment: searchTerm ? (
+                    <InputAdornment position="end">
+                      <IconButton
+                        size="small"
+                        onClick={() => {
+                          setCurrentPage(1);
+                          setSearchTerm("");
+                        }}
+                        aria-label="Limpar busca"
+                      >
+                        <X size={16} />
+                      </IconButton>
+                    </InputAdornment>
+                  ) : undefined,
+                }}
               />
-              {searchTerm && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    setCurrentPage(1);
-                    setSearchTerm("");
-                  }}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                  aria-label="Limpar busca"
-                >
-                  <X size={16} />
-                </button>
-              )}
             </div>
 
-            <select
-              value={statusFilter}
-              onChange={(e) => {
-                setCurrentPage(1);
-                setStatusFilter(e.target.value as "" | UserStatus);
-              }}
-              className="rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900 focus:border-transparent focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="">Todos os status</option>
-              <option value="ATIVO">Ativos</option>
-              <option value="INATIVO">Inativos</option>
-            </select>
+            <div>
+              <TextField
+                select
+                label="Status"
+                variant="outlined"
+                size="small"
+                fullWidth
+                sx={filterFieldSx}
+                InputLabelProps={{ shrink: true }}
+                value={statusFilter}
+                onChange={(e) => {
+                  setCurrentPage(1);
+                  setStatusFilter(e.target.value as "" | UserStatus);
+                }}
+              >
+                <MenuItem value="">Todos</MenuItem>
+                <MenuItem value="ATIVO">Ativos</MenuItem>
+                <MenuItem value="INATIVO">Inativos</MenuItem>
+              </TextField>
+            </div>
 
-            <select
-              value={roleFilter}
-              onChange={(e) => {
-                setCurrentPage(1);
-                setRoleFilter(e.target.value as "" | UserRole);
-              }}
-              className="rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900 focus:border-transparent focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="">Todos os papéis</option>
-              <option value="USUARIO">Usuários</option>
-              <option value="GESTOR">Gestores</option>
-              <option value="ADMIN">Admins</option>
-            </select>
+            <div>
+              <TextField
+                select
+                label="Papel"
+                variant="outlined"
+                size="small"
+                fullWidth
+                sx={filterFieldSx}
+                InputLabelProps={{ shrink: true }}
+                value={roleFilter}
+                onChange={(e) => {
+                  setCurrentPage(1);
+                  setRoleFilter(e.target.value as "" | UserRole);
+                }}
+              >
+                <MenuItem value="">Todos</MenuItem>
+                <MenuItem value="USUARIO">Usuários</MenuItem>
+                <MenuItem value="GESTOR">Gestores</MenuItem>
+                <MenuItem value="ADMIN">Admins</MenuItem>
+              </TextField>
+            </div>
           </div>
         </div>
 

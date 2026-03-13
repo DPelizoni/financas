@@ -38,6 +38,11 @@ body {
   label {
     @apply text-sm font-medium;
   }
+  input:not([type="checkbox"]):not([type="radio"]):not([type="color"]):not([type="range"]):not([type="file"]),
+  select,
+  textarea {
+    @apply rounded-lg border border-gray-300 bg-white text-gray-900;
+  }
 }
 
 @layer utilities {
