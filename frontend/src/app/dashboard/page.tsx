@@ -100,9 +100,25 @@ export default function DashboardPage() {
     type: "success" | "error";
     message: string;
   } | null>(null);
+  const [isMobile, setIsMobile] = useState(false);
   const [transacoes, setTransacoes] = useState<Transacao[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [banks, setBanks] = useState<Bank[]>([]);
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia("(max-width: 767px)");
+
+    const handleChange = (event: MediaQueryListEvent) => {
+      setIsMobile(event.matches);
+    };
+
+    setIsMobile(mediaQuery.matches);
+    mediaQuery.addEventListener("change", handleChange);
+
+    return () => {
+      mediaQuery.removeEventListener("change", handleChange);
+    };
+  }, []);
 
   // Filtros globais
   const [periodMonths, setPeriodMonths] = useState(12);
@@ -386,6 +402,8 @@ export default function DashboardPage() {
   const singleMonthTotal = hasSingleTimelineMonth
     ? timeline[0].receitas + timeline[0].despesas
     : 0;
+  const donutInnerRadius = isMobile ? 44 : 55;
+  const donutOuterRadius = isMobile ? 70 : 88;
   const receitaPercent =
     singleMonthTotal > 0
       ? Math.round((timeline[0].receitas / singleMonthTotal) * 100)
@@ -666,32 +684,36 @@ export default function DashboardPage() {
                   fill={chartColors.pago}
                   radius={[6, 6, 0, 0]}
                 >
-                  <LabelList
-                    dataKey="Pago"
-                    position="top"
-                    formatter={(value: any) => currency(Number(value))}
-                    style={{
-                      fontSize: 10,
-                      fontWeight: 600,
-                      fill: chartColors.pago,
-                    }}
-                  />
+                  {!isMobile && (
+                    <LabelList
+                      dataKey="Pago"
+                      position="top"
+                      formatter={(value: any) => currency(Number(value))}
+                      style={{
+                        fontSize: 10,
+                        fontWeight: 600,
+                        fill: chartColors.pago,
+                      }}
+                    />
+                  )}
                 </Bar>
                 <Bar
                   dataKey="Provisão"
                   fill={chartColors.pendente}
                   radius={[6, 6, 0, 0]}
                 >
-                  <LabelList
-                    dataKey="Provisão"
-                    position="top"
-                    formatter={(value: any) => currency(Number(value))}
-                    style={{
-                      fontSize: 10,
-                      fontWeight: 600,
-                      fill: chartColors.pendente,
-                    }}
-                  />
+                  {!isMobile && (
+                    <LabelList
+                      dataKey="Provisão"
+                      position="top"
+                      formatter={(value: any) => currency(Number(value))}
+                      style={{
+                        fontSize: 10,
+                        fontWeight: 600,
+                        fill: chartColors.pendente,
+                      }}
+                    />
+                  )}
                 </Bar>
               </BarChart>
             </ResponsiveContainer>
@@ -718,12 +740,15 @@ export default function DashboardPage() {
                             nameKey="indicador"
                             cx="50%"
                             cy="50%"
-                            innerRadius={55}
-                            outerRadius={88}
+                            innerRadius={donutInnerRadius}
+                            outerRadius={donutOuterRadius}
                             paddingAngle={3}
                             labelLine={false}
-                            label={({ percent }) =>
-                              `${Math.round((percent || 0) * 100)}%`
+                            label={
+                              isMobile
+                                ? false
+                                : ({ percent }) =>
+                                    `${Math.round((percent || 0) * 100)}%`
                             }
                           >
                             {singleMonthDonutData.map((entry) => (
@@ -828,16 +853,18 @@ export default function DashboardPage() {
                       strokeWidth={2}
                       dot={{ r: 3 }}
                     >
-                      <LabelList
-                        dataKey="saldo"
-                        position="top"
-                        formatter={(value: any) => currency(Number(value))}
-                        style={{
-                          fontSize: 8,
-                          fill: chartColors.saldo,
-                          fontWeight: 600,
-                        }}
-                      />
+                      {!isMobile && (
+                        <LabelList
+                          dataKey="saldo"
+                          position="top"
+                          formatter={(value: any) => currency(Number(value))}
+                          style={{
+                            fontSize: 8,
+                            fill: chartColors.saldo,
+                            fontWeight: 600,
+                          }}
+                        />
+                      )}
                     </Line>
                   </LineChart>
                 </ResponsiveContainer>
@@ -875,12 +902,14 @@ export default function DashboardPage() {
                         />
                       );
                     })}
-                    <LabelList
-                      dataKey="value"
-                      position="top"
-                      formatter={(value: any) => currency(Number(value))}
-                      style={{ fontSize: 10, fontWeight: 600 }}
-                    />
+                    {!isMobile && (
+                      <LabelList
+                        dataKey="value"
+                        position="top"
+                        formatter={(value: any) => currency(Number(value))}
+                        style={{ fontSize: 10, fontWeight: 600 }}
+                      />
+                    )}
                   </Bar>
                 </BarChart>
               </ResponsiveContainer>
