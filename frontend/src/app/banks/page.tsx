@@ -350,10 +350,10 @@ export default function BanksPage() {
               </div>
 
               <div className="hidden overflow-x-auto md:block">
-                <table className="min-w-[900px] w-full divide-y divide-gray-200">
+                <table className="min-w-[640px] w-full divide-y divide-gray-200 text-xs">
                   <thead className="border-b bg-gray-100">
                     <tr>
-                      <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">
+                      <th className="px-3 py-2 text-left text-xs font-semibold text-gray-900">
                         <button
                           type="button"
                           onClick={() => handleSort("nome")}
@@ -367,7 +367,7 @@ export default function BanksPage() {
                           ) : null}
                         </button>
                       </th>
-                      <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">
+                      <th className="px-3 py-2 text-left text-xs font-semibold text-gray-900">
                         <button
                           type="button"
                           onClick={() => handleSort("codigo")}
@@ -381,7 +381,7 @@ export default function BanksPage() {
                           ) : null}
                         </button>
                       </th>
-                      <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">
+                      <th className="px-3 py-2 text-left text-xs font-semibold text-gray-900">
                         <button
                           type="button"
                           onClick={() => handleSort("saldo")}
@@ -395,7 +395,7 @@ export default function BanksPage() {
                           ) : null}
                         </button>
                       </th>
-                      <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">
+                      <th className="px-3 py-2 text-left text-xs font-semibold text-gray-900">
                         <button
                           type="button"
                           onClick={() => handleSort("status")}
@@ -409,7 +409,7 @@ export default function BanksPage() {
                           ) : null}
                         </button>
                       </th>
-                      <th className="px-6 py-3 text-right text-sm font-semibold text-gray-900">
+                      <th className="px-3 py-2 text-right text-xs font-semibold text-gray-900">
                         Ações
                       </th>
                     </tr>
@@ -420,56 +420,56 @@ export default function BanksPage() {
                         key={bank.id}
                         className="hover:bg-gray-50 transition-colors"
                       >
-                        <td className="px-6 py-4 whitespace-nowrap">
+                        <td className="px-3 py-2 whitespace-nowrap">
                           <div className="flex items-center">
                             <div
-                              className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold mr-3"
+                              className="mr-2 flex h-7 w-7 items-center justify-center rounded-full text-[10px] font-bold text-white"
                               style={{ backgroundColor: bank.cor }}
                             >
                               {bank.nome.substring(0, 2).toUpperCase()}
                             </div>
-                            <div className="text-sm font-medium text-gray-900">
+                            <div className="text-xs font-medium text-gray-900">
                               {bank.nome}
                             </div>
                           </div>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm text-gray-900">
+                        <td className="px-3 py-2 whitespace-nowrap">
+                          <div className="text-xs text-gray-900">
                             {bank.codigo || "-"}
                           </div>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm text-gray-900">
+                        <td className="px-3 py-2 whitespace-nowrap">
+                          <div className="text-xs text-gray-900">
                             {formatCurrencyBRL(bank.saldo_inicial)}
                           </div>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
+                        <td className="px-3 py-2 whitespace-nowrap">
                           {bank.ativo ? (
-                            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                            <span className="inline-flex items-center gap-1 rounded-full bg-green-100 px-2.5 py-1 text-[11px] font-semibold leading-none text-green-800">
                               <CheckCircle size={14} />
                               Ativo
                             </span>
                           ) : (
-                            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                            <span className="inline-flex items-center gap-1 rounded-full bg-red-100 px-2.5 py-1 text-[11px] font-semibold leading-none text-red-800">
                               <XCircle size={14} />
                               Inativo
                             </span>
                           )}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                        <td className="px-3 py-2 whitespace-nowrap text-right text-xs font-medium">
                           <button
                             onClick={() => handleEdit(bank)}
-                            className="text-blue-600 hover:text-blue-900 mr-4"
+                            className="mr-1 inline-flex h-8 w-8 items-center justify-center rounded-md text-blue-600 transition hover:bg-blue-50 hover:text-blue-900"
                             title="Editar"
                           >
-                            <Edit2 size={18} />
+                            <Edit2 size={16} />
                           </button>
                           <button
                             onClick={() => handleDelete(bank)}
-                            className="text-red-600 hover:text-red-900"
+                            className="inline-flex h-8 w-8 items-center justify-center rounded-md text-red-600 transition hover:bg-red-50 hover:text-red-900"
                             title="Excluir"
                           >
-                            <Trash2 size={18} />
+                            <Trash2 size={16} />
                           </button>
                         </td>
                       </tr>

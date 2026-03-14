@@ -958,10 +958,10 @@ export default function DashboardPage() {
           </div>
 
           <div className="hidden overflow-x-auto md:block">
-            <table className="min-w-[1100px] w-full divide-y divide-gray-200">
+            <table className="min-w-[900px] w-full divide-y divide-gray-200 text-xs">
               <thead className="border-b bg-gray-100">
                 <tr>
-                  <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">
+                  <th className="px-3 py-2 text-left text-xs font-semibold text-gray-900">
                     <button
                       type="button"
                       onClick={() => handleTableSort("mes")}
@@ -975,7 +975,7 @@ export default function DashboardPage() {
                       ) : null}
                     </button>
                   </th>
-                  <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">
+                  <th className="px-3 py-2 text-left text-xs font-semibold text-gray-900">
                     <button
                       type="button"
                       onClick={() => handleTableSort("tipo")}
@@ -990,7 +990,7 @@ export default function DashboardPage() {
                       ) : null}
                     </button>
                   </th>
-                  <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">
+                  <th className="px-3 py-2 text-left text-xs font-semibold text-gray-900">
                     <button
                       type="button"
                       onClick={() => handleTableSort("categoria")}
@@ -1005,10 +1005,10 @@ export default function DashboardPage() {
                       ) : null}
                     </button>
                   </th>
-                  <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">
+                  <th className="px-3 py-2 text-left text-xs font-semibold text-gray-900">
                     Descrição
                   </th>
-                  <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">
+                  <th className="px-3 py-2 text-left text-xs font-semibold text-gray-900">
                     <button
                       type="button"
                       onClick={() => handleTableSort("banco")}
@@ -1023,7 +1023,7 @@ export default function DashboardPage() {
                       ) : null}
                     </button>
                   </th>
-                  <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">
+                  <th className="px-3 py-2 text-left text-xs font-semibold text-gray-900">
                     <button
                       type="button"
                       onClick={() => handleTableSort("situacao")}
@@ -1038,7 +1038,7 @@ export default function DashboardPage() {
                       ) : null}
                     </button>
                   </th>
-                  <th className="px-6 py-3 text-right text-sm font-semibold text-gray-900">
+                  <th className="px-3 py-2 text-right text-xs font-semibold text-gray-900">
                     <button
                       type="button"
                       onClick={() => handleTableSort("valor")}
@@ -1060,7 +1060,7 @@ export default function DashboardPage() {
                   <tr>
                     <td
                       colSpan={7}
-                      className="px-4 py-8 text-center text-sm text-gray-500"
+                      className="px-3 py-8 text-center text-xs text-gray-500"
                     >
                       Nenhum registro encontrado com os filtros atuais.
                     </td>
@@ -1068,12 +1068,12 @@ export default function DashboardPage() {
                 ) : (
                   detailedRows.map((t) => (
                     <tr key={t.id} className="hover:bg-gray-50">
-                      <td className="px-4 py-3 text-sm text-gray-700">
+                      <td className="px-3 py-2 text-xs text-gray-700">
                         {t.mes}
                       </td>
-                      <td className="px-4 py-3 text-sm">
+                      <td className="px-3 py-2 text-xs">
                         <span
-                          className={`rounded-full px-2 py-1 text-xs font-semibold ${
+                          className={`inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-semibold leading-none ${
                             t.tipo === "RECEITA"
                               ? "bg-emerald-100 text-emerald-700"
                               : "bg-red-100 text-red-700"
@@ -1082,18 +1082,18 @@ export default function DashboardPage() {
                           {t.tipo}
                         </span>
                       </td>
-                      <td className="px-4 py-3 text-sm text-gray-700">
+                      <td className="px-3 py-2 text-xs text-gray-700">
                         {t.categoria_nome || "-"}
                       </td>
-                      <td className="px-4 py-3 text-sm text-gray-700">
+                      <td className="px-3 py-2 text-xs text-gray-700">
                         {t.descricao_nome || "-"}
                       </td>
-                      <td className="px-4 py-3 text-sm text-gray-700">
+                      <td className="px-3 py-2 text-xs text-gray-700">
                         {t.banco_nome || "-"}
                       </td>
-                      <td className="px-4 py-3 text-sm">
+                      <td className="px-3 py-2 text-xs">
                         <span
-                          className={`rounded-full px-2 py-1 text-xs font-semibold ${
+                          className={`inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-semibold leading-none ${
                             t.situacao === "PAGO"
                               ? "bg-green-100 text-green-700"
                               : "bg-yellow-100 text-yellow-700"
@@ -1102,7 +1102,7 @@ export default function DashboardPage() {
                           {t.situacao}
                         </span>
                       </td>
-                      <td className="px-4 py-3 text-right text-sm font-semibold text-gray-900">
+                      <td className="px-3 py-2 text-right text-xs font-semibold text-gray-900">
                         {currency(Number(t.valor))}
                       </td>
                     </tr>

@@ -398,10 +398,10 @@ export default function DescricoesPage() {
               </div>
 
               <div className="hidden overflow-x-auto md:block">
-                <table className="min-w-[850px] w-full divide-y divide-gray-200">
+                <table className="min-w-[640px] w-full divide-y divide-gray-200 text-xs">
                   <thead className="border-b bg-gray-100">
                     <tr>
-                      <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">
+                      <th className="px-3 py-2 text-left text-xs font-semibold text-gray-900">
                         <button
                           type="button"
                           onClick={() => handleSort("nome")}
@@ -415,7 +415,7 @@ export default function DescricoesPage() {
                           ) : null}
                         </button>
                       </th>
-                      <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">
+                      <th className="px-3 py-2 text-left text-xs font-semibold text-gray-900">
                         <button
                           type="button"
                           onClick={() => handleSort("categoria")}
@@ -429,7 +429,7 @@ export default function DescricoesPage() {
                           ) : null}
                         </button>
                       </th>
-                      <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">
+                      <th className="px-3 py-2 text-left text-xs font-semibold text-gray-900">
                         <button
                           type="button"
                           onClick={() => handleSort("status")}
@@ -443,7 +443,7 @@ export default function DescricoesPage() {
                           ) : null}
                         </button>
                       </th>
-                      <th className="px-6 py-3 text-right text-sm font-semibold text-gray-900">
+                      <th className="px-3 py-2 text-right text-xs font-semibold text-gray-900">
                         Ações
                       </th>
                     </tr>
@@ -454,43 +454,43 @@ export default function DescricoesPage() {
                         key={descricao.id}
                         className="transition-colors hover:bg-gray-50"
                       >
-                        <td className="whitespace-nowrap px-6 py-4">
-                          <div className="text-sm font-medium text-gray-900">
+                        <td className="whitespace-nowrap px-3 py-2">
+                          <div className="text-xs font-medium text-gray-900">
                             {descricao.nome}
                           </div>
                         </td>
-                        <td className="whitespace-nowrap px-6 py-4">
-                          <div className="text-sm text-gray-600">
+                        <td className="whitespace-nowrap px-3 py-2">
+                          <div className="text-xs text-gray-600">
                             {getCategoryNameById(descricao.categoria_id)}
                           </div>
                         </td>
-                        <td className="whitespace-nowrap px-6 py-4">
+                        <td className="whitespace-nowrap px-3 py-2">
                           {descricao.ativo ? (
-                            <span className="inline-flex items-center gap-1 rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-800">
+                            <span className="inline-flex items-center gap-1 rounded-full bg-green-100 px-2.5 py-1 text-[11px] font-semibold leading-none text-green-800">
                               <CheckCircle size={14} />
                               Ativa
                             </span>
                           ) : (
-                            <span className="inline-flex items-center gap-1 rounded-full bg-red-100 px-2.5 py-0.5 text-xs font-medium text-red-800">
+                            <span className="inline-flex items-center gap-1 rounded-full bg-red-100 px-2.5 py-1 text-[11px] font-semibold leading-none text-red-800">
                               <XCircle size={14} />
                               Inativa
                             </span>
                           )}
                         </td>
-                        <td className="whitespace-nowrap px-6 py-4 text-right text-sm font-medium">
+                        <td className="whitespace-nowrap px-3 py-2 text-right text-xs font-medium">
                           <button
                             onClick={() => handleEdit(descricao)}
-                            className="mr-4 text-blue-600 hover:text-blue-900"
+                            className="mr-1 inline-flex h-8 w-8 items-center justify-center rounded-md text-blue-600 transition hover:bg-blue-50 hover:text-blue-900"
                             title="Editar"
                           >
-                            <Edit2 size={18} />
+                            <Edit2 size={16} />
                           </button>
                           <button
                             onClick={() => handleDelete(descricao)}
-                            className="text-red-600 hover:text-red-900"
+                            className="inline-flex h-8 w-8 items-center justify-center rounded-md text-red-600 transition hover:bg-red-50 hover:text-red-900"
                             title="Excluir"
                           >
-                            <Trash2 size={18} />
+                            <Trash2 size={16} />
                           </button>
                         </td>
                       </tr>
