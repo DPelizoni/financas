@@ -17,6 +17,7 @@ import {
   LucideIcon,
 } from "lucide-react";
 import { authService } from "@/services/authService";
+import ThemeToggle from "@/components/ThemeToggle";
 
 interface AppShellProps {
   children: React.ReactNode;
@@ -172,6 +173,7 @@ export default function AppShell({ children }: AppShellProps) {
               </div>
 
               <div className="flex items-center gap-3">
+                <ThemeToggle />
                 <div className="hidden rounded-full bg-blue-600 px-3 py-1 text-xs font-semibold text-white sm:block">
                   {userName}
                 </div>

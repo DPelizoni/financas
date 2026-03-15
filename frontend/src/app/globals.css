@@ -4,44 +4,64 @@
 
 :root {
   --foreground-rgb: 17, 24, 39;
-  --background-start-rgb: 249, 250, 251;
-  --background-end-rgb: 255, 255, 255;
+  --foreground-muted-rgb: 71, 85, 105;
+  --background-base-rgb: 248, 250, 252;
+  --background-elevated-rgb: 255, 255, 255;
+  --background-muted-rgb: 241, 245, 249;
+  --border-rgb: 203, 213, 225;
+}
+
+html.dark {
+  --foreground-rgb: 226, 232, 240;
+  --foreground-muted-rgb: 148, 163, 184;
+  --background-base-rgb: 2, 6, 23;
+  --background-elevated-rgb: 15, 23, 42;
+  --background-muted-rgb: 30, 41, 59;
+  --border-rgb: 51, 65, 85;
 }
 
 body {
   color: rgb(var(--foreground-rgb));
-  background: linear-gradient(
-      to bottom,
-      transparent,
-      rgb(var(--background-end-rgb))
-    )
-    rgb(var(--background-start-rgb));
-  @apply text-base;
+  background-color: rgb(var(--background-base-rgb));
+  @apply text-base transition-colors duration-200;
 }
 
 @layer base {
+  ::selection {
+    background-color: rgb(37 99 235 / 0.3);
+  }
+
   h1 {
     @apply text-3xl font-bold;
   }
+
   h2 {
     @apply text-2xl font-bold;
   }
+
   h3 {
     @apply text-lg font-semibold;
   }
+
   h4 {
     @apply text-base font-semibold;
   }
+
   p {
     @apply text-sm;
   }
+
   label {
     @apply text-sm font-medium;
   }
+
   input:not([type="checkbox"]):not([type="radio"]):not([type="color"]):not([type="range"]):not([type="file"]),
   select,
   textarea {
-    @apply rounded-lg border border-gray-300 bg-white text-gray-900;
+    border-color: rgb(var(--border-rgb));
+    background-color: rgb(var(--background-elevated-rgb));
+    color: rgb(var(--foreground-rgb));
+    @apply rounded-lg;
   }
 }
 
@@ -49,28 +69,190 @@ body {
   .text-balance {
     text-wrap: balance;
   }
-  
+
   .btn-primary {
     @apply rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50;
   }
-  
+
   .btn-secondary {
     @apply rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-100;
   }
-  
+
   .btn-danger {
     @apply rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-50;
   }
-  
+
   .btn-success {
     @apply rounded-lg bg-green-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-green-700 disabled:cursor-not-allowed disabled:opacity-50;
   }
-  
+
   .btn-neutral {
     @apply rounded-lg bg-gray-500 px-4 py-2 text-sm font-medium text-white transition hover:bg-gray-600 disabled:cursor-not-allowed disabled:opacity-50;
   }
-  
+
   .input-field {
     @apply w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none;
   }
+}
+
+.dark .bg-white {
+  background-color: rgb(15 23 42) !important;
+}
+
+.dark .bg-white\/95 {
+  background-color: rgb(15 23 42 / 0.95) !important;
+}
+
+.dark .bg-gray-50,
+.dark .bg-slate-50 {
+  background-color: rgb(15 23 42) !important;
+}
+
+.dark .bg-gray-100,
+.dark .bg-slate-100 {
+  background-color: rgb(30 41 59) !important;
+}
+
+.dark .bg-gray-200 {
+  background-color: rgb(51 65 85) !important;
+}
+
+.dark .text-gray-900,
+.dark .text-gray-800,
+.dark .text-slate-900,
+.dark .text-slate-800 {
+  color: rgb(241 245 249) !important;
+}
+
+.dark .text-gray-700,
+.dark .text-gray-600,
+.dark .text-gray-500,
+.dark .text-slate-700,
+.dark .text-slate-600,
+.dark .text-slate-500 {
+  color: rgb(148 163 184) !important;
+}
+
+.dark .text-gray-400 {
+  color: rgb(100 116 139) !important;
+}
+
+.dark .border-gray-100,
+.dark .border-gray-200,
+.dark .border-gray-300,
+.dark .border-slate-200 {
+  border-color: rgb(51 65 85) !important;
+}
+
+.dark .divide-gray-100 > :not([hidden]) ~ :not([hidden]),
+.dark .divide-gray-200 > :not([hidden]) ~ :not([hidden]) {
+  border-color: rgb(51 65 85) !important;
+}
+
+.dark .from-white {
+  --tw-gradient-from: rgb(15 23 42) var(--tw-gradient-from-position);
+  --tw-gradient-to: rgb(15 23 42 / 0) var(--tw-gradient-to-position);
+  --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
+}
+
+.dark .to-gray-50 {
+  --tw-gradient-to: rgb(30 41 59) var(--tw-gradient-to-position);
+}
+
+.dark .hover\:bg-gray-50:hover,
+.dark .hover\:bg-slate-50:hover {
+  background-color: rgb(30 41 59) !important;
+}
+
+.dark .hover\:bg-gray-100:hover,
+.dark .hover\:bg-slate-100:hover {
+  background-color: rgb(51 65 85) !important;
+}
+
+.dark .hover\:bg-gray-300:hover {
+  background-color: rgb(71 85 105) !important;
+}
+
+.dark .disabled\:bg-gray-100:disabled {
+  background-color: rgb(30 41 59) !important;
+}
+
+.dark .disabled\:text-gray-500:disabled {
+  color: rgb(100 116 139) !important;
+}
+
+.dark .MuiPaper-root {
+  background-color: rgb(15 23 42);
+  color: rgb(226 232 240);
+}
+
+.dark .MuiFormLabel-root {
+  color: rgb(148 163 184);
+}
+
+.dark .MuiFormLabel-root.Mui-focused {
+  color: rgb(56 189 248);
+}
+
+.dark .MuiOutlinedInput-root {
+  background-color: rgb(15 23 42) !important;
+  color: rgb(226 232 240);
+}
+
+.dark .MuiOutlinedInput-notchedOutline {
+  border-color: rgb(51 65 85) !important;
+}
+
+.dark .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline {
+  border-color: rgb(71 85 105) !important;
+}
+
+.dark .MuiInputBase-input::placeholder {
+  color: rgb(148 163 184);
+  opacity: 1;
+}
+
+.dark .MuiSelect-icon,
+.dark .MuiSvgIcon-root {
+  color: rgb(148 163 184);
+}
+
+.dark .MuiMenu-paper,
+.dark .MuiPopover-paper {
+  border: 1px solid rgb(51 65 85);
+  background-color: rgb(15 23 42);
+  color: rgb(226 232 240);
+}
+
+.dark .MuiMenuItem-root {
+  color: rgb(226 232 240);
+}
+
+.dark .MuiMenuItem-root:hover {
+  background-color: rgb(30 41 59);
+}
+
+.dark .MuiMenuItem-root.Mui-selected,
+.dark .MuiMenuItem-root.Mui-selected:hover {
+  background-color: rgb(30 64 175 / 0.35);
+}
+
+.dark .recharts-cartesian-grid line {
+  stroke: rgb(51 65 85);
+}
+
+.dark .recharts-text,
+.dark .recharts-legend-item-text {
+  fill: rgb(203 213 225) !important;
+  color: rgb(203 213 225) !important;
+}
+
+.dark .recharts-default-tooltip {
+  border: 1px solid rgb(51 65 85) !important;
+  background-color: rgb(15 23 42) !important;
+}
+
+.dark .recharts-tooltip-label,
+.dark .recharts-tooltip-item {
+  color: rgb(226 232 240) !important;
 }

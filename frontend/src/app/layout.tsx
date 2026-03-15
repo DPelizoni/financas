@@ -4,6 +4,20 @@ import "./globals.css";
 import AppLayout from "@/components/AppLayout";
 
 const inter = Inter({ subsets: ["latin"] });
+const themeInitScript = `
+(() => {
+  try {
+    const key = "financas-theme";
+    const storedTheme = localStorage.getItem(key);
+    const theme = storedTheme === "dark" || storedTheme === "light"
+      ? storedTheme
+      : (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+
+    document.documentElement.classList.toggle("dark", theme === "dark");
+    document.documentElement.style.colorScheme = theme;
+  } catch {}
+})();
+`;
 
 export const metadata: Metadata = {
   title: "Finanças Pessoais",
@@ -21,8 +35,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="pt-BR">
-      <body className={`${inter.className} min-h-screen bg-gray-50`}>
+    <html lang="pt-BR" suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
+      </head>
+      <body className={`${inter.className} min-h-screen`}>
         <AppLayout>{children}</AppLayout>
       </body>
     </html>
