@@ -13,12 +13,7 @@ interface BankModalProps {
   onSave: (message: string) => Promise<void> | void;
 }
 
-export default function BankModal({ bank, onClose, onSave }: BankModalProps) {
-  const modalFieldSx = {
-    "& .MuiOutlinedInput-root": {
-      backgroundColor: "#fff",
-    },
-  };
+export default function BankModal({ bank, onClose, onSave }: BankModalProps) {
   const [formData, setFormData] = useState<BankInput>({
     nome: "",
     codigo: "",
@@ -243,7 +238,6 @@ export default function BankModal({ bank, onClose, onSave }: BankModalProps) {
               variant="outlined"
               size="small"
               fullWidth
-              sx={modalFieldSx}
               value={formData.nome}
               onChange={(e) => handleChange("nome", e.target.value)}
               placeholder="Ex: Nubank, Itaú, Bradesco"
@@ -261,7 +255,6 @@ export default function BankModal({ bank, onClose, onSave }: BankModalProps) {
               variant="outlined"
               size="small"
               fullWidth
-              sx={modalFieldSx}
               value={formData.codigo}
               onChange={(e) => handleChange("codigo", e.target.value)}
               placeholder="Ex: 260, 341"
@@ -284,7 +277,6 @@ export default function BankModal({ bank, onClose, onSave }: BankModalProps) {
                 variant="outlined"
                 size="small"
                 fullWidth
-                sx={modalFieldSx}
                 value={formData.cor}
                 onChange={(e) => handleChange("cor", e.target.value)}
                 placeholder="#3B82F6"
@@ -304,7 +296,6 @@ export default function BankModal({ bank, onClose, onSave }: BankModalProps) {
               variant="outlined"
               size="small"
               fullWidth
-              sx={modalFieldSx}
               value={saldoDisplay}
               onChange={(e) => {
                 const inputValue = e.target.value;
@@ -364,3 +355,4 @@ export default function BankModal({ bank, onClose, onSave }: BankModalProps) {
     </div>
   );
 }
+

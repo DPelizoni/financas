@@ -19,12 +19,7 @@ export default function DescricaoModal({
   descricao,
   onClose,
   onSave,
-}: DescricaoModalProps) {
-  const modalFieldSx = {
-    "& .MuiOutlinedInput-root": {
-      backgroundColor: "#fff",
-    },
-  };
+}: DescricaoModalProps) {
   const [formData, setFormData] = useState<DescricaoInput>({
     nome: "",
     categoria_id: 0,
@@ -195,7 +190,6 @@ export default function DescricaoModal({
               variant="outlined"
               size="small"
               fullWidth
-              sx={modalFieldSx}
               value={formData.nome}
               onChange={(e) => handleChange("nome", e.target.value)}
               placeholder="Ex: Supermercado, Padaria"
@@ -225,7 +219,6 @@ export default function DescricaoModal({
                 variant="outlined"
                 size="small"
                 fullWidth
-                sx={modalFieldSx}
                 value={formData.categoria_id}
                 onChange={(e) =>
                   handleChange("categoria_id", Number(e.target.value))
@@ -285,3 +278,4 @@ export default function DescricaoModal({
     </div>
   );
 }
+

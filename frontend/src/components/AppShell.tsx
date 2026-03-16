@@ -85,7 +85,7 @@ export default function AppShell({ children }: AppShellProps) {
           <button
             type="button"
             aria-label="Fechar menu"
-            className="fixed inset-0 z-30 bg-black/40 lg:hidden"
+            className="fixed inset-0 z-30 bg-black/40 focus-visible:outline-none"
             onClick={() => setSidebarOpen(false)}
           />
         )}
@@ -109,7 +109,7 @@ export default function AppShell({ children }: AppShellProps) {
             </div>
             <button
               type="button"
-              className="rounded p-1 text-slate-500 hover:bg-slate-100 lg:hidden"
+              className="rounded p-1 text-slate-500 transition hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400 lg:hidden"
               onClick={() => setSidebarOpen(false)}
               aria-label="Fechar menu lateral"
             >
@@ -131,7 +131,7 @@ export default function AppShell({ children }: AppShellProps) {
                     isActive
                       ? "bg-blue-600 text-white shadow"
                       : "text-slate-700 hover:bg-slate-100"
-                  }`}
+                  } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400`}
                 >
                   <Icon size={18} />
                   <span>{item.label}</span>
@@ -156,7 +156,7 @@ export default function AppShell({ children }: AppShellProps) {
               <div className="flex items-center gap-3">
                 <button
                   type="button"
-                  className="rounded p-1 text-slate-600 hover:bg-slate-100 lg:hidden"
+                  className="rounded p-1 text-slate-600 transition hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400 lg:hidden"
                   onClick={() => setSidebarOpen(true)}
                   aria-label="Abrir menu lateral"
                 >
@@ -180,7 +180,7 @@ export default function AppShell({ children }: AppShellProps) {
                 <button
                   type="button"
                   onClick={handleLogout}
-                  className="inline-flex items-center gap-2 rounded-md border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-50"
+                  className="inline-flex items-center gap-2 rounded-md border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400"
                 >
                   <LogOut size={14} />
                   Sair

@@ -25,12 +25,7 @@ import AppButton from "@/components/AppButton";
 import TableActionButton from "@/components/TableActionButton";
 import { IconButton, InputAdornment, MenuItem, TextField } from "@mui/material";
 
-export default function DescricoesPage() {
-  const filterFieldSx = {
-    "& .MuiOutlinedInput-root": {
-      backgroundColor: "#fff",
-    },
-  };
+export default function DescricoesPage() {
   const [descricoes, setDescricoes] = useState<Descricao[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
@@ -224,7 +219,7 @@ export default function DescricoesPage() {
           </div>
         </PageContainer>
 
-        <div className="rounded-lg bg-white p-4 shadow-sm">
+        <div className="filter-panel-surface">
           <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
             <div className="md:col-span-2">
               <TextField
@@ -234,7 +229,6 @@ export default function DescricoesPage() {
                 variant="outlined"
                 size="small"
                 fullWidth
-                sx={filterFieldSx}
                 value={searchTerm}
                 onChange={(e) => handleSearch(e.target.value)}
                 InputLabelProps={{ shrink: true }}
@@ -265,7 +259,6 @@ export default function DescricoesPage() {
               variant="outlined"
               size="small"
               fullWidth
-              sx={filterFieldSx}
               InputLabelProps={{ shrink: true }}
               value={filterCategoria ?? ""}
               onChange={(e) => {
@@ -522,3 +515,4 @@ export default function DescricoesPage() {
     </div>
   );
 }
+

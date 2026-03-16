@@ -90,12 +90,7 @@ const currency = (value: number): string =>
     maximumFractionDigits: 2,
   }).format(value);
 
-export default function DashboardPage() {
-  const filterFieldSx = {
-    "& .MuiOutlinedInput-root": {
-      backgroundColor: "#fff",
-    },
-  };
+export default function DashboardPage() {
   const currentYear = String(new Date().getFullYear());
   const [loading, setLoading] = useState(true);
   const [feedback, setFeedback] = useState<{
@@ -103,6 +98,7 @@ export default function DashboardPage() {
     message: string;
   } | null>(null);
   const [isMobile, setIsMobile] = useState(false);
+  const [isDarkMode, setIsDarkMode] = useState(false);
   const [transacoes, setTransacoes] = useState<Transacao[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [banks, setBanks] = useState<Bank[]>([]);
@@ -120,6 +116,21 @@ export default function DashboardPage() {
     return () => {
       mediaQuery.removeEventListener("change", handleChange);
     };
+  }, []);
+
+  useEffect(() => {
+    const syncTheme = () =>
+      setIsDarkMode(document.documentElement.classList.contains("dark"));
+
+    syncTheme();
+
+    const observer = new MutationObserver(syncTheme);
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["class"],
+    });
+
+    return () => observer.disconnect();
   }, []);
 
   // Filtros globais
@@ -331,17 +342,17 @@ export default function DashboardPage() {
       {
         name: "Receita",
         Pago: summaryCards.pago_receita,
-        Provisão: summaryCards.provisao_receita,
+        Provisao: summaryCards.provisao_receita,
       },
       {
         name: "Despesa",
         Pago: summaryCards.pago_despesa,
-        Provisão: summaryCards.provisao_despesa,
+        Provisao: summaryCards.provisao_despesa,
       },
       {
-        name: "Líquido",
+        name: "Liquido",
         Pago: summaryCards.pago_liquido,
-        Provisão: summaryCards.provisao_liquido,
+        Provisao: summaryCards.provisao_liquido,
       },
     ],
     [summaryCards],
@@ -406,6 +417,21 @@ export default function DashboardPage() {
     : 0;
   const donutInnerRadius = isMobile ? 44 : 55;
   const donutOuterRadius = isMobile ? 70 : 88;
+  const tooltipContentStyle = {
+    backgroundColor: isDarkMode ? "#0f172a" : "#ffffff",
+    border: `1px solid ${isDarkMode ? "#334155" : "#cbd5e1"}`,
+    borderRadius: 8,
+    color: isDarkMode ? "#e2e8f0" : "#0f172a",
+  };
+  const tooltipLabelStyle = {
+    color: isDarkMode ? "#cbd5e1" : "#334155",
+  };
+  const tooltipItemStyle = {
+    color: isDarkMode ? "#e2e8f0" : "#0f172a",
+  };
+  const tooltipCursor = {
+    fill: isDarkMode ? "rgba(148,163,184,0.12)" : "rgba(15,23,42,0.05)",
+  };
   const receitaPercent =
     singleMonthTotal > 0
       ? Math.round((timeline[0].receitas / singleMonthTotal) * 100)
@@ -440,7 +466,7 @@ export default function DashboardPage() {
           </p>
         </PageContainer>
 
-        <div className="rounded-lg bg-white p-4 shadow-sm">
+        <div className="filter-panel-surface">
           <TransactionSection title="Filtros Globais" tone="gray">
             <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-4">
               <div>
@@ -451,7 +477,6 @@ export default function DashboardPage() {
                   size="small"
                   fullWidth
                   InputLabelProps={{ shrink: true }}
-                  sx={filterFieldSx}
                   value={periodMonths}
                   onChange={(e) => setPeriodMonths(Number(e.target.value))}
                   disabled={Boolean(filterMesAno)}
@@ -469,7 +494,6 @@ export default function DashboardPage() {
                   variant="outlined"
                   size="small"
                   fullWidth
-                  sx={filterFieldSx}
                   value={filterMesAno}
                   onChange={(e) => setFilterMesAno(e.target.value)}
                   title="Mês/Ano específico"
@@ -485,7 +509,6 @@ export default function DashboardPage() {
                   size="small"
                   fullWidth
                   InputLabelProps={{ shrink: true }}
-                  sx={filterFieldSx}
                   value={filterAno}
                   onChange={(e) => setFilterAno(e.target.value)}
                   disabled={Boolean(filterMesAno)}
@@ -507,7 +530,6 @@ export default function DashboardPage() {
                   size="small"
                   fullWidth
                   InputLabelProps={{ shrink: true }}
-                  sx={filterFieldSx}
                   value={filterTipo}
                   onChange={(e) =>
                     setFilterTipo(e.target.value as "" | "DESPESA" | "RECEITA")
@@ -527,7 +549,6 @@ export default function DashboardPage() {
                   size="small"
                   fullWidth
                   InputLabelProps={{ shrink: true }}
-                  sx={filterFieldSx}
                   value={filterSituacao}
                   onChange={(e) =>
                     setFilterSituacao(
@@ -549,7 +570,6 @@ export default function DashboardPage() {
                   size="small"
                   fullWidth
                   InputLabelProps={{ shrink: true }}
-                  sx={filterFieldSx}
                   value={filterBanco}
                   onChange={(e) =>
                     setFilterBanco(e.target.value ? Number(e.target.value) : "")
@@ -572,7 +592,6 @@ export default function DashboardPage() {
                   size="small"
                   fullWidth
                   InputLabelProps={{ shrink: true }}
-                  sx={filterFieldSx}
                   value={filterCategoria}
                   onChange={(e) =>
                     setFilterCategoria(
@@ -612,7 +631,7 @@ export default function DashboardPage() {
         </div>
 
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
-          <div className="rounded-lg bg-white p-6 shadow-sm">
+          <div className="rounded-lg border border-green-200/70 bg-gradient-to-br from-green-50 via-white to-emerald-50 p-6 shadow-sm dark:border-slate-700 dark:from-slate-900 dark:via-slate-900 dark:to-slate-800">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600">Total Receita</p>
@@ -624,7 +643,7 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          <div className="rounded-lg bg-white p-6 shadow-sm">
+          <div className="rounded-lg border border-red-200/70 bg-gradient-to-br from-red-50 via-white to-rose-50 p-6 shadow-sm dark:border-slate-700 dark:from-slate-900 dark:via-slate-900 dark:to-slate-800">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600">Total Despesa</p>
@@ -636,7 +655,13 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          <div className="rounded-lg bg-white p-6 shadow-sm">
+          <div
+            className={`rounded-lg border p-6 shadow-sm dark:border-slate-700 dark:from-slate-900 dark:via-slate-900 dark:to-slate-800 ${
+              summaryCards.total_liquido >= 0
+                ? "border-blue-200/70 bg-gradient-to-br from-blue-50 via-white to-cyan-50"
+                : "border-red-200/70 bg-gradient-to-br from-red-50 via-white to-rose-50"
+            }`}
+          >
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600">Total Líquido</p>
@@ -680,7 +705,13 @@ export default function DashboardPage() {
                       dataMax <= 0 ? 0 : Math.ceil(dataMax * 1.2),
                   ]}
                 />
-                <Tooltip formatter={(v) => currency(Number(v || 0))} />
+                <Tooltip
+                  formatter={(v) => currency(Number(v || 0))}
+                  contentStyle={tooltipContentStyle}
+                  labelStyle={tooltipLabelStyle}
+                  itemStyle={tooltipItemStyle}
+                  cursor={tooltipCursor}
+                />
                 <Legend iconSize={10} wrapperStyle={{ fontSize: "12px" }} />
                 <Bar
                   dataKey="Pago"
@@ -701,13 +732,13 @@ export default function DashboardPage() {
                   )}
                 </Bar>
                 <Bar
-                  dataKey="Provisão"
+                  dataKey="Provisao"
                   fill={chartColors.pendente}
                   radius={[6, 6, 0, 0]}
                 >
                   {!isMobile && (
                     <LabelList
-                      dataKey="Provisão"
+                      dataKey="Provisao"
                       position="top"
                       formatter={(value: any) => currency(Number(value))}
                       style={{
@@ -768,6 +799,9 @@ export default function DashboardPage() {
                                 total > 0 ? (value / total) * 100 : 0;
                               return `${currency(value)} (${Math.round(percent)}%)`;
                             }}
+                            contentStyle={tooltipContentStyle}
+                            labelStyle={tooltipLabelStyle}
+                            itemStyle={tooltipItemStyle}
                           />
                         </PieChart>
                       </ResponsiveContainer>
@@ -776,7 +810,7 @@ export default function DashboardPage() {
                     <div className="mt-2 space-y-1 text-sm">
                       <div className="flex items-center justify-between">
                         <span className="font-medium text-gray-700">
-                          🟢 Receita
+                          ðŸŸ¢ Receita
                         </span>
                         <span className="font-semibold text-green-600">
                           <span className="inline-block min-w-[145px] text-right tabular-nums sm:min-w-[170px]">
@@ -786,7 +820,7 @@ export default function DashboardPage() {
                       </div>
                       <div className="flex items-center justify-between">
                         <span className="font-medium text-gray-700">
-                          🔴 Despesa
+                          ðŸ”´ Despesa
                         </span>
                         <span className="font-semibold text-red-600">
                           <span className="inline-block min-w-[145px] text-right tabular-nums sm:min-w-[170px]">
@@ -798,10 +832,10 @@ export default function DashboardPage() {
                   </div>
 
                   <div
-                    className={`flex h-full items-center justify-center rounded-lg border border-dashed p-3 ${
+                    className={`flex h-full items-center justify-center rounded-lg border p-3 shadow-sm dark:border-slate-700 dark:from-slate-900 dark:via-slate-900 dark:to-slate-800 ${
                       singleMonthSaldo >= 0
-                        ? "border-blue-200 bg-blue-50"
-                        : "border-red-200 bg-red-50"
+                        ? "border-blue-200/70 bg-gradient-to-br from-blue-50 via-white to-cyan-50"
+                        : "border-red-200/70 bg-gradient-to-br from-red-50 via-white to-rose-50"
                     }`}
                   >
                     <div className="text-center">
@@ -833,7 +867,13 @@ export default function DashboardPage() {
                       padding={{ left: 10, right: 10 }}
                     />
                     <YAxis hide />
-                    <Tooltip formatter={(v) => currency(Number(v || 0))} />
+                    <Tooltip
+                      formatter={(v) => currency(Number(v || 0))}
+                      contentStyle={tooltipContentStyle}
+                      labelStyle={tooltipLabelStyle}
+                      itemStyle={tooltipItemStyle}
+                      cursor={tooltipCursor}
+                    />
                     <Legend iconSize={10} wrapperStyle={{ fontSize: "12px" }} />
                     <Line
                       type="monotone"
@@ -888,7 +928,13 @@ export default function DashboardPage() {
                     hide
                     domain={[0, (dataMax: number) => Math.ceil(dataMax * 1.2)]}
                   />
-                  <Tooltip formatter={(v) => currency(Number(v || 0))} />
+                  <Tooltip
+                    formatter={(v) => currency(Number(v || 0))}
+                    contentStyle={tooltipContentStyle}
+                    labelStyle={tooltipLabelStyle}
+                    itemStyle={tooltipItemStyle}
+                    cursor={tooltipCursor}
+                  />
                   <Bar dataKey="value" radius={[6, 6, 0, 0]}>
                     {byCategory.map((_, index) => {
                       const colors = [
@@ -1148,3 +1194,4 @@ export default function DashboardPage() {
     </div>
   );
 }
+

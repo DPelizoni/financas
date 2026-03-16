@@ -9,15 +9,7 @@ import FeedbackAlert from "@/components/FeedbackAlert";
 import ThemeToggle from "@/components/ThemeToggle";
 import { TextField } from "@mui/material";
 
-export default function LoginPage() {
-  const authFieldSx = {
-    "& .MuiOutlinedInput-root": {
-      backgroundColor: "#fff",
-      "&.Mui-focused fieldset": {
-        borderColor: "#06b6d4",
-      },
-    },
-  };
+export default function LoginPage() {
   const router = useRouter();
   const [nextRoute, setNextRoute] = useState("/dashboard");
 
@@ -96,7 +88,6 @@ export default function LoginPage() {
               variant="outlined"
               size="small"
               fullWidth
-              sx={authFieldSx}
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               autoComplete="email"
@@ -113,7 +104,6 @@ export default function LoginPage() {
               variant="outlined"
               size="small"
               fullWidth
-              sx={authFieldSx}
               value={senha}
               onChange={(e) => setSenha(e.target.value)}
               autoComplete="current-password"
@@ -151,3 +141,4 @@ export default function LoginPage() {
     </div>
   );
 }
+

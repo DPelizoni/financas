@@ -28,7 +28,7 @@ export default function TableActionButton({
       title={title}
       aria-label={title}
       onClick={onClick}
-      className={`inline-flex items-center justify-center rounded-md transition ${toneClass} ${
+      className={`inline-flex items-center justify-center rounded-md transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent ${toneClass} ${
         compact ? "h-8 w-8" : "h-10 w-10"
       }`}
     >

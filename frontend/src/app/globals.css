@@ -99,6 +99,10 @@ body {
   .input-field {
     @apply w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none;
   }
+
+  .filter-panel-surface {
+    @apply rounded-lg border border-gray-200/80 bg-gradient-to-b from-white to-gray-50 p-4 shadow-sm dark:border-slate-700 dark:from-slate-900 dark:to-slate-800;
+  }
 }
 
 .dark .bg-white {
@@ -185,62 +189,6 @@ body {
 
 .dark .disabled\:text-gray-500:disabled {
   color: rgb(100 116 139) !important;
-}
-
-.dark .MuiPaper-root {
-  background-color: rgb(15 23 42);
-  color: rgb(226 232 240);
-}
-
-.dark .MuiFormLabel-root {
-  color: rgb(148 163 184);
-}
-
-.dark .MuiFormLabel-root.Mui-focused {
-  color: rgb(56 189 248);
-}
-
-.dark .MuiOutlinedInput-root {
-  background-color: rgb(15 23 42) !important;
-  color: rgb(226 232 240);
-}
-
-.dark .MuiOutlinedInput-notchedOutline {
-  border-color: rgb(51 65 85) !important;
-}
-
-.dark .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline {
-  border-color: rgb(71 85 105) !important;
-}
-
-.dark .MuiInputBase-input::placeholder {
-  color: rgb(148 163 184);
-  opacity: 1;
-}
-
-.dark .MuiSelect-icon,
-.dark .MuiSvgIcon-root {
-  color: rgb(148 163 184);
-}
-
-.dark .MuiMenu-paper,
-.dark .MuiPopover-paper {
-  border: 1px solid rgb(51 65 85);
-  background-color: rgb(15 23 42);
-  color: rgb(226 232 240);
-}
-
-.dark .MuiMenuItem-root {
-  color: rgb(226 232 240);
-}
-
-.dark .MuiMenuItem-root:hover {
-  background-color: rgb(30 41 59);
-}
-
-.dark .MuiMenuItem-root.Mui-selected,
-.dark .MuiMenuItem-root.Mui-selected:hover {
-  background-color: rgb(30 64 175 / 0.35);
 }
 
 .dark .recharts-cartesian-grid line {

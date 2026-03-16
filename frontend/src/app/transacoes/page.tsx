@@ -100,13 +100,7 @@ const parseDateToTimestamp = (value: string): number => {
 export default function TransacoesPage() {
   const copySectionClasses = getTransactionSectionClasses("blue");
   const deleteSectionClasses = getTransactionSectionClasses("red");
-  const searchSectionClasses = getTransactionSectionClasses("gray");
-  const filterFieldSx = {
-    "& .MuiOutlinedInput-root": {
-      backgroundColor: "#fff",
-    },
-  };
-
+  const searchSectionClasses = getTransactionSectionClasses("gray");
   const [transacoes, setTransacoes] = useState<Transacao[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [banks, setBanks] = useState<Bank[]>([]);
@@ -762,7 +756,7 @@ export default function TransacoesPage() {
         )}
 
         {/* Filters */}
-        <div className="rounded-lg bg-white p-4 shadow-sm">
+        <div className="filter-panel-surface">
           <TransactionSection title="Buscar Transações" tone="gray">
             <div className="mt-4 space-y-3">
               <div className="grid grid-cols-1 gap-3 lg:grid-cols-5">
@@ -773,7 +767,6 @@ export default function TransacoesPage() {
                     variant="outlined"
                     size="small"
                     fullWidth
-                    sx={filterFieldSx}
                     value={filterMes}
                     onChange={(e) => {
                       setFilterMes(e.target.value);
@@ -791,7 +784,6 @@ export default function TransacoesPage() {
                     variant="outlined"
                     size="small"
                     fullWidth
-                    sx={filterFieldSx}
                     InputLabelProps={{ shrink: true }}
                     value={filterTipo}
                     onChange={(e) => {
@@ -820,7 +812,6 @@ export default function TransacoesPage() {
                     variant="outlined"
                     size="small"
                     fullWidth
-                    sx={filterFieldSx}
                     InputLabelProps={{ shrink: true }}
                     value={
                       filterCategoria === "" ? "" : String(filterCategoria)
@@ -859,7 +850,6 @@ export default function TransacoesPage() {
                     variant="outlined"
                     size="small"
                     fullWidth
-                    sx={filterFieldSx}
                     InputLabelProps={{ shrink: true }}
                     value={filterBanco === "" ? "" : String(filterBanco)}
                     onChange={(e) => {
@@ -896,7 +886,6 @@ export default function TransacoesPage() {
                     variant="outlined"
                     size="small"
                     fullWidth
-                    sx={filterFieldSx}
                     InputLabelProps={{ shrink: true }}
                     value={filterSituacao}
                     onChange={(e) => {
@@ -927,7 +916,6 @@ export default function TransacoesPage() {
                     variant="outlined"
                     size="small"
                     fullWidth
-                    sx={filterFieldSx}
                     value={searchTerm}
                     onChange={(e) => handleSearch(e.target.value)}
                     InputProps={{
@@ -1548,3 +1536,4 @@ export default function TransacoesPage() {
     </div>
   );
 }
+

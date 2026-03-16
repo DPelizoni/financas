@@ -31,7 +31,7 @@ const toneClasses: Record<AppButtonTone, string> = {
   outline:
     "border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800",
   "outline-primary":
-    "border border-blue-500 bg-blue-50 text-blue-700 hover:bg-blue-100 dark:text-blue-300 dark:hover:bg-blue-900/20",
+    "border border-blue-500 bg-transparent text-blue-700 hover:bg-blue-50 dark:text-blue-300 dark:hover:bg-blue-900/20",
   "outline-success":
     "border border-green-500 bg-transparent text-green-700 hover:bg-green-50 dark:text-green-300 dark:hover:bg-green-900/20",
   "outline-danger":
@@ -58,7 +58,7 @@ export default function AppButton({
   return (
     <button
       type={type}
-      className={`inline-flex items-center justify-center gap-2 rounded-md font-medium leading-none tracking-normal transition disabled:cursor-not-allowed disabled:opacity-60 ${sizeClasses[size]} ${toneClasses[tone]} ${fullWidth ? "w-full" : ""} ${className}`.trim()}
+      className={`inline-flex items-center justify-center gap-2 rounded-md font-medium leading-none tracking-normal transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent disabled:cursor-not-allowed disabled:opacity-60 ${sizeClasses[size]} ${toneClasses[tone]} ${fullWidth ? "w-full" : ""} ${className}`.trim()}
       {...props}
     >
       {startIcon}

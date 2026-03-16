@@ -17,12 +17,7 @@ export default function CategoryModal({
   category,
   onClose,
   onSave,
-}: CategoryModalProps) {
-  const modalFieldSx = {
-    "& .MuiOutlinedInput-root": {
-      backgroundColor: "#fff",
-    },
-  };
+}: CategoryModalProps) {
   const [formData, setFormData] = useState<CategoryInput>({
     nome: "",
     tipo: "DESPESA",
@@ -176,7 +171,6 @@ export default function CategoryModal({
               variant="outlined"
               size="small"
               fullWidth
-              sx={modalFieldSx}
               value={formData.nome}
               onChange={(e) => handleChange("nome", e.target.value)}
               placeholder="Ex: Alimentação, Salário"
@@ -193,7 +187,6 @@ export default function CategoryModal({
               variant="outlined"
               size="small"
               fullWidth
-              sx={modalFieldSx}
               value={formData.tipo}
               onChange={(e) =>
                 handleChange("tipo", e.target.value as "RECEITA" | "DESPESA")
@@ -219,7 +212,6 @@ export default function CategoryModal({
                 variant="outlined"
                 size="small"
                 fullWidth
-                sx={modalFieldSx}
                 value={formData.cor}
                 onChange={(e) => handleChange("cor", e.target.value)}
                 placeholder="#0EA5E9"
@@ -269,3 +261,4 @@ export default function CategoryModal({
     </div>
   );
 }
+

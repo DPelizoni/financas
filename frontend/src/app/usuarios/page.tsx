@@ -19,12 +19,7 @@ import { authService } from "@/services/authService";
 import { IconButton, InputAdornment, MenuItem, TextField } from "@mui/material";
 
 export default function UsuariosPage() {
-  const router = useRouter();
-  const filterFieldSx = {
-    "& .MuiOutlinedInput-root": {
-      backgroundColor: "#fff",
-    },
-  };
+  const router = useRouter();
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [updatingId, setUpdatingId] = useState<number | null>(null);
@@ -207,7 +202,7 @@ export default function UsuariosPage() {
           </p>
         </PageContainer>
 
-        <div className="rounded-lg bg-white p-4 shadow-sm">
+        <div className="filter-panel-surface">
           <div className="grid grid-cols-1 gap-3 md:grid-cols-4">
             <div className="md:col-span-2">
               <TextField
@@ -217,7 +212,6 @@ export default function UsuariosPage() {
                 variant="outlined"
                 size="small"
                 fullWidth
-                sx={filterFieldSx}
                 value={searchTerm}
                 onChange={(e) => {
                   setCurrentPage(1);
@@ -255,7 +249,6 @@ export default function UsuariosPage() {
                 variant="outlined"
                 size="small"
                 fullWidth
-                sx={filterFieldSx}
                 InputLabelProps={{ shrink: true }}
                 value={statusFilter}
                 onChange={(e) => {
@@ -276,7 +269,6 @@ export default function UsuariosPage() {
                 variant="outlined"
                 size="small"
                 fullWidth
-                sx={filterFieldSx}
                 InputLabelProps={{ shrink: true }}
                 value={roleFilter}
                 onChange={(e) => {
@@ -523,3 +515,4 @@ export default function UsuariosPage() {
     </div>
   );
 }
+

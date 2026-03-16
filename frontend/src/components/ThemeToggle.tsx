@@ -59,7 +59,7 @@ export default function ThemeToggle({ className = "" }: ThemeToggleProps) {
       onClick={() => setTheme(isDark ? "light" : "dark")}
       aria-label={isDark ? "Ativar modo claro" : "Ativar modo escuro"}
       title={isDark ? "Ativar modo claro" : "Ativar modo escuro"}
-      className={`inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-xs font-semibold text-gray-700 transition hover:bg-gray-100 ${className}`.trim()}
+      className={`inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-xs font-semibold text-gray-700 transition hover:bg-gray-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent dark:border-slate-600 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800 ${className}`.trim()}
     >
       {isDark ? <Sun size={14} /> : <Moon size={14} />}
       <span className="hidden sm:inline">{isDark ? "Claro" : "Escuro"}</span>

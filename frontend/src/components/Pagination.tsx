@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import {
   ChevronLeft,
@@ -30,12 +30,6 @@ export default function Pagination({
   itemsPerPageOptions = [5, 10, 20, 50],
   centeredLayout = false,
 }: PaginationProps) {
-  const itemsFieldSx = {
-    "& .MuiOutlinedInput-root": {
-      backgroundColor: "#fff",
-    },
-  };
-
   const getVisiblePages = (): number[] => {
     const maxVisible = 5;
     if (totalPages <= maxVisible) {
@@ -100,7 +94,7 @@ export default function Pagination({
             label="Quantidade"
             variant="outlined"
             size="small"
-            sx={{ ...itemsFieldSx, minWidth: 110 }}
+            sx={{ minWidth: 110 }}
             value={itemsPerPage}
             onChange={(e) => {
               const nextItems = Number(e.target.value);
@@ -124,7 +118,7 @@ export default function Pagination({
             <button
               onClick={() => onPageChange(1)}
               disabled={currentPage === 1}
-              className="relative inline-flex items-center rounded-l-md border border-gray-300 bg-white px-2 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+              className="relative inline-flex items-center rounded-l-md border border-gray-300 bg-white px-2 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-50 focus-visible:z-20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400 disabled:opacity-50"
               aria-label="Primeira página"
             >
               <ChevronsLeft size={18} />
@@ -133,7 +127,7 @@ export default function Pagination({
             <button
               onClick={() => onPageChange(Math.max(1, currentPage - 1))}
               disabled={currentPage === 1}
-              className="relative inline-flex items-center border border-gray-300 bg-white px-2 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+              className="relative inline-flex items-center border border-gray-300 bg-white px-2 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-50 focus-visible:z-20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400 disabled:opacity-50"
               aria-label="Página anterior"
             >
               <ChevronLeft size={18} />
@@ -145,9 +139,9 @@ export default function Pagination({
                 onClick={() => onPageChange(page)}
                 className={`relative inline-flex items-center border px-4 py-2 text-sm font-semibold ${
                   page === currentPage
-                    ? "z-10 border-blue-600 bg-blue-600 text-white"
-                    : "border-gray-300 bg-white text-gray-700 hover:bg-gray-50"
-                }`}
+                    ? "z-10 border-blue-600 bg-blue-600 text-white focus-visible:ring-blue-400"
+                    : "border-gray-300 bg-white text-gray-700 hover:bg-gray-50 focus-visible:ring-cyan-400"
+                } focus-visible:z-20 focus-visible:outline-none focus-visible:ring-2`}
               >
                 {page}
               </button>
@@ -156,7 +150,7 @@ export default function Pagination({
             <button
               onClick={() => onPageChange(Math.min(totalPages, currentPage + 1))}
               disabled={currentPage === totalPages}
-              className="relative inline-flex items-center border border-gray-300 bg-white px-2 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+              className="relative inline-flex items-center border border-gray-300 bg-white px-2 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-50 focus-visible:z-20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400 disabled:opacity-50"
               aria-label="Próxima página"
             >
               <ChevronRight size={18} />
@@ -165,7 +159,7 @@ export default function Pagination({
             <button
               onClick={() => onPageChange(totalPages)}
               disabled={currentPage === totalPages}
-              className="relative inline-flex items-center rounded-r-md border border-gray-300 bg-white px-2 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+              className="relative inline-flex items-center rounded-r-md border border-gray-300 bg-white px-2 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-50 focus-visible:z-20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400 disabled:opacity-50"
               aria-label="Última página"
             >
               <ChevronsRight size={18} />
@@ -178,3 +172,4 @@ export default function Pagination({
     </div>
   );
 }
+

@@ -27,12 +27,7 @@ export const TransacaoModal: React.FC<TransacaoModalProps> = ({
   onSuccess,
   transacao,
   isEditing = false,
-}) => {
-  const modalFieldSx = {
-    "& .MuiOutlinedInput-root": {
-      backgroundColor: "#fff",
-    },
-  };
+}) => {
   const [formData, setFormData] = useState<TransacaoInput>({
     mes: "",
     vencimento: "",
@@ -300,7 +295,6 @@ export const TransacaoModal: React.FC<TransacaoModalProps> = ({
                 variant="outlined"
                 size="small"
                 fullWidth
-                sx={modalFieldSx}
                 value={toMonthInput(formData.mes)}
                 onChange={(e) =>
                   setFormData((prev) => ({
@@ -322,7 +316,6 @@ export const TransacaoModal: React.FC<TransacaoModalProps> = ({
                 variant="outlined"
                 size="small"
                 fullWidth
-                sx={modalFieldSx}
                 value={toDateInput(formData.vencimento)}
                 onChange={(e) =>
                   setFormData((prev) => ({
@@ -346,7 +339,6 @@ export const TransacaoModal: React.FC<TransacaoModalProps> = ({
                 variant="outlined"
                 size="small"
                 fullWidth
-                sx={modalFieldSx}
                 value={formData.tipo}
                 onChange={(e) =>
                   handleTypeChange(e.target.value as "DESPESA" | "RECEITA")
@@ -369,7 +361,6 @@ export const TransacaoModal: React.FC<TransacaoModalProps> = ({
                 variant="outlined"
                 size="small"
                 fullWidth
-                sx={modalFieldSx}
                 value={formData.situacao}
                 onChange={(e) =>
                   setFormData((prev) => ({
@@ -394,7 +385,6 @@ export const TransacaoModal: React.FC<TransacaoModalProps> = ({
                 variant="outlined"
                 size="small"
                 fullWidth
-                sx={modalFieldSx}
                 value={formData.categoria_id}
                 onChange={(e) => handleCategoryChange(Number(e.target.value))}
                 InputLabelProps={{ shrink: true }}
@@ -418,7 +408,6 @@ export const TransacaoModal: React.FC<TransacaoModalProps> = ({
                 variant="outlined"
                 size="small"
                 fullWidth
-                sx={modalFieldSx}
                 value={formData.descricao_id}
                 onChange={(e) =>
                   setFormData((prev) => ({
@@ -450,7 +439,6 @@ export const TransacaoModal: React.FC<TransacaoModalProps> = ({
                 variant="outlined"
                 size="small"
                 fullWidth
-                sx={modalFieldSx}
                 value={formData.banco_id}
                 onChange={(e) =>
                   setFormData((prev) => ({
@@ -480,7 +468,6 @@ export const TransacaoModal: React.FC<TransacaoModalProps> = ({
                 variant="outlined"
                 size="small"
                 fullWidth
-                sx={modalFieldSx}
                 inputProps={{ step: "0.01" }}
                 value={formData.valor || ""}
                 onChange={(e) =>
@@ -525,3 +512,4 @@ export const TransacaoModal: React.FC<TransacaoModalProps> = ({
     </div>
   );
 };
+

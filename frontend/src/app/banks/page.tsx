@@ -20,12 +20,7 @@ import AppButton from "@/components/AppButton";
 import TableActionButton from "@/components/TableActionButton";
 import { IconButton, InputAdornment, TextField } from "@mui/material";
 
-export default function BanksPage() {
-  const filterFieldSx = {
-    "& .MuiOutlinedInput-root": {
-      backgroundColor: "#fff",
-    },
-  };
+export default function BanksPage() {
   const [banks, setBanks] = useState<Bank[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
@@ -198,7 +193,7 @@ export default function BanksPage() {
         </PageContainer>
 
         {/* Filters */}
-        <div className="rounded-lg bg-white p-4 shadow-sm">
+        <div className="filter-panel-surface">
           <div className="flex flex-col md:flex-row gap-4">
             <div className="flex-1">
               <TextField
@@ -208,7 +203,6 @@ export default function BanksPage() {
                 variant="outlined"
                 size="small"
                 fullWidth
-                sx={filterFieldSx}
                 value={searchTerm}
                 onChange={(e) => handleSearch(e.target.value)}
                 InputLabelProps={{ shrink: true }}
@@ -501,3 +495,4 @@ export default function BanksPage() {
     </div>
   );
 }
+

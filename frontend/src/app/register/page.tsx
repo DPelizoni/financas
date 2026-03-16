@@ -9,15 +9,7 @@ import ThemeToggle from "@/components/ThemeToggle";
 import { authService } from "@/services/authService";
 import { TextField } from "@mui/material";
 
-export default function RegisterPage() {
-  const authFieldSx = {
-    "& .MuiOutlinedInput-root": {
-      backgroundColor: "#fff",
-      "&.Mui-focused fieldset": {
-        borderColor: "#10b981",
-      },
-    },
-  };
+export default function RegisterPage() {
   const router = useRouter();
 
   const [nome, setNome] = useState("");
@@ -113,7 +105,6 @@ export default function RegisterPage() {
               variant="outlined"
               size="small"
               fullWidth
-              sx={authFieldSx}
               value={nome}
               onChange={(e) => setNome(e.target.value)}
               placeholder="Nome completo"
@@ -129,7 +120,6 @@ export default function RegisterPage() {
               variant="outlined"
               size="small"
               fullWidth
-              sx={authFieldSx}
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="voce@empresa.com"
@@ -145,7 +135,6 @@ export default function RegisterPage() {
               variant="outlined"
               size="small"
               fullWidth
-              sx={authFieldSx}
               value={senha}
               onChange={(e) => setSenha(e.target.value)}
               placeholder="Mínimo de 6 caracteres"
@@ -161,7 +150,6 @@ export default function RegisterPage() {
               variant="outlined"
               size="small"
               fullWidth
-              sx={authFieldSx}
               value={confirmarSenha}
               onChange={(e) => setConfirmarSenha(e.target.value)}
               placeholder="Repita a senha"
@@ -199,3 +187,4 @@ export default function RegisterPage() {
     </div>
   );
 }
+

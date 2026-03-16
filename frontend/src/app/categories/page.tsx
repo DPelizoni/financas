@@ -20,12 +20,7 @@ import AppButton from "@/components/AppButton";
 import TableActionButton from "@/components/TableActionButton";
 import { IconButton, InputAdornment, MenuItem, TextField } from "@mui/material";
 
-export default function CategoriesPage() {
-  const filterFieldSx = {
-    "& .MuiOutlinedInput-root": {
-      backgroundColor: "#fff",
-    },
-  };
+export default function CategoriesPage() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
@@ -195,7 +190,7 @@ export default function CategoriesPage() {
           </div>
         </PageContainer>
 
-        <div className="rounded-lg bg-white p-4 shadow-sm">
+        <div className="filter-panel-surface">
           <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
             <div className="md:col-span-2">
               <TextField
@@ -205,7 +200,6 @@ export default function CategoriesPage() {
                 variant="outlined"
                 size="small"
                 fullWidth
-                sx={filterFieldSx}
                 value={searchTerm}
                 onChange={(e) => handleSearch(e.target.value)}
                 InputLabelProps={{ shrink: true }}
@@ -236,7 +230,6 @@ export default function CategoriesPage() {
               variant="outlined"
               size="small"
               fullWidth
-              sx={filterFieldSx}
               InputLabelProps={{ shrink: true }}
               value={filterTipo ?? ""}
               onChange={(e) => {
@@ -519,3 +512,4 @@ export default function CategoriesPage() {
     </div>
   );
 }
+
