@@ -1,9 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { X } from "lucide-react";
+import { Ban, Save, X } from "lucide-react";
 import { categoryService } from "@/services/categoryService";
 import { Category, CategoryInput } from "@/types/category";
+import AppButton from "@/components/AppButton";
 import { MenuItem, TextField } from "@mui/material";
 
 interface CategoryModalProps {
@@ -243,21 +244,25 @@ export default function CategoryModal({
           </div>
 
           <div className="flex gap-3 pt-4">
-            <button
+            <AppButton
               type="button"
               onClick={onClose}
-              className="flex-1 rounded-lg border border-gray-300 px-4 py-2 text-gray-700 transition-colors hover:bg-gray-50"
+              tone="outline"
+              fullWidth
+              startIcon={<Ban size={16} />}
               disabled={loading}
             >
               Cancelar
-            </button>
-            <button
+            </AppButton>
+            <AppButton
               type="submit"
-              className="flex-1 rounded-lg bg-blue-600 px-4 py-2 text-white transition-colors hover:bg-blue-700 disabled:opacity-50"
+              tone="primary"
+              fullWidth
+              startIcon={<Save size={16} />}
               disabled={loading}
             >
               {loading ? "Salvando..." : category ? "Atualizar" : "Criar"}
-            </button>
+            </AppButton>
           </div>
         </form>
       </div>

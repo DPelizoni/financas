@@ -1,12 +1,13 @@
-"use client";
+﻿"use client";
 
 import {
-  ChevronsLeft,
   ChevronLeft,
   ChevronRight,
+  ChevronsLeft,
   ChevronsRight,
 } from "lucide-react";
 import { MenuItem, TextField } from "@mui/material";
+import AppButton from "@/components/AppButton";
 
 interface PaginationProps {
   currentPage: number;
@@ -40,31 +41,42 @@ export default function Pagination({
     if (totalPages <= maxVisible) {
       return Array.from({ length: totalPages }, (_, i) => i + 1);
     }
+
     let start = Math.max(1, currentPage - 2);
     let end = Math.min(totalPages, start + 4);
+
     if (end - start < 4) {
       start = Math.max(1, end - 4);
     }
+
     return Array.from({ length: end - start + 1 }, (_, i) => start + i);
   };
 
   return (
     <div className="flex items-center justify-between border-t border-gray-200 bg-white px-4 py-3 sm:px-6">
       <div className="flex flex-1 justify-between sm:hidden">
-        <button
+        <AppButton
           onClick={() => onPageChange(Math.max(1, currentPage - 1))}
           disabled={currentPage === 1}
-          className="relative inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+          tone="outline"
+          size="sm"
+          startIcon={<ChevronLeft size={16} />}
+          aria-label="Página anterior"
         >
-          Anterior
-        </button>
-        <button
+          <span className="sr-only">Anterior</span>
+        </AppButton>
+
+        <AppButton
           onClick={() => onPageChange(Math.min(totalPages, currentPage + 1))}
           disabled={currentPage === totalPages}
-          className="relative ml-3 inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+          tone="outline"
+          size="sm"
+          className="ml-3"
+          endIcon={<ChevronRight size={16} />}
+          aria-label="Próxima página"
         >
-          Próximo
-        </button>
+          <span className="sr-only">Próximo</span>
+        </AppButton>
       </div>
 
       <div
@@ -78,15 +90,9 @@ export default function Pagination({
           }`}
         >
           <p className="whitespace-nowrap text-sm text-gray-700">
-            Registros:{" "}
-            <span className="font-medium">
-              {total === 0 ? 0 : (currentPage - 1) * itemsPerPage + 1}
-            </span>
-            -
-            <span className="font-medium">
-              {Math.min(currentPage * itemsPerPage, total)}
-            </span>{" "}
-            de <span className="font-medium">{total}</span>
+            Registros: <span className="font-medium">{total === 0 ? 0 : (currentPage - 1) * itemsPerPage + 1}</span>
+            -<span className="font-medium">{Math.min(currentPage * itemsPerPage, total)}</span> de{" "}
+            <span className="font-medium">{total}</span>
           </p>
 
           <TextField
@@ -118,7 +124,7 @@ export default function Pagination({
             <button
               onClick={() => onPageChange(1)}
               disabled={currentPage === 1}
-              className="relative inline-flex items-center rounded-l-md border border-gray-300 bg-white px-2 py-2 text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50"
+              className="relative inline-flex items-center rounded-l-md border border-gray-300 bg-white px-2 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-50 disabled:opacity-50"
               aria-label="Primeira página"
             >
               <ChevronsLeft size={18} />
@@ -127,17 +133,17 @@ export default function Pagination({
             <button
               onClick={() => onPageChange(Math.max(1, currentPage - 1))}
               disabled={currentPage === 1}
-              className="relative inline-flex items-center border border-gray-300 bg-white px-2 py-2 text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50"
+              className="relative inline-flex items-center border border-gray-300 bg-white px-2 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-50 disabled:opacity-50"
               aria-label="Página anterior"
             >
-              <ChevronLeft size={20} />
+              <ChevronLeft size={18} />
             </button>
 
             {getVisiblePages().map((page) => (
               <button
                 key={page}
                 onClick={() => onPageChange(page)}
-                className={`relative inline-flex items-center border px-4 py-2 text-sm font-medium ${
+                className={`relative inline-flex items-center border px-4 py-2 text-sm font-semibold ${
                   page === currentPage
                     ? "z-10 border-blue-600 bg-blue-600 text-white"
                     : "border-gray-300 bg-white text-gray-700 hover:bg-gray-50"
@@ -148,20 +154,18 @@ export default function Pagination({
             ))}
 
             <button
-              onClick={() =>
-                onPageChange(Math.min(totalPages, currentPage + 1))
-              }
+              onClick={() => onPageChange(Math.min(totalPages, currentPage + 1))}
               disabled={currentPage === totalPages}
-              className="relative inline-flex items-center border border-gray-300 bg-white px-2 py-2 text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50"
+              className="relative inline-flex items-center border border-gray-300 bg-white px-2 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-50 disabled:opacity-50"
               aria-label="Próxima página"
             >
-              <ChevronRight size={20} />
+              <ChevronRight size={18} />
             </button>
 
             <button
               onClick={() => onPageChange(totalPages)}
               disabled={currentPage === totalPages}
-              className="relative inline-flex items-center rounded-r-md border border-gray-300 bg-white px-2 py-2 text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50"
+              className="relative inline-flex items-center rounded-r-md border border-gray-300 bg-white px-2 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-50 disabled:opacity-50"
               aria-label="Última página"
             >
               <ChevronsRight size={18} />

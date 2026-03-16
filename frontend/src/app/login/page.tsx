@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { LogIn } from "lucide-react";
 import { authService } from "@/services/authService";
 import FeedbackAlert from "@/components/FeedbackAlert";
 import ThemeToggle from "@/components/ThemeToggle";
@@ -124,9 +125,16 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full rounded-lg bg-cyan-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-cyan-700 disabled:cursor-not-allowed disabled:opacity-70"
+            className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-cyan-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-cyan-700 disabled:cursor-not-allowed disabled:opacity-70"
           >
-            {loading ? "Entrando..." : "Entrar"}
+            {loading ? (
+              "Entrando..."
+            ) : (
+              <>
+                <LogIn size={16} />
+                Entrar
+              </>
+            )}
           </button>
         </form>
 

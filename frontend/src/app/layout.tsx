@@ -2,8 +2,9 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import AppLayout from "@/components/AppLayout";
+import MuiAppProvider from "@/components/MuiAppProvider";
 
-const inter = Inter({ subsets: ["latin"] });
+const inter = Inter({ subsets: ["latin"], variable: "--font-app" });
 const themeInitScript = `
 (() => {
   try {
@@ -39,8 +40,10 @@ export default function RootLayout({
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
       </head>
-      <body className={`${inter.className} min-h-screen`}>
-        <AppLayout>{children}</AppLayout>
+      <body className={`${inter.variable} ${inter.className} min-h-screen`}>
+        <MuiAppProvider>
+          <AppLayout>{children}</AppLayout>
+        </MuiAppProvider>
       </body>
     </html>
   );

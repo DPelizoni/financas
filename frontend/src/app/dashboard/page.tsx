@@ -5,9 +5,11 @@ import {
   ArrowLeftRight,
   BarChart3,
   DollarSign,
-  ChevronUp,
-  ChevronDown,
+  ArrowDownWideNarrow,
+  ArrowUpNarrowWide,
 } from "lucide-react";
+import Icon from "@mdi/react";
+import { mdiBroom } from "@mdi/js";
 import {
   Bar,
   BarChart,
@@ -599,8 +601,9 @@ export default function DashboardPage() {
                     setFilterBanco("");
                     setPeriodMonths(12);
                   }}
-                  className="rounded-lg bg-gray-500 px-3 py-2 text-sm font-medium whitespace-nowrap text-white transition hover:bg-gray-600"
+                  className="inline-flex items-center gap-2 rounded-lg bg-gray-500 px-3 py-2 text-sm font-medium whitespace-nowrap text-white transition hover:bg-gray-600"
                 >
+                  <Icon path={mdiBroom} size={0.75} />
                   Limpar filtros
                 </button>
               </div>
@@ -998,9 +1001,9 @@ export default function DashboardPage() {
                     >
                       Mês
                       {tableSortBy === "mes" && tableSortDirection === "asc" ? (
-                        <ChevronUp size={14} />
+                        <ArrowUpNarrowWide size={14} />
                       ) : tableSortBy === "mes" ? (
-                        <ChevronDown size={14} />
+                        <ArrowDownWideNarrow size={14} />
                       ) : null}
                     </button>
                   </th>
@@ -1013,9 +1016,9 @@ export default function DashboardPage() {
                       Tipo
                       {tableSortBy === "tipo" &&
                       tableSortDirection === "asc" ? (
-                        <ChevronUp size={14} />
+                        <ArrowUpNarrowWide size={14} />
                       ) : tableSortBy === "tipo" ? (
-                        <ChevronDown size={14} />
+                        <ArrowDownWideNarrow size={14} />
                       ) : null}
                     </button>
                   </th>
@@ -1028,9 +1031,9 @@ export default function DashboardPage() {
                       Categoria
                       {tableSortBy === "categoria" &&
                       tableSortDirection === "asc" ? (
-                        <ChevronUp size={14} />
+                        <ArrowUpNarrowWide size={14} />
                       ) : tableSortBy === "categoria" ? (
-                        <ChevronDown size={14} />
+                        <ArrowDownWideNarrow size={14} />
                       ) : null}
                     </button>
                   </th>
@@ -1046,9 +1049,9 @@ export default function DashboardPage() {
                       Banco
                       {tableSortBy === "banco" &&
                       tableSortDirection === "asc" ? (
-                        <ChevronUp size={14} />
+                        <ArrowUpNarrowWide size={14} />
                       ) : tableSortBy === "banco" ? (
-                        <ChevronDown size={14} />
+                        <ArrowDownWideNarrow size={14} />
                       ) : null}
                     </button>
                   </th>
@@ -1061,9 +1064,9 @@ export default function DashboardPage() {
                       Situação
                       {tableSortBy === "situacao" &&
                       tableSortDirection === "asc" ? (
-                        <ChevronUp size={14} />
+                        <ArrowUpNarrowWide size={14} />
                       ) : tableSortBy === "situacao" ? (
-                        <ChevronDown size={14} />
+                        <ArrowDownWideNarrow size={14} />
                       ) : null}
                     </button>
                   </th>
@@ -1076,9 +1079,9 @@ export default function DashboardPage() {
                       Valor
                       {tableSortBy === "valor" &&
                       tableSortDirection === "asc" ? (
-                        <ChevronUp size={14} />
+                        <ArrowUpNarrowWide size={14} />
                       ) : tableSortBy === "valor" ? (
-                        <ChevronDown size={14} />
+                        <ArrowDownWideNarrow size={14} />
                       ) : null}
                     </button>
                   </th>

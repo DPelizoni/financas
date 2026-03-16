@@ -6,14 +6,13 @@ import {
   ShieldCheck,
   Search,
   X,
-  CheckCircle,
-  XCircle,
-  ChevronDown,
-  ChevronUp,
+  ArrowDownWideNarrow,
+  ArrowUpNarrowWide,
 } from "lucide-react";
 import FeedbackAlert from "@/components/FeedbackAlert";
 import Pagination from "@/components/Pagination";
 import PageContainer from "@/components/PageContainer";
+import AppButton from "@/components/AppButton";
 import { userService } from "@/services/userService";
 import { User, UserRole, UserStatus } from "@/types/user";
 import { authService } from "@/services/authService";
@@ -325,17 +324,12 @@ export default function UsuariosPage() {
                         </div>
 
                         <span
-                          className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-semibold leading-none ${
+                          className={`inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-semibold leading-none ${
                             user.status === "ATIVO"
                               ? "bg-green-100 text-green-700"
                               : "bg-red-100 text-red-700"
                           }`}
                         >
-                          {user.status === "ATIVO" ? (
-                            <CheckCircle size={12} />
-                          ) : (
-                            <XCircle size={12} />
-                          )}
                           {user.status}
                         </span>
                       </div>
@@ -364,22 +358,23 @@ export default function UsuariosPage() {
                       </div>
 
                       <div className="mt-3 flex justify-end border-t border-gray-100 pt-3">
-                        <button
+                        <AppButton
                           type="button"
                           onClick={() => handleToggleStatus(user)}
                           disabled={updatingId === user.id}
-                          className={`min-h-11 rounded-lg px-4 py-2 text-xs font-semibold text-white transition ${
+                          tone={
                             user.status === "ATIVO"
-                              ? "bg-red-600 hover:bg-red-700"
-                              : "bg-green-600 hover:bg-green-700"
-                          } disabled:cursor-not-allowed disabled:opacity-70`}
+                              ? "outline-danger"
+                              : "outline-success"
+                          }
+                          size="sm"
                         >
                           {updatingId === user.id
                             ? "Atualizando..."
                             : user.status === "ATIVO"
                               ? "Inativar"
                               : "Ativar"}
-                        </button>
+                        </AppButton>
                       </div>
                     </div>
                   );
@@ -398,9 +393,9 @@ export default function UsuariosPage() {
                         >
                           Nome
                           {sortBy === "nome" && sortDirection === "asc" ? (
-                            <ChevronUp size={14} />
+                            <ArrowUpNarrowWide size={14} />
                           ) : sortBy === "nome" ? (
-                            <ChevronDown size={14} />
+                            <ArrowDownWideNarrow size={14} />
                           ) : null}
                         </button>
                       </th>
@@ -412,9 +407,9 @@ export default function UsuariosPage() {
                         >
                           Email
                           {sortBy === "email" && sortDirection === "asc" ? (
-                            <ChevronUp size={14} />
+                            <ArrowUpNarrowWide size={14} />
                           ) : sortBy === "email" ? (
-                            <ChevronDown size={14} />
+                            <ArrowDownWideNarrow size={14} />
                           ) : null}
                         </button>
                       </th>
@@ -429,9 +424,9 @@ export default function UsuariosPage() {
                         >
                           Status
                           {sortBy === "status" && sortDirection === "asc" ? (
-                            <ChevronUp size={14} />
+                            <ArrowUpNarrowWide size={14} />
                           ) : sortBy === "status" ? (
-                            <ChevronDown size={14} />
+                            <ArrowDownWideNarrow size={14} />
                           ) : null}
                         </button>
                       </th>
@@ -476,37 +471,33 @@ export default function UsuariosPage() {
                           </td>
                           <td className="px-3 py-2 text-xs">
                             <span
-                              className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-semibold leading-none ${
+                              className={`inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-semibold leading-none ${
                                 user.status === "ATIVO"
                                   ? "bg-green-100 text-green-700"
                                   : "bg-red-100 text-red-700"
                               }`}
                             >
-                              {user.status === "ATIVO" ? (
-                                <CheckCircle size={12} />
-                              ) : (
-                                <XCircle size={12} />
-                              )}
                               {user.status}
                             </span>
                           </td>
                           <td className="px-3 py-2 text-right text-xs">
-                            <button
+                            <AppButton
                               type="button"
                               onClick={() => handleToggleStatus(user)}
                               disabled={updatingId === user.id}
-                              className={`rounded-md px-2.5 py-1 text-[11px] font-semibold text-white transition ${
+                              tone={
                                 user.status === "ATIVO"
-                                  ? "bg-red-600 hover:bg-red-700"
-                                  : "bg-green-600 hover:bg-green-700"
-                              } disabled:cursor-not-allowed disabled:opacity-70`}
+                                  ? "outline-danger"
+                                  : "outline-success"
+                              }
+                              size="sm"
                             >
                               {updatingId === user.id
                                 ? "Atualizando..."
                                 : user.status === "ATIVO"
                                   ? "Inativar"
                                   : "Ativar"}
-                            </button>
+                            </AppButton>
                           </td>
                         </tr>
                       );

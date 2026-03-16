@@ -9,7 +9,8 @@ import { transacaoService } from "@/services/transacaoService";
 import { categoryService } from "@/services/categoryService";
 import { descricaoService } from "@/services/descricaoService";
 import { bankService } from "@/services/bankService";
-import { X } from "lucide-react";
+import { Ban, Save, X } from "lucide-react";
+import AppButton from "@/components/AppButton";
 import { MenuItem, TextField } from "@mui/material";
 
 interface TransacaoModalProps {
@@ -502,20 +503,22 @@ export const TransacaoModal: React.FC<TransacaoModalProps> = ({
           )}
 
           <div className="flex justify-end gap-3 pt-4">
-            <button
+            <AppButton
               type="button"
               onClick={onClose}
-              className="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50"
+              tone="outline"
+              startIcon={<Ban size={16} />}
             >
               Cancelar
-            </button>
-            <button
+            </AppButton>
+            <AppButton
               type="submit"
               disabled={loading}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+              tone="primary"
+              startIcon={<Save size={16} />}
             >
               {loading ? "Salvando..." : isEditing ? "Atualizar" : "Criar"}
-            </button>
+            </AppButton>
           </div>
         </form>
       </div>

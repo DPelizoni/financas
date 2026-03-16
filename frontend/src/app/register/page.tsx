@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { UserPlus } from "lucide-react";
 import FeedbackAlert from "@/components/FeedbackAlert";
 import ThemeToggle from "@/components/ThemeToggle";
 import { authService } from "@/services/authService";
@@ -171,9 +172,16 @@ export default function RegisterPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full rounded-lg bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-70"
+              className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-70"
             >
-              {loading ? "Cadastrando..." : "Cadastrar usuário"}
+              {loading ? (
+                "Cadastrando..."
+              ) : (
+                <>
+                  <UserPlus size={16} />
+                  Cadastrar usuário
+                </>
+              )}
             </button>
           </div>
         </form>

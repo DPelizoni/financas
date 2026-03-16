@@ -4,14 +4,10 @@ import { useEffect, useMemo, useState } from "react";
 import {
   Plus,
   Search,
-  Edit2,
-  Trash2,
   Tags,
-  CheckCircle,
-  XCircle,
   X,
-  ChevronUp,
-  ChevronDown,
+  ArrowDownWideNarrow,
+  ArrowUpNarrowWide,
 } from "lucide-react";
 import { categoryService, CategoryFilters } from "@/services/categoryService";
 import { Category } from "@/types/category";
@@ -20,6 +16,8 @@ import Pagination from "@/components/Pagination";
 import FeedbackAlert from "@/components/FeedbackAlert";
 import ConfirmDeleteModal from "@/components/ConfirmDeleteModal";
 import PageContainer from "@/components/PageContainer";
+import AppButton from "@/components/AppButton";
+import TableActionButton from "@/components/TableActionButton";
 import { IconButton, InputAdornment, MenuItem, TextField } from "@mui/material";
 
 export default function CategoriesPage() {
@@ -186,13 +184,14 @@ export default function CategoriesPage() {
                 Organize categorias para classificar receitas e despesas
               </p>
             </div>
-            <button
+            <AppButton
               onClick={handleCreate}
-              className="flex w-full items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-white transition-colors hover:bg-blue-700 sm:w-auto"
+              tone="primary"
+              startIcon={<Plus size={18} />}
+              className="w-full sm:w-auto"
             >
-              <Plus size={20} />
               Nova Categoria
-            </button>
+            </AppButton>
           </div>
         </PageContainer>
 
@@ -255,45 +254,36 @@ export default function CategoriesPage() {
             </TextField>
 
             <div className="flex flex-wrap gap-2 md:col-span-4">
-              <button
+              <AppButton
                 onClick={() => {
                   setFilterAtivo(undefined);
                   setCurrentPage(1);
                 }}
-                className={`rounded-lg px-4 py-2 transition-colors ${
-                  filterAtivo === undefined
-                    ? "bg-blue-600 text-white"
-                    : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-                }`}
+                tone={filterAtivo === undefined ? "primary" : "outline-primary"}
+                size="sm"
               >
                 Todos
-              </button>
-              <button
+              </AppButton>
+              <AppButton
                 onClick={() => {
                   setFilterAtivo(true);
                   setCurrentPage(1);
                 }}
-                className={`rounded-lg px-4 py-2 transition-colors ${
-                  filterAtivo === true
-                    ? "bg-green-600 text-white"
-                    : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-                }`}
+                tone={filterAtivo === true ? "success" : "outline-success"}
+                size="sm"
               >
                 Ativos
-              </button>
-              <button
+              </AppButton>
+              <AppButton
                 onClick={() => {
                   setFilterAtivo(false);
                   setCurrentPage(1);
                 }}
-                className={`rounded-lg px-4 py-2 transition-colors ${
-                  filterAtivo === false
-                    ? "bg-red-600 text-white"
-                    : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-                }`}
+                tone={filterAtivo === false ? "danger" : "outline-danger"}
+                size="sm"
               >
                 Inativos
-              </button>
+              </AppButton>
             </div>
           </div>
         </div>
@@ -308,12 +298,14 @@ export default function CategoriesPage() {
             <div className="py-12 text-center">
               <Tags size={48} className="mx-auto mb-4 text-gray-400" />
               <p className="text-gray-600">Nenhum registro encontrado</p>
-              <button
+              <AppButton
                 onClick={handleCreate}
-                className="mt-4 font-medium text-blue-600 hover:text-blue-700"
+                tone="ghost"
+                size="sm"
+                className="mt-4 text-blue-600 hover:text-blue-700"
               >
                 Criar novo registro
-              </button>
+              </AppButton>
             </div>
           ) : (
             <>
@@ -348,33 +340,27 @@ export default function CategoriesPage() {
                       </div>
 
                       {category.ativo ? (
-                        <span className="inline-flex items-center gap-1 rounded-full bg-green-100 px-2.5 py-1 text-[11px] font-semibold leading-none text-green-800">
-                          <CheckCircle size={14} />
+                        <span className="inline-flex items-center rounded-full bg-green-100 px-2.5 py-1 text-[11px] font-semibold leading-none text-green-800">
                           Ativo
                         </span>
                       ) : (
-                        <span className="inline-flex items-center gap-1 rounded-full bg-red-100 px-2.5 py-1 text-[11px] font-semibold leading-none text-red-800">
-                          <XCircle size={14} />
+                        <span className="inline-flex items-center rounded-full bg-red-100 px-2.5 py-1 text-[11px] font-semibold leading-none text-red-800">
                           Inativo
                         </span>
                       )}
                     </div>
 
                     <div className="mt-3 flex items-center justify-end gap-2 border-t border-gray-100 pt-3">
-                      <button
-                        onClick={() => handleEdit(category)}
-                        className="inline-flex h-11 w-11 items-center justify-center rounded-lg text-blue-600 transition hover:bg-blue-50 hover:text-blue-900"
+                      <TableActionButton
+                        action="edit"
                         title="Editar"
-                      >
-                        <Edit2 size={18} />
-                      </button>
-                      <button
-                        onClick={() => handleDelete(category)}
-                        className="inline-flex h-11 w-11 items-center justify-center rounded-lg text-red-600 transition hover:bg-red-50 hover:text-red-900"
+                        onClick={() => handleEdit(category)}
+                      />
+                      <TableActionButton
+                        action="delete"
                         title="Excluir"
-                      >
-                        <Trash2 size={18} />
-                      </button>
+                        onClick={() => handleDelete(category)}
+                      />
                     </div>
                   </div>
                 ))}
@@ -392,9 +378,9 @@ export default function CategoriesPage() {
                         >
                           Categoria
                           {sortBy === "nome" && sortDirection === "asc" ? (
-                            <ChevronUp size={14} />
+                            <ArrowUpNarrowWide size={14} />
                           ) : sortBy === "nome" ? (
-                            <ChevronDown size={14} />
+                            <ArrowDownWideNarrow size={14} />
                           ) : null}
                         </button>
                       </th>
@@ -406,9 +392,9 @@ export default function CategoriesPage() {
                         >
                           Tipo
                           {sortBy === "tipo" && sortDirection === "asc" ? (
-                            <ChevronUp size={14} />
+                            <ArrowUpNarrowWide size={14} />
                           ) : sortBy === "tipo" ? (
-                            <ChevronDown size={14} />
+                            <ArrowDownWideNarrow size={14} />
                           ) : null}
                         </button>
                       </th>
@@ -420,9 +406,9 @@ export default function CategoriesPage() {
                         >
                           Status
                           {sortBy === "status" && sortDirection === "asc" ? (
-                            <ChevronUp size={14} />
+                            <ArrowUpNarrowWide size={14} />
                           ) : sortBy === "status" ? (
-                            <ChevronDown size={14} />
+                            <ArrowDownWideNarrow size={14} />
                           ) : null}
                         </button>
                       </th>
@@ -463,32 +449,30 @@ export default function CategoriesPage() {
                         </td>
                         <td className="whitespace-nowrap px-3 py-2">
                           {category.ativo ? (
-                            <span className="inline-flex items-center gap-1 rounded-full bg-green-100 px-2.5 py-1 text-[11px] font-semibold leading-none text-green-800">
-                              <CheckCircle size={14} />
+                            <span className="inline-flex items-center rounded-full bg-green-100 px-2.5 py-1 text-[11px] font-semibold leading-none text-green-800">
                               Ativo
                             </span>
                           ) : (
-                            <span className="inline-flex items-center gap-1 rounded-full bg-red-100 px-2.5 py-1 text-[11px] font-semibold leading-none text-red-800">
-                              <XCircle size={14} />
+                            <span className="inline-flex items-center rounded-full bg-red-100 px-2.5 py-1 text-[11px] font-semibold leading-none text-red-800">
                               Inativo
                             </span>
                           )}
                         </td>
                         <td className="whitespace-nowrap px-3 py-2 text-right text-xs font-medium">
-                          <button
-                            onClick={() => handleEdit(category)}
-                            className="mr-1 inline-flex h-8 w-8 items-center justify-center rounded-md text-blue-600 transition hover:bg-blue-50 hover:text-blue-900"
-                            title="Editar"
-                          >
-                            <Edit2 size={16} />
-                          </button>
-                          <button
-                            onClick={() => handleDelete(category)}
-                            className="inline-flex h-8 w-8 items-center justify-center rounded-md text-red-600 transition hover:bg-red-50 hover:text-red-900"
-                            title="Excluir"
-                          >
-                            <Trash2 size={16} />
-                          </button>
+                          <div className="flex justify-end gap-1">
+                            <TableActionButton
+                              action="edit"
+                              title="Editar"
+                              onClick={() => handleEdit(category)}
+                              compact
+                            />
+                            <TableActionButton
+                              action="delete"
+                              title="Excluir"
+                              onClick={() => handleDelete(category)}
+                              compact
+                            />
+                          </div>
                         </td>
                       </tr>
                     ))}

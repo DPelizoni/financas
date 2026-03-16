@@ -1,6 +1,7 @@
 "use client";
 
-import { AlertTriangle } from "lucide-react";
+import { AlertTriangle, Trash2, XCircle } from "lucide-react";
+import AppButton from "@/components/AppButton";
 
 interface ConfirmDeleteModalProps {
   isOpen: boolean;
@@ -39,18 +40,20 @@ export default function ConfirmDeleteModal({
           </p>
         </div>
         <div className="flex justify-end gap-3 px-6 pb-5">
-          <button
+          <AppButton
             onClick={onCancel}
-            className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+            tone="outline"
+            startIcon={<XCircle size={16} />}
           >
             Cancelar
-          </button>
-          <button
+          </AppButton>
+          <AppButton
             onClick={onConfirm}
-            className="rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-700"
+            tone="danger"
+            startIcon={<Trash2 size={16} />}
           >
             {confirmLabel}
-          </button>
+          </AppButton>
         </div>
       </div>
     </div>

@@ -23,21 +23,22 @@ import {
 import {
   Plus,
   Copy,
-  Edit2,
-  Trash2,
+  Trash,
   Search,
   X,
   DollarSign,
-  AlertCircle,
-  CheckCircle2,
   ArrowLeftRight,
-  ChevronUp,
+  ArrowDownWideNarrow,
+  ArrowUpNarrowWide,
   ChevronDown,
 } from "lucide-react";
+import Icon from "@mdi/react";
+import { mdiBroom } from "@mdi/js";
 import { InputAdornment, MenuItem, TextField } from "@mui/material";
 import FeedbackAlert from "@/components/FeedbackAlert";
 import ConfirmDeleteModal from "@/components/ConfirmDeleteModal";
 import PageContainer from "@/components/PageContainer";
+import TableActionButton from "@/components/TableActionButton";
 
 interface DeleteConfirmation {
   isOpen: boolean;
@@ -630,7 +631,7 @@ export default function TransacoesPage() {
                       }}
                       className="mt-1 flex w-full items-center gap-2 rounded-md px-3 py-2 text-left text-sm font-medium text-red-700 transition hover:bg-red-50"
                     >
-                      <Trash2 size={16} />
+                      <Trash size={16} />
                       Excluir transações por mês
                     </button>
                   </div>
@@ -943,8 +944,9 @@ export default function TransacoesPage() {
                   <button
                     type="button"
                     onClick={handleClearFilters}
-                    className={searchSectionClasses.primaryCompactButton}
+                    className={`${searchSectionClasses.primaryCompactButton} inline-flex items-center gap-2`}
                   >
+                    <Icon path={mdiBroom} size={0.75} />
                     Limpar Filtros
                   </button>
                 </div>
@@ -1027,22 +1029,16 @@ export default function TransacoesPage() {
                     </div>
 
                     <div className="mt-3 flex items-center justify-end gap-2 border-t border-gray-100 pt-3">
-                      <button
-                        onClick={() => handleEdit(transacao)}
-                        className="inline-flex h-11 w-11 items-center justify-center rounded-lg text-blue-600 transition hover:bg-blue-50 hover:text-blue-800"
+                      <TableActionButton
+                        action="edit"
                         title="Editar"
-                      >
-                        <Edit2 size={18} />
-                      </button>
-                      <button
-                        onClick={() =>
-                          handleDelete(transacao.id, transacao.mes)
-                        }
-                        className="inline-flex h-11 w-11 items-center justify-center rounded-lg text-red-600 transition hover:bg-red-50 hover:text-red-800"
+                        onClick={() => handleEdit(transacao)}
+                      />
+                      <TableActionButton
+                        action="delete"
                         title="Excluir"
-                      >
-                        <Trash2 size={18} />
-                      </button>
+                        onClick={() => handleDelete(transacao.id, transacao.mes)}
+                      />
                     </div>
                   </div>
                 ))}
@@ -1062,9 +1058,9 @@ export default function TransacoesPage() {
                     >
                       Mês
                       {sortBy === "mes" && sortDirection === "asc" ? (
-                        <ChevronUp size={14} />
+                        <ArrowUpNarrowWide size={14} />
                       ) : sortBy === "mes" ? (
-                        <ChevronDown size={14} />
+                        <ArrowDownWideNarrow size={14} />
                       ) : null}
                     </button>
                   </th>
@@ -1076,9 +1072,9 @@ export default function TransacoesPage() {
                     >
                       Vencimento
                       {sortBy === "vencimento" && sortDirection === "asc" ? (
-                        <ChevronUp size={14} />
+                        <ArrowUpNarrowWide size={14} />
                       ) : sortBy === "vencimento" ? (
-                        <ChevronDown size={14} />
+                        <ArrowDownWideNarrow size={14} />
                       ) : null}
                     </button>
                   </th>
@@ -1090,9 +1086,9 @@ export default function TransacoesPage() {
                     >
                       Tipo
                       {sortBy === "tipo" && sortDirection === "asc" ? (
-                        <ChevronUp size={14} />
+                        <ArrowUpNarrowWide size={14} />
                       ) : sortBy === "tipo" ? (
-                        <ChevronDown size={14} />
+                        <ArrowDownWideNarrow size={14} />
                       ) : null}
                     </button>
                   </th>
@@ -1104,9 +1100,9 @@ export default function TransacoesPage() {
                     >
                       Categoria
                       {sortBy === "categoria" && sortDirection === "asc" ? (
-                        <ChevronUp size={14} />
+                        <ArrowUpNarrowWide size={14} />
                       ) : sortBy === "categoria" ? (
-                        <ChevronDown size={14} />
+                        <ArrowDownWideNarrow size={14} />
                       ) : null}
                     </button>
                   </th>
@@ -1118,9 +1114,9 @@ export default function TransacoesPage() {
                     >
                       Descrição
                       {sortBy === "descricao" && sortDirection === "asc" ? (
-                        <ChevronUp size={14} />
+                        <ArrowUpNarrowWide size={14} />
                       ) : sortBy === "descricao" ? (
-                        <ChevronDown size={14} />
+                        <ArrowDownWideNarrow size={14} />
                       ) : null}
                     </button>
                   </th>
@@ -1132,9 +1128,9 @@ export default function TransacoesPage() {
                     >
                       Banco
                       {sortBy === "banco" && sortDirection === "asc" ? (
-                        <ChevronUp size={14} />
+                        <ArrowUpNarrowWide size={14} />
                       ) : sortBy === "banco" ? (
-                        <ChevronDown size={14} />
+                        <ArrowDownWideNarrow size={14} />
                       ) : null}
                     </button>
                   </th>
@@ -1146,9 +1142,9 @@ export default function TransacoesPage() {
                     >
                       Valor
                       {sortBy === "valor" && sortDirection === "asc" ? (
-                        <ChevronUp size={14} />
+                        <ArrowUpNarrowWide size={14} />
                       ) : sortBy === "valor" ? (
-                        <ChevronDown size={14} />
+                        <ArrowDownWideNarrow size={14} />
                       ) : null}
                     </button>
                   </th>
@@ -1160,9 +1156,9 @@ export default function TransacoesPage() {
                     >
                       Situação
                       {sortBy === "situacao" && sortDirection === "asc" ? (
-                        <ChevronUp size={14} />
+                        <ArrowUpNarrowWide size={14} />
                       ) : sortBy === "situacao" ? (
-                        <ChevronDown size={14} />
+                        <ArrowDownWideNarrow size={14} />
                       ) : null}
                     </button>
                   </th>
@@ -1238,20 +1234,20 @@ export default function TransacoesPage() {
                       </td>
                       <td className="px-3 py-2 text-center">
                         <div className="flex justify-center gap-2">
-                          <button
+                          <TableActionButton
+                            action="edit"
+                            title="Editar"
                             onClick={() => handleEdit(transacao)}
-                            className="inline-flex h-8 w-8 items-center justify-center rounded-md text-blue-600 transition hover:bg-blue-50 hover:text-blue-800"
-                          >
-                            <Edit2 size={16} />
-                          </button>
-                          <button
+                            compact
+                          />
+                          <TableActionButton
+                            action="delete"
+                            title="Excluir"
                             onClick={() =>
                               handleDelete(transacao.id, transacao.mes)
                             }
-                            className="inline-flex h-8 w-8 items-center justify-center rounded-md text-red-600 transition hover:bg-red-50 hover:text-red-800"
-                          >
-                            <Trash2 size={16} />
-                          </button>
+                            compact
+                          />
                         </div>
                       </td>
                     </tr>

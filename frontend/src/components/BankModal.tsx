@@ -1,9 +1,10 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { X } from "lucide-react";
+import { Ban, Save, X } from "lucide-react";
 import { bankService } from "@/services/bankService";
 import { Bank, BankInput } from "@/types/bank";
+import AppButton from "@/components/AppButton";
 import { TextField } from "@mui/material";
 
 interface BankModalProps {
@@ -338,21 +339,25 @@ export default function BankModal({ bank, onClose, onSave }: BankModalProps) {
 
           {/* Buttons */}
           <div className="flex gap-3 pt-4">
-            <button
+            <AppButton
               type="button"
               onClick={onClose}
-              className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
+              tone="outline"
+              fullWidth
+              startIcon={<Ban size={16} />}
               disabled={loading}
             >
               Cancelar
-            </button>
-            <button
+            </AppButton>
+            <AppButton
               type="submit"
-              className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
+              tone="primary"
+              fullWidth
+              startIcon={<Save size={16} />}
               disabled={loading}
             >
               {loading ? "Salvando..." : bank ? "Atualizar" : "Criar"}
-            </button>
+            </AppButton>
           </div>
         </form>
       </div>

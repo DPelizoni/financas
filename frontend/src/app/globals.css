@@ -24,6 +24,7 @@ body {
   color: rgb(var(--foreground-rgb));
   background-color: rgb(var(--background-base-rgb));
   @apply text-base transition-colors duration-200;
+  font-family: var(--font-app), Inter, sans-serif;
 }
 
 @layer base {
@@ -61,7 +62,12 @@ body {
     border-color: rgb(var(--border-rgb));
     background-color: rgb(var(--background-elevated-rgb));
     color: rgb(var(--foreground-rgb));
-    @apply rounded-lg;
+    @apply rounded-md;
+  }
+
+  button {
+    font-family: var(--font-app), Inter, sans-serif;
+    letter-spacing: 0;
   }
 }
 
@@ -255,4 +261,21 @@ body {
 .dark .recharts-tooltip-label,
 .dark .recharts-tooltip-item {
   color: rgb(226 232 240) !important;
+}
+
+/* Reduced corner radius across the system */
+.rounded-2xl {
+  border-radius: 0.75rem !important;
+}
+
+.rounded-xl {
+  border-radius: 0.625rem !important;
+}
+
+.rounded-lg {
+  border-radius: 0.375rem !important;
+}
+
+.rounded-md {
+  border-radius: 0.3125rem !important;
 }
