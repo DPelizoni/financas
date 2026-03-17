@@ -54,7 +54,7 @@ const toneStyles: Record<
     emptyState: "text-red-800",
   },
   gray: {
-    container: "border-gray-300 bg-gray-50",
+    container: "",
     title: "text-gray-800",
     label: "text-gray-800",
     input: "border-gray-300 focus:border-gray-500",
@@ -82,9 +82,11 @@ const baseChipClass =
 
 export function getTransactionSectionClasses(tone: TransactionSectionTone) {
   const palette = toneStyles[tone];
+  const containerBaseClass =
+    tone === "gray" ? "p-4" : "rounded-lg border border-dashed p-4";
 
   return {
-    container: `rounded-lg border border-dashed p-4 ${palette.container}`,
+    container: `${containerBaseClass} ${palette.container}`.trim(),
     title: `mb-3 text-sm font-semibold ${palette.title}`,
     label: `mb-1 block text-xs font-medium ${palette.label}`,
     input: `${baseInputClass} ${palette.input}`,

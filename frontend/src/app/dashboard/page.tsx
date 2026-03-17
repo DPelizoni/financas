@@ -782,7 +782,7 @@ export default function DashboardPage() {
             <div className="h-[520px] sm:h-96">
               {hasSingleTimelineMonth ? (
                 <div className="grid h-full grid-cols-1 gap-4 lg:grid-cols-2">
-                  <div className="h-full rounded-lg border border-dashed border-gray-300 bg-gray-50 p-3">
+                  <div className="h-full p-3">
                     <div className="h-[70%]">
                       <ResponsiveContainer width="100%" height="100%">
                         <PieChart>
