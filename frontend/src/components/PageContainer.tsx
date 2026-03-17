@@ -11,7 +11,7 @@ export default function PageContainer({
 }: PageContainerProps) {
   return (
     <section
-      className={`rounded-lg bg-white p-6 shadow-sm ${className}`.trim()}
+      className={`filter-panel-surface p-6 ${className}`.trim()}
     >
       {children}
     </section>
