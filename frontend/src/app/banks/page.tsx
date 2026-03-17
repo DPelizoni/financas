@@ -18,6 +18,7 @@ import ConfirmDeleteModal from "@/components/ConfirmDeleteModal";
 import PageContainer from "@/components/PageContainer";
 import AppButton from "@/components/AppButton";
 import TableActionButton from "@/components/TableActionButton";
+import ViewDataModal from "@/components/ViewDataModal";
 import { IconButton, InputAdornment, TextField } from "@mui/material";
 
 export default function BanksPage() {
@@ -38,6 +39,7 @@ export default function BanksPage() {
     message: string;
   } | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<Bank | null>(null);
+  const [viewingBank, setViewingBank] = useState<Bank | null>(null);
   const [sortBy, setSortBy] = useState<"nome" | "codigo" | "saldo" | "status">(
     "nome",
   );
@@ -147,6 +149,10 @@ export default function BanksPage() {
   const handleEdit = (bank: Bank) => {
     setEditingBank(bank);
     setShowModal(true);
+  };
+
+  const handleView = (bank: Bank) => {
+    setViewingBank(bank);
   };
 
   const handleCreate = () => {
@@ -315,6 +321,11 @@ export default function BanksPage() {
 
                     <div className="mt-3 flex items-center justify-end gap-2 border-t border-gray-100 pt-3">
                       <TableActionButton
+                        action="view"
+                        title="Visualizar"
+                        onClick={() => handleView(bank)}
+                      />
+                      <TableActionButton
                         action="edit"
                         title="Editar"
                         onClick={() => handleEdit(bank)}
@@ -437,6 +448,12 @@ export default function BanksPage() {
                         <td className="px-3 py-2 whitespace-nowrap text-right text-xs font-medium">
                           <div className="flex justify-end gap-1">
                             <TableActionButton
+                              action="view"
+                              title="Visualizar"
+                              onClick={() => handleView(bank)}
+                              compact
+                            />
+                            <TableActionButton
                               action="edit"
                               title="Editar"
                               onClick={() => handleEdit(bank)}
@@ -470,6 +487,13 @@ export default function BanksPage() {
           )}
         </div>
       </div>
+
+      <ViewDataModal
+        isOpen={!!viewingBank}
+        title="Visualizar Banco"
+        data={viewingBank}
+        onClose={() => setViewingBank(null)}
+      />
 
       {/* Modal */}
       {showModal && (

@@ -6,6 +6,7 @@ import {
   ShieldCheck,
   Search,
   X,
+  Plus,
   ArrowDownWideNarrow,
   ArrowUpNarrowWide,
 } from "lucide-react";
@@ -13,20 +14,38 @@ import FeedbackAlert from "@/components/FeedbackAlert";
 import Pagination from "@/components/Pagination";
 import PageContainer from "@/components/PageContainer";
 import AppButton from "@/components/AppButton";
+import TableActionButton from "@/components/TableActionButton";
+import ViewDataModal from "@/components/ViewDataModal";
+import ConfirmDeleteModal from "@/components/ConfirmDeleteModal";
+import UserModal from "@/components/UserModal";
 import { userService } from "@/services/userService";
 import { User, UserRole, UserStatus } from "@/types/user";
 import { authService } from "@/services/authService";
 import { IconButton, InputAdornment, MenuItem, TextField } from "@mui/material";
 
+const roleBadgeClass: Record<UserRole, string> = {
+  ADMIN: "bg-violet-100 text-violet-700",
+  GESTOR: "bg-blue-100 text-blue-700",
+  USUARIO: "bg-slate-100 text-slate-700",
+};
+
+const roleLabel: Record<UserRole, string> = {
+  ADMIN: "Admin",
+  GESTOR: "Gestor",
+  USUARIO: "Usuario",
+};
+
 export default function UsuariosPage() {
-  const router = useRouter();
+  const router = useRouter();
+
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [updatingId, setUpdatingId] = useState<number | null>(null);
-  const [updatingRoleId, setUpdatingRoleId] = useState<number | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
-  const [statusFilter, setStatusFilter] = useState<"" | UserStatus>("");
-  const [roleFilter, setRoleFilter] = useState<"" | UserRole>("");
+  const [statusFilter, setStatusFilter] = useState<UserStatus | "TODOS">(
+    "TODOS",
+  );
+  const [roleFilter, setRoleFilter] = useState<UserRole | "TODOS">("TODOS");
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [total, setTotal] = useState(0);
@@ -39,6 +58,10 @@ export default function UsuariosPage() {
   } | null>(null);
   const [authorized, setAuthorized] = useState<boolean | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [viewingUser, setViewingUser] = useState<User | null>(null);
+  const [editingUser, setEditingUser] = useState<User | null>(null);
+  const [showUserModal, setShowUserModal] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<User | null>(null);
 
   const showFeedback = (type: "success" | "error", message: string) => {
     setFeedback({ type, message });
@@ -52,8 +75,8 @@ export default function UsuariosPage() {
         page: currentPage,
         limit: itemsPerPage,
         search: searchTerm || undefined,
-        status: statusFilter || undefined,
-        role: roleFilter || undefined,
+        status: statusFilter === "TODOS" ? undefined : statusFilter,
+        role: roleFilter === "TODOS" ? undefined : roleFilter,
       });
 
       setUsers(response.data || []);
@@ -62,7 +85,7 @@ export default function UsuariosPage() {
     } catch (error: any) {
       const message =
         error?.response?.data?.message ||
-        "Não foi possível carregar os usuários.";
+        "Nao foi possivel carregar os usuarios.";
       showFeedback("error", message);
     } finally {
       setLoading(false);
@@ -91,7 +114,7 @@ export default function UsuariosPage() {
         setAuthorized(false);
         setFeedback({
           type: "error",
-          message: "Sessão inválida. Faça login novamente.",
+          message: "Sessao invalida. Faca login novamente.",
         });
         window.setTimeout(() => router.replace("/login"), 800);
       }
@@ -122,37 +145,6 @@ export default function UsuariosPage() {
     setSortDirection("asc");
   };
 
-  const handleUpdateRole = async (user: User, role: UserRole) => {
-    if (user.role === role) return;
-
-    try {
-      setUpdatingRoleId(user.id);
-      await userService.updateRole(user.id, { role });
-      showFeedback("success", `Papel de ${user.nome} atualizado para ${role}.`);
-      await loadUsers();
-    } catch (error: any) {
-      const message =
-        error?.response?.data?.message ||
-        "Não foi possível atualizar o papel do usuário.";
-      showFeedback("error", message);
-    } finally {
-      setUpdatingRoleId(null);
-    }
-  };
-
-  const sortedUsers = useMemo(() => {
-    const direction = sortDirection === "asc" ? 1 : -1;
-    return [...users].sort((a, b) => {
-      if (sortBy === "nome") {
-        return a.nome.localeCompare(b.nome, "pt-BR") * direction;
-      }
-      if (sortBy === "email") {
-        return a.email.localeCompare(b.email, "pt-BR") * direction;
-      }
-      return a.status.localeCompare(b.status, "pt-BR") * direction;
-    });
-  }, [users, sortBy, sortDirection]);
-
   const handleToggleStatus = async (user: User) => {
     const nextStatus: UserStatus =
       user.status === "ATIVO" ? "INATIVO" : "ATIVO";
@@ -168,12 +160,74 @@ export default function UsuariosPage() {
     } catch (error: any) {
       const message =
         error?.response?.data?.message ||
-        "Não foi possível atualizar o status do usuário.";
+        "Nao foi possivel atualizar o status do usuario.";
       showFeedback("error", message);
     } finally {
       setUpdatingId(null);
     }
   };
+
+  const handleOpenCreate = () => {
+    setEditingUser(null);
+    setShowUserModal(true);
+  };
+
+  const handleOpenEdit = (user: User) => {
+    setEditingUser(user);
+    setShowUserModal(true);
+  };
+
+  const handleCloseModal = () => {
+    setShowUserModal(false);
+    setEditingUser(null);
+  };
+
+  const handleSaveSuccess = async (message: string) => {
+    showFeedback("success", message);
+    await loadUsers();
+    handleCloseModal();
+  };
+
+  const handleDelete = (user: User) => {
+    if (user.status === "INATIVO") {
+      showFeedback("error", "Usuario ja esta inativo.");
+      return;
+    }
+
+    setDeleteTarget(user);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!deleteTarget) return;
+
+    try {
+      setUpdatingId(deleteTarget.id);
+      await userService.updateStatus(deleteTarget.id, { status: "INATIVO" });
+      showFeedback("success", `Usuario ${deleteTarget.nome} foi inativado.`);
+      setDeleteTarget(null);
+      await loadUsers();
+    } catch (error: any) {
+      const message =
+        error?.response?.data?.message ||
+        "Nao foi possivel inativar o usuario.";
+      showFeedback("error", message);
+    } finally {
+      setUpdatingId(null);
+    }
+  };
+
+  const sortedUsers = useMemo(() => {
+    const direction = sortDirection === "asc" ? 1 : -1;
+    return [...users].sort((a, b) => {
+      if (sortBy === "nome") {
+        return a.nome.localeCompare(b.nome, "pt-BR") * direction;
+      }
+      if (sortBy === "email") {
+        return a.email.localeCompare(b.email, "pt-BR") * direction;
+      }
+      return a.status.localeCompare(b.status, "pt-BR") * direction;
+    });
+  }, [users, sortBy, sortDirection]);
 
   if (authorized === null) {
     return (
@@ -193,13 +247,25 @@ export default function UsuariosPage() {
         <FeedbackAlert feedback={feedback} onClose={() => setFeedback(null)} />
 
         <PageContainer>
-          <h1 className="flex items-center gap-3 text-2xl font-bold text-gray-900 sm:text-3xl">
-            <ShieldCheck size={32} className="text-blue-600" />
-            Gestão de Usuários
-          </h1>
-          <p className="mt-2 text-sm text-gray-600">
-            Gerencie o status de acesso dos usuários do sistema.
-          </p>
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h1 className="flex items-center gap-3 text-2xl font-bold text-gray-900 sm:text-3xl">
+                <ShieldCheck size={32} className="text-blue-600" />
+                Gestao de Usuarios
+              </h1>
+              <p className="mt-2 text-sm text-gray-600">
+                Gerencie o status de acesso dos usuarios do sistema.
+              </p>
+            </div>
+            <AppButton
+              onClick={handleOpenCreate}
+              tone="primary"
+              startIcon={<Plus size={18} />}
+              className="w-full sm:w-auto"
+            >
+              Novo Usuario
+            </AppButton>
+          </div>
         </PageContainer>
 
         <div className="filter-panel-surface">
@@ -253,10 +319,10 @@ export default function UsuariosPage() {
                 value={statusFilter}
                 onChange={(e) => {
                   setCurrentPage(1);
-                  setStatusFilter(e.target.value as "" | UserStatus);
+                  setStatusFilter(e.target.value as UserStatus | "TODOS");
                 }}
               >
-                <MenuItem value="">Todos</MenuItem>
+                <MenuItem value="TODOS">Todos</MenuItem>
                 <MenuItem value="ATIVO">Ativos</MenuItem>
                 <MenuItem value="INATIVO">Inativos</MenuItem>
               </TextField>
@@ -273,13 +339,13 @@ export default function UsuariosPage() {
                 value={roleFilter}
                 onChange={(e) => {
                   setCurrentPage(1);
-                  setRoleFilter(e.target.value as "" | UserRole);
+                  setRoleFilter(e.target.value as UserRole | "TODOS");
                 }}
               >
-                <MenuItem value="">Todos</MenuItem>
-                <MenuItem value="USUARIO">Usuários</MenuItem>
-                <MenuItem value="GESTOR">Gestores</MenuItem>
-                <MenuItem value="ADMIN">Admins</MenuItem>
+                <MenuItem value="TODOS">Todos</MenuItem>
+                <MenuItem value="USUARIO">Usuario</MenuItem>
+                <MenuItem value="GESTOR">Gestor</MenuItem>
+                <MenuItem value="ADMIN">Admin</MenuItem>
               </TextField>
             </div>
           </div>
@@ -288,89 +354,73 @@ export default function UsuariosPage() {
         <div className="overflow-hidden rounded-lg bg-white shadow-sm">
           {loading ? (
             <div className="py-12 text-center text-gray-500">
-              Carregando usuários...
+              Carregando usuarios...
             </div>
           ) : sortedUsers.length === 0 ? (
             <div className="py-12 text-center text-gray-500">
-              Nenhum usuário encontrado com os filtros atuais.
+              Nenhum usuario encontrado com os filtros atuais.
             </div>
           ) : (
             <>
               <div className="space-y-2 p-2 sm:p-3 md:hidden">
-                {sortedUsers.map((user) => {
-                  const roleValue: UserRole = user.role || "USUARIO";
-
-                  return (
-                    <div
-                      key={user.id}
-                      className="rounded-xl border border-gray-200/80 bg-gradient-to-b from-white to-gray-50 p-4 shadow-[0_1px_2px_rgba(0,0,0,0.06)]"
-                    >
-                      <div className="flex items-start justify-between gap-3">
-                        <div>
-                          <p className="text-sm font-semibold text-gray-900">
-                            {user.nome}
-                          </p>
-                          <p className="mt-1 text-xs text-gray-600">
-                            {user.email}
-                          </p>
-                        </div>
-
-                        <span
-                          className={`inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-semibold leading-none ${
-                            user.status === "ATIVO"
-                              ? "bg-green-100 text-green-700"
-                              : "bg-red-100 text-red-700"
-                          }`}
-                        >
-                          {user.status}
-                        </span>
-                      </div>
-
-                      <div className="mt-3">
-                        <p className="mb-1 text-xs font-medium uppercase tracking-wide text-gray-500">
-                          Papel
+                {sortedUsers.map((user) => (
+                  <div
+                    key={user.id}
+                    className="rounded-xl border border-gray-200/80 bg-gradient-to-b from-white to-gray-50 p-4 shadow-[0_1px_2px_rgba(0,0,0,0.06)]"
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <p className="text-sm font-semibold text-gray-900">
+                          {user.nome}
                         </p>
-                        <select
-                          value={roleValue}
-                          onChange={(e) =>
-                            handleUpdateRole(user, e.target.value as UserRole)
-                          }
-                          disabled={!isAdmin || updatingRoleId === user.id}
-                          title={
-                            isAdmin
-                              ? "Alterar papel do usuário"
-                              : "Somente ADMIN pode alterar papel"
-                          }
-                          className="w-full rounded-md border border-gray-300 bg-white px-2 py-1.5 text-xs font-semibold text-gray-700 focus:border-transparent focus:ring-2 focus:ring-blue-500 disabled:cursor-not-allowed disabled:bg-gray-100 disabled:text-gray-500 disabled:opacity-90"
-                        >
-                          <option value="USUARIO">USUARIO</option>
-                          <option value="GESTOR">GESTOR</option>
-                          <option value="ADMIN">ADMIN</option>
-                        </select>
+                        <p className="mt-1 text-xs text-gray-600">{user.email}</p>
                       </div>
-
-                      <div className="mt-3 flex justify-end border-t border-gray-100 pt-3">
-                        <AppButton
-                          type="button"
-                          onClick={() => handleToggleStatus(user)}
-                          disabled={updatingId === user.id}
-                          tone={
-                            user.status === "ATIVO"
-                              ? "outline-danger"
-                              : "outline-success"
-                          }
-                          size="sm"
-                        >
-                          {updatingId === user.id
-                            ? "Atualizando..."
-                            : user.status === "ATIVO"
-                              ? "Inativar"
-                              : "Ativar"}
-                        </AppButton>
-                      </div>
+                      <button
+                        type="button"
+                        onClick={() => handleToggleStatus(user)}
+                        disabled={updatingId === user.id}
+                        className={`inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-semibold leading-none transition ${
+                          user.status === "ATIVO"
+                            ? "bg-green-100 text-green-700 hover:bg-green-200"
+                            : "bg-red-100 text-red-700 hover:bg-red-200"
+                        }`}
+                        title="Clique para alternar o status"
+                      >
+                        {updatingId === user.id ? "Atualizando..." : user.status}
+                      </button>
                     </div>
-                  );
-                })}
+
+                    <div className="mt-3">
+                      <p className="mb-1 text-xs font-medium uppercase tracking-wide text-gray-500">
+                        Papel
+                      </p>
+                      <span
+                        className={`inline-flex rounded-full px-2.5 py-1 text-[11px] font-semibold leading-none ${roleBadgeClass[user.role]}`}
+                      >
+                        {roleLabel[user.role]}
+                      </span>
+                    </div>
+
+                    <div className="mt-3 flex items-center justify-end gap-2 border-t border-gray-100 pt-3">
+                      <TableActionButton
+                        action="view"
+                        title="Visualizar"
+                        onClick={() => setViewingUser(user)}
+                      />
+                      <TableActionButton
+                        action="edit"
+                        title="Editar"
+                        onClick={() => handleOpenEdit(user)}
+                      />
+                      <TableActionButton
+                        action="delete"
+                        title="Inativar usuario"
+                        onClick={() => handleDelete(user)}
+                        disabled={user.status === "INATIVO"}
+                      />
+                    </div>
+                  </div>
+                ))}
               </div>
 
               <div className="hidden overflow-x-auto md:block">
@@ -423,77 +473,68 @@ export default function UsuariosPage() {
                         </button>
                       </th>
                       <th className="px-3 py-2 text-right text-xs font-semibold text-gray-900">
-                        Ações
+                        Acoes
                       </th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-100 bg-white">
-                    {sortedUsers.map((user) => {
-                      const roleValue: UserRole = user.role || "USUARIO";
-
-                      return (
-                        <tr key={user.id} className="hover:bg-gray-50">
-                          <td className="px-3 py-2 text-xs text-gray-700">
-                            {user.nome}
-                          </td>
-                          <td className="px-3 py-2 text-xs text-gray-700">
-                            {user.email}
-                          </td>
-                          <td className="px-3 py-2 text-xs text-gray-700">
-                            <select
-                              value={roleValue}
-                              onChange={(e) =>
-                                handleUpdateRole(
-                                  user,
-                                  e.target.value as UserRole,
-                                )
-                              }
-                              disabled={!isAdmin || updatingRoleId === user.id}
-                              title={
-                                isAdmin
-                                  ? "Alterar papel do usuário"
-                                  : "Somente ADMIN pode alterar papel"
-                              }
-                              className="rounded-md border border-gray-300 bg-white px-2 py-1 text-[11px] font-semibold text-gray-700 focus:border-transparent focus:ring-2 focus:ring-blue-500 disabled:cursor-not-allowed disabled:bg-gray-100 disabled:text-gray-500 disabled:opacity-90"
-                            >
-                              <option value="USUARIO">USUARIO</option>
-                              <option value="GESTOR">GESTOR</option>
-                              <option value="ADMIN">ADMIN</option>
-                            </select>
-                          </td>
-                          <td className="px-3 py-2 text-xs">
-                            <span
-                              className={`inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-semibold leading-none ${
-                                user.status === "ATIVO"
-                                  ? "bg-green-100 text-green-700"
-                                  : "bg-red-100 text-red-700"
-                              }`}
-                            >
-                              {user.status}
-                            </span>
-                          </td>
-                          <td className="px-3 py-2 text-right text-xs">
-                            <AppButton
-                              type="button"
-                              onClick={() => handleToggleStatus(user)}
-                              disabled={updatingId === user.id}
-                              tone={
-                                user.status === "ATIVO"
-                                  ? "outline-danger"
-                                  : "outline-success"
-                              }
-                              size="sm"
-                            >
-                              {updatingId === user.id
-                                ? "Atualizando..."
-                                : user.status === "ATIVO"
-                                  ? "Inativar"
-                                  : "Ativar"}
-                            </AppButton>
-                          </td>
-                        </tr>
-                      );
-                    })}
+                    {sortedUsers.map((user) => (
+                      <tr key={user.id} className="hover:bg-gray-50">
+                        <td className="px-3 py-2 text-xs text-gray-700">
+                          {user.nome}
+                        </td>
+                        <td className="px-3 py-2 text-xs text-gray-700">
+                          {user.email}
+                        </td>
+                        <td className="px-3 py-2 text-xs">
+                          <span
+                            className={`inline-flex rounded-full px-2.5 py-1 text-[11px] font-semibold leading-none ${roleBadgeClass[user.role]}`}
+                          >
+                            {roleLabel[user.role]}
+                          </span>
+                        </td>
+                        <td className="px-3 py-2 text-xs">
+                          <button
+                            type="button"
+                            onClick={() => handleToggleStatus(user)}
+                            disabled={updatingId === user.id}
+                            className={`inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-semibold leading-none transition ${
+                              user.status === "ATIVO"
+                                ? "bg-green-100 text-green-700 hover:bg-green-200"
+                                : "bg-red-100 text-red-700 hover:bg-red-200"
+                            }`}
+                            title="Clique para alternar o status"
+                          >
+                            {updatingId === user.id
+                              ? "Atualizando..."
+                              : user.status}
+                          </button>
+                        </td>
+                        <td className="px-3 py-2 text-right text-xs font-medium">
+                          <div className="flex justify-end gap-1">
+                            <TableActionButton
+                              action="view"
+                              title="Visualizar"
+                              onClick={() => setViewingUser(user)}
+                              compact
+                            />
+                            <TableActionButton
+                              action="edit"
+                              title="Editar"
+                              onClick={() => handleOpenEdit(user)}
+                              compact
+                            />
+                            <TableActionButton
+                              action="delete"
+                              title="Inativar usuario"
+                              onClick={() => handleDelete(user)}
+                              compact
+                              disabled={user.status === "INATIVO"}
+                            />
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
                   </tbody>
                 </table>
               </div>
@@ -512,7 +553,35 @@ export default function UsuariosPage() {
           )}
         </div>
       </div>
+
+      <UserModal
+        isOpen={showUserModal}
+        user={editingUser}
+        isAdmin={isAdmin}
+        onClose={handleCloseModal}
+        onSave={handleSaveSuccess}
+      />
+
+      <ViewDataModal
+        isOpen={!!viewingUser}
+        title="Visualizar Usuario"
+        data={viewingUser}
+        onClose={() => setViewingUser(null)}
+      />
+
+      <ConfirmDeleteModal
+        isOpen={!!deleteTarget}
+        title="Confirmar inativacao"
+        description={
+          <>
+            Esta acao marcara o usuario <strong>{deleteTarget?.nome}</strong>{" "}
+            como inativo.
+          </>
+        }
+        confirmLabel="Inativar usuario"
+        onCancel={() => setDeleteTarget(null)}
+        onConfirm={handleConfirmDelete}
+      />
     </div>
   );
 }
-

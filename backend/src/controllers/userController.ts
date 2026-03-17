@@ -5,6 +5,20 @@ import { UserFilters } from "../models/User";
 import { AppError } from "../middlewares/errorHandler";
 
 class UserController {
+  async create(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const currentUser = req.user;
+      if (!currentUser) {
+        throw new AppError(401, "Usuário não autenticado");
+      }
+
+      const user = await userService.createUser(req.body, currentUser.role);
+      res.status(201).json(successResponse("Usuário criado com sucesso", user));
+    } catch (error) {
+      next(error);
+    }
+  }
+
   async list(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const page = parseInt(req.query.page as string) || 1;
@@ -45,6 +59,24 @@ class UserController {
       res.json(
         successResponse("Status do usuário atualizado com sucesso", user),
       );
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async update(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const currentUser = req.user;
+      if (!currentUser) {
+        throw new AppError(401, "Usuário não autenticado");
+      }
+
+      const id = parseInt(req.params.id);
+      const user = await userService.updateUser(id, req.body, {
+        id: currentUser.id,
+        role: currentUser.role,
+      });
+      res.json(successResponse("Usuário atualizado com sucesso", user));
     } catch (error) {
       next(error);
     }

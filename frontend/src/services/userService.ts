@@ -2,9 +2,11 @@ import apiClient from "@/services/apiClient";
 import {
   PaginatedResponse,
   User,
+  UserCreateInput,
   UserFilters,
   UserRoleUpdateInput,
   UserStatusUpdateInput,
+  UserUpdateInput,
 } from "@/types/user";
 
 export const userService = {
@@ -36,6 +38,24 @@ export const userService = {
   async updateRole(id: number, input: UserRoleUpdateInput): Promise<User> {
     const response = await apiClient.patch<{ success: boolean; data: User }>(
       `/api/users/${id}/role`,
+      input,
+    );
+
+    return response.data.data;
+  },
+
+  async create(input: UserCreateInput): Promise<User> {
+    const response = await apiClient.post<{ success: boolean; data: User }>(
+      "/api/users",
+      input,
+    );
+
+    return response.data.data;
+  },
+
+  async update(id: number, input: UserUpdateInput): Promise<User> {
+    const response = await apiClient.put<{ success: boolean; data: User }>(
+      `/api/users/${id}`,
       input,
     );
 

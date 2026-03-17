@@ -18,6 +18,7 @@ import ConfirmDeleteModal from "@/components/ConfirmDeleteModal";
 import PageContainer from "@/components/PageContainer";
 import AppButton from "@/components/AppButton";
 import TableActionButton from "@/components/TableActionButton";
+import ViewDataModal from "@/components/ViewDataModal";
 import { IconButton, InputAdornment, MenuItem, TextField } from "@mui/material";
 
 export default function CategoriesPage() {
@@ -34,13 +35,14 @@ export default function CategoriesPage() {
     undefined,
   );
   const [filterTipo, setFilterTipo] = useState<
-    "RECEITA" | "DESPESA" | undefined
-  >(undefined);
+    "RECEITA" | "DESPESA" | "TODOS"
+  >("TODOS");
   const [feedback, setFeedback] = useState<{
     type: "success" | "error";
     message: string;
   } | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<Category | null>(null);
+  const [viewingCategory, setViewingCategory] = useState<Category | null>(null);
   const [sortBy, setSortBy] = useState<"nome" | "tipo" | "status">("nome");
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
 
@@ -81,7 +83,7 @@ export default function CategoriesPage() {
         limit: itemsPerPage,
         search: searchTerm || undefined,
         ativo: filterAtivo,
-        tipo: filterTipo,
+        tipo: filterTipo === "TODOS" ? undefined : filterTipo,
       };
 
       const response = await categoryService.getAll(filters);
@@ -138,6 +140,10 @@ export default function CategoriesPage() {
   const handleEdit = (category: Category) => {
     setEditingCategory(category);
     setShowModal(true);
+  };
+
+  const handleView = (category: Category) => {
+    setViewingCategory(category);
   };
 
   const handleCreate = () => {
@@ -231,17 +237,15 @@ export default function CategoriesPage() {
               size="small"
               fullWidth
               InputLabelProps={{ shrink: true }}
-              value={filterTipo ?? ""}
+              value={filterTipo}
               onChange={(e) => {
                 setFilterTipo(
-                  e.target.value
-                    ? (e.target.value as "RECEITA" | "DESPESA")
-                    : undefined,
+                  e.target.value as "RECEITA" | "DESPESA" | "TODOS",
                 );
                 setCurrentPage(1);
               }}
             >
-              <MenuItem value="">Todos</MenuItem>
+              <MenuItem value="TODOS">Todos</MenuItem>
               <MenuItem value="DESPESA">Despesa</MenuItem>
               <MenuItem value="RECEITA">Receita</MenuItem>
             </TextField>
@@ -344,6 +348,11 @@ export default function CategoriesPage() {
                     </div>
 
                     <div className="mt-3 flex items-center justify-end gap-2 border-t border-gray-100 pt-3">
+                      <TableActionButton
+                        action="view"
+                        title="Visualizar"
+                        onClick={() => handleView(category)}
+                      />
                       <TableActionButton
                         action="edit"
                         title="Editar"
@@ -454,6 +463,12 @@ export default function CategoriesPage() {
                         <td className="whitespace-nowrap px-3 py-2 text-right text-xs font-medium">
                           <div className="flex justify-end gap-1">
                             <TableActionButton
+                              action="view"
+                              title="Visualizar"
+                              onClick={() => handleView(category)}
+                              compact
+                            />
+                            <TableActionButton
                               action="edit"
                               title="Editar"
                               onClick={() => handleEdit(category)}
@@ -487,6 +502,13 @@ export default function CategoriesPage() {
           )}
         </div>
       </div>
+
+      <ViewDataModal
+        isOpen={!!viewingCategory}
+        title="Visualizar Categoria"
+        data={viewingCategory}
+        onClose={() => setViewingCategory(null)}
+      />
 
       {showModal && (
         <CategoryModal

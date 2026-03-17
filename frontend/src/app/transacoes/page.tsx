@@ -39,6 +39,7 @@ import FeedbackAlert from "@/components/FeedbackAlert";
 import ConfirmDeleteModal from "@/components/ConfirmDeleteModal";
 import PageContainer from "@/components/PageContainer";
 import TableActionButton from "@/components/TableActionButton";
+import ViewDataModal from "@/components/ViewDataModal";
 
 interface DeleteConfirmation {
   isOpen: boolean;
@@ -113,16 +114,23 @@ export default function TransacoesPage() {
   const [itemsPerPage, setItemsPerPage] = useState(10);
 
   const [searchTerm, setSearchTerm] = useState("");
-  const [filterTipo, setFilterTipo] = useState<"DESPESA" | "RECEITA" | "">("");
-  const [filterCategoria, setFilterCategoria] = useState<number | "">("");
-  const [filterBanco, setFilterBanco] = useState<number | "">("");
+  const [filterTipo, setFilterTipo] = useState<
+    "DESPESA" | "RECEITA" | "TODOS"
+  >("TODOS");
+  const [filterCategoria, setFilterCategoria] = useState<number | "TODOS">(
+    "TODOS",
+  );
+  const [filterBanco, setFilterBanco] = useState<number | "TODOS">("TODOS");
   const [filterSituacao, setFilterSituacao] = useState<
-    "PENDENTE" | "PAGO" | ""
-  >("");
+    "PENDENTE" | "PAGO" | "TODOS"
+  >("TODOS");
   const [filterMes, setFilterMes] = useState(currentMonthInputValue);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingTransacao, setEditingTransacao] = useState<Transacao>();
+  const [viewingTransacao, setViewingTransacao] = useState<Transacao | null>(
+    null,
+  );
 
   const [deleteConfirm, setDeleteConfirm] = useState<DeleteConfirmation>({
     isOpen: false,
@@ -214,10 +222,11 @@ export default function TransacoesPage() {
       };
 
       if (searchTerm) filters.search = searchTerm;
-      if (filterTipo) filters.tipo = filterTipo;
-      if (filterCategoria) filters.categoria_id = filterCategoria as number;
-      if (filterBanco) filters.banco_id = filterBanco as number;
-      if (filterSituacao) filters.situacao = filterSituacao;
+      if (filterTipo !== "TODOS") filters.tipo = filterTipo;
+      if (filterCategoria !== "TODOS")
+        filters.categoria_id = filterCategoria as number;
+      if (filterBanco !== "TODOS") filters.banco_id = filterBanco as number;
+      if (filterSituacao !== "TODOS") filters.situacao = filterSituacao;
       const mesApi = monthInputToApi(filterMes);
       if (mesApi) filters.mes = mesApi;
 
@@ -229,10 +238,11 @@ export default function TransacoesPage() {
       // Load summary
       const summaryResponse = await transacaoService.getSummary({
         search: searchTerm || undefined,
-        tipo: filterTipo || undefined,
-        categoria_id: filterCategoria ? (filterCategoria as number) : undefined,
-        banco_id: filterBanco ? (filterBanco as number) : undefined,
-        situacao: filterSituacao || undefined,
+        tipo: filterTipo === "TODOS" ? undefined : filterTipo,
+        categoria_id:
+          filterCategoria === "TODOS" ? undefined : (filterCategoria as number),
+        banco_id: filterBanco === "TODOS" ? undefined : (filterBanco as number),
+        situacao: filterSituacao === "TODOS" ? undefined : filterSituacao,
         mes: mesApi,
       });
       setSummary(summaryResponse);
@@ -263,6 +273,10 @@ export default function TransacoesPage() {
   const handleEdit = (transacao: Transacao) => {
     setEditingTransacao(transacao);
     setIsModalOpen(true);
+  };
+
+  const handleView = (transacao: Transacao) => {
+    setViewingTransacao(transacao);
   };
 
   const handleDelete = (id: number, mes: string) => {
@@ -555,10 +569,10 @@ export default function TransacoesPage() {
 
   const handleClearFilters = () => {
     setSearchTerm("");
-    setFilterTipo("");
-    setFilterCategoria("");
-    setFilterBanco("");
-    setFilterSituacao("");
+    setFilterTipo("TODOS");
+    setFilterCategoria("TODOS");
+    setFilterBanco("TODOS");
+    setFilterSituacao("TODOS");
     setFilterMes("");
     setCurrentPage(1);
   };
@@ -787,18 +801,20 @@ export default function TransacoesPage() {
                     InputLabelProps={{ shrink: true }}
                     value={filterTipo}
                     onChange={(e) => {
-                      setFilterTipo(e.target.value as any);
+                      setFilterTipo(
+                        e.target.value as "DESPESA" | "RECEITA" | "TODOS",
+                      );
                       handleFilterChange();
                     }}
                     SelectProps={{
                       displayEmpty: true,
                       renderValue: (selected) => {
-                        if (selected === "") return "Todos";
+                        if (selected === "TODOS") return "Todos";
                         return selected === "DESPESA" ? "Despesa" : "Receita";
                       },
                     }}
                   >
-                    <MenuItem value="">Todos</MenuItem>
+                    <MenuItem value="TODOS">Todos</MenuItem>
                     <MenuItem value="DESPESA">Despesa</MenuItem>
                     <MenuItem value="RECEITA">Receita</MenuItem>
                   </TextField>
@@ -814,18 +830,22 @@ export default function TransacoesPage() {
                     fullWidth
                     InputLabelProps={{ shrink: true }}
                     value={
-                      filterCategoria === "" ? "" : String(filterCategoria)
+                      filterCategoria === "TODOS"
+                        ? "TODOS"
+                        : String(filterCategoria)
                     }
                     onChange={(e) => {
                       setFilterCategoria(
-                        e.target.value ? Number(e.target.value) : "",
+                        e.target.value === "TODOS"
+                          ? "TODOS"
+                          : Number(e.target.value),
                       );
                       handleFilterChange();
                     }}
                     SelectProps={{
                       displayEmpty: true,
                       renderValue: (selected) => {
-                        if (selected === "") return "Todos";
+                        if (selected === "TODOS") return "Todos";
                         const category = sortedCategories.find(
                           (cat) => String(cat.id) === selected,
                         );
@@ -833,7 +853,7 @@ export default function TransacoesPage() {
                       },
                     }}
                   >
-                    <MenuItem value="">Todos</MenuItem>
+                    <MenuItem value="TODOS">Todos</MenuItem>
                     {sortedCategories.map((cat) => (
                       <MenuItem key={cat.id} value={cat.id}>
                         {cat.nome}
@@ -851,17 +871,21 @@ export default function TransacoesPage() {
                     size="small"
                     fullWidth
                     InputLabelProps={{ shrink: true }}
-                    value={filterBanco === "" ? "" : String(filterBanco)}
+                    value={
+                      filterBanco === "TODOS" ? "TODOS" : String(filterBanco)
+                    }
                     onChange={(e) => {
                       setFilterBanco(
-                        e.target.value ? Number(e.target.value) : "",
+                        e.target.value === "TODOS"
+                          ? "TODOS"
+                          : Number(e.target.value),
                       );
                       handleFilterChange();
                     }}
                     SelectProps={{
                       displayEmpty: true,
                       renderValue: (selected) => {
-                        if (selected === "") return "Todos";
+                        if (selected === "TODOS") return "Todos";
                         const bank = sortedBanks.find(
                           (item) => String(item.id) === selected,
                         );
@@ -869,7 +893,7 @@ export default function TransacoesPage() {
                       },
                     }}
                   >
-                    <MenuItem value="">Todos</MenuItem>
+                    <MenuItem value="TODOS">Todos</MenuItem>
                     {sortedBanks.map((bank) => (
                       <MenuItem key={bank.id} value={bank.id}>
                         {bank.nome}
@@ -889,18 +913,20 @@ export default function TransacoesPage() {
                     InputLabelProps={{ shrink: true }}
                     value={filterSituacao}
                     onChange={(e) => {
-                      setFilterSituacao(e.target.value as any);
+                      setFilterSituacao(
+                        e.target.value as "PENDENTE" | "PAGO" | "TODOS",
+                      );
                       handleFilterChange();
                     }}
                     SelectProps={{
                       displayEmpty: true,
                       renderValue: (selected) => {
-                        if (selected === "") return "Todos";
+                        if (selected === "TODOS") return "Todos";
                         return selected === "PAGO" ? "Pago" : "Pendente";
                       },
                     }}
                   >
-                    <MenuItem value="">Todos</MenuItem>
+                    <MenuItem value="TODOS">Todos</MenuItem>
                     <MenuItem value="PAGO">Pago</MenuItem>
                     <MenuItem value="PENDENTE">Pendente</MenuItem>
                   </TextField>
@@ -1017,6 +1043,11 @@ export default function TransacoesPage() {
                     </div>
 
                     <div className="mt-3 flex items-center justify-end gap-2 border-t border-gray-100 pt-3">
+                      <TableActionButton
+                        action="view"
+                        title="Visualizar"
+                        onClick={() => handleView(transacao)}
+                      />
                       <TableActionButton
                         action="edit"
                         title="Editar"
@@ -1222,6 +1253,12 @@ export default function TransacoesPage() {
                       </td>
                       <td className="px-3 py-2 text-center">
                         <div className="flex justify-center gap-2">
+                          <TableActionButton
+                            action="view"
+                            title="Visualizar"
+                            onClick={() => handleView(transacao)}
+                            compact
+                          />
                           <TableActionButton
                             action="edit"
                             title="Editar"
@@ -1472,6 +1509,21 @@ export default function TransacoesPage() {
           onItemsPerPageChange={setItemsPerPage}
           itemsPerPageOptions={[5, 10, 20, 50, 100]}
           centeredLayout
+        />
+
+        <ViewDataModal
+          isOpen={!!viewingTransacao}
+          title="Visualizar Transação"
+          data={
+            viewingTransacao
+              ? {
+                  ...viewingTransacao,
+                  created_at: viewingTransacao.created_at ?? null,
+                  updated_at: viewingTransacao.updated_at ?? null,
+                }
+              : null
+          }
+          onClose={() => setViewingTransacao(null)}
         />
 
         {/* Modal */}

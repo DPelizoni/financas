@@ -30,6 +30,14 @@ export interface UserCreateInput {
   role?: UserRole;
 }
 
+export interface UserManagementInput {
+  nome: string;
+  email: string;
+  senha?: string;
+  status: UserStatus;
+  role: UserRole;
+}
+
 export interface UserFilters {
   search?: string;
   status?: UserStatus;

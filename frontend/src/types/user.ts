@@ -19,6 +19,22 @@ export interface UserRoleUpdateInput {
   role: UserRole;
 }
 
+export interface UserCreateInput {
+  nome: string;
+  email: string;
+  senha: string;
+  status: UserStatus;
+  role: UserRole;
+}
+
+export interface UserUpdateInput {
+  nome: string;
+  email: string;
+  senha?: string;
+  status: UserStatus;
+  role: UserRole;
+}
+
 export interface UserFilters {
   page?: number;
   limit?: number;

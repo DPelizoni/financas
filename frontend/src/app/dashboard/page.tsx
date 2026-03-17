@@ -135,14 +135,18 @@ export default function DashboardPage() {
 
   // Filtros globais
   const [periodMonths, setPeriodMonths] = useState(12);
-  const [filterTipo, setFilterTipo] = useState<"" | "DESPESA" | "RECEITA">("");
+  const [filterTipo, setFilterTipo] = useState<
+    "TODOS" | "DESPESA" | "RECEITA"
+  >("TODOS");
   const [filterSituacao, setFilterSituacao] = useState<
-    "" | "PENDENTE" | "PAGO"
-  >("");
-  const [filterCategoria, setFilterCategoria] = useState<number | "">("");
-  const [filterBanco, setFilterBanco] = useState<number | "">("");
+    "TODOS" | "PENDENTE" | "PAGO"
+  >("TODOS");
+  const [filterCategoria, setFilterCategoria] = useState<number | "TODOS">(
+    "TODOS",
+  );
+  const [filterBanco, setFilterBanco] = useState<number | "TODOS">("TODOS");
   const [filterMesAno, setFilterMesAno] = useState("");
-  const [filterAno, setFilterAno] = useState(currentYear);
+  const [filterAno, setFilterAno] = useState<string>("TODOS");
   const [tableSortBy, setTableSortBy] = useState<
     "mes" | "tipo" | "categoria" | "banco" | "situacao" | "valor"
   >("mes");
@@ -195,12 +199,18 @@ export default function DashboardPage() {
       const mesKey = parseMesToKey(t.mes);
       if (!mesKey) return false;
 
-      if (filterTipo && t.tipo !== filterTipo) return false;
-      if (filterSituacao && t.situacao !== filterSituacao) return false;
-      if (filterCategoria && t.categoria_id !== filterCategoria) return false;
-      if (filterBanco && t.banco_id !== filterBanco) return false;
+      if (filterTipo !== "TODOS" && t.tipo !== filterTipo) return false;
+      if (filterSituacao !== "TODOS" && t.situacao !== filterSituacao)
+        return false;
+      if (filterCategoria !== "TODOS" && t.categoria_id !== filterCategoria)
+        return false;
+      if (filterBanco !== "TODOS" && t.banco_id !== filterBanco) return false;
       if (filterMesAno && mesKey !== filterMesAno) return false;
-      if (filterAno && !filterMesAno && !mesKey.startsWith(`${filterAno}-`))
+      if (
+        filterAno !== "TODOS" &&
+        !filterMesAno &&
+        !mesKey.startsWith(`${filterAno}-`)
+      )
         return false;
 
       return true;
@@ -513,7 +523,7 @@ export default function DashboardPage() {
                   onChange={(e) => setFilterAno(e.target.value)}
                   disabled={Boolean(filterMesAno)}
                 >
-                  <MenuItem value="">Todos</MenuItem>
+                  <MenuItem value="TODOS">Todos</MenuItem>
                   {availableYears.map((year) => (
                     <MenuItem key={year} value={year}>
                       {year}
@@ -532,10 +542,12 @@ export default function DashboardPage() {
                   InputLabelProps={{ shrink: true }}
                   value={filterTipo}
                   onChange={(e) =>
-                    setFilterTipo(e.target.value as "" | "DESPESA" | "RECEITA")
+                    setFilterTipo(
+                      e.target.value as "TODOS" | "DESPESA" | "RECEITA",
+                    )
                   }
                 >
-                  <MenuItem value="">Todos</MenuItem>
+                  <MenuItem value="TODOS">Todos</MenuItem>
                   <MenuItem value="DESPESA">Despesa</MenuItem>
                   <MenuItem value="RECEITA">Receita</MenuItem>
                 </TextField>
@@ -552,11 +564,11 @@ export default function DashboardPage() {
                   value={filterSituacao}
                   onChange={(e) =>
                     setFilterSituacao(
-                      e.target.value as "" | "PENDENTE" | "PAGO",
+                      e.target.value as "TODOS" | "PENDENTE" | "PAGO",
                     )
                   }
                 >
-                  <MenuItem value="">Todos</MenuItem>
+                  <MenuItem value="TODOS">Todos</MenuItem>
                   <MenuItem value="PAGO">Pago</MenuItem>
                   <MenuItem value="PENDENTE">Pendente</MenuItem>
                 </TextField>
@@ -572,10 +584,14 @@ export default function DashboardPage() {
                   InputLabelProps={{ shrink: true }}
                   value={filterBanco}
                   onChange={(e) =>
-                    setFilterBanco(e.target.value ? Number(e.target.value) : "")
+                    setFilterBanco(
+                      e.target.value === "TODOS"
+                        ? "TODOS"
+                        : Number(e.target.value),
+                    )
                   }
                 >
-                  <MenuItem value="">Todos</MenuItem>
+                  <MenuItem value="TODOS">Todos</MenuItem>
                   {sortedBanks.map((bank) => (
                     <MenuItem key={bank.id} value={bank.id}>
                       {bank.nome}
@@ -595,11 +611,13 @@ export default function DashboardPage() {
                   value={filterCategoria}
                   onChange={(e) =>
                     setFilterCategoria(
-                      e.target.value ? Number(e.target.value) : "",
+                      e.target.value === "TODOS"
+                        ? "TODOS"
+                        : Number(e.target.value),
                     )
                   }
                 >
-                  <MenuItem value="">Todos</MenuItem>
+                  <MenuItem value="TODOS">Todos</MenuItem>
                   {sortedCategories.map((category) => (
                     <MenuItem key={category.id} value={category.id}>
                       {category.nome}
@@ -613,11 +631,11 @@ export default function DashboardPage() {
                   type="button"
                   onClick={() => {
                     setFilterMesAno("");
-                    setFilterAno(currentYear);
-                    setFilterTipo("");
-                    setFilterSituacao("");
-                    setFilterCategoria("");
-                    setFilterBanco("");
+                    setFilterAno("TODOS");
+                    setFilterTipo("TODOS");
+                    setFilterSituacao("TODOS");
+                    setFilterCategoria("TODOS");
+                    setFilterBanco("TODOS");
                     setPeriodMonths(12);
                   }}
                   className="inline-flex items-center gap-2 rounded-lg bg-gray-500 px-3 py-2 text-sm font-medium whitespace-nowrap text-white transition hover:bg-gray-600"

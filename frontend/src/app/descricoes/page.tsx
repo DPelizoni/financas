@@ -23,6 +23,7 @@ import ConfirmDeleteModal from "@/components/ConfirmDeleteModal";
 import PageContainer from "@/components/PageContainer";
 import AppButton from "@/components/AppButton";
 import TableActionButton from "@/components/TableActionButton";
+import ViewDataModal from "@/components/ViewDataModal";
 import { IconButton, InputAdornment, MenuItem, TextField } from "@mui/material";
 
 export default function DescricoesPage() {
@@ -41,14 +42,17 @@ export default function DescricoesPage() {
   const [filterAtivo, setFilterAtivo] = useState<boolean | undefined>(
     undefined,
   );
-  const [filterCategoria, setFilterCategoria] = useState<number | undefined>(
-    undefined,
+  const [filterCategoria, setFilterCategoria] = useState<number | "TODOS">(
+    "TODOS",
   );
   const [feedback, setFeedback] = useState<{
     type: "success" | "error";
     message: string;
   } | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<Descricao | null>(null);
+  const [viewingDescricao, setViewingDescricao] = useState<Descricao | null>(
+    null,
+  );
   const [sortBy, setSortBy] = useState<"nome" | "categoria" | "status">("nome");
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
 
@@ -104,7 +108,7 @@ export default function DescricoesPage() {
         limit: itemsPerPage,
         search: searchTerm || undefined,
         ativo: filterAtivo,
-        categoria_id: filterCategoria,
+        categoria_id: filterCategoria === "TODOS" ? undefined : filterCategoria,
       };
 
       const response = await descricaoService.getAll(filters);
@@ -174,6 +178,10 @@ export default function DescricoesPage() {
   const handleEdit = (descricao: Descricao) => {
     setEditingDescricao(descricao);
     setShowModal(true);
+  };
+
+  const handleView = (descricao: Descricao) => {
+    setViewingDescricao(descricao);
   };
 
   const handleCreate = () => {
@@ -260,15 +268,17 @@ export default function DescricoesPage() {
               size="small"
               fullWidth
               InputLabelProps={{ shrink: true }}
-              value={filterCategoria ?? ""}
+              value={filterCategoria}
               onChange={(e) => {
                 setFilterCategoria(
-                  e.target.value ? Number(e.target.value) : undefined,
+                  e.target.value === "TODOS"
+                    ? "TODOS"
+                    : Number(e.target.value),
                 );
                 setCurrentPage(1);
               }}
             >
-              <MenuItem value="">Todos</MenuItem>
+              <MenuItem value="TODOS">Todos</MenuItem>
               {sortedCategories.map((cat) => (
                 <MenuItem key={cat.id} value={cat.id}>
                   {cat.nome}
@@ -361,6 +371,11 @@ export default function DescricoesPage() {
                     </div>
 
                     <div className="mt-3 flex items-center justify-end gap-2 border-t border-gray-100 pt-3">
+                      <TableActionButton
+                        action="view"
+                        title="Visualizar"
+                        onClick={() => handleView(descricao)}
+                      />
                       <TableActionButton
                         action="edit"
                         title="Editar"
@@ -457,6 +472,12 @@ export default function DescricoesPage() {
                         <td className="whitespace-nowrap px-3 py-2 text-right text-xs font-medium">
                           <div className="flex justify-end gap-1">
                             <TableActionButton
+                              action="view"
+                              title="Visualizar"
+                              onClick={() => handleView(descricao)}
+                              compact
+                            />
+                            <TableActionButton
                               action="edit"
                               title="Editar"
                               onClick={() => handleEdit(descricao)}
@@ -490,6 +511,20 @@ export default function DescricoesPage() {
           )}
         </div>
       </div>
+
+      <ViewDataModal
+        isOpen={!!viewingDescricao}
+        title="Visualizar Descrição"
+        data={
+          viewingDescricao
+            ? {
+                ...viewingDescricao,
+                categoria_nome: getCategoryNameById(viewingDescricao.categoria_id),
+              }
+            : null
+        }
+        onClose={() => setViewingDescricao(null)}
+      />
 
       {showModal && (
         <DescricaoModal

@@ -2,12 +2,21 @@ import { Router } from "express";
 import userController from "../controllers/userController";
 import { validate } from "../middlewares/validator";
 import {
+  userCreateManagementSchema,
   userRoleUpdateSchema,
   userStatusUpdateSchema,
+  userUpdateManagementSchema,
 } from "../schemas/userSchema";
 import { authorizeRoles } from "../middlewares/authMiddleware";
 
 const router = Router();
+
+router.post(
+  "/",
+  authorizeRoles("GESTOR", "ADMIN"),
+  validate(userCreateManagementSchema),
+  userController.create,
+);
 
 /**
  * @swagger
@@ -46,6 +55,13 @@ const router = Router();
  *         description: Usuários listados com sucesso
  */
 router.get("/", authorizeRoles("GESTOR", "ADMIN"), userController.list);
+
+router.put(
+  "/:id",
+  authorizeRoles("GESTOR", "ADMIN"),
+  validate(userUpdateManagementSchema),
+  userController.update,
+);
 
 /**
  * @swagger
