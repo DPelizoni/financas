@@ -113,6 +113,16 @@ body {
   background-color: rgb(15 23 42 / 0.95) !important;
 }
 
+.bg-gray-50,
+.bg-slate-50 {
+  background-color: rgb(239 246 255) !important;
+}
+
+.hover\:bg-gray-50:hover,
+.hover\:bg-slate-50:hover {
+  background-color: rgb(219 234 254) !important;
+}
+
 .dark .bg-gray-50,
 .dark .bg-slate-50 {
   background-color: rgb(15 23 42) !important;
