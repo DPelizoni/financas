@@ -783,68 +783,80 @@ export default function DashboardPage() {
               {hasSingleTimelineMonth ? (
                 <div className="grid h-full grid-cols-1 gap-4 lg:grid-cols-2">
                   <div className="h-full p-3">
-                    <div className="h-[70%]">
-                      <ResponsiveContainer width="100%" height="100%">
-                        <PieChart>
-                          <Pie
-                            data={singleMonthDonutData}
-                            dataKey="valor"
-                            nameKey="indicador"
-                            cx="50%"
-                            cy="50%"
-                            innerRadius={donutInnerRadius}
-                            outerRadius={donutOuterRadius}
-                            paddingAngle={3}
-                            labelLine={false}
-                            label={
-                              isMobile
-                                ? false
-                                : ({ percent }) =>
-                                    `${Math.round((percent || 0) * 100)}%`
-                            }
-                          >
-                            {singleMonthDonutData.map((entry) => (
-                              <Cell key={entry.indicador} fill={entry.fill} />
-                            ))}
-                          </Pie>
-                          <Tooltip
-                            formatter={(v) => {
-                              const total =
-                                (timeline[0]?.receitas || 0) +
-                                (timeline[0]?.despesas || 0);
-                              const value = Number(v || 0);
-                              const percent =
-                                total > 0 ? (value / total) * 100 : 0;
-                              return `${currency(value)} (${Math.round(percent)}%)`;
-                            }}
-                            contentStyle={tooltipContentStyle}
-                            labelStyle={tooltipLabelStyle}
-                            itemStyle={tooltipItemStyle}
-                          />
-                        </PieChart>
-                      </ResponsiveContainer>
-                    </div>
-
-                    <div className="mt-2 space-y-1 text-sm">
-                      <div className="flex items-center justify-between">
-                        <span className="font-medium text-gray-700">
-                          ðŸŸ¢ Receita
-                        </span>
-                        <span className="font-semibold text-green-600">
-                          <span className="inline-block min-w-[145px] text-right tabular-nums sm:min-w-[170px]">
-                            {currency(timeline[0].receitas)} ({receitaPercent}%)
-                          </span>
-                        </span>
+                    <div className="flex h-full flex-col rounded-lg border border-slate-200 bg-gradient-to-b from-slate-50 to-white p-3 shadow-sm dark:border-slate-700 dark:from-slate-900 dark:to-slate-800">
+                      <div className="h-[70%]">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <PieChart>
+                            <Pie
+                              data={singleMonthDonutData}
+                              dataKey="valor"
+                              nameKey="indicador"
+                              cx="50%"
+                              cy="50%"
+                              innerRadius={donutInnerRadius}
+                              outerRadius={donutOuterRadius}
+                              paddingAngle={3}
+                              labelLine={false}
+                              label={
+                                isMobile
+                                  ? false
+                                  : ({ percent }) =>
+                                      `${Math.round((percent || 0) * 100)}%`
+                              }
+                            >
+                              {singleMonthDonutData.map((entry) => (
+                                <Cell key={entry.indicador} fill={entry.fill} />
+                              ))}
+                            </Pie>
+                            <Tooltip
+                              formatter={(v) => {
+                                const total =
+                                  (timeline[0]?.receitas || 0) +
+                                  (timeline[0]?.despesas || 0);
+                                const value = Number(v || 0);
+                                const percent =
+                                  total > 0 ? (value / total) * 100 : 0;
+                                return `${currency(value)} (${Math.round(percent)}%)`;
+                              }}
+                              contentStyle={tooltipContentStyle}
+                              labelStyle={tooltipLabelStyle}
+                              itemStyle={tooltipItemStyle}
+                            />
+                          </PieChart>
+                        </ResponsiveContainer>
                       </div>
-                      <div className="flex items-center justify-between">
-                        <span className="font-medium text-gray-700">
-                          ðŸ”´ Despesa
-                        </span>
-                        <span className="font-semibold text-red-600">
-                          <span className="inline-block min-w-[145px] text-right tabular-nums sm:min-w-[170px]">
-                            {currency(timeline[0].despesas)} ({despesaPercent}%)
+
+                      <div className="mt-3 space-y-2 text-sm">
+                        <div className="flex items-center justify-between">
+                          <span className="flex items-center gap-2 font-medium text-gray-700 dark:text-slate-200">
+                            <span
+                              className="inline-block h-2.5 w-2.5 rounded-full"
+                              style={{ backgroundColor: chartColors.receitas }}
+                            />
+                            Receita
                           </span>
-                        </span>
+                          <span className="font-semibold text-green-600">
+                            <span className="inline-block min-w-[145px] text-right tabular-nums sm:min-w-[170px]">
+                              {currency(timeline[0].receitas)} ({receitaPercent}
+                              %)
+                            </span>
+                          </span>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <span className="flex items-center gap-2 font-medium text-gray-700 dark:text-slate-200">
+                            <span
+                              className="inline-block h-2.5 w-2.5 rounded-full"
+                              style={{ backgroundColor: chartColors.despesas }}
+                            />
+                            Despesa
+                          </span>
+                          <span className="font-semibold text-red-600">
+                            <span className="inline-block min-w-[145px] text-right tabular-nums sm:min-w-[170px]">
+                              {currency(timeline[0].despesas)} ({despesaPercent}
+                              %)
+                            </span>
+                          </span>
+                        </div>
                       </div>
                     </div>
                   </div>
