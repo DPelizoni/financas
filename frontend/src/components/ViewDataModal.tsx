@@ -19,7 +19,7 @@ const defaultFieldLabels: Record<string, string> = {
   cor: "Cor",
   icone: "Ícone",
   saldo_inicial: "Saldo inicial",
-  ativo: "Ativo",
+  ativo: "Status",
   tipo: "Tipo",
   categoria_id: "ID da categoria",
   categoria_nome: "Categoria",
@@ -86,6 +86,36 @@ const formatCurrencyBR = (value: number): string => {
   }).format(value);
 };
 
+const formatStatusValue = (value: unknown): string | null => {
+  if (typeof value === "boolean") {
+    return value ? "Ativo" : "Inativo";
+  }
+
+  if (typeof value === "number") {
+    if (value === 1) return "Ativo";
+    if (value === 0) return "Inativo";
+    return null;
+  }
+
+  if (typeof value !== "string") {
+    return null;
+  }
+
+  const normalizedValue = value.trim().toLowerCase();
+
+  if (["1", "true", "ativo", "ativa", "active"].includes(normalizedValue)) {
+    return "Ativo";
+  }
+
+  if (
+    ["0", "false", "inativo", "inativa", "inactive"].includes(normalizedValue)
+  ) {
+    return "Inativo";
+  }
+
+  return null;
+};
+
 const formatValue = (key: string, value: unknown): string => {
   if (value === null || value === undefined || value === "") {
     return "-";
@@ -93,6 +123,13 @@ const formatValue = (key: string, value: unknown): string => {
 
   if (key === "created_at" || key === "updated_at") {
     return formatDateTimeBR(value);
+  }
+
+  if (key === "ativo" || key === "status") {
+    const formattedStatus = formatStatusValue(value);
+    if (formattedStatus) {
+      return formattedStatus;
+    }
   }
 
   const currencyValue = getCurrencyValue(key, value);

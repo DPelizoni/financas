@@ -162,6 +162,13 @@ export default function CategoriesPage() {
     handleCloseModal();
   };
 
+  const viewingCategoryData = viewingCategory
+    ? (() => {
+        const { cor, ...baseData } = viewingCategory;
+        return baseData;
+      })()
+    : null;
+
   const tipoBadge = (tipo: "RECEITA" | "DESPESA") => {
     if (tipo === "RECEITA") {
       return "bg-emerald-100 text-emerald-700";
@@ -506,7 +513,7 @@ export default function CategoriesPage() {
       <ViewDataModal
         isOpen={!!viewingCategory}
         title="Visualizar Categoria"
-        data={viewingCategory}
+        data={viewingCategoryData}
         onClose={() => setViewingCategory(null)}
       />
 

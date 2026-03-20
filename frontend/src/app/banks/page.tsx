@@ -171,6 +171,13 @@ export default function BanksPage() {
     handleCloseModal();
   };
 
+  const viewingBankData = viewingBank
+    ? (() => {
+        const { cor, icone, ...baseData } = viewingBank;
+        return baseData;
+      })()
+    : null;
+
   return (
     <div className="min-h-screen bg-gray-50 py-4 sm:py-8">
       <div className="mx-auto max-w-7xl space-y-6 px-4 sm:px-6 lg:px-8">
@@ -491,7 +498,7 @@ export default function BanksPage() {
       <ViewDataModal
         isOpen={!!viewingBank}
         title="Visualizar Banco"
-        data={viewingBank}
+        data={viewingBankData}
         onClose={() => setViewingBank(null)}
       />
 
