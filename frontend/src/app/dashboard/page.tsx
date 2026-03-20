@@ -781,8 +781,8 @@ export default function DashboardPage() {
             </h3>
             <div className="h-[520px] sm:h-96">
               {hasSingleTimelineMonth ? (
-                <div className="grid h-full grid-cols-1 gap-4 lg:grid-cols-2">
-                  <div className="h-full p-3">
+                <div className="grid h-full grid-cols-1 gap-4 lg:auto-rows-fr lg:grid-cols-2">
+                  <div className="h-full">
                     <div className="flex h-full flex-col rounded-lg border border-slate-200 bg-gradient-to-b from-slate-50 to-white p-3 shadow-sm dark:border-slate-700 dark:from-slate-900 dark:to-slate-800">
                       <div className="h-[70%]">
                         <ResponsiveContainer width="100%" height="100%">
@@ -861,26 +861,28 @@ export default function DashboardPage() {
                     </div>
                   </div>
 
-                  <div
-                    className={`flex h-full items-center justify-center rounded-lg border p-3 shadow-sm dark:border-slate-700 dark:from-slate-900 dark:via-slate-900 dark:to-slate-800 ${
-                      singleMonthSaldo >= 0
-                        ? "border-blue-200/70 bg-gradient-to-br from-blue-50 via-white to-cyan-50"
-                        : "border-red-200/70 bg-gradient-to-br from-red-50 via-white to-rose-50"
-                    }`}
-                  >
-                    <div className="text-center">
-                      <p className="text-sm font-semibold text-gray-700">
-                        Líquido
-                      </p>
-                      <p
-                        className={`mt-2 text-3xl font-bold ${
-                          singleMonthSaldo >= 0
-                            ? "text-blue-600"
-                            : "text-red-600"
-                        }`}
-                      >
-                        {currency(singleMonthSaldo)}
-                      </p>
+                  <div className="h-full">
+                    <div
+                      className={`flex h-full items-center justify-center rounded-lg border p-3 shadow-sm dark:border-slate-700 dark:from-slate-900 dark:via-slate-900 dark:to-slate-800 ${
+                        singleMonthSaldo >= 0
+                          ? "border-blue-200/70 bg-gradient-to-br from-blue-50 via-white to-cyan-50"
+                          : "border-red-200/70 bg-gradient-to-br from-red-50 via-white to-rose-50"
+                      }`}
+                    >
+                      <div className="text-center">
+                        <p className="text-sm font-semibold text-gray-700">
+                          Líquido
+                        </p>
+                        <p
+                          className={`mt-2 text-3xl font-bold ${
+                            singleMonthSaldo >= 0
+                              ? "text-blue-600"
+                              : "text-red-600"
+                          }`}
+                        >
+                          {currency(singleMonthSaldo)}
+                        </p>
+                      </div>
                     </div>
                   </div>
                 </div>
