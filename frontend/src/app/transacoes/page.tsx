@@ -584,6 +584,23 @@ export default function TransacoesPage() {
     }).format(valor);
   };
 
+  const viewingTransacaoData = viewingTransacao
+    ? (() => {
+        const baseData = { ...viewingTransacao } as Record<string, unknown>;
+        delete baseData.categoria_id;
+        delete baseData.descricao_id;
+        delete baseData.banco_id;
+        delete baseData.created_at;
+        delete baseData.updated_at;
+
+        return {
+          ...baseData,
+          created_at: viewingTransacao.created_at ?? null,
+          updated_at: viewingTransacao.updated_at ?? null,
+        };
+      })()
+    : null;
+
   if (loading) {
     return (
       <div className="flex h-screen flex-col items-center justify-center gap-2">
@@ -1514,15 +1531,7 @@ export default function TransacoesPage() {
         <ViewDataModal
           isOpen={!!viewingTransacao}
           title="Visualizar Transação"
-          data={
-            viewingTransacao
-              ? {
-                  ...viewingTransacao,
-                  created_at: viewingTransacao.created_at ?? null,
-                  updated_at: viewingTransacao.updated_at ?? null,
-                }
-              : null
-          }
+          data={viewingTransacaoData}
           onClose={() => setViewingTransacao(null)}
         />
 
