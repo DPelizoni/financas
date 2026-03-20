@@ -251,10 +251,10 @@ export default function UsuariosPage() {
             <div>
               <h1 className="flex items-center gap-3 text-2xl font-bold text-gray-900 sm:text-3xl">
                 <ShieldCheck size={32} className="text-blue-600" />
-                Gestao de Usuarios
+                Gestão de Usuários
               </h1>
               <p className="mt-2 text-sm text-gray-600">
-                Gerencie o status de acesso dos usuarios do sistema.
+                Gerencie o status de acesso dos usuários do sistema.
               </p>
             </div>
             <AppButton
@@ -413,8 +413,8 @@ export default function UsuariosPage() {
                         onClick={() => handleOpenEdit(user)}
                       />
                       <TableActionButton
-                        action="delete"
-                        title="Inativar usuario"
+                        action="deactivate"
+                        title="Inativar usuário"
                         onClick={() => handleDelete(user)}
                         disabled={user.status === "INATIVO"}
                       />
@@ -525,8 +525,8 @@ export default function UsuariosPage() {
                               compact
                             />
                             <TableActionButton
-                              action="delete"
-                              title="Inativar usuario"
+                              action="deactivate"
+                              title="Inativar usuário"
                               onClick={() => handleDelete(user)}
                               compact
                               disabled={user.status === "INATIVO"}

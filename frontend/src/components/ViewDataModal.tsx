@@ -46,6 +46,46 @@ const formatLabel = (key: string): string => {
     .replace(/\b\w/g, (char) => char.toUpperCase());
 };
 
+const parseNumericValue = (value: unknown): number | null => {
+  if (typeof value === "number") {
+    return Number.isFinite(value) ? value : null;
+  }
+
+  if (typeof value !== "string") {
+    return null;
+  }
+
+  const trimmedValue = value.trim();
+  if (!trimmedValue) {
+    return null;
+  }
+
+  if (/^-?\d{1,3}(\.\d{3})*(,\d+)?$/.test(trimmedValue)) {
+    return Number(trimmedValue.replace(/\./g, "").replace(",", "."));
+  }
+
+  if (/^-?\d+([.,]\d+)?$/.test(trimmedValue)) {
+    return Number(trimmedValue.replace(",", "."));
+  }
+
+  return null;
+};
+
+const getCurrencyValue = (key: string, value: unknown): number | null => {
+  if (!/(valor|saldo|preco|preço|total)/i.test(key)) {
+    return null;
+  }
+
+  return parseNumericValue(value);
+};
+
+const formatCurrencyBR = (value: number): string => {
+  return new Intl.NumberFormat("pt-BR", {
+    style: "currency",
+    currency: "BRL",
+  }).format(value);
+};
+
 const formatValue = (key: string, value: unknown): string => {
   if (value === null || value === undefined || value === "") {
     return "-";
@@ -53,6 +93,11 @@ const formatValue = (key: string, value: unknown): string => {
 
   if (key === "created_at" || key === "updated_at") {
     return formatDateTimeBR(value);
+  }
+
+  const currencyValue = getCurrencyValue(key, value);
+  if (currencyValue !== null) {
+    return formatCurrencyBR(currencyValue);
   }
 
   if (typeof value === "boolean") {
@@ -81,9 +126,40 @@ export default function ViewDataModal({
     return null;
   }
 
-  const entries = Object.entries(data as Record<string, unknown>).filter(
-    ([, value]) => typeof value !== "function",
-  );
+  const dataRecord = data as Record<string, unknown>;
+  const filteredEntries = Object.entries(dataRecord).filter(([key, value]) => {
+    if (typeof value === "function") {
+      return false;
+    }
+
+    if (key.endsWith("_id")) {
+      const baseKey = key.slice(0, -3);
+      const relatedNameKeys = [`${baseKey}_nome`, `${baseKey}_name`];
+      if (relatedNameKeys.some((relatedKey) => relatedKey in dataRecord)) {
+        return false;
+      }
+    }
+
+    return true;
+  });
+
+  const timestampOrder: Record<"created_at" | "updated_at", number> = {
+    created_at: 0,
+    updated_at: 1,
+  };
+
+  const entries = [
+    ...filteredEntries.filter(
+      ([key]) => key !== "created_at" && key !== "updated_at",
+    ),
+    ...filteredEntries
+      .filter(([key]) => key === "created_at" || key === "updated_at")
+      .sort(
+        ([leftKey], [rightKey]) =>
+          timestampOrder[leftKey as "created_at" | "updated_at"] -
+          timestampOrder[rightKey as "created_at" | "updated_at"],
+      ),
+  ];
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
@@ -126,7 +202,11 @@ export default function ViewDataModal({
         </div>
 
         <div className="flex justify-end border-t border-gray-200 px-6 py-4">
-          <AppButton onClick={onClose} tone="outline" startIcon={<XCircle size={16} />}>
+          <AppButton
+            onClick={onClose}
+            tone="outline-primary"
+            startIcon={<XCircle size={16} />}
+          >
             Fechar
           </AppButton>
         </div>

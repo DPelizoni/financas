@@ -1,10 +1,15 @@
 "use client";
 
 import Icon from "@mdi/react";
-import { mdiEyeOutline, mdiFileEditOutline, mdiTrashCanOutline } from "@mdi/js";
+import {
+  mdiAccountOffOutline,
+  mdiEyeOutline,
+  mdiFileEditOutline,
+  mdiTrashCanOutline,
+} from "@mdi/js";
 
 interface TableActionButtonProps {
-  action: "view" | "edit" | "delete";
+  action: "view" | "edit" | "delete" | "deactivate";
   title: string;
   onClick: () => void;
   compact?: boolean;
@@ -30,6 +35,10 @@ export default function TableActionButton({
     delete: {
       iconPath: mdiTrashCanOutline,
       toneClass: "text-red-600 hover:bg-red-50 hover:text-red-800",
+    },
+    deactivate: {
+      iconPath: mdiAccountOffOutline,
+      toneClass: "text-amber-600 hover:bg-amber-50 hover:text-amber-800",
     },
   }[action];
   const { toneClass } = actionConfig;
