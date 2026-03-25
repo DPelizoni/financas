@@ -430,7 +430,7 @@ export default function CategoriesPage() {
                     {sortedCategories.map((category) => (
                       <tr
                         key={category.id}
-                        className="transition-colors hover:bg-gray-50"
+                        className="app-table-row"
                       >
                         <td className="whitespace-nowrap px-3 py-2">
                           <div className="flex items-center">

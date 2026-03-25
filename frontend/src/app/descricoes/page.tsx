@@ -446,7 +446,7 @@ export default function DescricoesPage() {
                     {sortedDescricoes.map((descricao) => (
                       <tr
                         key={descricao.id}
-                        className="transition-colors hover:bg-gray-50"
+                        className="app-table-row"
                       >
                         <td className="whitespace-nowrap px-3 py-2">
                           <div className="text-xs font-medium text-gray-900">

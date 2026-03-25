@@ -479,7 +479,7 @@ export default function UsuariosPage() {
                   </thead>
                   <tbody className="divide-y divide-gray-100 bg-white">
                     {sortedUsers.map((user) => (
-                      <tr key={user.id} className="hover:bg-gray-50">
+                      <tr key={user.id} className="app-table-row">
                         <td className="px-3 py-2 text-xs text-gray-700">
                           {user.nome}
                         </td>

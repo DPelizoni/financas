@@ -1226,7 +1226,7 @@ export default function TransacoesPage() {
                   </tr>
                 ) : (
                   sortedTransacoes.map((transacao) => (
-                    <tr key={transacao.id} className="hover:bg-gray-50">
+                    <tr key={transacao.id} className="app-table-row">
                       <td className="px-3 py-2 text-xs font-medium text-gray-900">
                         {transacao.mes}
                       </td>

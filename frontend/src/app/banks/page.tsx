@@ -416,7 +416,7 @@ export default function BanksPage() {
                     {sortedBanks.map((bank) => (
                       <tr
                         key={bank.id}
-                        className="hover:bg-gray-50 transition-colors"
+                        className="app-table-row"
                       >
                         <td className="px-3 py-2 whitespace-nowrap">
                           <div className="flex items-center">

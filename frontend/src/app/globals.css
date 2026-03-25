@@ -474,10 +474,12 @@ body {
     @apply rounded-lg;
   }
 
+  .app-table-row,
   .dashboard-table-row {
     @apply transition-colors;
   }
 
+  .app-table-row:hover,
   .dashboard-table-row:hover {
     background-color: rgb(var(--app-bg-muted));
   }

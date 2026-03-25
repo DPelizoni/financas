@@ -1161,7 +1161,7 @@ export default function DashboardPage() {
                   </tr>
                 ) : (
                   detailedRows.map((t) => (
-                    <tr key={t.id} className="dashboard-table-row">
+                    <tr key={t.id} className="app-table-row">
                       <td className="px-3 py-2 text-xs text-gray-700">
                         {t.mes}
                       </td>
