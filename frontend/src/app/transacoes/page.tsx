@@ -629,7 +629,7 @@ export default function TransacoesPage() {
                 <button
                   type="button"
                   onClick={() => setAdvancedActionsOpen((prev) => !prev)}
-                  className="flex h-10 w-full items-center justify-center gap-2 rounded-lg border border-gray-300 bg-gray-200 px-4 py-2 text-sm font-semibold text-gray-800 transition hover:bg-gray-300 sm:w-auto"
+                  className="app-button-outline flex h-10 w-full items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold transition sm:w-auto"
                 >
                   Ações Avançadas
                   <ChevronDown size={18} />
@@ -974,7 +974,7 @@ export default function TransacoesPage() {
                   <button
                     type="button"
                     onClick={handleClearFilters}
-                    className={`${searchSectionClasses.primaryCompactButton} inline-flex items-center gap-2`}
+                    className="app-button-outline inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium whitespace-nowrap transition"
                   >
                     <Icon path={mdiBroom} size={0.75} />
                     Limpar Filtros
@@ -1047,8 +1047,8 @@ export default function TransacoesPage() {
                         onClick={() => handleToggleSituacao(transacao)}
                         className={`inline-flex min-h-8 items-center rounded-full px-2.5 py-1 text-[11px] font-semibold leading-none transition ${
                           transacao.situacao === "PAGO"
-                            ? "bg-green-100 text-green-800 hover:bg-green-200"
-                            : "bg-yellow-100 text-yellow-800 hover:bg-yellow-200"
+                            ? "app-status-toggle-success"
+                            : "app-status-toggle-warning"
                         }`}
                       >
                         {transacao.situacao}
@@ -1197,7 +1197,7 @@ export default function TransacoesPage() {
                       ) : null}
                     </button>
                   </th>
-                  <th className="app-table-head-cell-right">
+                  <th className="app-table-head-cell-center">
                     Ações
                   </th>
                 </tr>
@@ -1260,8 +1260,8 @@ export default function TransacoesPage() {
                           onClick={() => handleToggleSituacao(transacao)}
                           className={`inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-semibold leading-none transition ${
                             transacao.situacao === "PAGO"
-                              ? "bg-green-100 text-green-800 hover:bg-green-200"
-                              : "bg-yellow-100 text-yellow-800 hover:bg-yellow-200"
+                              ? "app-status-toggle-success"
+                              : "app-status-toggle-warning"
                           }`}
                         >
                           {transacao.situacao}

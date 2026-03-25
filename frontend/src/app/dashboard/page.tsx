@@ -622,7 +622,7 @@ export default function DashboardPage() {
                     setFilterBanco("TODOS");
                     setPeriodMonths(12);
                   }}
-                  className="inline-flex items-center gap-2 rounded-lg bg-gray-500 px-3 py-2 text-sm font-medium whitespace-nowrap text-white transition hover:bg-gray-600"
+                  className="app-button-outline inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium whitespace-nowrap transition"
                 >
                   <Icon path={mdiBroom} size={0.75} />
                   Limpar filtros

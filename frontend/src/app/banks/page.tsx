@@ -406,7 +406,7 @@ export default function BanksPage() {
                           ) : null}
                         </button>
                       </th>
-                      <th className="app-table-head-cell-right">
+                      <th className="app-table-head-cell-center">
                         Ações
                       </th>
                     </tr>
@@ -451,8 +451,8 @@ export default function BanksPage() {
                             </span>
                           )}
                         </td>
-                        <td className="px-3 py-2 whitespace-nowrap text-right text-xs font-medium">
-                          <div className="flex justify-end gap-1">
+                        <td className="px-3 py-2 whitespace-nowrap text-center text-xs font-medium">
+                          <div className="flex justify-center gap-1">
                             <TableActionButton
                               action="view"
                               title="Visualizar"

@@ -380,8 +380,8 @@ export default function UsuariosPage() {
                         disabled={updatingId === user.id}
                         className={`inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-semibold leading-none transition ${
                           user.status === "ATIVO"
-                            ? "bg-green-100 text-green-700 hover:bg-green-200"
-                            : "bg-red-100 text-red-700 hover:bg-red-200"
+                            ? "app-status-toggle-success"
+                            : "app-status-toggle-error"
                         }`}
                         title="Clique para alternar o status"
                       >
@@ -471,7 +471,7 @@ export default function UsuariosPage() {
                           ) : null}
                         </button>
                       </th>
-                      <th className="app-table-head-cell-right">
+                      <th className="app-table-head-cell-center">
                         Ações
                       </th>
                     </tr>
@@ -499,8 +499,8 @@ export default function UsuariosPage() {
                             disabled={updatingId === user.id}
                             className={`inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-semibold leading-none transition ${
                               user.status === "ATIVO"
-                                ? "bg-green-100 text-green-700 hover:bg-green-200"
-                                : "bg-red-100 text-red-700 hover:bg-red-200"
+                                ? "app-status-toggle-success"
+                                : "app-status-toggle-error"
                             }`}
                             title="Clique para alternar o status"
                           >
@@ -509,8 +509,8 @@ export default function UsuariosPage() {
                               : user.status}
                           </button>
                         </td>
-                        <td className="px-3 py-2 text-right text-xs font-medium">
-                          <div className="flex justify-end gap-1">
+                        <td className="px-3 py-2 text-center text-xs font-medium">
+                          <div className="flex justify-center gap-1">
                             <TableActionButton
                               action="view"
                               title="Visualizar"

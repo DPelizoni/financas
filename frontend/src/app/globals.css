@@ -254,12 +254,13 @@ body {
   }
 
   .app-button-neutral {
-    background-color: rgb(var(--app-neutral-600));
-    color: rgb(var(--app-text-inverse));
+    border: 1px solid rgb(var(--app-border-default));
+    background-color: rgb(var(--app-bg-muted));
+    color: rgb(var(--app-text-primary));
   }
 
   .app-button-neutral:hover {
-    background-color: rgb(var(--app-neutral-700));
+    background-color: rgb(var(--app-neutral-200));
   }
 
   .app-button-outline {
@@ -347,6 +348,36 @@ body {
   .app-action-deactivate:hover {
     background-color: rgb(var(--app-semantic-warning) / 0.16);
     color: rgb(var(--app-semantic-warning));
+  }
+
+  .app-status-toggle-success {
+    border: 1px solid rgb(var(--app-status-success-border));
+    background-color: rgb(var(--app-status-success-bg));
+    color: rgb(var(--app-status-success-text));
+  }
+
+  .app-status-toggle-success:hover {
+    background-color: rgb(var(--app-status-success-border));
+  }
+
+  .app-status-toggle-warning {
+    border: 1px solid rgb(var(--app-status-warning-border));
+    background-color: rgb(var(--app-status-warning-bg));
+    color: rgb(var(--app-status-warning-text));
+  }
+
+  .app-status-toggle-warning:hover {
+    background-color: rgb(var(--app-status-warning-border));
+  }
+
+  .app-status-toggle-error {
+    border: 1px solid rgb(var(--app-status-error-border));
+    background-color: rgb(var(--app-status-error-bg));
+    color: rgb(var(--app-status-error-text));
+  }
+
+  .app-status-toggle-error:hover {
+    background-color: rgb(var(--app-status-error-border));
   }
 
   .app-modal-overlay {
@@ -499,6 +530,27 @@ body {
 
   .app-table-head-cell-center {
     @apply px-3 py-2 text-center text-xs font-semibold text-gray-900;
+  }
+
+  .app-pagination-button {
+    border: 1px solid rgb(var(--app-border-default));
+    background-color: rgb(var(--app-bg-surface));
+    color: rgb(var(--app-text-secondary));
+  }
+
+  .app-pagination-button:hover {
+    background-color: rgb(var(--app-bg-muted));
+    color: rgb(var(--app-text-primary));
+  }
+
+  .app-pagination-button-active {
+    border: 1px solid rgb(var(--app-brand-primary));
+    background-color: rgb(var(--app-brand-primary));
+    color: rgb(var(--app-text-inverse));
+  }
+
+  .app-pagination-button-active:hover {
+    background-color: rgb(var(--app-brand-primary-hover));
   }
 }
 

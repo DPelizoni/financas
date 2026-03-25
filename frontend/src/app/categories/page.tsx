@@ -420,7 +420,7 @@ export default function CategoriesPage() {
                           ) : null}
                         </button>
                       </th>
-                      <th className="app-table-head-cell-right">
+                      <th className="app-table-head-cell-center">
                         Ações
                       </th>
                     </tr>
@@ -466,8 +466,8 @@ export default function CategoriesPage() {
                             </span>
                           )}
                         </td>
-                        <td className="whitespace-nowrap px-3 py-2 text-right text-xs font-medium">
-                          <div className="flex justify-end gap-1">
+                        <td className="whitespace-nowrap px-3 py-2 text-center text-xs font-medium">
+                          <div className="flex justify-center gap-1">
                             <TableActionButton
                               action="view"
                               title="Visualizar"
