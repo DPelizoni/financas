@@ -1053,9 +1053,9 @@ export default function DashboardPage() {
 
           <div className="hidden overflow-x-auto md:block">
             <table className="min-w-[900px] w-full divide-y divide-gray-200 text-xs">
-              <thead className="border-b bg-gray-100">
+              <thead className="app-table-head">
                 <tr>
-                  <th className="px-3 py-2 text-left text-xs font-semibold text-gray-900">
+                  <th className="app-table-head-cell">
                     <button
                       type="button"
                       onClick={() => handleTableSort("mes")}
@@ -1069,7 +1069,7 @@ export default function DashboardPage() {
                       ) : null}
                     </button>
                   </th>
-                  <th className="px-3 py-2 text-left text-xs font-semibold text-gray-900">
+                  <th className="app-table-head-cell">
                     <button
                       type="button"
                       onClick={() => handleTableSort("tipo")}
@@ -1084,7 +1084,7 @@ export default function DashboardPage() {
                       ) : null}
                     </button>
                   </th>
-                  <th className="px-3 py-2 text-left text-xs font-semibold text-gray-900">
+                  <th className="app-table-head-cell">
                     <button
                       type="button"
                       onClick={() => handleTableSort("categoria")}
@@ -1099,10 +1099,10 @@ export default function DashboardPage() {
                       ) : null}
                     </button>
                   </th>
-                  <th className="px-3 py-2 text-left text-xs font-semibold text-gray-900">
+                  <th className="app-table-head-cell">
                     Descrição
                   </th>
-                  <th className="px-3 py-2 text-left text-xs font-semibold text-gray-900">
+                  <th className="app-table-head-cell">
                     <button
                       type="button"
                       onClick={() => handleTableSort("banco")}
@@ -1117,7 +1117,7 @@ export default function DashboardPage() {
                       ) : null}
                     </button>
                   </th>
-                  <th className="px-3 py-2 text-left text-xs font-semibold text-gray-900">
+                  <th className="app-table-head-cell">
                     <button
                       type="button"
                       onClick={() => handleTableSort("situacao")}
@@ -1132,7 +1132,7 @@ export default function DashboardPage() {
                       ) : null}
                     </button>
                   </th>
-                  <th className="px-3 py-2 text-right text-xs font-semibold text-gray-900">
+                  <th className="app-table-head-cell-right">
                     <button
                       type="button"
                       onClick={() => handleTableSort("valor")}

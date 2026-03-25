@@ -314,12 +314,12 @@ body {
   }
 
   .app-action-view {
-    color: rgb(var(--app-text-secondary));
+    color: rgb(var(--app-semantic-info));
   }
 
   .app-action-view:hover {
-    background-color: rgb(var(--app-bg-muted));
-    color: rgb(var(--app-text-primary));
+    background-color: rgb(var(--app-semantic-info) / 0.14);
+    color: rgb(var(--app-brand-secondary));
   }
 
   .app-action-edit {
@@ -482,6 +482,23 @@ body {
   .app-table-row:hover,
   .dashboard-table-row:hover {
     background-color: rgb(var(--app-bg-muted));
+  }
+
+  .app-table-head {
+    border-bottom: 1px solid rgb(var(--app-border-default));
+    background-color: rgb(var(--app-bg-muted));
+  }
+
+  .app-table-head-cell {
+    @apply px-3 py-2 text-left text-xs font-semibold text-gray-900;
+  }
+
+  .app-table-head-cell-right {
+    @apply px-3 py-2 text-right text-xs font-semibold text-gray-900;
+  }
+
+  .app-table-head-cell-center {
+    @apply px-3 py-2 text-center text-xs font-semibold text-gray-900;
   }
 }
 

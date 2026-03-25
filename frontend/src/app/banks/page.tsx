@@ -212,7 +212,6 @@ export default function BanksPage() {
               <TextField
                 type="text"
                 label="Buscar"
-                placeholder="Digitar..."
                 variant="outlined"
                 size="small"
                 fullWidth
@@ -349,9 +348,9 @@ export default function BanksPage() {
 
               <div className="hidden overflow-x-auto md:block">
                 <table className="min-w-[640px] w-full divide-y divide-gray-200 text-xs">
-                  <thead className="border-b bg-gray-100">
+                  <thead className="app-table-head">
                     <tr>
-                      <th className="px-3 py-2 text-left text-xs font-semibold text-gray-900">
+                      <th className="app-table-head-cell">
                         <button
                           type="button"
                           onClick={() => handleSort("nome")}
@@ -365,7 +364,7 @@ export default function BanksPage() {
                           ) : null}
                         </button>
                       </th>
-                      <th className="px-3 py-2 text-left text-xs font-semibold text-gray-900">
+                      <th className="app-table-head-cell">
                         <button
                           type="button"
                           onClick={() => handleSort("codigo")}
@@ -379,7 +378,7 @@ export default function BanksPage() {
                           ) : null}
                         </button>
                       </th>
-                      <th className="px-3 py-2 text-left text-xs font-semibold text-gray-900">
+                      <th className="app-table-head-cell">
                         <button
                           type="button"
                           onClick={() => handleSort("saldo")}
@@ -393,7 +392,7 @@ export default function BanksPage() {
                           ) : null}
                         </button>
                       </th>
-                      <th className="px-3 py-2 text-left text-xs font-semibold text-gray-900">
+                      <th className="app-table-head-cell">
                         <button
                           type="button"
                           onClick={() => handleSort("status")}
@@ -407,7 +406,7 @@ export default function BanksPage() {
                           ) : null}
                         </button>
                       </th>
-                      <th className="px-3 py-2 text-right text-xs font-semibold text-gray-900">
+                      <th className="app-table-head-cell-right">
                         Ações
                       </th>
                     </tr>

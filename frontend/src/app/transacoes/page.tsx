@@ -955,7 +955,6 @@ export default function TransacoesPage() {
                   <TextField
                     type="search"
                     label="Buscar"
-                    placeholder="Digitar..."
                     variant="outlined"
                     size="small"
                     fullWidth
@@ -1083,10 +1082,10 @@ export default function TransacoesPage() {
           </div>
 
           <div className="hidden overflow-x-auto md:block">
-            <table className="min-w-[900px] w-full text-xs">
-              <thead className="bg-gray-100 border-b">
+            <table className="min-w-[900px] w-full divide-y divide-gray-200 text-xs">
+              <thead className="app-table-head">
                 <tr>
-                  <th className="px-3 py-2 text-left text-xs font-semibold text-gray-900">
+                  <th className="app-table-head-cell">
                     <button
                       type="button"
                       onClick={() => handleSort("mes")}
@@ -1100,7 +1099,7 @@ export default function TransacoesPage() {
                       ) : null}
                     </button>
                   </th>
-                  <th className="px-3 py-2 text-left text-xs font-semibold text-gray-900">
+                  <th className="app-table-head-cell">
                     <button
                       type="button"
                       onClick={() => handleSort("vencimento")}
@@ -1114,7 +1113,7 @@ export default function TransacoesPage() {
                       ) : null}
                     </button>
                   </th>
-                  <th className="px-3 py-2 text-left text-xs font-semibold text-gray-900">
+                  <th className="app-table-head-cell">
                     <button
                       type="button"
                       onClick={() => handleSort("tipo")}
@@ -1128,7 +1127,7 @@ export default function TransacoesPage() {
                       ) : null}
                     </button>
                   </th>
-                  <th className="px-3 py-2 text-left text-xs font-semibold text-gray-900">
+                  <th className="app-table-head-cell">
                     <button
                       type="button"
                       onClick={() => handleSort("categoria")}
@@ -1142,7 +1141,7 @@ export default function TransacoesPage() {
                       ) : null}
                     </button>
                   </th>
-                  <th className="px-3 py-2 text-left text-xs font-semibold text-gray-900">
+                  <th className="app-table-head-cell">
                     <button
                       type="button"
                       onClick={() => handleSort("descricao")}
@@ -1156,7 +1155,7 @@ export default function TransacoesPage() {
                       ) : null}
                     </button>
                   </th>
-                  <th className="px-3 py-2 text-left text-xs font-semibold text-gray-900">
+                  <th className="app-table-head-cell">
                     <button
                       type="button"
                       onClick={() => handleSort("banco")}
@@ -1170,7 +1169,7 @@ export default function TransacoesPage() {
                       ) : null}
                     </button>
                   </th>
-                  <th className="px-3 py-2 text-right text-xs font-semibold text-gray-900">
+                  <th className="app-table-head-cell-right">
                     <button
                       type="button"
                       onClick={() => handleSort("valor")}
@@ -1184,7 +1183,7 @@ export default function TransacoesPage() {
                       ) : null}
                     </button>
                   </th>
-                  <th className="px-3 py-2 text-center text-xs font-semibold text-gray-900">
+                  <th className="app-table-head-cell-center">
                     <button
                       type="button"
                       onClick={() => handleSort("situacao")}
@@ -1198,7 +1197,7 @@ export default function TransacoesPage() {
                       ) : null}
                     </button>
                   </th>
-                  <th className="px-3 py-2 text-center text-xs font-semibold text-gray-900">
+                  <th className="app-table-head-cell-right">
                     Ações
                   </th>
                 </tr>

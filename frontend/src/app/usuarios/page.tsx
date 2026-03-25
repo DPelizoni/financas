@@ -274,7 +274,6 @@ export default function UsuariosPage() {
               <TextField
                 type="text"
                 label="Buscar"
-                placeholder="Digitar..."
                 variant="outlined"
                 size="small"
                 fullWidth
@@ -425,9 +424,9 @@ export default function UsuariosPage() {
 
               <div className="hidden overflow-x-auto md:block">
                 <table className="min-w-[640px] w-full divide-y divide-gray-200 text-xs">
-                  <thead className="border-b bg-gray-100">
+                  <thead className="app-table-head">
                     <tr>
-                      <th className="px-3 py-2 text-left text-xs font-semibold text-gray-900">
+                      <th className="app-table-head-cell">
                         <button
                           type="button"
                           onClick={() => handleSort("nome")}
@@ -441,7 +440,7 @@ export default function UsuariosPage() {
                           ) : null}
                         </button>
                       </th>
-                      <th className="px-3 py-2 text-left text-xs font-semibold text-gray-900">
+                      <th className="app-table-head-cell">
                         <button
                           type="button"
                           onClick={() => handleSort("email")}
@@ -455,10 +454,10 @@ export default function UsuariosPage() {
                           ) : null}
                         </button>
                       </th>
-                      <th className="px-3 py-2 text-left text-xs font-semibold text-gray-900">
+                      <th className="app-table-head-cell">
                         Papel
                       </th>
-                      <th className="px-3 py-2 text-left text-xs font-semibold text-gray-900">
+                      <th className="app-table-head-cell">
                         <button
                           type="button"
                           onClick={() => handleSort("status")}
@@ -472,8 +471,8 @@ export default function UsuariosPage() {
                           ) : null}
                         </button>
                       </th>
-                      <th className="px-3 py-2 text-right text-xs font-semibold text-gray-900">
-                        Acoes
+                      <th className="app-table-head-cell-right">
+                        Ações
                       </th>
                     </tr>
                   </thead>
