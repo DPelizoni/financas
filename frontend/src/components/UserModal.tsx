@@ -190,16 +190,16 @@ export default function UserModal({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-      <div className="max-h-[90vh] w-full max-w-xl overflow-y-auto rounded-xl bg-white shadow-xl">
-        <div className="flex items-center justify-between border-b border-gray-200 px-6 py-4">
+    <div className="app-modal-overlay">
+      <div className="app-modal-content max-h-[90vh] w-full max-w-xl overflow-y-auto">
+        <div className="app-modal-header">
           <h2 className="text-lg font-semibold text-gray-900">
             {user ? "Editar Usuario" : "Novo Usuario"}
           </h2>
           <button
             type="button"
             onClick={onClose}
-            className="rounded-md p-1 text-gray-500 transition hover:bg-gray-100 hover:text-gray-700"
+            className="app-control-button p-1"
             title="Fechar"
           >
             <X size={20} />
@@ -208,7 +208,7 @@ export default function UserModal({
 
         <form onSubmit={handleSubmit} className="space-y-4 p-6">
           {errors.geral && (
-            <p className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+            <p className="app-inline-error">
               {errors.geral}
             </p>
           )}
@@ -336,3 +336,4 @@ export default function UserModal({
     </div>
   );
 }
+

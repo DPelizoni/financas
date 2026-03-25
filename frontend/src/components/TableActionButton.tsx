@@ -26,19 +26,19 @@ export default function TableActionButton({
   const actionConfig = {
     view: {
       iconPath: mdiEyeOutline,
-      toneClass: "text-slate-600 hover:bg-slate-100 hover:text-slate-800",
+      toneClass: "app-action-view",
     },
     edit: {
       iconPath: mdiFileEditOutline,
-      toneClass: "text-blue-600 hover:bg-blue-50 hover:text-blue-800",
+      toneClass: "app-action-edit",
     },
     delete: {
       iconPath: mdiTrashCanOutline,
-      toneClass: "text-red-600 hover:bg-red-50 hover:text-red-800",
+      toneClass: "app-action-delete",
     },
     deactivate: {
       iconPath: mdiAccountOffOutline,
-      toneClass: "text-amber-600 hover:bg-amber-50 hover:text-amber-800",
+      toneClass: "app-action-deactivate",
     },
   }[action];
   const { toneClass } = actionConfig;

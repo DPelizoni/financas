@@ -206,16 +206,16 @@ export default function BankModal({ bank, onClose, onSave }: BankModalProps) {
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto">
+    <div className="app-modal-overlay">
+      <div className="app-modal-content max-h-[90vh] w-full max-w-md overflow-y-auto">
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-gray-200">
+        <div className="app-modal-header p-6">
           <h2 className="text-xl font-bold text-gray-900">
             {bank ? "Editar Banco" : "Novo Banco"}
           </h2>
           <button
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 transition-colors"
+            className="app-control-button p-1"
           >
             <X size={24} />
           </button>
@@ -224,7 +224,7 @@ export default function BankModal({ bank, onClose, onSave }: BankModalProps) {
         {/* Form */}
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
           {errors.geral && (
-            <p className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+            <p className="app-inline-error">
               {errors.geral}
             </p>
           )}
@@ -269,7 +269,7 @@ export default function BankModal({ bank, onClose, onSave }: BankModalProps) {
                 type="color"
                 value={formData.cor}
                 onChange={(e) => handleChange("cor", e.target.value)}
-                className="h-10 w-20 rounded border border-gray-300 cursor-pointer"
+                className="h-10 w-20 cursor-pointer rounded border border-[rgb(var(--app-border-default))] bg-[rgb(var(--app-bg-surface))]"
               />
               <TextField
                 type="text"
@@ -321,9 +321,9 @@ export default function BankModal({ bank, onClose, onSave }: BankModalProps) {
               id="ativo"
               checked={formData.ativo}
               onChange={(e) => handleChange("ativo", e.target.checked)}
-              className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+              className="app-checkbox"
             />
-            <label htmlFor="ativo" className="ml-2 block text-sm text-gray-700">
+            <label htmlFor="ativo" className="ml-2 block text-sm text-[rgb(var(--app-text-secondary))]">
               Banco ativo
             </label>
           </div>
@@ -355,4 +355,5 @@ export default function BankModal({ bank, onClose, onSave }: BankModalProps) {
     </div>
   );
 }
+
 

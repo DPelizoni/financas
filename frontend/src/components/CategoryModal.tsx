@@ -142,15 +142,15 @@ export default function CategoryModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-      <div className="max-h-[90vh] w-full max-w-md overflow-y-auto rounded-lg bg-white shadow-xl">
-        <div className="flex items-center justify-between border-b border-gray-200 p-6">
+    <div className="app-modal-overlay">
+      <div className="app-modal-content max-h-[90vh] w-full max-w-md overflow-y-auto">
+        <div className="app-modal-header p-6">
           <h2 className="text-xl font-bold text-gray-900">
             {category ? "Editar Categoria" : "Nova Categoria"}
           </h2>
           <button
             onClick={onClose}
-            className="text-gray-400 transition-colors hover:text-gray-600"
+            className="app-control-button p-1"
           >
             <X size={24} />
           </button>
@@ -158,7 +158,7 @@ export default function CategoryModal({
 
         <form onSubmit={handleSubmit} className="space-y-4 p-6">
           {errors.geral && (
-            <p className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+            <p className="app-inline-error">
               {errors.geral}
             </p>
           )}
@@ -204,7 +204,7 @@ export default function CategoryModal({
                 type="color"
                 value={formData.cor}
                 onChange={(e) => handleChange("cor", e.target.value)}
-                className="h-10 w-20 cursor-pointer rounded border border-gray-300"
+                className="h-10 w-20 cursor-pointer rounded border border-[rgb(var(--app-border-default))] bg-[rgb(var(--app-bg-surface))]"
               />
               <TextField
                 type="text"
@@ -228,9 +228,9 @@ export default function CategoryModal({
               id="ativo"
               checked={formData.ativo}
               onChange={(e) => handleChange("ativo", e.target.checked)}
-              className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+              className="app-checkbox"
             />
-            <label htmlFor="ativo" className="ml-2 block text-sm text-gray-700">
+            <label htmlFor="ativo" className="ml-2 block text-sm text-[rgb(var(--app-text-secondary))]">
               Categoria ativa
             </label>
           </div>
@@ -261,4 +261,5 @@ export default function CategoryModal({
     </div>
   );
 }
+
 

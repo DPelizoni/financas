@@ -3,33 +3,152 @@
 @tailwind utilities;
 
 :root {
-  --foreground-rgb: 17, 24, 39;
-  --foreground-muted-rgb: 71, 85, 105;
-  --background-base-rgb: 248, 250, 252;
-  --background-elevated-rgb: 255, 255, 255;
-  --background-muted-rgb: 241, 245, 249;
-  --border-rgb: 203, 213, 225;
+  --app-bg-canvas: 248 250 252;
+  --app-bg-surface: 255 255 255;
+  --app-bg-elevated: 255 255 255;
+  --app-bg-muted: 241 245 249;
+  --app-overlay-rgb: 2 6 23;
+
+  --app-text-primary: 15 23 42;
+  --app-text-secondary: 71 85 105;
+  --app-text-muted: 100 116 139;
+  --app-text-inverse: 248 250 252;
+
+  --app-border-subtle: 226 232 240;
+  --app-border-default: 203 213 225;
+  --app-border-strong: 148 163 184;
+
+  --app-brand-primary: 37 99 235;
+  --app-brand-primary-hover: 29 78 216;
+  --app-brand-secondary: 14 165 233;
+  --app-focus-ring: 56 189 248;
+
+  --app-semantic-success: 22 163 74;
+  --app-semantic-warning: 217 119 6;
+  --app-semantic-error: 220 38 38;
+  --app-semantic-info: 2 132 199;
+
+  --app-status-success-bg: 220 252 231;
+  --app-status-success-text: 22 101 52;
+  --app-status-success-border: 134 239 172;
+
+  --app-status-warning-bg: 254 243 199;
+  --app-status-warning-text: 146 64 14;
+  --app-status-warning-border: 252 211 77;
+
+  --app-status-error-bg: 254 226 226;
+  --app-status-error-text: 153 27 27;
+  --app-status-error-border: 252 165 165;
+
+  --app-status-info-bg: 224 242 254;
+  --app-status-info-text: 7 89 133;
+  --app-status-info-border: 125 211 252;
+
+  --app-neutral-50: 248 250 252;
+  --app-neutral-100: 241 245 249;
+  --app-neutral-200: 226 232 240;
+  --app-neutral-300: 203 213 225;
+  --app-neutral-400: 148 163 184;
+  --app-neutral-500: 100 116 139;
+  --app-neutral-600: 71 85 105;
+  --app-neutral-700: 51 65 85;
+  --app-neutral-800: 30 41 59;
+  --app-neutral-900: 15 23 42;
+
+  --app-shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.08);
+  --app-shadow-md: 0 8px 20px rgba(15, 23, 42, 0.08);
+  --app-shadow-lg: 0 24px 48px rgba(15, 23, 42, 0.12);
+
+  --app-chart-receita: 16 185 129;
+  --app-chart-despesa: 239 68 68;
+  --app-chart-saldo: 14 165 233;
+  --app-chart-pendente: 245 158 11;
+  --app-chart-pago: 34 197 94;
+  --app-chart-pie-a: 59 130 246;
+  --app-chart-pie-b: 16 185 129;
+  --app-chart-pie-c: 245 158 11;
+  --app-chart-pie-d: 139 92 246;
+  --app-chart-pie-e: 239 68 68;
 }
 
 html.dark {
-  --foreground-rgb: 226, 232, 240;
-  --foreground-muted-rgb: 148, 163, 184;
-  --background-base-rgb: 2, 6, 23;
-  --background-elevated-rgb: 15, 23, 42;
-  --background-muted-rgb: 30, 41, 59;
-  --border-rgb: 51, 65, 85;
+  --app-bg-canvas: 2 6 23;
+  --app-bg-surface: 15 23 42;
+  --app-bg-elevated: 17 28 49;
+  --app-bg-muted: 30 41 59;
+  --app-overlay-rgb: 2 6 23;
+
+  --app-text-primary: 226 232 240;
+  --app-text-secondary: 203 213 225;
+  --app-text-muted: 148 163 184;
+  --app-text-inverse: 2 6 23;
+
+  --app-border-subtle: 30 41 59;
+  --app-border-default: 51 65 85;
+  --app-border-strong: 71 85 105;
+
+  --app-brand-primary: 59 130 246;
+  --app-brand-primary-hover: 96 165 250;
+  --app-brand-secondary: 56 189 248;
+
+  --app-semantic-success: 74 222 128;
+  --app-semantic-warning: 251 191 36;
+  --app-semantic-error: 248 113 113;
+  --app-semantic-info: 56 189 248;
+
+  --app-status-success-bg: 5 46 22;
+  --app-status-success-text: 134 239 172;
+  --app-status-success-border: 22 101 52;
+
+  --app-status-warning-bg: 66 32 6;
+  --app-status-warning-text: 252 211 77;
+  --app-status-warning-border: 146 64 14;
+
+  --app-status-error-bg: 69 10 10;
+  --app-status-error-text: 252 165 165;
+  --app-status-error-border: 153 27 27;
+
+  --app-status-info-bg: 8 47 73;
+  --app-status-info-text: 125 211 252;
+  --app-status-info-border: 3 105 161;
+
+  --app-neutral-50: 15 23 42;
+  --app-neutral-100: 30 41 59;
+  --app-neutral-200: 51 65 85;
+  --app-neutral-300: 71 85 105;
+  --app-neutral-400: 100 116 139;
+  --app-neutral-500: 148 163 184;
+  --app-neutral-600: 203 213 225;
+  --app-neutral-700: 226 232 240;
+  --app-neutral-800: 241 245 249;
+  --app-neutral-900: 248 250 252;
+
+  --app-shadow-sm: 0 1px 2px rgba(2, 6, 23, 0.4);
+  --app-shadow-md: 0 10px 24px rgba(2, 6, 23, 0.44);
+  --app-shadow-lg: 0 24px 56px rgba(2, 6, 23, 0.55);
+
+  --app-chart-receita: 52 211 153;
+  --app-chart-despesa: 251 113 133;
+  --app-chart-saldo: 56 189 248;
+  --app-chart-pendente: 251 191 36;
+  --app-chart-pago: 34 197 94;
+  --app-chart-pie-a: 96 165 250;
+  --app-chart-pie-b: 52 211 153;
+  --app-chart-pie-c: 251 191 36;
+  --app-chart-pie-d: 167 139 250;
+  --app-chart-pie-e: 251 113 133;
 }
 
 body {
-  color: rgb(var(--foreground-rgb));
-  background-color: rgb(var(--background-base-rgb));
-  @apply text-base transition-colors duration-200;
+  color: rgb(var(--app-text-primary));
+  background-color: rgb(var(--app-bg-canvas));
   font-family: var(--font-app), Inter, sans-serif;
+  @apply text-base transition-colors duration-200;
 }
 
 @layer base {
   ::selection {
-    background-color: rgb(37 99 235 / 0.3);
+    background-color: rgb(var(--app-brand-primary) / 0.3);
   }
 
   h1 {
@@ -59,15 +178,253 @@ body {
   input:not([type="checkbox"]):not([type="radio"]):not([type="color"]):not([type="range"]):not([type="file"]),
   select,
   textarea {
-    border-color: rgb(var(--border-rgb));
-    background-color: rgb(var(--background-elevated-rgb));
-    color: rgb(var(--foreground-rgb));
+    color: rgb(var(--app-text-primary));
+    background-color: rgb(var(--app-bg-surface));
+    border-color: rgb(var(--app-border-default));
     @apply rounded-md;
   }
 
   button {
     font-family: var(--font-app), Inter, sans-serif;
     letter-spacing: 0;
+  }
+
+  :where(a, button, [role="button"], input, select, textarea):focus-visible {
+    outline: 2px solid rgb(var(--app-focus-ring));
+    outline-offset: 2px;
+  }
+}
+
+@layer components {
+  .app-page {
+    min-height: 100vh;
+    background-color: rgb(var(--app-bg-canvas));
+  }
+
+  .app-surface {
+    border: 1px solid rgb(var(--app-border-default));
+    background-color: rgb(var(--app-bg-surface));
+    box-shadow: var(--app-shadow-sm);
+    @apply rounded-lg;
+  }
+
+  .app-surface-muted {
+    border: 1px solid rgb(var(--app-border-subtle));
+    background-color: rgb(var(--app-bg-muted));
+    @apply rounded-lg;
+  }
+
+  .app-control-button {
+    border: 1px solid rgb(var(--app-border-default));
+    background-color: rgb(var(--app-bg-surface));
+    color: rgb(var(--app-text-secondary));
+    @apply rounded-md transition;
+  }
+
+  .app-control-button:hover {
+    background-color: rgb(var(--app-bg-muted));
+    color: rgb(var(--app-text-primary));
+  }
+
+  .app-button-primary {
+    background-color: rgb(var(--app-brand-primary));
+    color: rgb(var(--app-text-inverse));
+  }
+
+  .app-button-primary:hover {
+    background-color: rgb(var(--app-brand-primary-hover));
+  }
+
+  .app-button-success {
+    background-color: rgb(var(--app-semantic-success));
+    color: rgb(var(--app-text-inverse));
+  }
+
+  .app-button-success:hover {
+    filter: brightness(0.92);
+  }
+
+  .app-button-danger {
+    background-color: rgb(var(--app-semantic-error));
+    color: rgb(var(--app-text-inverse));
+  }
+
+  .app-button-danger:hover {
+    filter: brightness(0.92);
+  }
+
+  .app-button-neutral {
+    background-color: rgb(var(--app-neutral-600));
+    color: rgb(var(--app-text-inverse));
+  }
+
+  .app-button-neutral:hover {
+    background-color: rgb(var(--app-neutral-700));
+  }
+
+  .app-button-outline {
+    border: 1px solid rgb(var(--app-border-default));
+    background-color: rgb(var(--app-bg-surface));
+    color: rgb(var(--app-text-secondary));
+  }
+
+  .app-button-outline:hover {
+    background-color: rgb(var(--app-bg-muted));
+    color: rgb(var(--app-text-primary));
+  }
+
+  .app-button-outline-primary {
+    border: 1px solid rgb(var(--app-brand-primary));
+    background-color: transparent;
+    color: rgb(var(--app-brand-primary));
+  }
+
+  .app-button-outline-primary:hover {
+    background-color: rgb(var(--app-brand-primary) / 0.12);
+  }
+
+  .app-button-outline-success {
+    border: 1px solid rgb(var(--app-semantic-success));
+    background-color: transparent;
+    color: rgb(var(--app-semantic-success));
+  }
+
+  .app-button-outline-success:hover {
+    background-color: rgb(var(--app-semantic-success) / 0.12);
+  }
+
+  .app-button-outline-danger {
+    border: 1px solid rgb(var(--app-semantic-error));
+    background-color: transparent;
+    color: rgb(var(--app-semantic-error));
+  }
+
+  .app-button-outline-danger:hover {
+    background-color: rgb(var(--app-semantic-error) / 0.12);
+  }
+
+  .app-button-ghost {
+    background-color: transparent;
+    color: rgb(var(--app-text-secondary));
+  }
+
+  .app-button-ghost:hover {
+    background-color: rgb(var(--app-bg-muted));
+    color: rgb(var(--app-text-primary));
+  }
+
+  .app-action-view {
+    color: rgb(var(--app-text-secondary));
+  }
+
+  .app-action-view:hover {
+    background-color: rgb(var(--app-bg-muted));
+    color: rgb(var(--app-text-primary));
+  }
+
+  .app-action-edit {
+    color: rgb(var(--app-brand-primary));
+  }
+
+  .app-action-edit:hover {
+    background-color: rgb(var(--app-brand-primary) / 0.12);
+    color: rgb(var(--app-brand-primary-hover));
+  }
+
+  .app-action-delete {
+    color: rgb(var(--app-semantic-error));
+  }
+
+  .app-action-delete:hover {
+    background-color: rgb(var(--app-semantic-error) / 0.14);
+    color: rgb(var(--app-semantic-error));
+  }
+
+  .app-action-deactivate {
+    color: rgb(var(--app-semantic-warning));
+  }
+
+  .app-action-deactivate:hover {
+    background-color: rgb(var(--app-semantic-warning) / 0.16);
+    color: rgb(var(--app-semantic-warning));
+  }
+
+  .app-modal-overlay {
+    background-color: rgb(var(--app-overlay-rgb) / 0.56);
+    @apply fixed inset-0 z-50 flex items-center justify-center p-4;
+  }
+
+  .app-modal-content {
+    border: 1px solid rgb(var(--app-border-default));
+    background-color: rgb(var(--app-bg-surface));
+    box-shadow: var(--app-shadow-lg);
+    @apply w-full rounded-xl;
+  }
+
+  .app-modal-header {
+    border-bottom: 1px solid rgb(var(--app-border-default));
+    @apply flex items-center justify-between px-6 py-4;
+  }
+
+  .app-modal-body {
+    @apply p-6;
+  }
+
+  .app-modal-footer {
+    border-top: 1px solid rgb(var(--app-border-default));
+    @apply flex justify-end gap-3 px-6 py-4;
+  }
+
+  .app-inline-error {
+    border: 1px solid rgb(var(--app-status-error-border));
+    background-color: rgb(var(--app-status-error-bg));
+    color: rgb(var(--app-status-error-text));
+    @apply rounded-md px-3 py-2 text-sm;
+  }
+
+  .app-badge-success {
+    border: 1px solid rgb(var(--app-status-success-border));
+    background-color: rgb(var(--app-status-success-bg));
+    color: rgb(var(--app-status-success-text));
+    @apply inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-semibold leading-none;
+  }
+
+  .app-badge-warning {
+    border: 1px solid rgb(var(--app-status-warning-border));
+    background-color: rgb(var(--app-status-warning-bg));
+    color: rgb(var(--app-status-warning-text));
+    @apply inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-semibold leading-none;
+  }
+
+  .app-badge-error {
+    border: 1px solid rgb(var(--app-status-error-border));
+    background-color: rgb(var(--app-status-error-bg));
+    color: rgb(var(--app-status-error-text));
+    @apply inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-semibold leading-none;
+  }
+
+  .app-badge-info {
+    border: 1px solid rgb(var(--app-status-info-border));
+    background-color: rgb(var(--app-status-info-bg));
+    color: rgb(var(--app-status-info-text));
+    @apply inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-semibold leading-none;
+  }
+
+  .app-checkbox {
+    accent-color: rgb(var(--app-brand-primary));
+    border-color: rgb(var(--app-border-default));
+    @apply h-4 w-4 rounded;
+  }
+
+  .filter-panel-surface {
+    border: 1px solid rgb(var(--app-border-default));
+    background: linear-gradient(
+      to bottom,
+      rgb(var(--app-bg-surface)),
+      rgb(var(--app-bg-muted))
+    );
+    box-shadow: var(--app-shadow-sm);
+    @apply rounded-lg p-4;
   }
 }
 
@@ -77,163 +434,295 @@ body {
   }
 
   .btn-primary {
-    @apply rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50;
+    background-color: rgb(var(--app-brand-primary));
+    color: rgb(var(--app-text-inverse));
+    @apply rounded-lg px-4 py-2 text-sm font-medium transition disabled:cursor-not-allowed disabled:opacity-50;
+  }
+
+  .btn-primary:hover {
+    background-color: rgb(var(--app-brand-primary-hover));
   }
 
   .btn-secondary {
-    @apply rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-100;
+    border: 1px solid rgb(var(--app-border-default));
+    background-color: rgb(var(--app-bg-surface));
+    color: rgb(var(--app-text-secondary));
+    @apply rounded-lg px-4 py-2 text-sm font-medium transition;
+  }
+
+  .btn-secondary:hover {
+    background-color: rgb(var(--app-bg-muted));
   }
 
   .btn-danger {
-    @apply rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-50;
+    background-color: rgb(var(--app-semantic-error));
+    color: rgb(var(--app-text-inverse));
+    @apply rounded-lg px-4 py-2 text-sm font-medium transition disabled:cursor-not-allowed disabled:opacity-50;
+  }
+
+  .btn-danger:hover {
+    filter: brightness(0.92);
   }
 
   .btn-success {
-    @apply rounded-lg bg-green-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-green-700 disabled:cursor-not-allowed disabled:opacity-50;
+    background-color: rgb(var(--app-semantic-success));
+    color: rgb(var(--app-text-inverse));
+    @apply rounded-lg px-4 py-2 text-sm font-medium transition disabled:cursor-not-allowed disabled:opacity-50;
+  }
+
+  .btn-success:hover {
+    filter: brightness(0.92);
   }
 
   .btn-neutral {
-    @apply rounded-lg bg-gray-500 px-4 py-2 text-sm font-medium text-white transition hover:bg-gray-600 disabled:cursor-not-allowed disabled:opacity-50;
+    background-color: rgb(var(--app-neutral-600));
+    color: rgb(var(--app-text-inverse));
+    @apply rounded-lg px-4 py-2 text-sm font-medium transition disabled:cursor-not-allowed disabled:opacity-50;
+  }
+
+  .btn-neutral:hover {
+    background-color: rgb(var(--app-neutral-700));
   }
 
   .input-field {
-    @apply w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none;
+    border: 1px solid rgb(var(--app-border-default));
+    background-color: rgb(var(--app-bg-surface));
+    color: rgb(var(--app-text-primary));
+    @apply w-full rounded-lg px-3 py-2 text-sm focus:outline-none;
   }
 
-  .filter-panel-surface {
-    @apply rounded-lg border border-gray-200/80 bg-gradient-to-b from-white to-gray-50 p-4 shadow-sm dark:border-slate-700 dark:from-slate-900 dark:to-slate-800;
+  .input-field:focus {
+    border-color: rgb(var(--app-brand-secondary));
   }
 }
 
-.dark .bg-white {
-  background-color: rgb(15 23 42) !important;
+/* Compatibility layer for legacy utility classes already spread in pages/components */
+.bg-white {
+  background-color: rgb(var(--app-bg-surface));
 }
 
-.dark .bg-white\/95 {
-  background-color: rgb(15 23 42 / 0.95) !important;
+.bg-white\/95 {
+  background-color: rgb(var(--app-bg-surface) / 0.95);
 }
 
 .bg-gray-50,
 .bg-slate-50 {
-  background-color: rgb(239 246 255) !important;
+  background-color: rgb(var(--app-neutral-50));
+}
+
+.bg-gray-100,
+.bg-slate-100 {
+  background-color: rgb(var(--app-neutral-100));
+}
+
+.bg-gray-200 {
+  background-color: rgb(var(--app-neutral-200));
+}
+
+.bg-gray-300 {
+  background-color: rgb(var(--app-neutral-300));
+}
+
+.text-gray-900,
+.text-gray-800,
+.text-slate-900,
+.text-slate-800 {
+  color: rgb(var(--app-neutral-900));
+}
+
+.text-gray-700,
+.text-gray-600,
+.text-slate-700,
+.text-slate-600 {
+  color: rgb(var(--app-neutral-700));
+}
+
+.text-gray-500,
+.text-slate-500 {
+  color: rgb(var(--app-neutral-500));
+}
+
+.text-gray-400,
+.text-slate-400 {
+  color: rgb(var(--app-neutral-400));
+}
+
+.border-gray-100,
+.border-gray-200,
+.border-gray-300,
+.border-slate-200 {
+  border-color: rgb(var(--app-neutral-200));
+}
+
+.divide-gray-100 > :not([hidden]) ~ :not([hidden]),
+.divide-gray-200 > :not([hidden]) ~ :not([hidden]) {
+  border-color: rgb(var(--app-neutral-200));
 }
 
 .hover\:bg-gray-50:hover,
 .hover\:bg-slate-50:hover {
-  background-color: rgb(219 234 254) !important;
+  background-color: rgb(var(--app-neutral-100));
 }
 
-.dark .bg-gray-50,
-.dark .bg-slate-50 {
-  background-color: rgb(15 23 42) !important;
+.hover\:bg-gray-100:hover,
+.hover\:bg-slate-100:hover,
+.hover\:bg-gray-300:hover {
+  background-color: rgb(var(--app-neutral-200));
 }
 
-.dark .bg-gray-100,
-.dark .bg-slate-100 {
-  background-color: rgb(30 41 59) !important;
+.disabled\:bg-gray-100:disabled {
+  background-color: rgb(var(--app-neutral-100));
 }
 
-.dark .bg-gray-200 {
-  background-color: rgb(51 65 85) !important;
+.disabled\:text-gray-500:disabled {
+  color: rgb(var(--app-neutral-500));
 }
 
-.dark .text-gray-900,
-.dark .text-gray-800,
-.dark .text-slate-900,
-.dark .text-slate-800 {
-  color: rgb(241 245 249) !important;
-}
-
-.dark .text-gray-700,
-.dark .text-gray-600,
-.dark .text-gray-500,
-.dark .text-slate-700,
-.dark .text-slate-600,
-.dark .text-slate-500 {
-  color: rgb(148 163 184) !important;
-}
-
-.dark .text-gray-400 {
-  color: rgb(100 116 139) !important;
-}
-
-.dark .border-gray-100,
-.dark .border-gray-200,
-.dark .border-gray-300,
-.dark .border-slate-200 {
-  border-color: rgb(51 65 85) !important;
-}
-
-.dark .divide-gray-100 > :not([hidden]) ~ :not([hidden]),
-.dark .divide-gray-200 > :not([hidden]) ~ :not([hidden]) {
-  border-color: rgb(51 65 85) !important;
-}
-
-.dark .from-white {
-  --tw-gradient-from: rgb(15 23 42) var(--tw-gradient-from-position);
-  --tw-gradient-to: rgb(15 23 42 / 0) var(--tw-gradient-to-position);
+.from-white {
+  --tw-gradient-from: rgb(var(--app-bg-surface)) var(--tw-gradient-from-position);
+  --tw-gradient-to: rgb(var(--app-bg-surface) / 0) var(--tw-gradient-to-position);
   --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
 }
 
-.dark .to-gray-50 {
-  --tw-gradient-to: rgb(30 41 59) var(--tw-gradient-to-position);
+.to-gray-50 {
+  --tw-gradient-to: rgb(var(--app-neutral-50)) var(--tw-gradient-to-position);
 }
 
-.dark .hover\:bg-gray-50:hover,
-.dark .hover\:bg-slate-50:hover {
-  background-color: rgb(30 41 59) !important;
+.bg-blue-50,
+.bg-blue-100 {
+  background-color: rgb(var(--app-status-info-bg));
 }
 
-.dark .hover\:bg-gray-100:hover,
-.dark .hover\:bg-slate-100:hover {
-  background-color: rgb(51 65 85) !important;
+.text-blue-600,
+.text-blue-700 {
+  color: rgb(var(--app-brand-primary));
 }
 
-.dark .hover\:bg-gray-300:hover {
-  background-color: rgb(71 85 105) !important;
+.text-blue-800,
+.text-blue-900,
+.text-violet-700 {
+  color: rgb(var(--app-status-info-text));
 }
 
-.dark .disabled\:bg-gray-100:disabled {
-  background-color: rgb(30 41 59) !important;
+.border-blue-200 {
+  border-color: rgb(var(--app-status-info-border));
 }
 
-.dark .disabled\:text-gray-500:disabled {
-  color: rgb(100 116 139) !important;
+.border-blue-600 {
+  border-color: rgb(var(--app-brand-primary));
 }
 
-.dark .recharts-cartesian-grid line {
-  stroke: rgb(51 65 85);
+.bg-violet-100 {
+  background-color: rgb(var(--app-status-info-bg));
 }
 
-.dark .recharts-text,
-.dark .recharts-legend-item-text {
-  fill: rgb(203 213 225) !important;
-  color: rgb(203 213 225) !important;
+.bg-green-50,
+.bg-green-100,
+.bg-emerald-100 {
+  background-color: rgb(var(--app-status-success-bg));
 }
 
-.dark .recharts-default-tooltip {
-  border: 1px solid rgb(51 65 85) !important;
-  background-color: rgb(15 23 42) !important;
+.text-green-500,
+.text-green-600,
+.text-green-700,
+.text-green-800,
+.text-green-900,
+.text-emerald-700 {
+  color: rgb(var(--app-status-success-text));
 }
 
-.dark .recharts-tooltip-label,
-.dark .recharts-tooltip-item {
-  color: rgb(226 232 240) !important;
+.border-green-200 {
+  border-color: rgb(var(--app-status-success-border));
 }
 
-/* Reduced corner radius across the system */
+.bg-red-50,
+.bg-red-100 {
+  background-color: rgb(var(--app-status-error-bg));
+}
+
+.text-red-500,
+.text-red-600,
+.text-red-700,
+.text-red-800,
+.text-red-900 {
+  color: rgb(var(--app-status-error-text));
+}
+
+.border-red-200,
+.border-red-300 {
+  border-color: rgb(var(--app-status-error-border));
+}
+
+.bg-yellow-50,
+.bg-yellow-100,
+.bg-amber-100 {
+  background-color: rgb(var(--app-status-warning-bg));
+}
+
+.text-yellow-700,
+.text-yellow-800,
+.text-yellow-900,
+.text-amber-700 {
+  color: rgb(var(--app-status-warning-text));
+}
+
+.border-yellow-300 {
+  border-color: rgb(var(--app-status-warning-border));
+}
+
+.hover\:bg-blue-50:hover {
+  background-color: rgb(var(--app-status-info-border));
+}
+
+.hover\:bg-blue-700:hover {
+  background-color: rgb(var(--app-brand-primary-hover));
+}
+
+.hover\:bg-green-200:hover {
+  background-color: rgb(var(--app-status-success-border));
+}
+
+.hover\:bg-red-50:hover,
+.hover\:bg-red-200:hover {
+  background-color: rgb(var(--app-status-error-border));
+}
+
+.hover\:bg-yellow-200:hover {
+  background-color: rgb(var(--app-status-warning-border));
+}
+
+.recharts-cartesian-grid line {
+  stroke: rgb(var(--app-border-default));
+}
+
+.recharts-text,
+.recharts-legend-item-text {
+  fill: rgb(var(--app-text-secondary));
+  color: rgb(var(--app-text-secondary));
+}
+
+.recharts-default-tooltip {
+  border: 1px solid rgb(var(--app-border-default));
+  background-color: rgb(var(--app-bg-surface));
+}
+
+.recharts-tooltip-label,
+.recharts-tooltip-item {
+  color: rgb(var(--app-text-primary));
+}
+
 .rounded-2xl {
-  border-radius: 0.75rem !important;
+  border-radius: 0.75rem;
 }
 
 .rounded-xl {
-  border-radius: 0.625rem !important;
+  border-radius: 0.625rem;
 }
 
 .rounded-lg {
-  border-radius: 0.375rem !important;
+  border-radius: 0.5rem;
 }
 
 .rounded-md {
-  border-radius: 0.3125rem !important;
+  border-radius: 0.375rem;
 }

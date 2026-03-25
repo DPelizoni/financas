@@ -24,19 +24,15 @@ interface AppButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 const toneClasses: Record<AppButtonTone, string> = {
-  primary: "bg-blue-600 text-white hover:bg-blue-700",
-  success: "bg-green-600 text-white hover:bg-green-700",
-  danger: "bg-red-600 text-white hover:bg-red-700",
-  neutral: "bg-gray-600 text-white hover:bg-gray-700",
-  outline:
-    "border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800",
-  "outline-primary":
-    "border border-blue-500 bg-transparent text-blue-700 hover:bg-blue-50 dark:text-blue-300 dark:hover:bg-blue-900/20",
-  "outline-success":
-    "border border-green-500 bg-transparent text-green-700 hover:bg-green-50 dark:text-green-300 dark:hover:bg-green-900/20",
-  "outline-danger":
-    "border border-red-500 bg-transparent text-red-700 hover:bg-red-50 dark:text-red-300 dark:hover:bg-red-900/20",
-  ghost: "bg-transparent text-gray-700 hover:bg-gray-100 dark:text-slate-200",
+  primary: "app-button-primary",
+  success: "app-button-success",
+  danger: "app-button-danger",
+  neutral: "app-button-neutral",
+  outline: "app-button-outline",
+  "outline-primary": "app-button-outline-primary",
+  "outline-success": "app-button-outline-success",
+  "outline-danger": "app-button-outline-danger",
+  ghost: "app-button-ghost",
 };
 
 const sizeClasses: Record<AppButtonSize, string> = {
@@ -58,7 +54,7 @@ export default function AppButton({
   return (
     <button
       type={type}
-      className={`inline-flex items-center justify-center gap-2 rounded-md font-medium leading-none tracking-normal transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent disabled:cursor-not-allowed disabled:opacity-60 ${sizeClasses[size]} ${toneClasses[tone]} ${fullWidth ? "w-full" : ""} ${className}`.trim()}
+      className={`inline-flex items-center justify-center gap-2 rounded-md font-medium leading-none tracking-normal transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[rgb(var(--app-focus-ring))] focus-visible:ring-offset-2 focus-visible:ring-offset-transparent disabled:cursor-not-allowed disabled:opacity-60 ${sizeClasses[size]} ${toneClasses[tone]} ${fullWidth ? "w-full" : ""} ${className}`.trim()}
       {...props}
     >
       {startIcon}

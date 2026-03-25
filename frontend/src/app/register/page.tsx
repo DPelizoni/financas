@@ -8,8 +8,9 @@ import FeedbackAlert from "@/components/FeedbackAlert";
 import ThemeToggle from "@/components/ThemeToggle";
 import { authService } from "@/services/authService";
 import { TextField } from "@mui/material";
+import AppButton from "@/components/AppButton";
 
-export default function RegisterPage() {
+export default function RegisterPage() {
   const router = useRouter();
 
   const [nome, setNome] = useState("");
@@ -28,8 +29,8 @@ export default function RegisterPage() {
     }
   }, [router]);
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
 
     if (!nome || !email || !senha || !confirmarSenha) {
       setFeedback({ type: "error", message: "Preencha todos os campos." });
@@ -39,7 +40,7 @@ export default function RegisterPage() {
     if (senha.length < 6) {
       setFeedback({
         type: "error",
-        message: "A senha deve ter no mínimo 6 caracteres.",
+        message: "A senha deve ter no minimo 6 caracteres.",
       });
       return;
     }
@@ -47,7 +48,7 @@ export default function RegisterPage() {
     if (senha !== confirmarSenha) {
       setFeedback({
         type: "error",
-        message: "A confirmação de senha não confere.",
+        message: "A confirmacao de senha nao confere.",
       });
       return;
     }
@@ -57,14 +58,14 @@ export default function RegisterPage() {
       await authService.register({ nome, email, senha });
       setFeedback({
         type: "success",
-        message: "Usuário cadastrado com sucesso.",
+        message: "Usuario cadastrado com sucesso.",
       });
       router.replace("/dashboard");
       router.refresh();
     } catch (error: any) {
       const message =
         error?.response?.data?.message ||
-        "Não foi possível cadastrar o usuário.";
+        "Nao foi possivel cadastrar o usuario.";
       setFeedback({ type: "error", message });
     } finally {
       setLoading(false);
@@ -72,22 +73,32 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-slate-950 px-4 py-10">
+    <div className="app-page relative flex min-h-screen items-center justify-center overflow-hidden px-4 py-10">
       <div className="absolute right-4 top-4 z-20">
         <ThemeToggle />
       </div>
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_15%_20%,rgba(16,185,129,0.22),transparent_35%),radial-gradient(circle_at_80%_0%,rgba(14,165,233,0.2),transparent_30%),radial-gradient(circle_at_50%_80%,rgba(59,130,246,0.2),transparent_35%)]" />
 
-      <div className="relative z-10 w-full max-w-lg rounded-2xl border border-white/10 bg-white/95 p-8 shadow-2xl backdrop-blur-sm">
+      <div
+        className="pointer-events-none absolute inset-0"
+        style={{
+          backgroundImage:
+            "radial-gradient(circle at 15% 20%, rgb(var(--app-semantic-success) / 0.16), transparent 35%), radial-gradient(circle at 80% 0%, rgb(var(--app-brand-secondary) / 0.2), transparent 30%), radial-gradient(circle at 50% 80%, rgb(var(--app-brand-primary) / 0.16), transparent 35%)",
+        }}
+      />
+
+      <div
+        className="app-surface relative z-10 w-full max-w-lg border p-8 backdrop-blur-sm"
+        style={{ boxShadow: "var(--app-shadow-lg)" }}
+      >
         <div className="mb-6 text-center">
-          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-500">
+          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[rgb(var(--app-text-muted))]">
             Sistema Financeiro
           </p>
-          <h1 className="mt-2 text-3xl font-black tracking-tight text-slate-900">
-            Criar Usuário
+          <h1 className="mt-2 text-3xl font-black tracking-tight text-[rgb(var(--app-text-primary))]">
+            Criar Usuario
           </h1>
-          <p className="mt-1 text-sm text-slate-600">
-            Cadastre um usuário para acessar o sistema.
+          <p className="mt-1 text-sm text-[rgb(var(--app-text-secondary))]">
+            Cadastre um usuario para acessar o sistema.
           </p>
         </div>
 
@@ -137,7 +148,7 @@ export default function RegisterPage() {
               fullWidth
               value={senha}
               onChange={(e) => setSenha(e.target.value)}
-              placeholder="Mínimo de 6 caracteres"
+              placeholder="Minimo de 6 caracteres"
               InputLabelProps={{ shrink: true }}
             />
           </div>
@@ -156,29 +167,26 @@ export default function RegisterPage() {
               InputLabelProps={{ shrink: true }}
             />
           </div>
+
           <div className="md:col-span-2">
-            <button
+            <AppButton
               type="submit"
+              tone="success"
+              fullWidth
               disabled={loading}
-              className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-70"
+              startIcon={<UserPlus size={16} />}
+              className="h-11"
             >
-              {loading ? (
-                "Cadastrando..."
-              ) : (
-                <>
-                  <UserPlus size={16} />
-                  Cadastrar usuário
-                </>
-              )}
-            </button>
+              {loading ? "Cadastrando..." : "Cadastrar usuario"}
+            </AppButton>
           </div>
         </form>
 
-        <p className="mt-5 text-center text-sm text-slate-600">
-          Já possui conta?{" "}
+        <p className="mt-5 text-center text-sm text-[rgb(var(--app-text-secondary))]">
+          Ja possui conta?{" "}
           <Link
             href="/login"
-            className="font-semibold text-emerald-700 hover:text-emerald-800"
+            className="font-semibold text-[rgb(var(--app-semantic-success))] hover:opacity-90"
           >
             Ir para login
           </Link>
@@ -187,4 +195,3 @@ export default function RegisterPage() {
     </div>
   );
 }
-

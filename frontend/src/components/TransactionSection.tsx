@@ -30,51 +30,65 @@ const toneStyles: Record<
   }
 > = {
   blue: {
-    container: "border-blue-200 bg-blue-50",
-    title: "text-blue-900",
-    label: "text-blue-900",
-    input: "border-blue-200 focus:border-blue-500",
-    secondaryButton: "border-blue-300 bg-white text-blue-700 hover:bg-blue-100",
-    shortcutButton: "border-blue-300 bg-white text-blue-700 hover:bg-blue-100",
-    primaryButton: "bg-blue-600 text-white hover:bg-blue-700",
-    primaryCompactButton: "bg-blue-600 text-white hover:bg-blue-700",
-    chip: "border-blue-300 bg-white text-blue-800 hover:bg-blue-100",
-    emptyState: "text-blue-800",
+    container:
+      "border-[rgb(var(--app-status-info-border))] bg-[rgb(var(--app-status-info-bg))]",
+    title: "text-[rgb(var(--app-status-info-text))]",
+    label: "text-[rgb(var(--app-status-info-text))]",
+    input:
+      "border-[rgb(var(--app-status-info-border))] focus:border-[rgb(var(--app-brand-secondary))]",
+    secondaryButton:
+      "border-[rgb(var(--app-status-info-border))] bg-[rgb(var(--app-bg-surface))] text-[rgb(var(--app-status-info-text))] hover:bg-[rgb(var(--app-status-info-bg))]",
+    shortcutButton:
+      "border-[rgb(var(--app-status-info-border))] bg-[rgb(var(--app-bg-surface))] text-[rgb(var(--app-status-info-text))] hover:bg-[rgb(var(--app-status-info-bg))]",
+    primaryButton: "app-button-primary",
+    primaryCompactButton: "app-button-primary",
+    chip:
+      "border-[rgb(var(--app-status-info-border))] bg-[rgb(var(--app-bg-surface))] text-[rgb(var(--app-status-info-text))] hover:bg-[rgb(var(--app-status-info-bg))]",
+    emptyState: "text-[rgb(var(--app-status-info-text))]",
   },
   red: {
-    container: "border-red-200 bg-red-50",
-    title: "text-red-900",
-    label: "text-red-900",
-    input: "border-red-200 focus:border-red-500",
-    secondaryButton: "border-red-300 bg-white text-red-700 hover:bg-red-100",
-    shortcutButton: "border-red-300 bg-white text-red-700 hover:bg-red-100",
-    primaryButton: "bg-red-600 text-white hover:bg-red-700",
-    primaryCompactButton: "bg-red-600 text-white hover:bg-red-700",
-    chip: "border-red-300 bg-white text-red-800 hover:bg-red-100",
-    emptyState: "text-red-800",
+    container:
+      "border-[rgb(var(--app-status-error-border))] bg-[rgb(var(--app-status-error-bg))]",
+    title: "text-[rgb(var(--app-status-error-text))]",
+    label: "text-[rgb(var(--app-status-error-text))]",
+    input:
+      "border-[rgb(var(--app-status-error-border))] focus:border-[rgb(var(--app-semantic-error))]",
+    secondaryButton:
+      "border-[rgb(var(--app-status-error-border))] bg-[rgb(var(--app-bg-surface))] text-[rgb(var(--app-status-error-text))] hover:bg-[rgb(var(--app-status-error-bg))]",
+    shortcutButton:
+      "border-[rgb(var(--app-status-error-border))] bg-[rgb(var(--app-bg-surface))] text-[rgb(var(--app-status-error-text))] hover:bg-[rgb(var(--app-status-error-bg))]",
+    primaryButton: "app-button-danger",
+    primaryCompactButton: "app-button-danger",
+    chip:
+      "border-[rgb(var(--app-status-error-border))] bg-[rgb(var(--app-bg-surface))] text-[rgb(var(--app-status-error-text))] hover:bg-[rgb(var(--app-status-error-bg))]",
+    emptyState: "text-[rgb(var(--app-status-error-text))]",
   },
   gray: {
     container: "",
-    title: "text-gray-800",
-    label: "text-gray-800",
-    input: "border-gray-300 focus:border-gray-500",
-    secondaryButton: "border-gray-300 bg-white text-gray-700 hover:bg-gray-100",
-    shortcutButton: "border-gray-300 bg-white text-gray-700 hover:bg-gray-100",
-    primaryButton: "bg-gray-500 text-white hover:bg-gray-600",
-    primaryCompactButton: "bg-gray-500 text-white hover:bg-gray-600",
-    chip: "border-gray-300 bg-white text-gray-800 hover:bg-gray-100",
-    emptyState: "text-gray-700",
+    title: "text-[rgb(var(--app-text-primary))]",
+    label: "text-[rgb(var(--app-text-primary))]",
+    input:
+      "border-[rgb(var(--app-border-default))] focus:border-[rgb(var(--app-brand-secondary))]",
+    secondaryButton:
+      "border-[rgb(var(--app-border-default))] bg-[rgb(var(--app-bg-surface))] text-[rgb(var(--app-text-secondary))] hover:bg-[rgb(var(--app-bg-muted))]",
+    shortcutButton:
+      "border-[rgb(var(--app-border-default))] bg-[rgb(var(--app-bg-surface))] text-[rgb(var(--app-text-secondary))] hover:bg-[rgb(var(--app-bg-muted))]",
+    primaryButton: "app-button-neutral",
+    primaryCompactButton: "app-button-neutral",
+    chip:
+      "border-[rgb(var(--app-border-default))] bg-[rgb(var(--app-bg-surface))] text-[rgb(var(--app-text-secondary))] hover:bg-[rgb(var(--app-bg-muted))]",
+    emptyState: "text-[rgb(var(--app-text-secondary))]",
   },
 };
 
 const baseInputClass =
-  "w-full md:w-56 xl:w-full max-w-full rounded-lg border bg-white px-3 py-2 text-sm focus:outline-none";
+  "w-full max-w-full rounded-lg border bg-[rgb(var(--app-bg-surface))] px-3 py-2 text-sm focus:outline-none md:w-56 xl:w-full";
 const baseSecondaryButtonClass =
-  "w-full md:w-auto xl:w-full rounded-lg border px-3 py-2 text-sm font-medium whitespace-nowrap transition";
+  "w-full rounded-lg border px-3 py-2 text-sm font-medium whitespace-nowrap transition md:w-auto xl:w-full";
 const baseShortcutButtonClass =
   "rounded-lg border px-3 py-1 text-xs font-medium transition";
 const basePrimaryButtonClass =
-  "w-full md:w-auto xl:w-full rounded-lg px-3 py-2 text-sm font-medium whitespace-nowrap transition disabled:cursor-not-allowed disabled:opacity-50";
+  "w-full rounded-lg px-3 py-2 text-sm font-medium whitespace-nowrap transition disabled:cursor-not-allowed disabled:opacity-50 md:w-auto xl:w-full";
 const basePrimaryCompactButtonClass =
   "rounded-lg px-3 py-2 text-sm font-medium whitespace-nowrap transition disabled:cursor-not-allowed disabled:opacity-50";
 const baseChipClass =

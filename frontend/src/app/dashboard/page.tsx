@@ -46,16 +46,16 @@ interface MonthlyPoint {
 }
 
 const chartColors = {
-  receitas: "#10b981",
-  despesas: "#ef4444",
-  saldo: "#0ea5e9",
-  pendente: "#f59e0b",
-  pago: "#22c55e",
-  pieA: "#3b82f6",
-  pieB: "#10b981",
-  pieC: "#f59e0b",
-  pieD: "#8b5cf6",
-  pieE: "#ef4444",
+  receitas: "rgb(var(--app-chart-receita))",
+  despesas: "rgb(var(--app-chart-despesa))",
+  saldo: "rgb(var(--app-chart-saldo))",
+  pendente: "rgb(var(--app-chart-pendente))",
+  pago: "rgb(var(--app-chart-pago))",
+  pieA: "rgb(var(--app-chart-pie-a))",
+  pieB: "rgb(var(--app-chart-pie-b))",
+  pieC: "rgb(var(--app-chart-pie-c))",
+  pieD: "rgb(var(--app-chart-pie-d))",
+  pieE: "rgb(var(--app-chart-pie-e))",
 };
 
 const monthLabel = (monthKey: string): string => {
@@ -98,7 +98,6 @@ export default function DashboardPage() {
     message: string;
   } | null>(null);
   const [isMobile, setIsMobile] = useState(false);
-  const [isDarkMode, setIsDarkMode] = useState(false);
   const [transacoes, setTransacoes] = useState<Transacao[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [banks, setBanks] = useState<Bank[]>([]);
@@ -116,21 +115,6 @@ export default function DashboardPage() {
     return () => {
       mediaQuery.removeEventListener("change", handleChange);
     };
-  }, []);
-
-  useEffect(() => {
-    const syncTheme = () =>
-      setIsDarkMode(document.documentElement.classList.contains("dark"));
-
-    syncTheme();
-
-    const observer = new MutationObserver(syncTheme);
-    observer.observe(document.documentElement, {
-      attributes: true,
-      attributeFilter: ["class"],
-    });
-
-    return () => observer.disconnect();
   }, []);
 
   // Filtros globais
@@ -428,19 +412,19 @@ export default function DashboardPage() {
   const donutInnerRadius = isMobile ? 44 : 55;
   const donutOuterRadius = isMobile ? 70 : 88;
   const tooltipContentStyle = {
-    backgroundColor: isDarkMode ? "#0f172a" : "#ffffff",
-    border: `1px solid ${isDarkMode ? "#334155" : "#cbd5e1"}`,
+    backgroundColor: "rgb(var(--app-bg-surface))",
+    border: "1px solid rgb(var(--app-border-default))",
     borderRadius: 8,
-    color: isDarkMode ? "#e2e8f0" : "#0f172a",
+    color: "rgb(var(--app-text-primary))",
   };
   const tooltipLabelStyle = {
-    color: isDarkMode ? "#cbd5e1" : "#334155",
+    color: "rgb(var(--app-text-secondary))",
   };
   const tooltipItemStyle = {
-    color: isDarkMode ? "#e2e8f0" : "#0f172a",
+    color: "rgb(var(--app-text-primary))",
   };
   const tooltipCursor = {
-    fill: isDarkMode ? "rgba(148,163,184,0.12)" : "rgba(15,23,42,0.05)",
+    fill: "rgb(var(--app-neutral-300) / 0.24)",
   };
   const receitaPercent =
     singleMonthTotal > 0
@@ -461,7 +445,7 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-4 sm:py-8">
+    <div className="app-page py-4 sm:py-8">
       <div className="mx-auto max-w-7xl space-y-6 px-4 sm:px-6 lg:px-8">
         <FeedbackAlert feedback={feedback} onClose={() => setFeedback(null)} />
 
@@ -649,7 +633,7 @@ export default function DashboardPage() {
         </div>
 
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
-          <div className="rounded-lg border border-green-200/70 bg-gradient-to-br from-green-50 via-white to-emerald-50 p-6 shadow-sm dark:border-slate-700 dark:from-slate-900 dark:via-slate-900 dark:to-slate-800">
+          <div className="rounded-lg border border-green-200/70 bg-gradient-to-br from-green-50 via-white to-emerald-50 p-6 shadow-sm">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600">Total Receita</p>
@@ -661,7 +645,7 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          <div className="rounded-lg border border-red-200/70 bg-gradient-to-br from-red-50 via-white to-rose-50 p-6 shadow-sm dark:border-slate-700 dark:from-slate-900 dark:via-slate-900 dark:to-slate-800">
+          <div className="rounded-lg border border-red-200/70 bg-gradient-to-br from-red-50 via-white to-rose-50 p-6 shadow-sm">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600">Total Despesa</p>
@@ -674,7 +658,7 @@ export default function DashboardPage() {
           </div>
 
           <div
-            className={`rounded-lg border p-6 shadow-sm dark:border-slate-700 dark:from-slate-900 dark:via-slate-900 dark:to-slate-800 ${
+            className={`rounded-lg border p-6 shadow-sm ${
               summaryCards.total_liquido >= 0
                 ? "border-blue-200/70 bg-gradient-to-br from-blue-50 via-white to-cyan-50"
                 : "border-red-200/70 bg-gradient-to-br from-red-50 via-white to-rose-50"
@@ -783,7 +767,7 @@ export default function DashboardPage() {
               {hasSingleTimelineMonth ? (
                 <div className="grid h-full grid-cols-1 gap-4 lg:auto-rows-fr lg:grid-cols-2">
                   <div className="h-full">
-                    <div className="flex h-full flex-col rounded-lg border border-slate-200 bg-gradient-to-b from-slate-50 to-white p-3 shadow-sm dark:border-slate-700 dark:from-slate-900 dark:to-slate-800">
+                    <div className="flex h-full flex-col rounded-lg border border-slate-200 bg-gradient-to-b from-slate-50 to-white p-3 shadow-sm">
                       <div className="h-[70%]">
                         <ResponsiveContainer width="100%" height="100%">
                           <PieChart>
@@ -828,7 +812,7 @@ export default function DashboardPage() {
 
                       <div className="mt-3 space-y-2 text-sm">
                         <div className="flex items-center justify-between">
-                          <span className="flex items-center gap-2 font-medium text-gray-700 dark:text-slate-200">
+                          <span className="flex items-center gap-2 font-medium text-gray-700">
                             <span
                               className="inline-block h-2.5 w-2.5 rounded-full"
                               style={{ backgroundColor: chartColors.receitas }}
@@ -843,7 +827,7 @@ export default function DashboardPage() {
                           </span>
                         </div>
                         <div className="flex items-center justify-between">
-                          <span className="flex items-center gap-2 font-medium text-gray-700 dark:text-slate-200">
+                          <span className="flex items-center gap-2 font-medium text-gray-700">
                             <span
                               className="inline-block h-2.5 w-2.5 rounded-full"
                               style={{ backgroundColor: chartColors.despesas }}
@@ -863,7 +847,7 @@ export default function DashboardPage() {
 
                   <div className="h-full">
                     <div
-                      className={`flex h-full items-center justify-center rounded-lg border p-3 shadow-sm dark:border-slate-700 dark:from-slate-900 dark:via-slate-900 dark:to-slate-800 ${
+                      className={`flex h-full items-center justify-center rounded-lg border p-3 shadow-sm ${
                         singleMonthSaldo >= 0
                           ? "border-blue-200/70 bg-gradient-to-br from-blue-50 via-white to-cyan-50"
                           : "border-red-200/70 bg-gradient-to-br from-red-50 via-white to-rose-50"
@@ -1226,4 +1210,6 @@ export default function DashboardPage() {
     </div>
   );
 }
+
+
 

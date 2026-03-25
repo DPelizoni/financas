@@ -8,8 +8,9 @@ import { authService } from "@/services/authService";
 import FeedbackAlert from "@/components/FeedbackAlert";
 import ThemeToggle from "@/components/ThemeToggle";
 import { TextField } from "@mui/material";
+import AppButton from "@/components/AppButton";
 
-export default function LoginPage() {
+export default function LoginPage() {
   const router = useRouter();
   const [nextRoute, setNextRoute] = useState("/dashboard");
 
@@ -34,8 +35,8 @@ export default function LoginPage() {
     }
   }, [router]);
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
 
     if (!email || !senha) {
       setFeedback({ type: "error", message: "Informe email e senha." });
@@ -50,7 +51,7 @@ export default function LoginPage() {
       router.refresh();
     } catch (error: any) {
       const message =
-        error?.response?.data?.message || "Não foi possível realizar login.";
+        error?.response?.data?.message || "Nao foi possivel realizar login.";
       setFeedback({ type: "error", message });
     } finally {
       setLoading(false);
@@ -58,21 +59,31 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-slate-950 px-4 py-10">
+    <div className="app-page relative flex min-h-screen items-center justify-center overflow-hidden px-4 py-10">
       <div className="absolute right-4 top-4 z-20">
         <ThemeToggle />
       </div>
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_15%_20%,rgba(45,212,191,0.2),transparent_35%),radial-gradient(circle_at_80%_0%,rgba(14,165,233,0.2),transparent_30%),radial-gradient(circle_at_50%_80%,rgba(99,102,241,0.2),transparent_35%)]" />
 
-      <div className="relative z-10 w-full max-w-md rounded-2xl border border-white/10 bg-white/95 p-8 shadow-2xl backdrop-blur-sm">
+      <div
+        className="pointer-events-none absolute inset-0"
+        style={{
+          backgroundImage:
+            "radial-gradient(circle at 15% 20%, rgb(var(--app-brand-secondary) / 0.16), transparent 35%), radial-gradient(circle at 80% 0%, rgb(var(--app-brand-primary) / 0.18), transparent 32%), radial-gradient(circle at 50% 80%, rgb(var(--app-semantic-info) / 0.14), transparent 35%)",
+        }}
+      />
+
+      <div
+        className="app-surface relative z-10 w-full max-w-md border p-8 backdrop-blur-sm"
+        style={{ boxShadow: "var(--app-shadow-lg)" }}
+      >
         <div className="mb-6 text-center">
-          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-500">
+          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[rgb(var(--app-text-muted))]">
             Sistema Financeiro
           </p>
-          <h1 className="mt-2 text-3xl font-black tracking-tight text-slate-900">
+          <h1 className="mt-2 text-3xl font-black tracking-tight text-[rgb(var(--app-text-primary))]">
             Entrar
           </h1>
-          <p className="mt-1 text-sm text-slate-600">
+          <p className="mt-1 text-sm text-[rgb(var(--app-text-secondary))]">
             Acesse sua conta para continuar.
           </p>
         </div>
@@ -80,65 +91,56 @@ export default function LoginPage() {
         <FeedbackAlert feedback={feedback} onClose={() => setFeedback(null)} />
 
         <form onSubmit={handleSubmit} className="mt-4 space-y-4">
-          <div>
-            <TextField
-              id="email"
-              type="email"
-              label="Email"
-              variant="outlined"
-              size="small"
-              fullWidth
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              autoComplete="email"
-              placeholder="voce@empresa.com"
-              InputLabelProps={{ shrink: true }}
-            />
-          </div>
+          <TextField
+            id="email"
+            type="email"
+            label="Email"
+            variant="outlined"
+            size="small"
+            fullWidth
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            autoComplete="email"
+            placeholder="voce@empresa.com"
+            InputLabelProps={{ shrink: true }}
+          />
 
-          <div>
-            <TextField
-              id="senha"
-              type="password"
-              label="Senha"
-              variant="outlined"
-              size="small"
-              fullWidth
-              value={senha}
-              onChange={(e) => setSenha(e.target.value)}
-              autoComplete="current-password"
-              placeholder="••••••••"
-              InputLabelProps={{ shrink: true }}
-            />
-          </div>
+          <TextField
+            id="senha"
+            type="password"
+            label="Senha"
+            variant="outlined"
+            size="small"
+            fullWidth
+            value={senha}
+            onChange={(e) => setSenha(e.target.value)}
+            autoComplete="current-password"
+            placeholder="Digite sua senha"
+            InputLabelProps={{ shrink: true }}
+          />
 
-          <button
+          <AppButton
             type="submit"
+            tone="primary"
+            fullWidth
             disabled={loading}
-            className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-cyan-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-cyan-700 disabled:cursor-not-allowed disabled:opacity-70"
+            startIcon={<LogIn size={16} />}
+            className="h-11"
           >
-            {loading ? (
-              "Entrando..."
-            ) : (
-              <>
-                <LogIn size={16} />
-                Entrar
-              </>
-            )}
-          </button>
+            {loading ? "Entrando..." : "Entrar"}
+          </AppButton>
         </form>
 
-        <p className="mt-5 text-center text-sm text-slate-600">
-          Ainda não tem conta?{" "}
+        <p className="mt-5 text-center text-sm text-[rgb(var(--app-text-secondary))]">
+          Ainda nao tem conta?{" "}
           <Link
             href="/register"
-            className="font-semibold text-cyan-700 hover:text-cyan-800"
+            className="font-semibold text-[rgb(var(--app-brand-primary))] hover:text-[rgb(var(--app-brand-primary-hover))]"
           >
-            Criar usuário
+            Criar usuario
           </Link>
         </p>
       </div>
     </div>
   );
 }
-

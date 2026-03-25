@@ -3,26 +3,13 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import AppLayout from "@/components/AppLayout";
 import MuiAppProvider from "@/components/MuiAppProvider";
+import { themeInitScript } from "@/theme/theme-script";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-app" });
-const themeInitScript = `
-(() => {
-  try {
-    const key = "financas-theme";
-    const storedTheme = localStorage.getItem(key);
-    const theme = storedTheme === "dark" || storedTheme === "light"
-      ? storedTheme
-      : (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
-
-    document.documentElement.classList.toggle("dark", theme === "dark");
-    document.documentElement.style.colorScheme = theme;
-  } catch {}
-})();
-`;
 
 export const metadata: Metadata = {
-  title: "Finanças Pessoais",
-  description: "Sistema de gerenciamento de finanças pessoais",
+  title: "Financas Pessoais",
+  description: "Sistema de gerenciamento de financas pessoais",
   icons: {
     icon: "/icon.svg",
     shortcut: "/icon.svg",

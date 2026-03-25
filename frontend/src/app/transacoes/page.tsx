@@ -611,7 +611,7 @@ export default function TransacoesPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-4 sm:py-8">
+    <div className="app-page py-4 sm:py-8">
       <div className="mx-auto max-w-7xl space-y-6 px-4 sm:px-6 lg:px-8">
         <PageContainer>
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -1301,16 +1301,16 @@ export default function TransacoesPage() {
         </div>
 
         {copyModalOpen && (
-          <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/50 p-4">
-            <div className="w-full max-w-3xl rounded-xl bg-white shadow-xl">
-              <div className="flex items-center justify-between border-b border-gray-200 px-6 py-4">
+          <div className="app-modal-overlay">
+            <div className="app-modal-content w-full max-w-3xl">
+              <div className="app-modal-header">
                 <h3 className="text-base font-semibold text-blue-700">
                   Copiar Transações Por Mês
                 </h3>
                 <button
                   type="button"
                   onClick={() => setCopyModalOpen(false)}
-                  className="rounded-md p-1 text-gray-500 transition hover:bg-gray-100 hover:text-gray-700"
+                  className="app-control-button p-1"
                 >
                   <X size={18} />
                 </button>
@@ -1415,16 +1415,16 @@ export default function TransacoesPage() {
         )}
 
         {deleteModalOpen && (
-          <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/50 p-4">
-            <div className="w-full max-w-3xl rounded-xl bg-white shadow-xl">
-              <div className="flex items-center justify-between border-b border-gray-200 px-6 py-4">
+          <div className="app-modal-overlay">
+            <div className="app-modal-content w-full max-w-3xl">
+              <div className="app-modal-header">
                 <h3 className="text-base font-semibold text-red-700">
                   Excluir Transações Por Mês
                 </h3>
                 <button
                   type="button"
                   onClick={() => setDeleteModalOpen(false)}
-                  className="rounded-md p-1 text-gray-500 transition hover:bg-gray-100 hover:text-gray-700"
+                  className="app-control-button p-1"
                 >
                   <X size={18} />
                 </button>
@@ -1597,4 +1597,6 @@ export default function TransacoesPage() {
     </div>
   );
 }
+
+
 

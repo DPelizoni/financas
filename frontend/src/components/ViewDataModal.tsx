@@ -15,21 +15,21 @@ interface ViewDataModalProps {
 const defaultFieldLabels: Record<string, string> = {
   id: "ID",
   nome: "Nome",
-  codigo: "Código",
+  codigo: "Codigo",
   cor: "Cor",
-  icone: "Ícone",
+  icone: "Icone",
   saldo_inicial: "Saldo inicial",
   ativo: "Status",
   tipo: "Tipo",
   categoria_id: "ID da categoria",
   categoria_nome: "Categoria",
-  descricao_id: "ID da descrição",
-  descricao_nome: "Descrição",
+  descricao_id: "ID da descricao",
+  descricao_nome: "Descricao",
   banco_id: "ID do banco",
   banco_nome: "Banco",
-  situacao: "Situação",
+  situacao: "Situacao",
   valor: "Valor",
-  mes: "Mês",
+  mes: "Mes",
   vencimento: "Vencimento",
   created_at: "Criado em",
   updated_at: "Atualizado em",
@@ -72,7 +72,7 @@ const parseNumericValue = (value: unknown): number | null => {
 };
 
 const getCurrencyValue = (key: string, value: unknown): number | null => {
-  if (!/(valor|saldo|preco|preço|total)/i.test(key)) {
+  if (!/(valor|saldo|preco|preco|total)/i.test(key)) {
     return null;
   }
 
@@ -107,9 +107,7 @@ const formatStatusValue = (value: unknown): string | null => {
     return "Ativo";
   }
 
-  if (
-    ["0", "false", "inativo", "inativa", "inactive"].includes(normalizedValue)
-  ) {
+  if (["0", "false", "inativo", "inativa", "inactive"].includes(normalizedValue)) {
     return "Inativo";
   }
 
@@ -138,7 +136,7 @@ const formatValue = (key: string, value: unknown): string => {
   }
 
   if (typeof value === "boolean") {
-    return value ? "Sim" : "Não";
+    return value ? "Sim" : "Nao";
   }
 
   if (Array.isArray(value)) {
@@ -199,15 +197,15 @@ export default function ViewDataModal({
   ];
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-      <div className="max-h-[90vh] w-full max-w-3xl overflow-hidden rounded-xl bg-white shadow-xl">
-        <div className="flex items-center justify-between border-b border-gray-200 px-6 py-4">
-          <h2 className="text-lg font-semibold text-gray-900">{title}</h2>
+    <div className="app-modal-overlay">
+      <div className="app-modal-content max-h-[90vh] max-w-3xl overflow-hidden">
+        <div className="app-modal-header">
+          <h2 className="text-lg font-semibold text-[rgb(var(--app-text-primary))]">{title}</h2>
           <button
             type="button"
             onClick={onClose}
-            className="rounded-md p-1 text-gray-500 transition hover:bg-gray-100 hover:text-gray-700"
-            aria-label="Fechar modal de visualização"
+            className="app-control-button p-1"
+            aria-label="Fechar modal de visualizacao"
             title="Fechar"
           >
             <X size={20} />
@@ -216,20 +214,20 @@ export default function ViewDataModal({
 
         <div className="max-h-[60vh] overflow-y-auto p-6">
           {entries.length === 0 ? (
-            <p className="text-sm text-gray-600">
-              Nenhum dado disponível para exibição.
+            <p className="text-sm text-[rgb(var(--app-text-secondary))]">
+              Nenhum dado disponivel para exibicao.
             </p>
           ) : (
             <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
               {entries.map(([key, value]) => (
                 <div
                   key={key}
-                  className="rounded-lg border border-gray-200 bg-gray-50 p-3"
+                  className="app-surface-muted rounded-lg border p-3"
                 >
-                  <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-[rgb(var(--app-text-muted))]">
                     {fieldLabels[key] || formatLabel(key)}
                   </p>
-                  <p className="mt-1 break-words text-sm font-medium text-gray-900">
+                  <p className="mt-1 break-words text-sm font-medium text-[rgb(var(--app-text-primary))]">
                     {formatValue(key, value)}
                   </p>
                 </div>
@@ -238,7 +236,7 @@ export default function ViewDataModal({
           )}
         </div>
 
-        <div className="flex justify-end border-t border-gray-200 px-6 py-4">
+        <div className="app-modal-footer">
           <AppButton
             onClick={onClose}
             tone="outline-primary"

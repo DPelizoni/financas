@@ -201,7 +201,7 @@ export default function DescricoesPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 py-4 sm:py-8">
+    <div className="app-page py-4 sm:py-8">
       <div className="mx-auto max-w-7xl space-y-6 px-4 sm:px-6 lg:px-8">
         <FeedbackAlert feedback={feedback} onClose={() => setFeedback(null)} />
 
@@ -550,4 +550,5 @@ export default function DescricoesPage() {
     </div>
   );
 }
+
 

@@ -271,15 +271,15 @@ export const TransacaoModal: React.FC<TransacaoModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg shadow-lg w-[95%] max-w-4xl p-6">
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-xl font-semibold">
+    <div className="app-modal-overlay">
+      <div className="app-modal-content w-[95%] max-w-4xl p-6">
+        <div className="mb-6 flex items-center justify-between border-b border-[rgb(var(--app-border-default))] pb-4">
+          <h2 className="text-xl font-semibold text-[rgb(var(--app-text-primary))]">
             {isEditing ? "Editar Transação" : "Nova Transação"}
           </h2>
           <button
             onClick={onClose}
-            className="text-gray-500 hover:text-gray-700"
+            className="app-control-button p-1"
           >
             <X size={20} />
           </button>
@@ -484,8 +484,8 @@ export const TransacaoModal: React.FC<TransacaoModalProps> = ({
           </div>
 
           {errors.submit && (
-            <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
-              <p className="text-sm text-red-700">{errors.submit}</p>
+            <div className="app-inline-error">
+              <p className="text-sm">{errors.submit}</p>
             </div>
           )}
 
@@ -512,4 +512,6 @@ export const TransacaoModal: React.FC<TransacaoModalProps> = ({
     </div>
   );
 };
+
+
 

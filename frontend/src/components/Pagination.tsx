@@ -47,7 +47,7 @@ export default function Pagination({
   };
 
   return (
-    <div className="flex items-center justify-between border-t border-gray-200 bg-white px-4 py-3 sm:px-6">
+    <div className="flex items-center justify-between border-t border-[rgb(var(--app-border-default))] bg-[rgb(var(--app-bg-surface))] px-4 py-3 sm:px-6">
       <div className="flex flex-1 items-center justify-between gap-2 sm:hidden">
         <AppButton
           onClick={() => onPageChange(Math.max(1, currentPage - 1))}
@@ -60,7 +60,7 @@ export default function Pagination({
           <span className="sr-only">Anterior</span>
         </AppButton>
 
-        <div className="rounded-md border border-gray-200 bg-gray-50 px-3 py-1.5 text-xs font-medium text-gray-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200">
+        <div className="app-surface-muted px-3 py-1.5 text-xs font-medium text-[rgb(var(--app-text-secondary))]">
           Página {currentPage} de {Math.max(1, totalPages)}
         </div>
 
@@ -175,4 +175,3 @@ export default function Pagination({
     </div>
   );
 }
-

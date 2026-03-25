@@ -10,9 +10,7 @@ export default function PageContainer({
   className = "",
 }: PageContainerProps) {
   return (
-    <section
-      className={`filter-panel-surface p-6 ${className}`.trim()}
-    >
+    <section className={`app-surface p-6 ${className}`.trim()}>
       {children}
     </section>
   );

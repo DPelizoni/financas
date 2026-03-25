@@ -17,9 +17,11 @@ export default function Home() {
   }, [router]);
 
   return (
-    <div className="flex items-center justify-center min-h-screen">
+    <div className="app-page flex min-h-screen items-center justify-center">
       <div className="text-center">
-        <h1 className="text-2xl font-bold text-gray-800">Carregando...</h1>
+        <h1 className="text-2xl font-bold text-[rgb(var(--app-text-primary))]">
+          Carregando...
+        </h1>
       </div>
     </div>
   );

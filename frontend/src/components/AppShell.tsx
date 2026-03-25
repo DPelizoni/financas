@@ -33,26 +33,26 @@ const navItems: NavItem[] = [
   { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
   { label: "Bancos", href: "/banks", icon: Landmark },
   { label: "Categorias", href: "/categories", icon: Tags },
-  { label: "Descrições", href: "/descricoes", icon: FileText },
-  { label: "Transações", href: "/transacoes", icon: ArrowLeftRight },
-  { label: "Usuários", href: "/usuarios", icon: Users },
+  { label: "Descricoes", href: "/descricoes", icon: FileText },
+  { label: "Transacoes", href: "/transacoes", icon: ArrowLeftRight },
+  { label: "Usuarios", href: "/usuarios", icon: Users },
 ];
 
 const getPageTitle = (pathname: string): string => {
   if (pathname.startsWith("/dashboard")) return "Dashboard";
   if (pathname.startsWith("/banks")) return "Bancos";
   if (pathname.startsWith("/categories")) return "Categorias";
-  if (pathname.startsWith("/descricoes")) return "Descrições";
-  if (pathname.startsWith("/transacoes")) return "Transações";
-  if (pathname.startsWith("/usuarios")) return "Usuários";
-  return "Finanças";
+  if (pathname.startsWith("/descricoes")) return "Descricoes";
+  if (pathname.startsWith("/transacoes")) return "Transacoes";
+  if (pathname.startsWith("/usuarios")) return "Usuarios";
+  return "Financas";
 };
 
 export default function AppShell({ children }: AppShellProps) {
   const router = useRouter();
   const pathname = usePathname();
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [userName, setUserName] = useState("Usuário");
+  const [userName, setUserName] = useState("Usuario");
   const [isManager, setIsManager] = useState(false);
 
   const pageTitle = useMemo(() => getPageTitle(pathname), [pathname]);
@@ -79,7 +79,7 @@ export default function AppShell({ children }: AppShellProps) {
   };
 
   return (
-    <div className="min-h-screen bg-slate-100">
+    <div className="app-page">
       <div className="flex min-h-screen">
         {sidebarOpen && (
           <button
@@ -91,25 +91,25 @@ export default function AppShell({ children }: AppShellProps) {
         )}
 
         <aside
-          className={`fixed inset-y-0 left-0 z-40 w-60 transform border-r border-slate-200 bg-white transition-transform duration-300 lg:translate-x-0 ${
+          className={`fixed inset-y-0 left-0 z-40 w-60 transform border-r border-[rgb(var(--app-border-default))] bg-[rgb(var(--app-bg-surface))] transition-transform duration-300 lg:translate-x-0 ${
             sidebarOpen ? "translate-x-0" : "-translate-x-full"
           }`}
         >
-          <div className="flex h-16 items-center justify-between border-b border-slate-200 px-5">
+          <div className="flex h-16 items-center justify-between border-b border-[rgb(var(--app-border-default))] px-5">
             <div className="flex items-center gap-3">
-              <div className="flex h-9 w-9 items-center justify-center rounded-md bg-blue-600 text-white">
+              <div className="flex h-9 w-9 items-center justify-center rounded-md bg-[rgb(var(--app-brand-primary))] text-[rgb(var(--app-text-inverse))]">
                 <Wallet size={18} />
               </div>
               <div>
-                <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+                <p className="text-xs font-semibold uppercase tracking-wider text-[rgb(var(--app-text-muted))]">
                   Sistema
                 </p>
-                <h1 className="text-lg font-bold text-slate-900">Finanças</h1>
+                <h1 className="text-lg font-bold text-[rgb(var(--app-text-primary))]">Financas</h1>
               </div>
             </div>
             <button
               type="button"
-              className="rounded p-1 text-slate-500 transition hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400 lg:hidden"
+              className="app-control-button p-1 lg:hidden"
               onClick={() => setSidebarOpen(false)}
               aria-label="Fechar menu lateral"
             >
@@ -129,8 +129,8 @@ export default function AppShell({ children }: AppShellProps) {
                   onClick={() => setSidebarOpen(false)}
                   className={`flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium transition-colors ${
                     isActive
-                      ? "bg-blue-600 text-white shadow"
-                      : "text-slate-700 hover:bg-slate-100"
+                      ? "bg-[rgb(var(--app-brand-primary))] text-[rgb(var(--app-text-inverse))] shadow-sm"
+                      : "text-[rgb(var(--app-text-secondary))] hover:bg-[rgb(var(--app-bg-muted))] hover:text-[rgb(var(--app-text-primary))]"
                   } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400`}
                 >
                   <Icon size={18} />
@@ -140,33 +140,33 @@ export default function AppShell({ children }: AppShellProps) {
             })}
           </nav>
 
-          <div className="absolute bottom-0 left-0 right-0 border-t border-slate-200 p-4">
-            <div className="rounded-md bg-slate-50 p-3">
-              <p className="text-xs font-semibold text-slate-500">Ambiente</p>
-              <p className="text-sm font-medium text-slate-800">
-                Produção Local
+          <div className="absolute bottom-0 left-0 right-0 border-t border-[rgb(var(--app-border-default))] p-4">
+            <div className="app-surface-muted p-3">
+              <p className="text-xs font-semibold text-[rgb(var(--app-text-muted))]">Ambiente</p>
+              <p className="text-sm font-medium text-[rgb(var(--app-text-secondary))]">
+                Producao Local
               </p>
             </div>
           </div>
         </aside>
 
         <div className="flex min-h-screen flex-1 flex-col lg:pl-60">
-          <header className="sticky top-0 z-20 border-b border-slate-200 bg-white/95 backdrop-blur">
+          <header className="sticky top-0 z-20 border-b border-[rgb(var(--app-border-default))] bg-white/95 backdrop-blur">
             <div className="flex h-16 items-center justify-between px-4 sm:px-6 lg:px-8">
               <div className="flex items-center gap-3">
                 <button
                   type="button"
-                  className="rounded p-1 text-slate-600 transition hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400 lg:hidden"
+                  className="app-control-button p-1 lg:hidden"
                   onClick={() => setSidebarOpen(true)}
                   aria-label="Abrir menu lateral"
                 >
                   <Menu size={20} />
                 </button>
                 <div>
-                  <p className="text-xs uppercase tracking-wider text-slate-500">
+                  <p className="text-xs uppercase tracking-wider text-[rgb(var(--app-text-muted))]">
                     Painel
                   </p>
-                  <h2 className="text-lg font-semibold text-slate-900">
+                  <h2 className="text-lg font-semibold text-[rgb(var(--app-text-primary))]">
                     {pageTitle}
                   </h2>
                 </div>
@@ -174,13 +174,13 @@ export default function AppShell({ children }: AppShellProps) {
 
               <div className="flex items-center gap-3">
                 <ThemeToggle />
-                <div className="hidden rounded-full bg-blue-600 px-3 py-1 text-xs font-semibold text-white sm:block">
+                <div className="hidden rounded-full bg-[rgb(var(--app-brand-primary))] px-3 py-1 text-xs font-semibold text-[rgb(var(--app-text-inverse))] sm:block">
                   {userName}
                 </div>
                 <button
                   type="button"
                   onClick={handleLogout}
-                  className="inline-flex items-center gap-2 rounded-md border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400"
+                  className="app-control-button inline-flex items-center gap-2 px-3 py-1.5 text-xs font-semibold"
                 >
                   <LogOut size={14} />
                   Sair
