@@ -33,26 +33,26 @@ const navItems: NavItem[] = [
   { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
   { label: "Bancos", href: "/banks", icon: Landmark },
   { label: "Categorias", href: "/categories", icon: Tags },
-  { label: "Descricoes", href: "/descricoes", icon: FileText },
-  { label: "Transacoes", href: "/transacoes", icon: ArrowLeftRight },
-  { label: "Usuarios", href: "/usuarios", icon: Users },
+  { label: "Descrições", href: "/descricoes", icon: FileText },
+  { label: "Transações", href: "/transacoes", icon: ArrowLeftRight },
+  { label: "Usuários", href: "/usuarios", icon: Users },
 ];
 
 const getPageTitle = (pathname: string): string => {
   if (pathname.startsWith("/dashboard")) return "Dashboard";
   if (pathname.startsWith("/banks")) return "Bancos";
   if (pathname.startsWith("/categories")) return "Categorias";
-  if (pathname.startsWith("/descricoes")) return "Descricoes";
-  if (pathname.startsWith("/transacoes")) return "Transacoes";
-  if (pathname.startsWith("/usuarios")) return "Usuarios";
-  return "Financas";
+  if (pathname.startsWith("/descricoes")) return "Descrições";
+  if (pathname.startsWith("/transacoes")) return "Transações";
+  if (pathname.startsWith("/usuarios")) return "Usuários";
+  return "Finanças";
 };
 
 export default function AppShell({ children }: AppShellProps) {
   const router = useRouter();
   const pathname = usePathname();
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [userName, setUserName] = useState("Usuario");
+  const [userName, setUserName] = useState("Usuário");
   const [isManager, setIsManager] = useState(false);
 
   const pageTitle = useMemo(() => getPageTitle(pathname), [pathname]);
@@ -104,7 +104,7 @@ export default function AppShell({ children }: AppShellProps) {
                 <p className="text-xs font-semibold uppercase tracking-wider text-[rgb(var(--app-text-muted))]">
                   Sistema
                 </p>
-                <h1 className="text-lg font-bold text-[rgb(var(--app-text-primary))]">Financas</h1>
+                <h1 className="text-lg font-bold text-[rgb(var(--app-text-primary))]">Finanças</h1>
               </div>
             </div>
             <button
@@ -144,7 +144,7 @@ export default function AppShell({ children }: AppShellProps) {
             <div className="app-surface-muted p-3">
               <p className="text-xs font-semibold text-[rgb(var(--app-text-muted))]">Ambiente</p>
               <p className="text-sm font-medium text-[rgb(var(--app-text-secondary))]">
-                Producao Local
+                Produção Local
               </p>
             </div>
           </div>

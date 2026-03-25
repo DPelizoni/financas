@@ -633,7 +633,7 @@ export default function DashboardPage() {
         </div>
 
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
-          <div className="rounded-lg border border-green-200/70 bg-gradient-to-br from-green-50 via-white to-emerald-50 p-6 shadow-sm">
+          <div className="dashboard-summary-card-success p-6">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600">Total Receita</p>
@@ -645,7 +645,7 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          <div className="rounded-lg border border-red-200/70 bg-gradient-to-br from-red-50 via-white to-rose-50 p-6 shadow-sm">
+          <div className="dashboard-summary-card-error p-6">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600">Total Despesa</p>
@@ -658,10 +658,10 @@ export default function DashboardPage() {
           </div>
 
           <div
-            className={`rounded-lg border p-6 shadow-sm ${
+            className={`p-6 ${
               summaryCards.total_liquido >= 0
-                ? "border-blue-200/70 bg-gradient-to-br from-blue-50 via-white to-cyan-50"
-                : "border-red-200/70 bg-gradient-to-br from-red-50 via-white to-rose-50"
+                ? "dashboard-summary-card-info"
+                : "dashboard-summary-card-error"
             }`}
           >
             <div className="flex items-center justify-between">
@@ -767,7 +767,7 @@ export default function DashboardPage() {
               {hasSingleTimelineMonth ? (
                 <div className="grid h-full grid-cols-1 gap-4 lg:auto-rows-fr lg:grid-cols-2">
                   <div className="h-full">
-                    <div className="flex h-full flex-col rounded-lg border border-slate-200 bg-gradient-to-b from-slate-50 to-white p-3 shadow-sm">
+                    <div className="dashboard-summary-card-neutral flex h-full flex-col p-3">
                       <div className="h-[70%]">
                         <ResponsiveContainer width="100%" height="100%">
                           <PieChart>
@@ -847,10 +847,10 @@ export default function DashboardPage() {
 
                   <div className="h-full">
                     <div
-                      className={`flex h-full items-center justify-center rounded-lg border p-3 shadow-sm ${
+                      className={`flex h-full items-center justify-center p-3 ${
                         singleMonthSaldo >= 0
-                          ? "border-blue-200/70 bg-gradient-to-br from-blue-50 via-white to-cyan-50"
-                          : "border-red-200/70 bg-gradient-to-br from-red-50 via-white to-rose-50"
+                          ? "dashboard-summary-card-info"
+                          : "dashboard-summary-card-error"
                       }`}
                     >
                       <div className="text-center">
@@ -1161,7 +1161,7 @@ export default function DashboardPage() {
                   </tr>
                 ) : (
                   detailedRows.map((t) => (
-                    <tr key={t.id} className="hover:bg-gray-50">
+                    <tr key={t.id} className="dashboard-table-row">
                       <td className="px-3 py-2 text-xs text-gray-700">
                         {t.mes}
                       </td>

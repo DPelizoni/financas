@@ -426,6 +426,61 @@ body {
     box-shadow: var(--app-shadow-sm);
     @apply rounded-lg p-4;
   }
+
+  .dashboard-summary-card-success {
+    border: 1px solid rgb(var(--app-status-success-border) / 0.78);
+    background: linear-gradient(
+      to bottom right,
+      rgb(var(--app-status-success-bg)),
+      rgb(var(--app-bg-surface)) 58%,
+      rgb(var(--app-bg-elevated))
+    );
+    box-shadow: var(--app-shadow-sm);
+    @apply rounded-lg;
+  }
+
+  .dashboard-summary-card-error {
+    border: 1px solid rgb(var(--app-status-error-border) / 0.78);
+    background: linear-gradient(
+      to bottom right,
+      rgb(var(--app-status-error-bg)),
+      rgb(var(--app-bg-surface)) 58%,
+      rgb(var(--app-bg-elevated))
+    );
+    box-shadow: var(--app-shadow-sm);
+    @apply rounded-lg;
+  }
+
+  .dashboard-summary-card-info {
+    border: 1px solid rgb(var(--app-status-info-border) / 0.78);
+    background: linear-gradient(
+      to bottom right,
+      rgb(var(--app-status-info-bg)),
+      rgb(var(--app-bg-surface)) 58%,
+      rgb(var(--app-bg-elevated))
+    );
+    box-shadow: var(--app-shadow-sm);
+    @apply rounded-lg;
+  }
+
+  .dashboard-summary-card-neutral {
+    border: 1px solid rgb(var(--app-border-default));
+    background: linear-gradient(
+      to bottom,
+      rgb(var(--app-bg-muted)),
+      rgb(var(--app-bg-surface))
+    );
+    box-shadow: var(--app-shadow-sm);
+    @apply rounded-lg;
+  }
+
+  .dashboard-table-row {
+    @apply transition-colors;
+  }
+
+  .dashboard-table-row:hover {
+    background-color: rgb(var(--app-bg-muted));
+  }
 }
 
 @layer utilities {
