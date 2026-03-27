@@ -1,8 +1,10 @@
 "use client";
 
+import { useId, useRef } from "react";
 import { XCircle } from "lucide-react";
 import AppButton from "@/components/AppButton";
 import { formatDateTimeBR } from "@/utils/formatDateTimeBR";
+import { useAccessibleModal } from "@/utils/useAccessibleModal";
 
 interface ViewDataModalProps {
   isOpen: boolean;
@@ -157,6 +159,15 @@ export default function ViewDataModal({
   onClose,
   fieldLabels = {},
 }: ViewDataModalProps) {
+  const modalRef = useRef<HTMLDivElement>(null);
+  const titleId = useId();
+
+  useAccessibleModal({
+    isOpen: isOpen && Boolean(data),
+    modalRef,
+    onClose,
+  });
+
   if (!isOpen || !data) {
     return null;
   }
@@ -198,9 +209,18 @@ export default function ViewDataModal({
 
   return (
     <div className="app-modal-overlay">
-      <div className="app-modal-content max-h-[90vh] max-w-3xl overflow-hidden">
+      <div
+        ref={modalRef}
+        className="app-modal-content max-h-[90vh] max-w-3xl overflow-hidden"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={titleId}
+        tabIndex={-1}
+      >
         <div className="app-modal-header">
-          <h2 className="text-lg font-semibold text-[rgb(var(--app-text-primary))]">{title}</h2>
+          <h2 id={titleId} className="text-lg font-semibold text-[rgb(var(--app-text-primary))]">
+            {title}
+          </h2>
         </div>
 
         <div className="max-h-[60vh] overflow-y-auto p-6">
@@ -232,6 +252,7 @@ export default function ViewDataModal({
             onClick={onClose}
             tone="outline-danger"
             startIcon={<XCircle size={16} />}
+            data-modal-initial-focus
           >
             Fechar
           </AppButton>

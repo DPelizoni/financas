@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useEffect, useId, useMemo, useRef, useState } from "react";
 import {
   Transacao,
   TransacaoFilters,
@@ -39,6 +39,7 @@ import ConfirmDeleteModal from "@/components/ConfirmDeleteModal";
 import PageContainer from "@/components/PageContainer";
 import TableActionButton from "@/components/TableActionButton";
 import ViewDataModal from "@/components/ViewDataModal";
+import { useAccessibleModal } from "@/utils/useAccessibleModal";
 
 interface DeleteConfirmation {
   isOpen: boolean;
@@ -98,9 +99,14 @@ const parseDateToTimestamp = (value: string): number => {
 };
 
 export default function TransacoesPage() {
+  const copyModalRef = useRef<HTMLDivElement>(null);
+  const copyModalTitleId = useId();
+  const deleteModalRef = useRef<HTMLDivElement>(null);
+  const deleteModalTitleId = useId();
+
   const copySectionClasses = getTransactionSectionClasses("blue");
   const deleteSectionClasses = getTransactionSectionClasses("red");
-  const searchSectionClasses = getTransactionSectionClasses("gray");
+  const searchSectionClasses = getTransactionSectionClasses("gray");
   const [transacoes, setTransacoes] = useState<Transacao[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [banks, setBanks] = useState<Bank[]>([]);
@@ -273,6 +279,18 @@ export default function TransacoesPage() {
     setEditingTransacao(transacao);
     setIsModalOpen(true);
   };
+
+  useAccessibleModal({
+    isOpen: copyModalOpen,
+    modalRef: copyModalRef,
+    onClose: () => setCopyModalOpen(false),
+  });
+
+  useAccessibleModal({
+    isOpen: deleteModalOpen,
+    modalRef: deleteModalRef,
+    onClose: () => setDeleteModalOpen(false),
+  });
 
   const handleView = (transacao: Transacao) => {
     setViewingTransacao(transacao);
@@ -1300,9 +1318,16 @@ export default function TransacoesPage() {
 
         {copyModalOpen && (
           <div className="app-modal-overlay">
-            <div className="app-modal-content w-full max-w-3xl">
+            <div
+              ref={copyModalRef}
+              className="app-modal-content w-full max-w-3xl"
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby={copyModalTitleId}
+              tabIndex={-1}
+            >
               <div className="app-modal-header">
-                <h3 className="text-base font-semibold text-blue-700">
+                <h3 id={copyModalTitleId} className="text-base font-semibold text-blue-700">
                   Copiar Transações Por Mês
                 </h3>
               </div>
@@ -1388,7 +1413,14 @@ export default function TransacoesPage() {
                   )}
                 </div>
 
-                <div className="mt-5 flex justify-end">
+                <div className="mt-5 flex justify-end gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setCopyModalOpen(false)}
+                    className={copySectionClasses.secondaryButton}
+                  >
+                    Cancelar
+                  </button>
                   <button
                     type="button"
                     onClick={handleCopyByMonth}
@@ -1407,9 +1439,16 @@ export default function TransacoesPage() {
 
         {deleteModalOpen && (
           <div className="app-modal-overlay">
-            <div className="app-modal-content w-full max-w-3xl">
+            <div
+              ref={deleteModalRef}
+              className="app-modal-content w-full max-w-3xl"
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby={deleteModalTitleId}
+              tabIndex={-1}
+            >
               <div className="app-modal-header">
-                <h3 className="text-base font-semibold text-red-700">
+                <h3 id={deleteModalTitleId} className="text-base font-semibold text-red-700">
                   Excluir Transações Por Mês
                 </h3>
               </div>
@@ -1483,7 +1522,14 @@ export default function TransacoesPage() {
                   )}
                 </div>
 
-                <div className="mt-5 flex justify-end">
+                <div className="mt-5 flex justify-end gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setDeleteModalOpen(false)}
+                    className={deleteSectionClasses.secondaryButton}
+                  >
+                    Cancelar
+                  </button>
                   <button
                     type="button"
                     onClick={requestDeleteByMonths}

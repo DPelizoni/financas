@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { Ban, Save } from "lucide-react";
 import { descricaoService } from "@/services/descricaoService";
 import { categoryService } from "@/services/categoryService";
@@ -8,6 +8,7 @@ import { Descricao, DescricaoInput } from "@/types/descricao";
 import { Category } from "@/types/category";
 import AppButton from "@/components/AppButton";
 import { MenuItem, TextField } from "@mui/material";
+import { useAccessibleModal } from "@/utils/useAccessibleModal";
 
 interface DescricaoModalProps {
   descricao: Descricao | null;
@@ -19,7 +20,9 @@ export default function DescricaoModal({
   descricao,
   onClose,
   onSave,
-}: DescricaoModalProps) {
+}: DescricaoModalProps) {
+  const modalRef = useRef<HTMLDivElement>(null);
+  const titleId = useId();
   const [formData, setFormData] = useState<DescricaoInput>({
     nome: "",
     categoria_id: 0,
@@ -73,6 +76,12 @@ export default function DescricaoModal({
       ativo: true,
     });
   }, [descricao, categories]);
+
+  useAccessibleModal({
+    isOpen: true,
+    modalRef,
+    onClose,
+  });
 
   const validate = (): boolean => {
     const newErrors: Record<string, string> = {};
@@ -128,7 +137,7 @@ export default function DescricaoModal({
         }
 
         await descricaoService.update(originalDescricao.id, updates);
-        await onSave("Descrição atualizada com sucesso.");
+        await onSave(`Descrição "${trimmedNome}" atualizada com sucesso.`);
       } else {
         const payload: DescricaoInput = {
           nome: formData.nome.trim(),
@@ -137,7 +146,7 @@ export default function DescricaoModal({
         };
 
         await descricaoService.create(payload);
-        await onSave("Descrição criada com sucesso.");
+        await onSave(`Descrição "${payload.nome}" criada com sucesso.`);
       }
     } catch (error: any) {
       console.error("Erro ao salvar descrição:", error);
@@ -162,9 +171,16 @@ export default function DescricaoModal({
 
   return (
     <div className="app-modal-overlay">
-      <div className="app-modal-content max-h-[90vh] w-full max-w-md overflow-y-auto">
+      <div
+        ref={modalRef}
+        className="app-modal-content max-h-[90vh] w-full max-w-md overflow-y-auto"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={titleId}
+        tabIndex={-1}
+      >
         <div className="app-modal-header p-6">
-          <h2 className="text-xl font-bold text-gray-900">
+          <h2 id={titleId} className="text-xl font-bold text-gray-900">
             {descricao ? "Editar Descrição" : "Nova Descrição"}
           </h2>
         </div>

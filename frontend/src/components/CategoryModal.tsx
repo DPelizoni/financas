@@ -1,11 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { Ban, Save } from "lucide-react";
 import { categoryService } from "@/services/categoryService";
 import { Category, CategoryInput } from "@/types/category";
 import AppButton from "@/components/AppButton";
 import { MenuItem, TextField } from "@mui/material";
+import { useAccessibleModal } from "@/utils/useAccessibleModal";
 
 interface CategoryModalProps {
   category: Category | null;
@@ -17,7 +18,9 @@ export default function CategoryModal({
   category,
   onClose,
   onSave,
-}: CategoryModalProps) {
+}: CategoryModalProps) {
+  const modalRef = useRef<HTMLDivElement>(null);
+  const titleId = useId();
   const [formData, setFormData] = useState<CategoryInput>({
     nome: "",
     tipo: "DESPESA",
@@ -50,6 +53,12 @@ export default function CategoryModal({
       ativo: true,
     });
   }, [category]);
+
+  useAccessibleModal({
+    isOpen: true,
+    modalRef,
+    onClose,
+  });
 
   const validate = (): boolean => {
     const newErrors: Record<string, string> = {};
@@ -106,9 +115,7 @@ export default function CategoryModal({
         }
 
         await categoryService.update(originalCategory.id, updates);
-        await onSave(
-          "Categoria atualizada com sucesso. As alterações foram salvas.",
-        );
+        await onSave(`Categoria "${trimmedNome}" atualizada com sucesso.`);
       } else {
         const payload: CategoryInput = {
           nome: formData.nome.trim(),
@@ -118,7 +125,7 @@ export default function CategoryModal({
         };
 
         await categoryService.create(payload);
-        await onSave("Categoria criada com sucesso. Cadastro concluído.");
+        await onSave(`Categoria "${payload.nome}" criada com sucesso.`);
       }
     } catch (error: any) {
       console.error("Erro ao salvar categoria:", error);
@@ -143,9 +150,16 @@ export default function CategoryModal({
 
   return (
     <div className="app-modal-overlay">
-      <div className="app-modal-content max-h-[90vh] w-full max-w-md overflow-y-auto">
+      <div
+        ref={modalRef}
+        className="app-modal-content max-h-[90vh] w-full max-w-md overflow-y-auto"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={titleId}
+        tabIndex={-1}
+      >
         <div className="app-modal-header p-6">
-          <h2 className="text-xl font-bold text-gray-900">
+          <h2 id={titleId} className="text-xl font-bold text-gray-900">
             {category ? "Editar Categoria" : "Nova Categoria"}
           </h2>
         </div>

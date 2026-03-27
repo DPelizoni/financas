@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useEffect, useId, useMemo, useRef, useState } from "react";
 import { Transacao, TransacaoInput, TransacaoFilters } from "@/types/transacao";
 import { Category } from "@/types/category";
 import { Descricao } from "@/types/descricao";
@@ -12,6 +12,7 @@ import { bankService } from "@/services/bankService";
 import { Ban, Save } from "lucide-react";
 import AppButton from "@/components/AppButton";
 import { MenuItem, TextField } from "@mui/material";
+import { useAccessibleModal } from "@/utils/useAccessibleModal";
 
 interface TransacaoModalProps {
   isOpen: boolean;
@@ -27,7 +28,9 @@ export const TransacaoModal: React.FC<TransacaoModalProps> = ({
   onSuccess,
   transacao,
   isEditing = false,
-}) => {
+}) => {
+  const modalRef = useRef<HTMLDivElement>(null);
+  const titleId = useId();
   const [formData, setFormData] = useState<TransacaoInput>({
     mes: "",
     vencimento: "",
@@ -134,6 +137,12 @@ export const TransacaoModal: React.FC<TransacaoModalProps> = ({
 
     initializeModal();
   }, [isOpen, transacao, isEditing]);
+
+  useAccessibleModal({
+    isOpen,
+    modalRef,
+    onClose,
+  });
 
   const loadBanks = async () => {
     try {
@@ -252,10 +261,10 @@ export const TransacaoModal: React.FC<TransacaoModalProps> = ({
     try {
       if (isEditing && transacao) {
         await transacaoService.update(transacao.id, formData);
-        onSuccess("Transação atualizada com sucesso.");
+        onSuccess(`Transação de ${formData.mes} atualizada com sucesso.`);
       } else {
         await transacaoService.create(formData);
-        onSuccess("Transação criada com sucesso.");
+        onSuccess(`Transação de ${formData.mes} criada com sucesso.`);
       }
 
       onClose();
@@ -272,9 +281,16 @@ export const TransacaoModal: React.FC<TransacaoModalProps> = ({
 
   return (
     <div className="app-modal-overlay">
-      <div className="app-modal-content w-[95%] max-w-4xl p-6">
+      <div
+        ref={modalRef}
+        className="app-modal-content w-[95%] max-w-4xl p-6"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={titleId}
+        tabIndex={-1}
+      >
         <div className="mb-6 flex items-center justify-between border-b border-[rgb(var(--app-border-default))] pb-4">
-          <h2 className="text-xl font-semibold text-[rgb(var(--app-text-primary))]">
+          <h2 id={titleId} className="text-xl font-semibold text-[rgb(var(--app-text-primary))]">
             {isEditing ? "Editar Transação" : "Nova Transação"}
           </h2>
         </div>

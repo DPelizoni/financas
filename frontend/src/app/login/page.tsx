@@ -10,12 +10,43 @@ import ThemeToggle from "@/components/ThemeToggle";
 import { TextField } from "@mui/material";
 import AppButton from "@/components/AppButton";
 
+type LoginField = "email" | "senha";
+
+const validateLoginFields = (
+  values: Record<LoginField, string>,
+): Record<LoginField, string> => {
+  const errors: Record<LoginField, string> = {
+    email: "",
+    senha: "",
+  };
+
+  if (!values.email.trim()) {
+    errors.email = "Informe o email.";
+  } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(values.email.trim())) {
+    errors.email = "Informe um email valido.";
+  }
+
+  if (!values.senha.trim()) {
+    errors.senha = "Informe a senha.";
+  }
+
+  return errors;
+};
+
 export default function LoginPage() {
   const router = useRouter();
   const [nextRoute, setNextRoute] = useState("/dashboard");
 
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
+  const [touched, setTouched] = useState<Record<LoginField, boolean>>({
+    email: false,
+    senha: false,
+  });
+  const [fieldErrors, setFieldErrors] = useState<Record<LoginField, string>>({
+    email: "",
+    senha: "",
+  });
   const [loading, setLoading] = useState(false);
   const [feedback, setFeedback] = useState<{
     type: "success" | "error";
@@ -38,8 +69,12 @@ export default function LoginPage() {
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
-    if (!email || !senha) {
-      setFeedback({ type: "error", message: "Informe email e senha." });
+    const nextFieldErrors = validateLoginFields({ email, senha });
+    setTouched({ email: true, senha: true });
+    setFieldErrors(nextFieldErrors);
+
+    if (nextFieldErrors.email || nextFieldErrors.senha) {
+      setFeedback({ type: "error", message: "Revise os campos destacados." });
       return;
     }
 
@@ -99,10 +134,22 @@ export default function LoginPage() {
             size="small"
             fullWidth
             value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            onChange={(e) => {
+              const nextEmail = e.target.value;
+              setEmail(nextEmail);
+              if (touched.email || touched.senha) {
+                setFieldErrors(validateLoginFields({ email: nextEmail, senha }));
+              }
+            }}
+            onBlur={() => {
+              setTouched((prev) => ({ ...prev, email: true }));
+              setFieldErrors(validateLoginFields({ email, senha }));
+            }}
             autoComplete="email"
             placeholder="voce@empresa.com"
             InputLabelProps={{ shrink: true }}
+            error={touched.email && Boolean(fieldErrors.email)}
+            helperText={touched.email ? fieldErrors.email : ""}
           />
 
           <TextField
@@ -113,10 +160,22 @@ export default function LoginPage() {
             size="small"
             fullWidth
             value={senha}
-            onChange={(e) => setSenha(e.target.value)}
+            onChange={(e) => {
+              const nextSenha = e.target.value;
+              setSenha(nextSenha);
+              if (touched.email || touched.senha) {
+                setFieldErrors(validateLoginFields({ email, senha: nextSenha }));
+              }
+            }}
+            onBlur={() => {
+              setTouched((prev) => ({ ...prev, senha: true }));
+              setFieldErrors(validateLoginFields({ email, senha }));
+            }}
             autoComplete="current-password"
             placeholder="Digite sua senha"
             InputLabelProps={{ shrink: true }}
+            error={touched.senha && Boolean(fieldErrors.senha)}
+            helperText={touched.senha ? fieldErrors.senha : ""}
           />
 
           <AppButton

@@ -10,6 +10,45 @@ import { authService } from "@/services/authService";
 import { TextField } from "@mui/material";
 import AppButton from "@/components/AppButton";
 
+type RegisterField = "nome" | "email" | "senha" | "confirmarSenha";
+
+const validateRegisterFields = (
+  values: Record<RegisterField, string>,
+): Record<RegisterField, string> => {
+  const errors: Record<RegisterField, string> = {
+    nome: "",
+    email: "",
+    senha: "",
+    confirmarSenha: "",
+  };
+
+  if (!values.nome.trim()) {
+    errors.nome = "Informe o nome.";
+  } else if (values.nome.trim().length < 2) {
+    errors.nome = "Nome deve ter no minimo 2 caracteres.";
+  }
+
+  if (!values.email.trim()) {
+    errors.email = "Informe o email.";
+  } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(values.email.trim())) {
+    errors.email = "Informe um email valido.";
+  }
+
+  if (!values.senha) {
+    errors.senha = "Informe a senha.";
+  } else if (values.senha.length < 6) {
+    errors.senha = "A senha deve ter no minimo 6 caracteres.";
+  }
+
+  if (!values.confirmarSenha) {
+    errors.confirmarSenha = "Confirme a senha.";
+  } else if (values.confirmarSenha !== values.senha) {
+    errors.confirmarSenha = "A confirmacao de senha nao confere.";
+  }
+
+  return errors;
+};
+
 export default function RegisterPage() {
   const router = useRouter();
 
@@ -17,6 +56,18 @@ export default function RegisterPage() {
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
   const [confirmarSenha, setConfirmarSenha] = useState("");
+  const [touched, setTouched] = useState<Record<RegisterField, boolean>>({
+    nome: false,
+    email: false,
+    senha: false,
+    confirmarSenha: false,
+  });
+  const [fieldErrors, setFieldErrors] = useState<Record<RegisterField, string>>({
+    nome: "",
+    email: "",
+    senha: "",
+    confirmarSenha: "",
+  });
   const [loading, setLoading] = useState(false);
   const [feedback, setFeedback] = useState<{
     type: "success" | "error";
@@ -32,23 +83,20 @@ export default function RegisterPage() {
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
-    if (!nome || !email || !senha || !confirmarSenha) {
-      setFeedback({ type: "error", message: "Preencha todos os campos." });
-      return;
-    }
+    const values = { nome, email, senha, confirmarSenha };
+    const nextFieldErrors = validateRegisterFields(values);
+    setTouched({
+      nome: true,
+      email: true,
+      senha: true,
+      confirmarSenha: true,
+    });
+    setFieldErrors(nextFieldErrors);
 
-    if (senha.length < 6) {
+    if (Object.values(nextFieldErrors).some(Boolean)) {
       setFeedback({
         type: "error",
-        message: "A senha deve ter no minimo 6 caracteres.",
-      });
-      return;
-    }
-
-    if (senha !== confirmarSenha) {
-      setFeedback({
-        type: "error",
-        message: "A confirmacao de senha nao confere.",
+        message: "Revise os campos destacados antes de continuar.",
       });
       return;
     }
@@ -117,9 +165,35 @@ export default function RegisterPage() {
               size="small"
               fullWidth
               value={nome}
-              onChange={(e) => setNome(e.target.value)}
+              onChange={(e) => {
+                const nextNome = e.target.value;
+                setNome(nextNome);
+                if (Object.values(touched).some(Boolean)) {
+                  setFieldErrors(
+                    validateRegisterFields({
+                      nome: nextNome,
+                      email,
+                      senha,
+                      confirmarSenha,
+                    }),
+                  );
+                }
+              }}
+              onBlur={() => {
+                setTouched((prev) => ({ ...prev, nome: true }));
+                setFieldErrors(
+                  validateRegisterFields({
+                    nome,
+                    email,
+                    senha,
+                    confirmarSenha,
+                  }),
+                );
+              }}
               placeholder="Nome completo"
               InputLabelProps={{ shrink: true }}
+              error={touched.nome && Boolean(fieldErrors.nome)}
+              helperText={touched.nome ? fieldErrors.nome : ""}
             />
           </div>
 
@@ -132,9 +206,35 @@ export default function RegisterPage() {
               size="small"
               fullWidth
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={(e) => {
+                const nextEmail = e.target.value;
+                setEmail(nextEmail);
+                if (Object.values(touched).some(Boolean)) {
+                  setFieldErrors(
+                    validateRegisterFields({
+                      nome,
+                      email: nextEmail,
+                      senha,
+                      confirmarSenha,
+                    }),
+                  );
+                }
+              }}
+              onBlur={() => {
+                setTouched((prev) => ({ ...prev, email: true }));
+                setFieldErrors(
+                  validateRegisterFields({
+                    nome,
+                    email,
+                    senha,
+                    confirmarSenha,
+                  }),
+                );
+              }}
               placeholder="voce@empresa.com"
               InputLabelProps={{ shrink: true }}
+              error={touched.email && Boolean(fieldErrors.email)}
+              helperText={touched.email ? fieldErrors.email : ""}
             />
           </div>
 
@@ -147,9 +247,35 @@ export default function RegisterPage() {
               size="small"
               fullWidth
               value={senha}
-              onChange={(e) => setSenha(e.target.value)}
+              onChange={(e) => {
+                const nextSenha = e.target.value;
+                setSenha(nextSenha);
+                if (Object.values(touched).some(Boolean)) {
+                  setFieldErrors(
+                    validateRegisterFields({
+                      nome,
+                      email,
+                      senha: nextSenha,
+                      confirmarSenha,
+                    }),
+                  );
+                }
+              }}
+              onBlur={() => {
+                setTouched((prev) => ({ ...prev, senha: true }));
+                setFieldErrors(
+                  validateRegisterFields({
+                    nome,
+                    email,
+                    senha,
+                    confirmarSenha,
+                  }),
+                );
+              }}
               placeholder="Minimo de 6 caracteres"
               InputLabelProps={{ shrink: true }}
+              error={touched.senha && Boolean(fieldErrors.senha)}
+              helperText={touched.senha ? fieldErrors.senha : ""}
             />
           </div>
 
@@ -162,9 +288,35 @@ export default function RegisterPage() {
               size="small"
               fullWidth
               value={confirmarSenha}
-              onChange={(e) => setConfirmarSenha(e.target.value)}
+              onChange={(e) => {
+                const nextConfirmarSenha = e.target.value;
+                setConfirmarSenha(nextConfirmarSenha);
+                if (Object.values(touched).some(Boolean)) {
+                  setFieldErrors(
+                    validateRegisterFields({
+                      nome,
+                      email,
+                      senha,
+                      confirmarSenha: nextConfirmarSenha,
+                    }),
+                  );
+                }
+              }}
+              onBlur={() => {
+                setTouched((prev) => ({ ...prev, confirmarSenha: true }));
+                setFieldErrors(
+                  validateRegisterFields({
+                    nome,
+                    email,
+                    senha,
+                    confirmarSenha,
+                  }),
+                );
+              }}
               placeholder="Repita a senha"
               InputLabelProps={{ shrink: true }}
+              error={touched.confirmarSenha && Boolean(fieldErrors.confirmarSenha)}
+              helperText={touched.confirmarSenha ? fieldErrors.confirmarSenha : ""}
             />
           </div>
 

@@ -1,7 +1,9 @@
 "use client";
 
+import { useId, useRef } from "react";
 import { AlertTriangle, Trash2, XCircle } from "lucide-react";
 import AppButton from "@/components/AppButton";
+import { useAccessibleModal } from "@/utils/useAccessibleModal";
 
 interface ConfirmDeleteModalProps {
   isOpen: boolean;
@@ -20,18 +22,35 @@ export default function ConfirmDeleteModal({
   onCancel,
   onConfirm,
 }: ConfirmDeleteModalProps) {
+  const modalRef = useRef<HTMLDivElement>(null);
+  const titleId = useId();
+
+  useAccessibleModal({
+    isOpen,
+    modalRef,
+    onClose: onCancel,
+    closeOnEscape: true,
+  });
+
   if (!isOpen) return null;
 
   return (
     <div className="app-modal-overlay">
-      <div className="app-modal-content max-w-md">
+      <div
+        ref={modalRef}
+        className="app-modal-content max-w-md"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={titleId}
+        tabIndex={-1}
+      >
         <div className="app-modal-header items-start gap-3">
           <div className="flex items-start gap-3">
             <div className="app-badge-error rounded-full p-2">
               <AlertTriangle size={18} />
             </div>
             <div>
-              <h3 className="text-base font-semibold text-[rgb(var(--app-text-primary))]">
+              <h3 id={titleId} className="text-base font-semibold text-[rgb(var(--app-text-primary))]">
                 {title}
               </h3>
               <p className="mt-1 text-sm text-[rgb(var(--app-text-secondary))]">
@@ -52,6 +71,7 @@ export default function ConfirmDeleteModal({
             onClick={onCancel}
             tone="outline-danger"
             startIcon={<XCircle size={16} />}
+            data-modal-initial-focus
           >
             Cancelar
           </AppButton>

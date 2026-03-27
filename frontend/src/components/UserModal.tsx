@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { Ban, Save } from "lucide-react";
 import { MenuItem, TextField } from "@mui/material";
 import AppButton from "@/components/AppButton";
@@ -12,6 +12,7 @@ import {
   UserStatus,
   UserUpdateInput,
 } from "@/types/user";
+import { useAccessibleModal } from "@/utils/useAccessibleModal";
 
 interface UserModalProps {
   isOpen: boolean;
@@ -48,6 +49,8 @@ export default function UserModal({
   onClose,
   onSave,
 }: UserModalProps) {
+  const modalRef = useRef<HTMLDivElement>(null);
+  const titleId = useId();
   const [formData, setFormData] = useState<UserFormState>(defaultFormState);
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -69,6 +72,12 @@ export default function UserModal({
 
     setFormData(defaultFormState);
   }, [isOpen, user]);
+
+  useAccessibleModal({
+    isOpen,
+    modalRef,
+    onClose,
+  });
 
   const handleChange = (field: keyof UserFormState, value: string) => {
     setFormData((prev) => ({
@@ -151,14 +160,14 @@ export default function UserModal({
         }
 
         await userService.update(user.id, payload);
-        await onSave("Usuario atualizado com sucesso.");
+        await onSave(`Usuario "${payload.nome}" atualizado com sucesso.`);
       } else {
         const payload: UserCreateInput = {
           ...basePayload,
           senha: formData.senha,
         };
         await userService.create(payload);
-        await onSave("Usuario criado com sucesso.");
+        await onSave(`Usuario "${payload.nome}" criado com sucesso.`);
       }
     } catch (error: any) {
       const apiMessage =
@@ -191,9 +200,16 @@ export default function UserModal({
 
   return (
     <div className="app-modal-overlay">
-      <div className="app-modal-content max-h-[90vh] w-full max-w-xl overflow-y-auto">
+      <div
+        ref={modalRef}
+        className="app-modal-content max-h-[90vh] w-full max-w-xl overflow-y-auto"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={titleId}
+        tabIndex={-1}
+      >
         <div className="app-modal-header">
-          <h2 className="text-lg font-semibold text-gray-900">
+          <h2 id={titleId} className="text-lg font-semibold text-gray-900">
             {user ? "Editar Usuario" : "Novo Usuario"}
           </h2>
         </div>

@@ -1,11 +1,12 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { Ban, Save } from "lucide-react";
 import { bankService } from "@/services/bankService";
 import { Bank, BankInput } from "@/types/bank";
 import AppButton from "@/components/AppButton";
 import { TextField } from "@mui/material";
+import { useAccessibleModal } from "@/utils/useAccessibleModal";
 
 interface BankModalProps {
   bank: Bank | null;
@@ -13,7 +14,9 @@ interface BankModalProps {
   onSave: (message: string) => Promise<void> | void;
 }
 
-export default function BankModal({ bank, onClose, onSave }: BankModalProps) {
+export default function BankModal({ bank, onClose, onSave }: BankModalProps) {
+  const modalRef = useRef<HTMLDivElement>(null);
+  const titleId = useId();
   const [formData, setFormData] = useState<BankInput>({
     nome: "",
     codigo: "",
@@ -101,6 +104,12 @@ export default function BankModal({ bank, onClose, onSave }: BankModalProps) {
     }
   }, [bank]);
 
+  useAccessibleModal({
+    isOpen: true,
+    modalRef,
+    onClose,
+  });
+
   const validate = (): boolean => {
     const newErrors: Record<string, string> = {};
 
@@ -158,9 +167,7 @@ export default function BankModal({ bank, onClose, onSave }: BankModalProps) {
         }
 
         await bankService.update(originalBank.id, updates);
-        await onSave(
-          "Banco atualizado com sucesso. As alterações foram salvas.",
-        );
+        await onSave(`Banco "${trimmedNome}" atualizado com sucesso.`);
       } else {
         const payload: BankInput = {
           nome: formData.nome.trim(),
@@ -171,7 +178,7 @@ export default function BankModal({ bank, onClose, onSave }: BankModalProps) {
           ativo: formData.ativo,
         };
         await bankService.create(payload);
-        await onSave("Banco criado com sucesso. Cadastro concluído.");
+        await onSave(`Banco "${payload.nome}" criado com sucesso.`);
       }
     } catch (error: any) {
       console.error("Erro ao salvar banco:", error);
@@ -207,10 +214,17 @@ export default function BankModal({ bank, onClose, onSave }: BankModalProps) {
 
   return (
     <div className="app-modal-overlay">
-      <div className="app-modal-content max-h-[90vh] w-full max-w-md overflow-y-auto">
+      <div
+        ref={modalRef}
+        className="app-modal-content max-h-[90vh] w-full max-w-md overflow-y-auto"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={titleId}
+        tabIndex={-1}
+      >
         {/* Header */}
         <div className="app-modal-header p-6">
-          <h2 className="text-xl font-bold text-gray-900">
+          <h2 id={titleId} className="text-xl font-bold text-gray-900">
             {bank ? "Editar Banco" : "Novo Banco"}
           </h2>
         </div>
