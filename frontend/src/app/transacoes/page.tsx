@@ -685,7 +685,7 @@ export default function TransacoesPage() {
                   setEditingTransacao(undefined);
                   setIsModalOpen(true);
                 }}
-                className="flex h-10 w-full items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-white transition-colors hover:bg-blue-700 dark:text-blue-950 sm:w-auto"
+                className="flex h-10 w-full items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-white transition-colors hover:bg-blue-700 dark:text-blue-100 sm:w-auto"
               >
                 <Plus size={20} />
                 Nova Transação
@@ -1014,7 +1014,7 @@ export default function TransacoesPage() {
                       setEditingTransacao(undefined);
                       setIsModalOpen(true);
                     }}
-                    className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-700 dark:text-blue-950"
+                    className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-700 dark:text-blue-100"
                   >
                     Criar novo registro
                   </button>
@@ -1233,7 +1233,7 @@ export default function TransacoesPage() {
                             setEditingTransacao(undefined);
                             setIsModalOpen(true);
                           }}
-                          className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-700 dark:text-blue-950"
+                          className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-700 dark:text-blue-100"
                         >
                           Criar novo registro
                         </button>
