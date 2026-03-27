@@ -231,12 +231,12 @@ body {
     color: rgb(var(--app-text-inverse));
   }
 
-  .app-button-primary:hover {
-    background-color: rgb(var(--app-brand-primary-hover));
+  html.dark .app-button-primary {
+    color: rgb(30 64 175);
   }
 
-  html.dark .app-button-primary.app-button-primary-dark-blue-text {
-    color: rgb(30 64 175);
+  .app-button-primary:hover {
+    background-color: rgb(var(--app-brand-primary-hover));
   }
 
   .app-button-success {
