@@ -204,7 +204,7 @@ export default function ViewDataModal({
           <button
             type="button"
             onClick={onClose}
-            className="app-control-button p-1"
+            className="app-modal-close-button p-1"
             aria-label="Fechar modal de visualizacao"
             title="Fechar"
           >
@@ -239,7 +239,7 @@ export default function ViewDataModal({
         <div className="app-modal-footer">
           <AppButton
             onClick={onClose}
-            tone="outline-primary"
+            tone="outline-danger"
             startIcon={<XCircle size={16} />}
           >
             Fechar

@@ -1,6 +1,6 @@
 "use client";
 
-import { AlertTriangle, Trash2, XCircle } from "lucide-react";
+import { AlertTriangle, Trash2, X, XCircle } from "lucide-react";
 import AppButton from "@/components/AppButton";
 
 interface ConfirmDeleteModalProps {
@@ -25,18 +25,29 @@ export default function ConfirmDeleteModal({
   return (
     <div className="app-modal-overlay">
       <div className="app-modal-content max-w-md">
-        <div className="app-modal-header items-start gap-3">
-          <div className="app-badge-error rounded-full p-2">
-            <AlertTriangle size={18} />
+        <div className="app-modal-header items-start justify-between gap-3">
+          <div className="flex items-start gap-3">
+            <div className="app-badge-error rounded-full p-2">
+              <AlertTriangle size={18} />
+            </div>
+            <div>
+              <h3 className="text-base font-semibold text-[rgb(var(--app-text-primary))]">
+                {title}
+              </h3>
+              <p className="mt-1 text-sm text-[rgb(var(--app-text-secondary))]">
+                {description}
+              </p>
+            </div>
           </div>
-          <div>
-            <h3 className="text-base font-semibold text-[rgb(var(--app-text-primary))]">
-              {title}
-            </h3>
-            <p className="mt-1 text-sm text-[rgb(var(--app-text-secondary))]">
-              {description}
-            </p>
-          </div>
+          <button
+            type="button"
+            onClick={onCancel}
+            className="app-modal-close-button p-1"
+            aria-label="Fechar modal de confirmacao"
+            title="Fechar"
+          >
+            <X size={18} />
+          </button>
         </div>
 
         <div className="app-modal-body">
@@ -48,7 +59,7 @@ export default function ConfirmDeleteModal({
         <div className="flex justify-end gap-3 px-6 pb-5">
           <AppButton
             onClick={onCancel}
-            tone="outline"
+            tone="outline-danger"
             startIcon={<XCircle size={16} />}
           >
             Cancelar

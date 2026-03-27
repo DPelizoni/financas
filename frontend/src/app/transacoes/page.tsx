@@ -1309,7 +1309,7 @@ export default function TransacoesPage() {
                 <button
                   type="button"
                   onClick={() => setCopyModalOpen(false)}
-                  className="app-control-button p-1"
+                  className="app-modal-close-button p-1"
                 >
                   <X size={18} />
                 </button>
@@ -1423,7 +1423,7 @@ export default function TransacoesPage() {
                 <button
                   type="button"
                   onClick={() => setDeleteModalOpen(false)}
-                  className="app-control-button p-1"
+                  className="app-modal-close-button p-1"
                 >
                   <X size={18} />
                 </button>

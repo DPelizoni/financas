@@ -199,7 +199,7 @@ export default function UserModal({
           <button
             type="button"
             onClick={onClose}
-            className="app-control-button p-1"
+            className="app-modal-close-button p-1"
             title="Fechar"
           >
             <X size={20} />
@@ -316,7 +316,7 @@ export default function UserModal({
           <div className="flex justify-end gap-3 pt-2">
             <AppButton
               type="button"
-              tone="outline"
+              tone="outline-danger"
               onClick={onClose}
               startIcon={<Ban size={16} />}
               disabled={loading}

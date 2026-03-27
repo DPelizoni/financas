@@ -226,6 +226,18 @@ body {
     color: rgb(var(--app-text-primary));
   }
 
+  .app-modal-close-button {
+    border: 1px solid rgb(var(--app-status-error-border));
+    background-color: rgb(var(--app-bg-surface));
+    color: rgb(var(--app-status-error-text));
+    @apply inline-flex items-center justify-center rounded-md transition;
+  }
+
+  .app-modal-close-button:hover {
+    background-color: rgb(var(--app-status-error-bg));
+    color: rgb(var(--app-status-error-text));
+  }
+
   .app-button-primary {
     background-color: rgb(var(--app-brand-primary));
     color: rgb(var(--app-text-inverse));

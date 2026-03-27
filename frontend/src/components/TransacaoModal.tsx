@@ -279,7 +279,7 @@ export const TransacaoModal: React.FC<TransacaoModalProps> = ({
           </h2>
           <button
             onClick={onClose}
-            className="app-control-button p-1"
+            className="app-modal-close-button p-1"
           >
             <X size={20} />
           </button>
@@ -493,7 +493,7 @@ export const TransacaoModal: React.FC<TransacaoModalProps> = ({
             <AppButton
               type="button"
               onClick={onClose}
-              tone="outline"
+              tone="outline-danger"
               startIcon={<Ban size={16} />}
             >
               Cancelar

@@ -215,7 +215,7 @@ export default function BankModal({ bank, onClose, onSave }: BankModalProps) {
           </h2>
           <button
             onClick={onClose}
-            className="app-control-button p-1"
+            className="app-modal-close-button p-1"
           >
             <X size={24} />
           </button>
@@ -333,7 +333,7 @@ export default function BankModal({ bank, onClose, onSave }: BankModalProps) {
             <AppButton
               type="button"
               onClick={onClose}
-              tone="outline"
+              tone="outline-danger"
               fullWidth
               startIcon={<Ban size={16} />}
               disabled={loading}
