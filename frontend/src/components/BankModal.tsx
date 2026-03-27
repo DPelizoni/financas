@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Ban, Save, X } from "lucide-react";
+import { Ban, Save } from "lucide-react";
 import { bankService } from "@/services/bankService";
 import { Bank, BankInput } from "@/types/bank";
 import AppButton from "@/components/AppButton";
@@ -213,12 +213,6 @@ export default function BankModal({ bank, onClose, onSave }: BankModalProps) {
           <h2 className="text-xl font-bold text-gray-900">
             {bank ? "Editar Banco" : "Novo Banco"}
           </h2>
-          <button
-            onClick={onClose}
-            className="app-modal-close-button p-1"
-          >
-            <X size={24} />
-          </button>
         </div>
 
         {/* Form */}

@@ -1,6 +1,6 @@
 "use client";
 
-import { X, XCircle } from "lucide-react";
+import { XCircle } from "lucide-react";
 import AppButton from "@/components/AppButton";
 import { formatDateTimeBR } from "@/utils/formatDateTimeBR";
 
@@ -201,15 +201,6 @@ export default function ViewDataModal({
       <div className="app-modal-content max-h-[90vh] max-w-3xl overflow-hidden">
         <div className="app-modal-header">
           <h2 className="text-lg font-semibold text-[rgb(var(--app-text-primary))]">{title}</h2>
-          <button
-            type="button"
-            onClick={onClose}
-            className="app-modal-close-button p-1"
-            aria-label="Fechar modal de visualizacao"
-            title="Fechar"
-          >
-            <X size={20} />
-          </button>
         </div>
 
         <div className="max-h-[60vh] overflow-y-auto p-6">

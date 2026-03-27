@@ -226,18 +226,6 @@ body {
     color: rgb(var(--app-text-primary));
   }
 
-  .app-modal-close-button {
-    border: 1px solid rgb(var(--app-status-error-border));
-    background-color: rgb(var(--app-bg-surface));
-    color: rgb(var(--app-status-error-text));
-    @apply inline-flex items-center justify-center rounded-md transition;
-  }
-
-  .app-modal-close-button:hover {
-    background-color: rgb(var(--app-status-error-bg));
-    color: rgb(var(--app-status-error-text));
-  }
-
   .app-button-primary {
     background-color: rgb(var(--app-brand-primary));
     color: rgb(var(--app-text-inverse));
@@ -394,7 +382,13 @@ body {
 
   .app-modal-overlay {
     background-color: rgb(var(--app-overlay-rgb) / 0.56);
-    @apply fixed inset-0 z-50 flex items-center justify-center p-4;
+    position: fixed;
+    inset: 0;
+    z-index: 1400;
+    width: 100vw;
+    min-height: 100vh;
+    min-height: 100dvh;
+    @apply flex items-center justify-center p-4;
   }
 
   .app-modal-content {

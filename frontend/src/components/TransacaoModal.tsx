@@ -9,7 +9,7 @@ import { transacaoService } from "@/services/transacaoService";
 import { categoryService } from "@/services/categoryService";
 import { descricaoService } from "@/services/descricaoService";
 import { bankService } from "@/services/bankService";
-import { Ban, Save, X } from "lucide-react";
+import { Ban, Save } from "lucide-react";
 import AppButton from "@/components/AppButton";
 import { MenuItem, TextField } from "@mui/material";
 
@@ -277,12 +277,6 @@ export const TransacaoModal: React.FC<TransacaoModalProps> = ({
           <h2 className="text-xl font-semibold text-[rgb(var(--app-text-primary))]">
             {isEditing ? "Editar Transação" : "Nova Transação"}
           </h2>
-          <button
-            onClick={onClose}
-            className="app-modal-close-button p-1"
-          >
-            <X size={20} />
-          </button>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">

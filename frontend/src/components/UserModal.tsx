@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Ban, Save, X } from "lucide-react";
+import { Ban, Save } from "lucide-react";
 import { MenuItem, TextField } from "@mui/material";
 import AppButton from "@/components/AppButton";
 import { userService } from "@/services/userService";
@@ -196,14 +196,6 @@ export default function UserModal({
           <h2 className="text-lg font-semibold text-gray-900">
             {user ? "Editar Usuario" : "Novo Usuario"}
           </h2>
-          <button
-            type="button"
-            onClick={onClose}
-            className="app-modal-close-button p-1"
-            title="Fechar"
-          >
-            <X size={20} />
-          </button>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4 p-6">

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Ban, Save, X } from "lucide-react";
+import { Ban, Save } from "lucide-react";
 import { descricaoService } from "@/services/descricaoService";
 import { categoryService } from "@/services/categoryService";
 import { Descricao, DescricaoInput } from "@/types/descricao";
@@ -167,12 +167,6 @@ export default function DescricaoModal({
           <h2 className="text-xl font-bold text-gray-900">
             {descricao ? "Editar Descrição" : "Nova Descrição"}
           </h2>
-          <button
-            onClick={onClose}
-            className="app-modal-close-button p-1"
-          >
-            <X size={24} />
-          </button>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4 p-6">

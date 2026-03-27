@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Ban, Save, X } from "lucide-react";
+import { Ban, Save } from "lucide-react";
 import { categoryService } from "@/services/categoryService";
 import { Category, CategoryInput } from "@/types/category";
 import AppButton from "@/components/AppButton";
@@ -148,12 +148,6 @@ export default function CategoryModal({
           <h2 className="text-xl font-bold text-gray-900">
             {category ? "Editar Categoria" : "Nova Categoria"}
           </h2>
-          <button
-            onClick={onClose}
-            className="app-modal-close-button p-1"
-          >
-            <X size={24} />
-          </button>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4 p-6">

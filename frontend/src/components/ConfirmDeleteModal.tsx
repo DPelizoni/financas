@@ -1,6 +1,6 @@
 "use client";
 
-import { AlertTriangle, Trash2, X, XCircle } from "lucide-react";
+import { AlertTriangle, Trash2, XCircle } from "lucide-react";
 import AppButton from "@/components/AppButton";
 
 interface ConfirmDeleteModalProps {
@@ -25,7 +25,7 @@ export default function ConfirmDeleteModal({
   return (
     <div className="app-modal-overlay">
       <div className="app-modal-content max-w-md">
-        <div className="app-modal-header items-start justify-between gap-3">
+        <div className="app-modal-header items-start gap-3">
           <div className="flex items-start gap-3">
             <div className="app-badge-error rounded-full p-2">
               <AlertTriangle size={18} />
@@ -39,15 +39,6 @@ export default function ConfirmDeleteModal({
               </p>
             </div>
           </div>
-          <button
-            type="button"
-            onClick={onCancel}
-            className="app-modal-close-button p-1"
-            aria-label="Fechar modal de confirmacao"
-            title="Fechar"
-          >
-            <X size={18} />
-          </button>
         </div>
 
         <div className="app-modal-body">

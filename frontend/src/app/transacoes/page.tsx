@@ -25,7 +25,6 @@ import {
   Copy,
   Trash,
   Search,
-  X,
   DollarSign,
   ArrowLeftRight,
   ArrowDownWideNarrow,
@@ -1306,13 +1305,6 @@ export default function TransacoesPage() {
                 <h3 className="text-base font-semibold text-blue-700">
                   Copiar Transações Por Mês
                 </h3>
-                <button
-                  type="button"
-                  onClick={() => setCopyModalOpen(false)}
-                  className="app-modal-close-button p-1"
-                >
-                  <X size={18} />
-                </button>
               </div>
 
               <div className="p-6">
@@ -1420,13 +1412,6 @@ export default function TransacoesPage() {
                 <h3 className="text-base font-semibold text-red-700">
                   Excluir Transações Por Mês
                 </h3>
-                <button
-                  type="button"
-                  onClick={() => setDeleteModalOpen(false)}
-                  className="app-modal-close-button p-1"
-                >
-                  <X size={18} />
-                </button>
               </div>
 
               <div className="p-6">
