@@ -49,6 +49,11 @@ export const createMuiTheme = (mode: ThemeMode) => {
       shape: {
         borderRadius: 8,
       },
+      zIndex: {
+        modal: 1600,
+        snackbar: 1700,
+        tooltip: 1800,
+      },
       typography: {
         fontFamily: "var(--font-app), Inter, sans-serif",
         button: {
