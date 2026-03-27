@@ -3,7 +3,7 @@
 @tailwind utilities;
 
 :root {
-  --app-bg-canvas: 248 250 252;
+  --app-bg-canvas: 238 246 255;
   --app-bg-surface: 255 255 255;
   --app-bg-elevated: 255 255 255;
   --app-bg-muted: 241 245 249;
