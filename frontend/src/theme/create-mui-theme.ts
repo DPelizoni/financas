@@ -5,8 +5,6 @@ import { appThemeTokens, ThemeMode } from "@/theme/theme-tokens";
 export const createMuiTheme = (mode: ThemeMode) => {
   const tokens = appThemeTokens[mode];
   const inputSurfaceColor = alpha(tokens.background.surface, mode === "dark" ? 0.92 : 1);
-  const autofillSurfaceColor =
-    mode === "dark" ? inputSurfaceColor : alpha(tokens.brand.secondary, 0.14);
 
   return createTheme(
     {
@@ -120,10 +118,10 @@ export const createMuiTheme = (mode: ThemeMode) => {
                 color: tokens.text.muted,
                 opacity: 1,
               },
-              "&:-webkit-autofill, &:-webkit-autofill:hover, &:-webkit-autofill:focus": {
-                WebkitTextFillColor: tokens.text.primary,
+              "&:-webkit-autofill, &:-webkit-autofill:hover, &:-webkit-autofill:focus, &:-webkit-autofill:active": {
+                WebkitTextFillColor: `${tokens.text.primary} !important`,
                 caretColor: tokens.text.primary,
-                WebkitBoxShadow: `0 0 0 100px ${autofillSurfaceColor} inset`,
+                WebkitBoxShadow: `0 0 0 100px ${inputSurfaceColor} inset !important`,
                 borderRadius: "inherit",
                 transition: "background-color 9999s ease-out 0s",
               },
