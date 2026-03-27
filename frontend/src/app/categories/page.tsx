@@ -196,7 +196,7 @@ export default function CategoriesPage() {
               onClick={handleCreate}
               tone="primary"
               startIcon={<Plus size={18} />}
-              className="w-full sm:w-auto"
+              className="app-button-primary-dark-blue-text w-full sm:w-auto"
             >
               Nova Categoria
             </AppButton>

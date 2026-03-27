@@ -235,6 +235,10 @@ body {
     background-color: rgb(var(--app-brand-primary-hover));
   }
 
+  html.dark .app-button-primary.app-button-primary-dark-blue-text {
+    color: rgb(30 64 175);
+  }
+
   .app-button-success {
     background-color: rgb(var(--app-semantic-success));
     color: rgb(var(--app-text-inverse));

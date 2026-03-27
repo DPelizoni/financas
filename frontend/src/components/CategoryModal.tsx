@@ -257,6 +257,7 @@ export default function CategoryModal({
             <AppButton
               type="submit"
               tone="primary"
+              className="app-button-primary-dark-blue-text"
               fullWidth
               startIcon={<Save size={16} />}
               disabled={loading}
@@ -269,5 +270,4 @@ export default function CategoryModal({
     </div>
   );
 }
-
 
