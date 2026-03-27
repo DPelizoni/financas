@@ -180,7 +180,7 @@ export default function AppShell({ children }: AppShellProps) {
                 <button
                   type="button"
                   onClick={handleLogout}
-                  className="app-control-button inline-flex items-center gap-2 px-3 py-1.5 text-xs font-semibold"
+                  className="app-button-outline-danger inline-flex items-center gap-2 px-3 py-1.5 text-xs font-semibold"
                 >
                   <LogOut size={14} />
                   Sair
