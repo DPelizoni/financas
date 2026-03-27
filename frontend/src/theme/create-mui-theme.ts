@@ -4,6 +4,7 @@ import { appThemeTokens, ThemeMode } from "@/theme/theme-tokens";
 
 export const createMuiTheme = (mode: ThemeMode) => {
   const tokens = appThemeTokens[mode];
+  const inputSurfaceColor = alpha(tokens.background.surface, mode === "dark" ? 0.92 : 1);
 
   return createTheme(
     {
@@ -99,7 +100,7 @@ export const createMuiTheme = (mode: ThemeMode) => {
           styleOverrides: {
             root: {
               borderRadius: 8,
-              backgroundColor: alpha(tokens.background.surface, mode === "dark" ? 0.92 : 1),
+              backgroundColor: inputSurfaceColor,
               transition: "background-color 0.2s ease, border-color 0.2s ease",
               "& .MuiOutlinedInput-notchedOutline": {
                 borderColor: tokens.border.default,
@@ -116,6 +117,13 @@ export const createMuiTheme = (mode: ThemeMode) => {
               "&::placeholder": {
                 color: tokens.text.muted,
                 opacity: 1,
+              },
+              "&:-webkit-autofill, &:-webkit-autofill:hover, &:-webkit-autofill:focus": {
+                WebkitTextFillColor: tokens.text.primary,
+                caretColor: tokens.text.primary,
+                WebkitBoxShadow: `0 0 0 100px ${inputSurfaceColor} inset`,
+                borderRadius: "inherit",
+                transition: "background-color 9999s ease-out 0s",
               },
             },
           },
