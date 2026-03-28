@@ -50,7 +50,7 @@ export default function TableActionButton({
       aria-label={title}
       onClick={onClick}
       disabled={disabled}
-      className={`inline-flex items-center justify-center rounded-md transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent disabled:cursor-not-allowed disabled:opacity-40 ${toneClass} ${
+      className={`inline-flex items-center justify-center rounded transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent disabled:cursor-not-allowed disabled:opacity-40 ${toneClass} ${
         compact ? "h-8 w-8" : "h-10 w-10"
       }`}
     >

@@ -5,6 +5,8 @@ import { appThemeTokens, ThemeMode } from "@/theme/theme-tokens";
 export const createMuiTheme = (mode: ThemeMode) => {
   const tokens = appThemeTokens[mode];
   const inputSurfaceColor = alpha(tokens.background.surface, mode === "dark" ? 0.92 : 1);
+  const controlHeight = 44;
+  const borderRadius = 4;
 
   return createTheme(
     {
@@ -47,7 +49,7 @@ export const createMuiTheme = (mode: ThemeMode) => {
         },
       },
       shape: {
-        borderRadius: 8,
+        borderRadius,
       },
       zIndex: {
         modal: 1600,
@@ -75,7 +77,8 @@ export const createMuiTheme = (mode: ThemeMode) => {
           },
           styleOverrides: {
             root: {
-              borderRadius: 8,
+              borderRadius,
+              minHeight: controlHeight,
               fontWeight: 600,
               "&:focus-visible": {
                 outline: `2px solid ${tokens.brand.focusRing}`,
@@ -87,7 +90,7 @@ export const createMuiTheme = (mode: ThemeMode) => {
         MuiIconButton: {
           styleOverrides: {
             root: {
-              borderRadius: 8,
+              borderRadius,
               "&:focus-visible": {
                 outline: `2px solid ${tokens.brand.focusRing}`,
                 outlineOffset: 2,
@@ -104,9 +107,13 @@ export const createMuiTheme = (mode: ThemeMode) => {
         MuiOutlinedInput: {
           styleOverrides: {
             root: {
-              borderRadius: 8,
+              borderRadius,
+              minHeight: controlHeight,
               backgroundColor: inputSurfaceColor,
               transition: "background-color 0.2s ease, border-color 0.2s ease",
+              "&.MuiInputBase-sizeSmall": {
+                minHeight: controlHeight,
+              },
               "& .MuiOutlinedInput-notchedOutline": {
                 borderColor: tokens.border.default,
               },
@@ -119,6 +126,11 @@ export const createMuiTheme = (mode: ThemeMode) => {
               },
             },
             input: {
+              lineHeight: 1.4,
+              padding: "12px 14px",
+              "&.MuiInputBase-inputSizeSmall": {
+                padding: "10px 14px",
+              },
               "&::placeholder": {
                 color: tokens.text.muted,
                 opacity: 1,
@@ -153,7 +165,7 @@ export const createMuiTheme = (mode: ThemeMode) => {
         MuiPaper: {
           styleOverrides: {
             rounded: {
-              borderRadius: 10,
+              borderRadius,
             },
             root: {
               backgroundImage: "none",
@@ -162,6 +174,15 @@ export const createMuiTheme = (mode: ThemeMode) => {
         },
         MuiSelect: {
           styleOverrides: {
+            select: {
+              minHeight: "unset",
+              display: "flex",
+              alignItems: "center",
+              "&.MuiInputBase-inputSizeSmall": {
+                paddingTop: "10px",
+                paddingBottom: "10px",
+              },
+            },
             icon: {
               color: tokens.text.muted,
             },

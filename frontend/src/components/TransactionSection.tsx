@@ -82,22 +82,22 @@ const toneStyles: Record<
 };
 
 const baseInputClass =
-  "w-full max-w-full rounded-lg border bg-[rgb(var(--app-bg-surface))] px-3 py-2 text-sm focus:outline-none md:w-56 xl:w-full";
+  "min-h-11 w-full max-w-full rounded border bg-[rgb(var(--app-bg-surface))] px-3 py-2.5 text-sm leading-5 focus:outline-none md:w-56 xl:w-full";
 const baseSecondaryButtonClass =
-  "w-full rounded-lg border px-3 py-2 text-sm font-medium whitespace-nowrap transition md:w-auto xl:w-full";
+  "min-h-11 w-full rounded border px-3 py-2.5 text-sm font-medium whitespace-nowrap transition md:w-auto xl:w-full";
 const baseShortcutButtonClass =
-  "rounded-lg border px-3 py-1 text-xs font-medium transition";
+  "rounded border px-3 py-1.5 text-xs font-medium transition";
 const basePrimaryButtonClass =
-  "w-full rounded-lg px-3 py-2 text-sm font-medium whitespace-nowrap transition disabled:cursor-not-allowed disabled:opacity-50 md:w-auto xl:w-full";
+  "min-h-11 w-full rounded px-3 py-2.5 text-sm font-medium whitespace-nowrap transition disabled:cursor-not-allowed disabled:opacity-50 md:w-auto xl:w-full";
 const basePrimaryCompactButtonClass =
-  "rounded-lg px-3 py-2 text-sm font-medium whitespace-nowrap transition disabled:cursor-not-allowed disabled:opacity-50";
+  "min-h-11 rounded px-3 py-2.5 text-sm font-medium whitespace-nowrap transition disabled:cursor-not-allowed disabled:opacity-50";
 const baseChipClass =
   "rounded-full border px-3 py-1 text-xs font-medium transition";
 
 export function getTransactionSectionClasses(tone: TransactionSectionTone) {
   const palette = toneStyles[tone];
   const containerBaseClass =
-    tone === "gray" ? "p-4" : "rounded-lg border border-dashed p-4";
+    tone === "gray" ? "p-4" : "rounded border border-dashed p-4";
 
   return {
     container: `${containerBaseClass} ${palette.container}`.trim(),

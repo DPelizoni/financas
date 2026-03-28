@@ -212,7 +212,7 @@ export default function CategoryModal({
                 type="color"
                 value={formData.cor}
                 onChange={(e) => handleChange("cor", e.target.value)}
-                className="h-10 w-20 cursor-pointer rounded border border-[rgb(var(--app-border-default))] bg-[rgb(var(--app-bg-surface))]"
+                className="h-11 w-20 cursor-pointer rounded border border-[rgb(var(--app-border-default))] bg-[rgb(var(--app-bg-surface))]"
               />
               <TextField
                 type="text"

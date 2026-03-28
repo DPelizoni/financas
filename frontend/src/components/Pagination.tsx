@@ -117,11 +117,11 @@ export default function Pagination({
         </div>
 
         <div className={centeredLayout ? "w-1/3 flex justify-center" : ""}>
-          <nav className="relative z-0 inline-flex -space-x-px rounded-md shadow-sm">
+          <nav className="relative z-0 inline-flex -space-x-px rounded shadow-sm">
             <button
               onClick={() => onPageChange(1)}
               disabled={currentPage === 1}
-              className="app-pagination-button relative inline-flex items-center rounded-l-md px-2 py-2 text-sm font-semibold focus-visible:z-20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400 disabled:opacity-50"
+              className="app-pagination-button relative inline-flex items-center rounded-l px-2 py-2 text-sm font-semibold focus-visible:z-20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400 disabled:opacity-50"
               aria-label="Primeira página"
             >
               <ChevronsLeft size={18} />
@@ -162,7 +162,7 @@ export default function Pagination({
             <button
               onClick={() => onPageChange(totalPages)}
               disabled={currentPage === totalPages}
-              className="app-pagination-button relative inline-flex items-center rounded-r-md px-2 py-2 text-sm font-semibold focus-visible:z-20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400 disabled:opacity-50"
+              className="app-pagination-button relative inline-flex items-center rounded-r px-2 py-2 text-sm font-semibold focus-visible:z-20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400 disabled:opacity-50"
               aria-label="Última página"
             >
               <ChevronsRight size={18} />

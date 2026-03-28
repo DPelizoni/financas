@@ -36,8 +36,8 @@ const toneClasses: Record<AppButtonTone, string> = {
 };
 
 const sizeClasses: Record<AppButtonSize, string> = {
-  sm: "h-8 px-3 text-xs",
-  md: "h-10 px-4 text-sm",
+  sm: "h-9 px-3 text-xs",
+  md: "h-11 px-4 text-sm",
 };
 
 export default function AppButton({
@@ -54,7 +54,7 @@ export default function AppButton({
   return (
     <button
       type={type}
-      className={`inline-flex items-center justify-center gap-2 rounded-md font-medium leading-none tracking-normal transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[rgb(var(--app-focus-ring))] focus-visible:ring-offset-2 focus-visible:ring-offset-transparent disabled:cursor-not-allowed disabled:opacity-60 ${sizeClasses[size]} ${toneClasses[tone]} ${fullWidth ? "w-full" : ""} ${className}`.trim()}
+      className={`inline-flex items-center justify-center gap-2 rounded font-medium leading-none tracking-normal transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[rgb(var(--app-focus-ring))] focus-visible:ring-offset-2 focus-visible:ring-offset-transparent disabled:cursor-not-allowed disabled:opacity-60 ${sizeClasses[size]} ${toneClasses[tone]} ${fullWidth ? "w-full" : ""} ${className}`.trim()}
       {...props}
     >
       {startIcon}

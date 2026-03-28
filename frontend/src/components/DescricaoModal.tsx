@@ -211,13 +211,13 @@ export default function DescricaoModal({
 
           <div>
             {categoriesLoading ? (
-              <div className="app-surface-muted flex h-10 items-center justify-center">
+              <div className="app-surface-muted flex h-11 items-center justify-center">
                 <p className="text-sm text-gray-500">
                   Carregando categorias...
                 </p>
               </div>
             ) : categories.length === 0 ? (
-              <div className="app-inline-error flex h-10 items-center justify-center">
+              <div className="app-inline-error flex h-11 items-center justify-center">
                 <p className="text-sm text-red-600">
                   Nenhuma categoria disponível
                 </p>
@@ -288,5 +288,4 @@ export default function DescricaoModal({
     </div>
   );
 }
-
 

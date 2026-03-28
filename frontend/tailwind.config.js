@@ -7,6 +7,17 @@ module.exports = {
     './src/app/**/*.{js,ts,jsx,tsx,mdx}',
   ],
   theme: {
+    borderRadius: {
+      none: "0",
+      sm: "0.125rem",
+      DEFAULT: "0.25rem",
+      md: "0.25rem",
+      lg: "0.25rem",
+      xl: "0.25rem",
+      "2xl": "0.25rem",
+      "3xl": "0.25rem",
+      full: "9999px",
+    },
     extend: {
       colors: {
         app: {
