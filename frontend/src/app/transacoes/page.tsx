@@ -705,21 +705,21 @@ export default function TransacoesPage() {
                 Totais
               </h3>
               <div className="space-y-3">
-                <div className="rounded-lg bg-white p-4 shadow-sm">
+                <div className="app-surface p-4">
                   <p className="text-xs font-medium text-gray-600">Receita</p>
                   <p className="mt-1 text-xl font-bold text-green-600">
                     {formatCurrency(summary.total_receita)}
                   </p>
                 </div>
 
-                <div className="rounded-lg bg-white p-4 shadow-sm">
+                <div className="app-surface p-4">
                   <p className="text-xs font-medium text-gray-600">Despesa</p>
                   <p className="mt-1 text-xl font-bold text-red-600">
                     {formatCurrency(summary.total_despesa)}
                   </p>
                 </div>
 
-                <div className="rounded-lg bg-white p-4 shadow-sm">
+                <div className="app-surface p-4">
                   <p className="text-xs font-medium text-gray-600">Líquido</p>
                   <p
                     className={`mt-1 text-xl font-bold ${
@@ -739,21 +739,21 @@ export default function TransacoesPage() {
                 Pagos
               </h3>
               <div className="space-y-3">
-                <div className="rounded-lg bg-white p-4 shadow-sm">
+                <div className="app-surface p-4">
                   <p className="text-xs font-medium text-gray-600">Receita</p>
                   <p className="mt-1 text-xl font-bold text-green-600">
                     {formatCurrency(summary.pago_receita)}
                   </p>
                 </div>
 
-                <div className="rounded-lg bg-white p-4 shadow-sm">
+                <div className="app-surface p-4">
                   <p className="text-xs font-medium text-gray-600">Despesa</p>
                   <p className="mt-1 text-xl font-bold text-red-600">
                     {formatCurrency(summary.pago_despesa)}
                   </p>
                 </div>
 
-                <div className="rounded-lg bg-white p-4 shadow-sm">
+                <div className="app-surface p-4">
                   <p className="text-xs font-medium text-gray-600">Líquido</p>
                   <p
                     className={`mt-1 text-xl font-bold ${
@@ -773,21 +773,21 @@ export default function TransacoesPage() {
                 Provisões
               </h3>
               <div className="space-y-3">
-                <div className="rounded-lg bg-white p-4 shadow-sm">
+                <div className="app-surface p-4">
                   <p className="text-xs font-medium text-gray-600">Receita</p>
                   <p className="mt-1 text-xl font-bold text-green-600">
                     {formatCurrency(summary.provisao_receita)}
                   </p>
                 </div>
 
-                <div className="rounded-lg bg-white p-4 shadow-sm">
+                <div className="app-surface p-4">
                   <p className="text-xs font-medium text-gray-600">Despesa</p>
                   <p className="mt-1 text-xl font-bold text-red-600">
                     {formatCurrency(summary.provisao_despesa)}
                   </p>
                 </div>
 
-                <div className="rounded-lg bg-white p-4 shadow-sm">
+                <div className="app-surface p-4">
                   <p className="text-xs font-medium text-gray-600">Líquido</p>
                   <p
                     className={`mt-1 text-xl font-bold ${
@@ -1004,8 +1004,8 @@ export default function TransacoesPage() {
         </div>
 
         {/* Table */}
-        <div className="overflow-hidden rounded-lg bg-white shadow-sm">
-          <div className="p-2 sm:p-3 md:hidden">
+        <div className="app-surface p-4">
+          <div className="px-2 sm:px-0 md:hidden">
             {transacoes.length === 0 ? (
               <div className="rounded-lg border border-dashed border-gray-300 p-6 text-center text-gray-500">
                 <div className="flex flex-col items-center gap-3">
@@ -1648,6 +1648,3 @@ export default function TransacoesPage() {
     </div>
   );
 }
-
-
-

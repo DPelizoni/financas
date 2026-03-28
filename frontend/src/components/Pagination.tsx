@@ -47,7 +47,7 @@ export default function Pagination({
   };
 
   return (
-    <div className="flex items-center justify-between border-t border-[rgb(var(--app-border-default))] bg-[rgb(var(--app-bg-surface))] px-4 py-3 sm:px-6">
+    <div className="flex items-center justify-between rounded border border-[rgb(var(--app-border-default))] bg-[rgb(var(--app-bg-surface))] px-4 py-3 sm:px-6">
       <div className="flex flex-1 items-center justify-between gap-2 sm:hidden">
         <AppButton
           onClick={() => onPageChange(Math.max(1, currentPage - 1))}

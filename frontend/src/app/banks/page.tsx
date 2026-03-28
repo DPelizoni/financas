@@ -266,7 +266,7 @@ export default function BanksPage() {
         </div>
 
         {/* Table */}
-        <div className="overflow-hidden rounded-lg bg-white shadow-sm">
+        <div className="app-surface p-4">
           {loading ? (
             <div className="text-center py-12">
               <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
@@ -287,7 +287,7 @@ export default function BanksPage() {
             </div>
           ) : (
             <>
-              <div className="space-y-2 p-2 sm:p-3 md:hidden">
+              <div className="space-y-2 px-2 sm:px-0 md:hidden">
                 {sortedBanks.map((bank) => (
                   <div
                     key={bank.id}
@@ -480,19 +480,22 @@ export default function BanksPage() {
                 </table>
               </div>
 
-              <Pagination
-                currentPage={currentPage}
-                totalPages={totalPages}
-                total={total}
-                itemsPerPage={itemsPerPage}
-                onPageChange={setCurrentPage}
-                onItemsPerPageChange={setItemsPerPage}
-                itemsPerPageOptions={[5, 10, 20, 50, 100]}
-                centeredLayout
-              />
             </>
           )}
         </div>
+
+        {!loading && banks.length > 0 && (
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            total={total}
+            itemsPerPage={itemsPerPage}
+            onPageChange={setCurrentPage}
+            onItemsPerPageChange={setItemsPerPage}
+            itemsPerPageOptions={[5, 10, 20, 50, 100]}
+            centeredLayout
+          />
+        )}
       </div>
 
       <ViewDataModal

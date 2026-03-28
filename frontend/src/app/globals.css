@@ -534,15 +534,15 @@ body {
   }
 
   .app-table-head-cell {
-    @apply px-3 py-2 text-left text-xs font-semibold text-gray-900;
+    @apply px-3 py-2.5 text-left text-sm font-semibold text-gray-900;
   }
 
   .app-table-head-cell-right {
-    @apply px-3 py-2 text-right text-xs font-semibold text-gray-900;
+    @apply px-3 py-2.5 text-right text-sm font-semibold text-gray-900;
   }
 
   .app-table-head-cell-center {
-    @apply px-3 py-2 text-center text-xs font-semibold text-gray-900;
+    @apply px-3 py-2.5 text-center text-sm font-semibold text-gray-900;
   }
 
   .app-pagination-button {

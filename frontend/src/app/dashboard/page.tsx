@@ -723,7 +723,7 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        <div className="rounded-lg bg-white p-4 shadow-sm">
+        <div className="app-surface p-4">
           <h3 className="mb-3 text-sm font-semibold text-gray-700">
             Comparativo: Pago vs Provisão
           </h3>
@@ -791,7 +791,7 @@ export default function DashboardPage() {
         </div>
 
         <div className="space-y-4">
-          <div className="rounded-lg bg-white p-4 shadow-sm">
+          <div className="app-surface p-4">
             <h3 className="mb-3 text-sm font-semibold text-gray-700">
               {hasSingleTimelineMonth
                 ? "Resumo Mensal"
@@ -972,7 +972,7 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          <div className="rounded-lg bg-white p-4 shadow-sm">
+          <div className="app-surface p-4">
             <h3 className="mb-3 text-sm font-semibold text-gray-700">
               Comparativo por Categoria (Barras)
             </h3>
@@ -1024,7 +1024,7 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        <div className="rounded-lg bg-white p-4 shadow-sm">
+        <div className="app-surface p-4">
           <div className="mb-3 flex items-center justify-between">
             <h3 className="text-sm font-semibold text-gray-700">
               Dados Detalhados

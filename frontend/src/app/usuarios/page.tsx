@@ -351,7 +351,7 @@ export default function UsuariosPage() {
           </div>
         </div>
 
-        <div className="overflow-hidden rounded-lg bg-white shadow-sm">
+        <div className="app-surface p-4">
           {loading ? (
             <div className="py-12 text-center text-gray-500">
               Carregando usuarios...
@@ -362,7 +362,7 @@ export default function UsuariosPage() {
             </div>
           ) : (
             <>
-              <div className="space-y-2 p-2 sm:p-3 md:hidden">
+              <div className="space-y-2 px-2 sm:px-0 md:hidden">
                 {sortedUsers.map((user) => (
                   <div
                     key={user.id}
@@ -539,19 +539,22 @@ export default function UsuariosPage() {
                 </table>
               </div>
 
-              <Pagination
-                currentPage={currentPage}
-                totalPages={totalPages}
-                total={total}
-                itemsPerPage={itemsPerPage}
-                onPageChange={setCurrentPage}
-                onItemsPerPageChange={setItemsPerPage}
-                itemsPerPageOptions={[5, 10, 20, 50, 100]}
-                centeredLayout
-              />
             </>
           )}
         </div>
+
+        {!loading && sortedUsers.length > 0 && (
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            total={total}
+            itemsPerPage={itemsPerPage}
+            onPageChange={setCurrentPage}
+            onItemsPerPageChange={setItemsPerPage}
+            itemsPerPageOptions={[5, 10, 20, 50, 100]}
+            centeredLayout
+          />
+        )}
       </div>
 
       <UserModal

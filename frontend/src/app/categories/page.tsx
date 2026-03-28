@@ -292,7 +292,7 @@ export default function CategoriesPage() {
           </div>
         </div>
 
-        <div className="overflow-hidden rounded-lg bg-white shadow-sm">
+        <div className="app-surface p-4">
           {loading ? (
             <div className="py-12 text-center">
               <div className="inline-block h-8 w-8 animate-spin rounded-full border-b-2 border-blue-600"></div>
@@ -313,7 +313,7 @@ export default function CategoriesPage() {
             </div>
           ) : (
             <>
-              <div className="space-y-2 p-2 sm:p-3 md:hidden">
+              <div className="space-y-2 px-2 sm:px-0 md:hidden">
                 {sortedCategories.map((category) => (
                   <div
                     key={category.id}
@@ -495,19 +495,22 @@ export default function CategoriesPage() {
                 </table>
               </div>
 
-              <Pagination
-                currentPage={currentPage}
-                totalPages={totalPages}
-                total={total}
-                itemsPerPage={itemsPerPage}
-                onPageChange={setCurrentPage}
-                onItemsPerPageChange={setItemsPerPage}
-                itemsPerPageOptions={[5, 10, 20, 50, 100]}
-                centeredLayout
-              />
             </>
           )}
         </div>
+
+        {!loading && categories.length > 0 && (
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            total={total}
+            itemsPerPage={itemsPerPage}
+            onPageChange={setCurrentPage}
+            onItemsPerPageChange={setItemsPerPage}
+            itemsPerPageOptions={[5, 10, 20, 50, 100]}
+            centeredLayout
+          />
+        )}
       </div>
 
       <ViewDataModal
