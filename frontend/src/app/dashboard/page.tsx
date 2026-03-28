@@ -680,7 +680,7 @@ export default function DashboardPage() {
           <div className="dashboard-summary-card-success p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600">Total Receita</p>
+                <p className="text-sm font-medium text-green-700">Total Receita</p>
                 <p className="text-2xl font-bold text-green-600">
                   {currency(summaryCards.total_receita)}
                 </p>
@@ -692,7 +692,7 @@ export default function DashboardPage() {
           <div className="dashboard-summary-card-error p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600">Total Despesa</p>
+                <p className="text-sm font-medium text-red-700">Total Despesa</p>
                 <p className="text-2xl font-bold text-red-600">
                   {currency(summaryCards.total_despesa)}
                 </p>
@@ -710,7 +710,15 @@ export default function DashboardPage() {
           >
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600">Total Líquido</p>
+                <p
+                  className={`text-sm font-medium ${
+                    summaryCards.total_liquido >= 0
+                      ? "text-blue-700"
+                      : "text-red-700"
+                  }`}
+                >
+                  Total Líquido
+                </p>
                 <p
                   className={`text-2xl font-bold ${
                     summaryCards.total_liquido >= 0

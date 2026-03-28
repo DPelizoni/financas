@@ -269,7 +269,7 @@ export default function UsuariosPage() {
               startIcon={<Icon path={mdiPlusBoxOutline} size={0.8} />}
               className="w-full sm:w-auto"
             >
-              Novo Usuario
+              Novo Usuário
             </AppButton>
           </div>
         </PageContainer>
