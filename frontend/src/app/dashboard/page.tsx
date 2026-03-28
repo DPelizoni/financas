@@ -986,7 +986,8 @@ export default function DashboardPage() {
                     domain={[0, (dataMax: number) => Math.ceil(dataMax * 1.2)]}
                   />
                   <Tooltip
-                    formatter={(v) => currency(Number(v || 0))}
+                    formatter={(v) => [currency(Number(v || 0)), "Total"]}
+                    labelFormatter={(label) => `Categoria: ${label}`}
                     contentStyle={tooltipContentStyle}
                     labelStyle={tooltipLabelStyle}
                     itemStyle={tooltipItemStyle}
