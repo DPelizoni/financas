@@ -45,6 +45,16 @@ interface MonthlyPoint {
   saldo: number;
 }
 
+const tipoLabel: Record<"DESPESA" | "RECEITA", string> = {
+  DESPESA: "Despesa",
+  RECEITA: "Receita",
+};
+
+const situacaoLabel: Record<"PENDENTE" | "PAGO", string> = {
+  PENDENTE: "Pendente",
+  PAGO: "Pago",
+};
+
 const chartColors = {
   receitas: "rgb(var(--app-chart-receita))",
   despesas: "rgb(var(--app-chart-despesa))",
@@ -1059,7 +1069,7 @@ export default function DashboardPage() {
                           : "bg-red-100 text-red-700"
                       }`}
                     >
-                      {t.tipo}
+                      {tipoLabel[t.tipo]}
                     </span>
                   </div>
 
@@ -1082,7 +1092,7 @@ export default function DashboardPage() {
                           : "bg-yellow-100 text-yellow-700"
                       }`}
                     >
-                      {t.situacao}
+                      {situacaoLabel[t.situacao]}
                     </span>
                     <span className="text-sm font-semibold text-gray-900">
                       {currency(Number(t.valor))}
@@ -1215,7 +1225,7 @@ export default function DashboardPage() {
                               : "bg-red-100 text-red-700"
                           }`}
                         >
-                          {t.tipo}
+                          {tipoLabel[t.tipo]}
                         </span>
                       </td>
                       <td className="px-3 py-2 text-xs text-gray-700">
@@ -1235,7 +1245,7 @@ export default function DashboardPage() {
                               : "bg-yellow-100 text-yellow-700"
                           }`}
                         >
-                          {t.situacao}
+                          {situacaoLabel[t.situacao]}
                         </span>
                       </td>
                       <td className="px-3 py-2 text-right text-xs font-semibold text-gray-900">

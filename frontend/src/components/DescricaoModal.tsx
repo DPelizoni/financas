@@ -16,6 +16,11 @@ interface DescricaoModalProps {
   onSave: (message: string) => Promise<void> | void;
 }
 
+const categoryTipoLabel: Record<"RECEITA" | "DESPESA", string> = {
+  RECEITA: "Receita",
+  DESPESA: "Despesa",
+};
+
 export default function DescricaoModal({
   descricao,
   onClose,
@@ -239,7 +244,7 @@ export default function DescricaoModal({
                 <MenuItem value={0}>Selecione uma categoria</MenuItem>
                 {sortedCategories.map((cat) => (
                   <MenuItem key={cat.id} value={cat.id}>
-                    {cat.nome} ({cat.tipo})
+                    {cat.nome} ({categoryTipoLabel[cat.tipo]})
                   </MenuItem>
                 ))}
               </TextField>

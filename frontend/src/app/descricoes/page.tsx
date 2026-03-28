@@ -361,11 +361,11 @@ export default function DescricoesPage() {
 
                       {descricao.ativo ? (
                         <span className="inline-flex items-center rounded-full bg-green-100 px-2.5 py-1 text-[11px] font-semibold leading-none text-green-800">
-                          Ativa
+                          Ativo
                         </span>
                       ) : (
                         <span className="inline-flex items-center rounded-full bg-red-100 px-2.5 py-1 text-[11px] font-semibold leading-none text-red-800">
-                          Inativa
+                          Inativo
                         </span>
                       )}
                     </div>
@@ -461,11 +461,11 @@ export default function DescricoesPage() {
                         <td className="whitespace-nowrap px-3 py-2">
                           {descricao.ativo ? (
                             <span className="inline-flex items-center rounded-full bg-green-100 px-2.5 py-1 text-[11px] font-semibold leading-none text-green-800">
-                              Ativa
+                              Ativo
                             </span>
                           ) : (
                             <span className="inline-flex items-center rounded-full bg-red-100 px-2.5 py-1 text-[11px] font-semibold leading-none text-red-800">
-                              Inativa
+                              Inativo
                             </span>
                           )}
                         </td>

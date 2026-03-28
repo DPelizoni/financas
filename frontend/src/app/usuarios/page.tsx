@@ -36,6 +36,11 @@ const roleLabel: Record<UserRole, string> = {
   USUARIO: "Usuario",
 };
 
+const statusLabel: Record<UserStatus, string> = {
+  ATIVO: "Ativo",
+  INATIVO: "Inativo",
+};
+
 export default function UsuariosPage() {
   const router = useRouter();
 
@@ -155,7 +160,7 @@ export default function UsuariosPage() {
       await userService.updateStatus(user.id, { status: nextStatus });
       showFeedback(
         "success",
-        `Status de ${user.nome} atualizado para ${nextStatus}.`,
+        `Status de ${user.nome} atualizado para ${statusLabel[nextStatus]}.`,
       );
       await loadUsers();
     } catch (error: any) {
@@ -386,7 +391,9 @@ export default function UsuariosPage() {
                         }`}
                         title="Clique para alternar o status"
                       >
-                        {updatingId === user.id ? "Atualizando..." : user.status}
+                        {updatingId === user.id
+                          ? "Atualizando..."
+                          : statusLabel[user.status]}
                       </button>
                     </div>
 
@@ -509,7 +516,7 @@ export default function UsuariosPage() {
                           >
                             {updatingId === user.id
                               ? "Atualizando..."
-                              : user.status}
+                              : statusLabel[user.status]}
                           </button>
                         </td>
                         <td className="px-3 py-2 text-center text-xs font-medium">

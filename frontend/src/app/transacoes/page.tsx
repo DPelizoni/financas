@@ -53,6 +53,16 @@ interface FeedbackMessage {
   message: string;
 }
 
+const tipoLabel: Record<"DESPESA" | "RECEITA", string> = {
+  DESPESA: "Despesa",
+  RECEITA: "Receita",
+};
+
+const situacaoLabel: Record<"PENDENTE" | "PAGO", string> = {
+  PENDENTE: "Pendente",
+  PAGO: "Pago",
+};
+
 const monthInputToApi = (value: string): string | undefined => {
   if (!value) return undefined;
   const [year, month] = value.split("-");
@@ -331,7 +341,7 @@ export default function TransacoesPage() {
     try {
       const novaSituacao = transacao.situacao === "PAGO" ? "PENDENTE" : "PAGO";
       await transacaoService.update(transacao.id, { situacao: novaSituacao });
-      showFeedback("success", `Transação marcada como ${novaSituacao}.`);
+      showFeedback("success", `Transação marcada como ${situacaoLabel[novaSituacao]}.`);
       loadTransacoes();
     } catch (error) {
       console.error("Erro ao atualizar situação:", error);
@@ -1045,7 +1055,7 @@ export default function TransacoesPage() {
                             : "bg-green-100 text-green-800"
                         }`}
                       >
-                        {transacao.tipo}
+                        {tipoLabel[transacao.tipo]}
                       </span>
                     </div>
 
@@ -1069,7 +1079,7 @@ export default function TransacoesPage() {
                             : "app-status-toggle-warning"
                         }`}
                       >
-                        {transacao.situacao}
+                        {situacaoLabel[transacao.situacao]}
                       </button>
                       <p className="text-sm font-bold text-gray-900">
                         {formatCurrency(transacao.valor)}
@@ -1258,7 +1268,7 @@ export default function TransacoesPage() {
                               : "bg-green-100 text-green-800"
                           }`}
                         >
-                          {transacao.tipo}
+                          {tipoLabel[transacao.tipo]}
                         </span>
                       </td>
                       <td className="px-3 py-2 text-xs text-gray-900">
@@ -1282,7 +1292,7 @@ export default function TransacoesPage() {
                               : "app-status-toggle-warning"
                           }`}
                         >
-                          {transacao.situacao}
+                          {situacaoLabel[transacao.situacao]}
                         </button>
                       </td>
                       <td className="px-3 py-2 text-center">
