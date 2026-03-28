@@ -95,7 +95,7 @@ export const appThemeTokens: Record<ThemeMode, AppThemeTokens> = {
       900: "#0f172a",
     },
     background: {
-      canvas: "#eef6ff",
+      canvas: "#e6eef8",
       surface: "#ffffff",
       elevated: "#ffffff",
       muted: "#f1f5f9",
