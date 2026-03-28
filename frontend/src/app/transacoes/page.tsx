@@ -21,7 +21,6 @@ import {
   TransactionSectionLabel,
 } from "@/components/TransactionSection";
 import {
-  Plus,
   Copy,
   Trash,
   Search,
@@ -32,7 +31,7 @@ import {
   ChevronDown,
 } from "lucide-react";
 import Icon from "@mdi/react";
-import { mdiBroom } from "@mdi/js";
+import { mdiBroom, mdiPlusBoxOutline } from "@mdi/js";
 import { InputAdornment, MenuItem, TextField } from "@mui/material";
 import FeedbackAlert from "@/components/FeedbackAlert";
 import ConfirmDeleteModal from "@/components/ConfirmDeleteModal";
@@ -687,7 +686,7 @@ export default function TransacoesPage() {
                 }}
                 className="flex h-10 w-full items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-white transition-colors hover:bg-blue-700 dark:text-blue-100 sm:w-auto"
               >
-                <Plus size={20} />
+                <Icon path={mdiPlusBoxOutline} size={0.9} />
                 Nova Transação
               </button>
             </div>

@@ -2,13 +2,14 @@
 
 import { useEffect, useMemo, useState } from "react";
 import {
-  Plus,
   Search,
   Tags,
   X,
   ArrowDownWideNarrow,
   ArrowUpNarrowWide,
 } from "lucide-react";
+import Icon from "@mdi/react";
+import { mdiPlusBoxOutline } from "@mdi/js";
 import { categoryService, CategoryFilters } from "@/services/categoryService";
 import { Category } from "@/types/category";
 import CategoryModal from "@/components/CategoryModal";
@@ -195,7 +196,7 @@ export default function CategoriesPage() {
             <AppButton
               onClick={handleCreate}
               tone="primary"
-              startIcon={<Plus size={18} />}
+              startIcon={<Icon path={mdiPlusBoxOutline} size={0.8} />}
               className="w-full sm:w-auto"
             >
               Nova Categoria

@@ -6,10 +6,11 @@ import {
   ShieldCheck,
   Search,
   X,
-  Plus,
   ArrowDownWideNarrow,
   ArrowUpNarrowWide,
 } from "lucide-react";
+import Icon from "@mdi/react";
+import { mdiPlusBoxOutline } from "@mdi/js";
 import FeedbackAlert from "@/components/FeedbackAlert";
 import Pagination from "@/components/Pagination";
 import PageContainer from "@/components/PageContainer";
@@ -260,7 +261,7 @@ export default function UsuariosPage() {
             <AppButton
               onClick={handleOpenCreate}
               tone="primary"
-              startIcon={<Plus size={18} />}
+              startIcon={<Icon path={mdiPlusBoxOutline} size={0.8} />}
               className="w-full sm:w-auto"
             >
               Novo Usuario

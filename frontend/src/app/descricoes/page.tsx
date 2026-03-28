@@ -2,13 +2,14 @@
 
 import { useEffect, useMemo, useState } from "react";
 import {
-  Plus,
   Search,
   FileText,
   X,
   ArrowDownWideNarrow,
   ArrowUpNarrowWide,
 } from "lucide-react";
+import Icon from "@mdi/react";
+import { mdiPlusBoxOutline } from "@mdi/js";
 import {
   descricaoService,
   DescricaoFilters,
@@ -219,7 +220,7 @@ export default function DescricoesPage() {
             <AppButton
               onClick={handleCreate}
               tone="primary"
-              startIcon={<Plus size={18} />}
+              startIcon={<Icon path={mdiPlusBoxOutline} size={0.8} />}
               className="w-full sm:w-auto"
             >
               Nova Descrição
