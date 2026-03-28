@@ -29,6 +29,8 @@ import {
   ArrowDownWideNarrow,
   ArrowUpNarrowWide,
   ChevronDown,
+  Plus,
+  XCircle,
 } from "lucide-react";
 import Icon from "@mdi/react";
 import { mdiBroom, mdiPlusBoxOutline } from "@mdi/js";
@@ -1361,8 +1363,9 @@ export default function TransacoesPage() {
                     <button
                       type="button"
                       onClick={handleAddDestinoMes}
-                      className={copySectionClasses.secondaryButton}
+                      className={`${copySectionClasses.secondaryButton} inline-flex items-center justify-center gap-2`}
                     >
+                      <Plus size={16} />
                       Adicionar destino
                     </button>
                   </div>
@@ -1372,23 +1375,26 @@ export default function TransacoesPage() {
                   <button
                     type="button"
                     onClick={() => handleAddNextMonths(3)}
-                    className={copySectionClasses.shortcutButton}
+                    className={`${copySectionClasses.shortcutButton} inline-flex items-center gap-1`}
                   >
-                    + 3 meses
+                    <Plus size={14} />
+                    3 meses
                   </button>
                   <button
                     type="button"
                     onClick={() => handleAddNextMonths(6)}
-                    className={copySectionClasses.shortcutButton}
+                    className={`${copySectionClasses.shortcutButton} inline-flex items-center gap-1`}
                   >
-                    + 6 meses
+                    <Plus size={14} />
+                    6 meses
                   </button>
                   <button
                     type="button"
                     onClick={() => handleAddNextMonths(12)}
-                    className={copySectionClasses.shortcutButton}
+                    className={`${copySectionClasses.shortcutButton} inline-flex items-center gap-1`}
                   >
-                    + 12 meses
+                    <Plus size={14} />
+                    12 meses
                   </button>
                 </div>
 
@@ -1416,19 +1422,25 @@ export default function TransacoesPage() {
                   <button
                     type="button"
                     onClick={() => setCopyModalOpen(false)}
-                    className={copySectionClasses.secondaryButton}
+                    className={`${copySectionClasses.secondaryButton} inline-flex items-center justify-center gap-2`}
                   >
+                    <XCircle size={16} />
                     Cancelar
                   </button>
                   <button
                     type="button"
                     onClick={handleCopyByMonth}
                     disabled={copyLoading}
-                    className={`${copySectionClasses.primaryCompactButton} whitespace-nowrap`}
+                    className={`${copySectionClasses.primaryCompactButton} inline-flex items-center justify-center gap-2 whitespace-nowrap`}
                   >
                     {copyLoading
                       ? "Copiando..."
-                      : "Copiar para meses selecionados"}
+                      : (
+                        <>
+                          <Copy size={16} />
+                          Copiar para meses selecionados
+                        </>
+                      )}
                   </button>
                 </div>
               </div>
@@ -1470,8 +1482,9 @@ export default function TransacoesPage() {
                     <button
                       type="button"
                       onClick={handleAddDeleteMes}
-                      className={deleteSectionClasses.secondaryButton}
+                      className={`${deleteSectionClasses.secondaryButton} inline-flex items-center justify-center gap-2`}
                     >
+                      <Plus size={16} />
                       Adicionar mês
                     </button>
                   </div>
@@ -1481,23 +1494,26 @@ export default function TransacoesPage() {
                   <button
                     type="button"
                     onClick={() => handleAddDeleteNextMonths(3)}
-                    className={deleteSectionClasses.shortcutButton}
+                    className={`${deleteSectionClasses.shortcutButton} inline-flex items-center gap-1`}
                   >
-                    + 3 meses
+                    <Plus size={14} />
+                    3 meses
                   </button>
                   <button
                     type="button"
                     onClick={() => handleAddDeleteNextMonths(6)}
-                    className={deleteSectionClasses.shortcutButton}
+                    className={`${deleteSectionClasses.shortcutButton} inline-flex items-center gap-1`}
                   >
-                    + 6 meses
+                    <Plus size={14} />
+                    6 meses
                   </button>
                   <button
                     type="button"
                     onClick={() => handleAddDeleteNextMonths(12)}
-                    className={deleteSectionClasses.shortcutButton}
+                    className={`${deleteSectionClasses.shortcutButton} inline-flex items-center gap-1`}
                   >
-                    + 12 meses
+                    <Plus size={14} />
+                    12 meses
                   </button>
                 </div>
 
@@ -1525,19 +1541,25 @@ export default function TransacoesPage() {
                   <button
                     type="button"
                     onClick={() => setDeleteModalOpen(false)}
-                    className={deleteSectionClasses.secondaryButton}
+                    className={`${deleteSectionClasses.secondaryButton} inline-flex items-center justify-center gap-2`}
                   >
+                    <XCircle size={16} />
                     Cancelar
                   </button>
                   <button
                     type="button"
                     onClick={requestDeleteByMonths}
                     disabled={deleteMonthsLoading}
-                    className={deleteSectionClasses.primaryCompactButton}
+                    className={`${deleteSectionClasses.primaryCompactButton} inline-flex items-center justify-center gap-2`}
                   >
                     {deleteMonthsLoading
                       ? "Excluindo..."
-                      : "Excluir meses selecionados"}
+                      : (
+                        <>
+                          <Trash size={16} />
+                          Excluir meses selecionados
+                        </>
+                      )}
                   </button>
                 </div>
               </div>
