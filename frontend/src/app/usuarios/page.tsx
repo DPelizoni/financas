@@ -190,8 +190,8 @@ export default function UsuariosPage() {
   };
 
   const handleDelete = (user: User) => {
-    if (user.status === "INATIVO") {
-      showFeedback("error", "Usuario ja esta inativo.");
+    if (!isAdmin) {
+      showFeedback("error", "Somente ADMIN pode excluir usuários.");
       return;
     }
 
@@ -203,14 +203,14 @@ export default function UsuariosPage() {
 
     try {
       setUpdatingId(deleteTarget.id);
-      await userService.updateStatus(deleteTarget.id, { status: "INATIVO" });
-      showFeedback("success", `Usuario ${deleteTarget.nome} foi inativado.`);
+      await userService.delete(deleteTarget.id);
+      showFeedback("success", `Usuário ${deleteTarget.nome} foi excluído.`);
       setDeleteTarget(null);
       await loadUsers();
     } catch (error: any) {
       const message =
         error?.response?.data?.message ||
-        "Nao foi possivel inativar o usuario.";
+        "Não foi possível excluir o usuário.";
       showFeedback("error", message);
     } finally {
       setUpdatingId(null);
@@ -412,12 +412,14 @@ export default function UsuariosPage() {
                         title="Editar"
                         onClick={() => handleOpenEdit(user)}
                       />
-                      <TableActionButton
-                        action="deactivate"
-                        title="Inativar usuário"
-                        onClick={() => handleDelete(user)}
-                        disabled={user.status === "INATIVO"}
-                      />
+                      {isAdmin && (
+                        <TableActionButton
+                          action="delete"
+                          title="Excluir usuário"
+                          onClick={() => handleDelete(user)}
+                          disabled={updatingId === user.id}
+                        />
+                      )}
                     </div>
                   </div>
                 ))}
@@ -524,13 +526,15 @@ export default function UsuariosPage() {
                               onClick={() => handleOpenEdit(user)}
                               compact
                             />
-                            <TableActionButton
-                              action="deactivate"
-                              title="Inativar usuário"
-                              onClick={() => handleDelete(user)}
-                              compact
-                              disabled={user.status === "INATIVO"}
-                            />
+                            {isAdmin && (
+                              <TableActionButton
+                                action="delete"
+                                title="Excluir usuário"
+                                onClick={() => handleDelete(user)}
+                                compact
+                                disabled={updatingId === user.id}
+                              />
+                            )}
                           </div>
                         </td>
                       </tr>
@@ -574,14 +578,14 @@ export default function UsuariosPage() {
 
       <ConfirmDeleteModal
         isOpen={!!deleteTarget}
-        title="Confirmar inativacao"
+        title="Confirmar exclusão"
         description={
           <>
-            Esta acao marcara o usuario <strong>{deleteTarget?.nome}</strong>{" "}
-            como inativo.
+            Esta ação excluirá definitivamente o usuário{" "}
+            <strong>{deleteTarget?.nome}</strong>.
           </>
         }
-        confirmLabel="Inativar usuario"
+        confirmLabel="Excluir usuário"
         onCancel={() => setDeleteTarget(null)}
         onConfirm={handleConfirmDelete}
       />

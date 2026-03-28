@@ -214,6 +214,45 @@ class UserService {
       throw new AppError(500, "Erro ao atualizar usuário");
     }
   }
+
+  async deleteUser(id: number, currentUserId: number): Promise<void> {
+    try {
+      const target = await userRepository.findById(id);
+      if (!target) {
+        throw new AppError(404, "Usuario nao encontrado");
+      }
+
+      if (id === currentUserId) {
+        throw new AppError(400, "Voce nao pode excluir o proprio usuario");
+      }
+
+      if (target.role === "ADMIN") {
+        const adminsCount = await userRepository.countByRole("ADMIN");
+        if (adminsCount <= 1) {
+          throw new AppError(400, "Nao e permitido excluir o ultimo ADMIN do sistema");
+        }
+
+        if (target.status === "ATIVO") {
+          const activeAdmins = await userRepository.countActiveByRole("ADMIN");
+          if (activeAdmins <= 1) {
+            throw new AppError(
+              400,
+              "Nao e permitido excluir o ultimo ADMIN ativo do sistema",
+            );
+          }
+        }
+      }
+
+      const deleted = await userRepository.delete(id);
+      if (!deleted) {
+        throw new AppError(500, "Erro ao excluir usuario");
+      }
+    } catch (error) {
+      if (error instanceof AppError) throw error;
+      console.error("Erro ao excluir usuario:", error);
+      throw new AppError(500, "Erro ao excluir usuario");
+    }
+  }
 }
 
 export default new UserService();

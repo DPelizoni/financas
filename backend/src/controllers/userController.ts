@@ -102,6 +102,21 @@ class UserController {
       next(error);
     }
   }
+
+  async delete(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const currentUserId = req.user?.id;
+      if (!currentUserId) {
+        throw new AppError(401, "Usuario nao autenticado");
+      }
+
+      const id = parseInt(req.params.id);
+      await userService.deleteUser(id, currentUserId);
+      res.json(successResponse("Usuario excluido com sucesso"));
+    } catch (error) {
+      next(error);
+    }
+  }
 }
 
 export default new UserController();

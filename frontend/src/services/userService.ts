@@ -61,4 +61,8 @@ export const userService = {
 
     return response.data.data;
   },
+
+  async delete(id: number): Promise<void> {
+    await apiClient.delete(`/api/users/${id}`);
+  },
 };

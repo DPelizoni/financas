@@ -134,6 +134,15 @@ export class UserRepository {
     return this.findById(id);
   }
 
+  async delete(id: number): Promise<boolean> {
+    const [result] = await pool.query<ResultSetHeader>(
+      "DELETE FROM users WHERE id = ?",
+      [id],
+    );
+
+    return result.affectedRows > 0;
+  }
+
   async countByRole(role: UserRole): Promise<number> {
     const [rows] = await pool.query<RowDataPacket[]>(
       "SELECT COUNT(*) as total FROM users WHERE role = ?",
