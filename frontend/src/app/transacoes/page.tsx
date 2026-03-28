@@ -1070,7 +1070,7 @@ export default function TransacoesPage() {
                     <div className="mt-3 flex items-center justify-between">
                       <button
                         onClick={() => handleToggleSituacao(transacao)}
-                        className={`inline-flex min-h-8 items-center rounded-full px-2.5 py-1 text-[11px] font-semibold leading-none transition ${
+                        className={`inline-flex min-h-8 items-center rounded-full px-2.5 py-1 text-[11px] font-medium leading-none transition ${
                           transacao.situacao === "PAGO"
                             ? "app-status-toggle-success"
                             : "app-status-toggle-warning"
@@ -1283,7 +1283,7 @@ export default function TransacoesPage() {
                       <td className="px-3 py-2 text-center">
                         <button
                           onClick={() => handleToggleSituacao(transacao)}
-                          className={`inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-semibold leading-none transition ${
+                          className={`inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-medium leading-none transition ${
                             transacao.situacao === "PAGO"
                               ? "app-status-toggle-success"
                               : "app-status-toggle-warning"

@@ -16,7 +16,7 @@ export default function ThemeToggle({ className = "" }: ThemeToggleProps) {
       onClick={toggleMode}
       aria-label={isDarkMode ? "Ativar modo claro" : "Ativar modo escuro"}
       title={isDarkMode ? "Ativar modo claro" : "Ativar modo escuro"}
-      className={`app-control-button inline-flex items-center gap-2 px-3 py-1.5 text-xs font-semibold ${className}`.trim()}
+      className={`app-control-button inline-flex items-center gap-2 px-3 py-1.5 text-xs font-medium ${className}`.trim()}
     >
       {isDarkMode ? <Sun size={14} /> : <Moon size={14} />}
       <span className="hidden sm:inline">{isDarkMode ? "Claro" : "Escuro"}</span>

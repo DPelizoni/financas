@@ -384,7 +384,7 @@ export default function UsuariosPage() {
                         type="button"
                         onClick={() => handleToggleStatus(user)}
                         disabled={updatingId === user.id}
-                        className={`inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-semibold leading-none transition ${
+                        className={`inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-medium leading-none transition ${
                           user.status === "ATIVO"
                             ? "app-status-toggle-success"
                             : "app-status-toggle-error"
@@ -507,7 +507,7 @@ export default function UsuariosPage() {
                             type="button"
                             onClick={() => handleToggleStatus(user)}
                             disabled={updatingId === user.id}
-                            className={`inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-semibold leading-none transition ${
+                            className={`inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-medium leading-none transition ${
                               user.status === "ATIVO"
                                 ? "app-status-toggle-success"
                                 : "app-status-toggle-error"
