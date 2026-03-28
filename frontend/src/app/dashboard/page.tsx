@@ -434,6 +434,40 @@ export default function DashboardPage() {
     singleMonthTotal > 0
       ? Math.round((timeline[0].despesas / singleMonthTotal) * 100)
       : 0;
+  const renderDonutPercentLabel = ({
+    cx,
+    cy,
+    midAngle,
+    innerRadius,
+    outerRadius,
+    percent,
+    name,
+  }: any) => {
+    const safePercent = Number(percent || 0);
+    if (safePercent <= 0) return null;
+
+    const radius =
+      Number(innerRadius) + (Number(outerRadius) - Number(innerRadius)) * 0.5;
+    const angle = (-Number(midAngle) * Math.PI) / 180;
+    const x = Number(cx) + radius * Math.cos(angle);
+    const y = Number(cy) + radius * Math.sin(angle);
+    const labelColor =
+      name === "Receita" ? chartColors.receitas : chartColors.despesas;
+
+    return (
+      <text
+        x={x}
+        y={y}
+        fill={labelColor}
+        textAnchor="middle"
+        dominantBaseline="central"
+        fontSize={12}
+        fontWeight={700}
+      >
+        {`${Math.round(safePercent * 100)}%`}
+      </text>
+    );
+  };
 
   if (loading) {
     return (
@@ -782,10 +816,7 @@ export default function DashboardPage() {
                               paddingAngle={3}
                               labelLine={false}
                               label={
-                                isMobile
-                                  ? false
-                                  : ({ percent }) =>
-                                      `${Math.round((percent || 0) * 100)}%`
+                                isMobile ? false : renderDonutPercentLabel
                               }
                             >
                               {singleMonthDonutData.map((entry) => (
@@ -819,10 +850,12 @@ export default function DashboardPage() {
                             />
                             Receita
                           </span>
-                          <span className="font-semibold text-green-600">
-                            <span className="inline-block min-w-[145px] text-right tabular-nums sm:min-w-[170px]">
-                              {currency(timeline[0].receitas)} ({receitaPercent}
-                              %)
+                          <span className="inline-block min-w-[145px] text-right tabular-nums sm:min-w-[170px]">
+                            <span className="text-green-600">
+                              {currency(timeline[0].receitas)}
+                            </span>{" "}
+                            <span className="font-bold text-green-600">
+                              ({receitaPercent}%)
                             </span>
                           </span>
                         </div>
@@ -834,10 +867,12 @@ export default function DashboardPage() {
                             />
                             Despesa
                           </span>
-                          <span className="font-semibold text-red-600">
-                            <span className="inline-block min-w-[145px] text-right tabular-nums sm:min-w-[170px]">
-                              {currency(timeline[0].despesas)} ({despesaPercent}
-                              %)
+                          <span className="inline-block min-w-[145px] text-right tabular-nums sm:min-w-[170px]">
+                            <span className="text-red-600">
+                              {currency(timeline[0].despesas)}
+                            </span>{" "}
+                            <span className="font-bold text-red-600">
+                              ({despesaPercent}%)
                             </span>
                           </span>
                         </div>
