@@ -49,6 +49,23 @@ const validateRegisterFields = (
   return errors;
 };
 
+const authFieldSx = {
+  "& .MuiOutlinedInput-root": {
+    borderRadius: "4px",
+    minHeight: "44px",
+    "&.MuiInputBase-sizeSmall": {
+      minHeight: "44px",
+    },
+    "& .MuiOutlinedInput-input": {
+      padding: "10px 14px",
+      lineHeight: 1.4,
+    },
+    "&.MuiInputBase-sizeSmall .MuiOutlinedInput-input": {
+      padding: "10px 14px",
+    },
+  },
+};
+
 export default function RegisterPage() {
   const router = useRouter();
 
@@ -164,6 +181,7 @@ export default function RegisterPage() {
               variant="outlined"
               size="small"
               fullWidth
+              sx={authFieldSx}
               value={nome}
               onChange={(e) => {
                 const nextNome = e.target.value;
@@ -205,6 +223,7 @@ export default function RegisterPage() {
               variant="outlined"
               size="small"
               fullWidth
+              sx={authFieldSx}
               value={email}
               onChange={(e) => {
                 const nextEmail = e.target.value;
@@ -246,6 +265,7 @@ export default function RegisterPage() {
               variant="outlined"
               size="small"
               fullWidth
+              sx={authFieldSx}
               value={senha}
               onChange={(e) => {
                 const nextSenha = e.target.value;
@@ -287,6 +307,7 @@ export default function RegisterPage() {
               variant="outlined"
               size="small"
               fullWidth
+              sx={authFieldSx}
               value={confirmarSenha}
               onChange={(e) => {
                 const nextConfirmarSenha = e.target.value;
