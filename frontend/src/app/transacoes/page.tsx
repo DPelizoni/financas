@@ -37,6 +37,7 @@ import { InputAdornment, MenuItem, TextField } from "@mui/material";
 import FeedbackAlert from "@/components/FeedbackAlert";
 import ConfirmDeleteModal from "@/components/ConfirmDeleteModal";
 import PageContainer from "@/components/PageContainer";
+import AppButton from "@/components/AppButton";
 import TableActionButton from "@/components/TableActionButton";
 import ViewDataModal from "@/components/ViewDataModal";
 import { useAccessibleModal } from "@/utils/useAccessibleModal";
@@ -652,14 +653,14 @@ export default function TransacoesPage() {
             </div>
             <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center">
               <div className="relative w-full sm:w-auto">
-                <button
-                  type="button"
+                <AppButton
+                  tone="outline"
                   onClick={() => setAdvancedActionsOpen((prev) => !prev)}
-                  className="app-button-outline flex h-10 w-full items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold transition sm:w-auto"
+                  endIcon={<ChevronDown size={18} />}
+                  className="w-full sm:w-auto"
                 >
                   Ações Avançadas
-                  <ChevronDown size={18} />
-                </button>
+                </AppButton>
 
                 {advancedActionsOpen && (
                   <div className="absolute right-0 z-20 mt-2 w-full rounded-lg border border-gray-200 bg-white p-2 shadow-lg sm:w-72">
@@ -689,16 +690,16 @@ export default function TransacoesPage() {
                 )}
               </div>
 
-              <button
+              <AppButton
                 onClick={() => {
                   setEditingTransacao(undefined);
                   setIsModalOpen(true);
                 }}
-                className="flex h-10 w-full items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-white transition-colors hover:bg-blue-700 dark:text-blue-100 sm:w-auto"
+                startIcon={<Icon path={mdiPlusBoxOutline} size={0.9} />}
+                className="w-full sm:w-auto"
               >
-                <Icon path={mdiPlusBoxOutline} size={0.9} />
                 Nova Transação
-              </button>
+              </AppButton>
             </div>
           </div>
         </PageContainer>
