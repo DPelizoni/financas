@@ -710,7 +710,7 @@ export default function TransacoesPage() {
         {/* Summary Cards */}
         {summary && (
           <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-            <div className="rounded-lg border border-dashed border-blue-200 bg-blue-50 p-4">
+            <div className="rounded-lg border border-blue-200 bg-blue-50 p-4">
               <h3 className="mb-3 text-sm font-semibold text-blue-900">
                 Totais
               </h3>
@@ -744,7 +744,7 @@ export default function TransacoesPage() {
               </div>
             </div>
 
-            <div className="rounded-lg border border-dashed border-green-200 bg-green-50 p-4">
+            <div className="rounded-lg border border-green-200 bg-green-50 p-4">
               <h3 className="mb-3 text-sm font-semibold text-green-900">
                 Pagos
               </h3>
@@ -778,7 +778,7 @@ export default function TransacoesPage() {
               </div>
             </div>
 
-            <div className="rounded-lg border border-dashed border-yellow-300 bg-yellow-50 p-4">
+            <div className="rounded-lg border border-yellow-300 bg-yellow-50 p-4">
               <h3 className="mb-3 text-sm font-semibold text-yellow-900">
                 Provisões
               </h3>
