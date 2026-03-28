@@ -17,7 +17,6 @@ import { TransacaoModal } from "@/components/TransacaoModal";
 import Pagination from "@/components/Pagination";
 import {
   getTransactionSectionClasses,
-  TransactionSection,
   TransactionSectionLabel,
 } from "@/components/TransactionSection";
 import {
@@ -117,7 +116,6 @@ export default function TransacoesPage() {
 
   const copySectionClasses = getTransactionSectionClasses("blue");
   const deleteSectionClasses = getTransactionSectionClasses("red");
-  const searchSectionClasses = getTransactionSectionClasses("gray");
   const [transacoes, setTransacoes] = useState<Transacao[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [banks, setBanks] = useState<Bank[]>([]);
@@ -816,9 +814,8 @@ export default function TransacoesPage() {
 
         {/* Filters */}
         <div className="filter-panel-surface">
-          <TransactionSection title="Buscar Transações" tone="gray">
-            <div className="space-y-3">
-              <div className="grid grid-cols-1 gap-3 lg:grid-cols-5">
+          <div className="space-y-3">
+            <div className="grid grid-cols-1 gap-3 lg:grid-cols-5">
                 <div>
                   <TextField
                     type="month"
@@ -978,7 +975,7 @@ export default function TransacoesPage() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 gap-3 lg:grid-cols-5">
+            <div className="grid grid-cols-1 gap-3 lg:grid-cols-5">
                 <div className="lg:col-span-4">
                   <TextField
                     type="search"
@@ -1008,9 +1005,8 @@ export default function TransacoesPage() {
                     Limpar Filtros
                   </button>
                 </div>
-              </div>
             </div>
-          </TransactionSection>
+          </div>
         </div>
 
         {/* Table */}

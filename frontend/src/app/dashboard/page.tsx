@@ -34,7 +34,6 @@ import { Category } from "@/types/category";
 import { Bank } from "@/types/bank";
 import FeedbackAlert from "@/components/FeedbackAlert";
 import PageContainer from "@/components/PageContainer";
-import { TransactionSection } from "@/components/TransactionSection";
 import { MenuItem, TextField } from "@mui/material";
 
 interface MonthlyPoint {
@@ -505,7 +504,6 @@ export default function DashboardPage() {
         </PageContainer>
 
         <div className="filter-panel-surface">
-          <TransactionSection title="Filtros Globais" tone="gray">
             <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-4">
               <div>
                 <TextField
@@ -673,7 +671,6 @@ export default function DashboardPage() {
                 </button>
               </div>
             </div>
-          </TransactionSection>
         </div>
 
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
