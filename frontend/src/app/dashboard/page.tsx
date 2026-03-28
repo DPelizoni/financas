@@ -438,7 +438,6 @@ export default function DashboardPage() {
     cx,
     cy,
     midAngle,
-    innerRadius,
     outerRadius,
     percent,
     name,
@@ -446,11 +445,12 @@ export default function DashboardPage() {
     const safePercent = Number(percent || 0);
     if (safePercent <= 0) return null;
 
-    const radius =
-      Number(innerRadius) + (Number(outerRadius) - Number(innerRadius)) * 0.5;
+    const centerX = Number(cx);
+    const centerY = Number(cy);
+    const radius = Number(outerRadius) + 16;
     const angle = (-Number(midAngle) * Math.PI) / 180;
-    const x = Number(cx) + radius * Math.cos(angle);
-    const y = Number(cy) + radius * Math.sin(angle);
+    const x = centerX + radius * Math.cos(angle);
+    const y = centerY + radius * Math.sin(angle);
     const labelColor =
       name === "Receita" ? chartColors.receitas : chartColors.despesas;
 
@@ -459,9 +459,9 @@ export default function DashboardPage() {
         x={x}
         y={y}
         fill={labelColor}
-        textAnchor="middle"
+        textAnchor={x >= centerX ? "start" : "end"}
         dominantBaseline="central"
-        fontSize={12}
+        fontSize={13}
         fontWeight={700}
       >
         {`${Math.round(safePercent * 100)}%`}
@@ -851,10 +851,13 @@ export default function DashboardPage() {
                             Receita
                           </span>
                           <span className="inline-block min-w-[145px] text-right tabular-nums sm:min-w-[170px]">
-                            <span className="text-green-600">
+                            <span style={{ color: chartColors.receitas }}>
                               {currency(timeline[0].receitas)}
                             </span>{" "}
-                            <span className="font-bold text-green-600">
+                            <span
+                              className="font-bold"
+                              style={{ color: chartColors.receitas }}
+                            >
                               ({receitaPercent}%)
                             </span>
                           </span>
@@ -868,10 +871,13 @@ export default function DashboardPage() {
                             Despesa
                           </span>
                           <span className="inline-block min-w-[145px] text-right tabular-nums sm:min-w-[170px]">
-                            <span className="text-red-600">
+                            <span style={{ color: chartColors.despesas }}>
                               {currency(timeline[0].despesas)}
                             </span>{" "}
-                            <span className="font-bold text-red-600">
+                            <span
+                              className="font-bold"
+                              style={{ color: chartColors.despesas }}
+                            >
                               ({despesaPercent}%)
                             </span>
                           </span>
