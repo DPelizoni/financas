@@ -101,7 +101,7 @@ export function getTransactionSectionClasses(tone: TransactionSectionTone) {
 
   return {
     container: `${containerBaseClass} ${palette.container}`.trim(),
-    title: `mb-3 text-sm font-semibold ${palette.title}`,
+    title: `mb-6 text-sm font-semibold ${palette.title}`,
     label: `mb-1 block text-xs font-medium ${palette.label}`,
     input: `${baseInputClass} ${palette.input}`,
     secondaryButton: `${baseSecondaryButtonClass} ${palette.secondaryButton}`,

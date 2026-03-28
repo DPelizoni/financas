@@ -468,7 +468,7 @@ body {
       rgb(var(--app-bg-muted))
     );
     box-shadow: var(--app-shadow-sm);
-    @apply rounded p-4;
+    @apply rounded p-5;
   }
 
   .dashboard-summary-card-success {

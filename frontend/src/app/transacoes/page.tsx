@@ -807,7 +807,7 @@ export default function TransacoesPage() {
         {/* Filters */}
         <div className="filter-panel-surface">
           <TransactionSection title="Buscar Transações" tone="gray">
-            <div className="mt-4 space-y-3">
+            <div className="space-y-3">
               <div className="grid grid-cols-1 gap-3 lg:grid-cols-5">
                 <div>
                   <TextField
