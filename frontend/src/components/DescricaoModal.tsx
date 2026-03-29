@@ -1,13 +1,21 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { Ban, Save } from "lucide-react";
-import { descricaoService } from "@/services/descricaoService";
-import { categoryService } from "@/services/categoryService";
-import { Descricao, DescricaoInput } from "@/types/descricao";
-import { Category } from "@/types/category";
-import AppButton from "@/components/AppButton";
 import { MenuItem, TextField } from "@mui/material";
+import AppButton from "@/components/AppButton";
+import FormErrorSummary from "@/forms/components/FormErrorSummary";
+import {
+  focusFirstInvalidField,
+  FormFieldErrors,
+  hasFormFieldErrors,
+  normalizeApiFormError,
+} from "@/forms/core/form-error";
+import { useFormFeedback } from "@/forms/hooks/useFormFeedback";
+import { categoryService } from "@/services/categoryService";
+import { descricaoService } from "@/services/descricaoService";
+import { Category } from "@/types/category";
+import { Descricao, DescricaoInput } from "@/types/descricao";
 import { useAccessibleModal } from "@/utils/useAccessibleModal";
 
 interface DescricaoModalProps {
@@ -21,13 +29,34 @@ const categoryTipoLabel: Record<"RECEITA" | "DESPESA", string> = {
   DESPESA: "Despesa",
 };
 
+const descricaoFields = ["nome", "categoria_id", "ativo"] as const;
+type DescricaoField = (typeof descricaoFields)[number];
+
+const validateDescricaoForm = (
+  values: DescricaoInput,
+): FormFieldErrors<DescricaoField> => {
+  const errors: FormFieldErrors<DescricaoField> = {};
+
+  if (!values.nome || values.nome.trim().length < 2) {
+    errors.nome = "Nome deve ter no minimo 2 caracteres.";
+  }
+
+  if (!values.categoria_id || values.categoria_id <= 0) {
+    errors.categoria_id = "Selecione uma categoria.";
+  }
+
+  return errors;
+};
+
 export default function DescricaoModal({
   descricao,
   onClose,
   onSave,
 }: DescricaoModalProps) {
   const modalRef = useRef<HTMLDivElement>(null);
+  const formRef = useRef<HTMLFormElement>(null);
   const titleId = useId();
+
   const [formData, setFormData] = useState<DescricaoInput>({
     nome: "",
     categoria_id: 0,
@@ -37,9 +66,23 @@ export default function DescricaoModal({
     null,
   );
   const [categories, setCategories] = useState<Category[]>([]);
-  const [loading, setLoading] = useState(false);
   const [categoriesLoading, setCategoriesLoading] = useState(true);
-  const [errors, setErrors] = useState<Record<string, string>>({});
+
+  const {
+    touched,
+    fieldErrors,
+    generalError,
+    isSubmitting,
+    setGeneralError,
+    clearGeneralError,
+    setIsSubmitting,
+    setFieldErrors,
+    markFieldTouched,
+    markAllTouched,
+    clearAllErrors,
+    resetTouched,
+    shouldShowError,
+  } = useFormFeedback<DescricaoField>(descricaoFields);
 
   const sortedCategories = useMemo(
     () => [...categories].sort((a, b) => a.nome.localeCompare(b.nome, "pt-BR")),
@@ -52,16 +95,15 @@ export default function DescricaoModal({
         setCategoriesLoading(true);
         const response = await categoryService.getAll({ limit: 100 });
         setCategories(response.data || []);
-      } catch (error) {
-        console.error("Erro ao carregar categorias:", error);
-        setErrors({ geral: "Não foi possível carregar as categorias." });
+      } catch {
+        setGeneralError("Nao foi possivel carregar as categorias.");
       } finally {
         setCategoriesLoading(false);
       }
     };
 
     loadCategories();
-  }, []);
+  }, [setGeneralError]);
 
   useEffect(() => {
     if (descricao) {
@@ -71,16 +113,18 @@ export default function DescricaoModal({
         ativo: descricao.ativo,
       });
       setOriginalDescricao(descricao);
-      return;
+    } else {
+      setOriginalDescricao(null);
+      setFormData({
+        nome: "",
+        categoria_id: categories.length > 0 ? categories[0].id : 0,
+        ativo: true,
+      });
     }
 
-    setOriginalDescricao(null);
-    setFormData({
-      nome: "",
-      categoria_id: categories.length > 0 ? categories[0].id : 0,
-      ativo: true,
-    });
-  }, [descricao, categories]);
+    clearAllErrors();
+    resetTouched();
+  }, [descricao, categories, clearAllErrors, resetTouched]);
 
   useAccessibleModal({
     isOpen: true,
@@ -88,61 +132,69 @@ export default function DescricaoModal({
     onClose,
   });
 
-  const validate = (): boolean => {
-    const newErrors: Record<string, string> = {};
+  const updateField = <K extends keyof DescricaoInput>(
+    field: K,
+    value: DescricaoInput[K],
+  ) => {
+    const nextFormData = {
+      ...formData,
+      [field]: value,
+    } as DescricaoInput;
 
-    if (!formData.nome || formData.nome.trim().length < 2) {
-      newErrors.nome = "Nome deve ter no mínimo 2 caracteres";
+    setFormData(nextFormData);
+
+    if (generalError) {
+      clearGeneralError();
     }
 
-    if (!formData.categoria_id || formData.categoria_id <= 0) {
-      newErrors.categoria_id = "Selecione uma categoria";
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  const handleChange = (field: keyof DescricaoInput, value: any) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
-    if (errors[field]) {
-      setErrors((prev) => {
-        const newErrors = { ...prev };
-        delete newErrors[field];
-        return newErrors;
-      });
+    if (touched[field as DescricaoField] || Object.values(touched).some(Boolean)) {
+      setFieldErrors(validateDescricaoForm(nextFormData));
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleFieldBlur = (field: DescricaoField) => {
+    markFieldTouched(field);
+    setFieldErrors(validateDescricaoForm(formData));
+  };
 
-    if (!validate()) {
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+
+    clearGeneralError();
+
+    const nextFieldErrors = validateDescricaoForm(formData);
+    markAllTouched();
+    setFieldErrors(nextFieldErrors);
+
+    if (hasFormFieldErrors(nextFieldErrors)) {
+      focusFirstInvalidField(formRef, nextFieldErrors, descricaoFields);
       return;
     }
 
     try {
-      setLoading(true);
+      setIsSubmitting(true);
 
       if (originalDescricao) {
         const updates: Partial<DescricaoInput> = {};
         const trimmedNome = formData.nome.trim();
 
-        if (trimmedNome !== originalDescricao.nome) updates.nome = trimmedNome;
-        if (formData.categoria_id !== originalDescricao.categoria_id)
+        if (trimmedNome !== originalDescricao.nome) {
+          updates.nome = trimmedNome;
+        }
+        if (formData.categoria_id !== originalDescricao.categoria_id) {
           updates.categoria_id = formData.categoria_id;
-        if (formData.ativo !== originalDescricao.ativo)
+        }
+        if (formData.ativo !== originalDescricao.ativo) {
           updates.ativo = formData.ativo;
+        }
 
         if (Object.keys(updates).length === 0) {
-          setErrors({
-            geral: "Nenhuma alteração foi identificada para salvar.",
-          });
+          setGeneralError("Nenhuma alteracao foi identificada para salvar.");
           return;
         }
 
         await descricaoService.update(originalDescricao.id, updates);
-        await onSave(`Descrição "${trimmedNome}" atualizada com sucesso.`);
+        await onSave(`Descricao \"${trimmedNome}\" atualizada com sucesso.`);
       } else {
         const payload: DescricaoInput = {
           nome: formData.nome.trim(),
@@ -151,26 +203,24 @@ export default function DescricaoModal({
         };
 
         await descricaoService.create(payload);
-        await onSave(`Descrição "${payload.nome}" criada com sucesso.`);
+        await onSave(`Descricao \"${payload.nome}\" criada com sucesso.`);
       }
-    } catch (error: any) {
-      console.error("Erro ao salvar descrição:", error);
+    } catch (error: unknown) {
+      const normalized = normalizeApiFormError<DescricaoField>(
+        error,
+        "Nao foi possivel concluir a operacao.",
+      );
 
-      if (error.response?.data?.errors) {
-        const apiErrors: Record<string, string> = {};
-        error.response.data.errors.forEach((err: any) => {
-          apiErrors[err.field] = err.message;
-        });
-        setErrors(apiErrors);
+      setFieldErrors(normalized.fieldErrors);
+
+      if (hasFormFieldErrors(normalized.fieldErrors)) {
+        setGeneralError(null);
+        focusFirstInvalidField(formRef, normalized.fieldErrors, descricaoFields);
       } else {
-        setErrors({
-          geral:
-            error.response?.data?.message ||
-            "Não foi possível concluir a operação.",
-        });
+        setGeneralError(normalized.generalMessage);
       }
     } finally {
-      setLoading(false);
+      setIsSubmitting(false);
     }
   };
 
@@ -186,60 +236,57 @@ export default function DescricaoModal({
       >
         <div className="app-modal-header p-6">
           <h2 id={titleId} className="text-xl font-bold text-gray-900">
-            {descricao ? "Editar Descrição" : "Nova Descrição"}
+            {descricao ? "Editar Descricao" : "Nova Descricao"}
           </h2>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4 p-6">
-          {errors.geral && (
-            <p className="app-inline-error">
-              {errors.geral}
-            </p>
-          )}
-
+        <form ref={formRef} onSubmit={handleSubmit} className="space-y-4 p-6" noValidate>
           <div>
             <TextField
+              id="nome"
+              name="nome"
               type="text"
-              label="Nome da Descrição *"
+              label="Nome da Descricao *"
               autoFocus
               variant="outlined"
               size="small"
               fullWidth
               value={formData.nome}
-              onChange={(e) => handleChange("nome", e.target.value)}
+              onChange={(e) => updateField("nome", e.target.value)}
+              onBlur={() => handleFieldBlur("nome")}
               placeholder="Ex: Supermercado, Padaria"
               InputLabelProps={{ shrink: true }}
-              error={Boolean(errors.nome)}
-              helperText={errors.nome}
+              error={shouldShowError("nome")}
+              helperText={shouldShowError("nome") ? fieldErrors.nome : ""}
             />
           </div>
 
           <div>
             {categoriesLoading ? (
               <div className="app-surface-muted flex h-11 items-center justify-center">
-                <p className="text-sm text-gray-500">
-                  Carregando categorias...
-                </p>
+                <p className="text-sm text-gray-500">Carregando categorias...</p>
               </div>
             ) : categories.length === 0 ? (
               <div className="app-inline-error flex h-11 items-center justify-center">
-                <p className="text-sm text-red-600">
-                  Nenhuma categoria disponível
-                </p>
+                <p className="text-sm text-red-600">Nenhuma categoria disponivel</p>
               </div>
             ) : (
               <TextField
+                id="categoria_id"
+                name="categoria_id"
                 select
                 label="Categoria *"
                 variant="outlined"
                 size="small"
                 fullWidth
                 value={formData.categoria_id}
-                onChange={(e) =>
-                  handleChange("categoria_id", Number(e.target.value))
-                }
+                onChange={(e) => updateField("categoria_id", Number(e.target.value))}
+                onBlur={() => handleFieldBlur("categoria_id")}
                 InputLabelProps={{ shrink: true }}
-                error={Boolean(errors.categoria_id)}
+                error={shouldShowError("categoria_id")}
+                helperText={
+                  shouldShowError("categoria_id") ? fieldErrors.categoria_id : ""
+                }
               >
                 <MenuItem value={0}>Selecione uma categoria</MenuItem>
                 {sortedCategories.map((cat) => (
@@ -249,23 +296,27 @@ export default function DescricaoModal({
                 ))}
               </TextField>
             )}
-            {errors.categoria_id && (
-              <p className="mt-1 text-sm text-red-600">{errors.categoria_id}</p>
-            )}
           </div>
 
           <div className="flex items-center">
             <input
               type="checkbox"
               id="ativo"
+              name="ativo"
               checked={formData.ativo}
-              onChange={(e) => handleChange("ativo", e.target.checked)}
+              onChange={(e) => updateField("ativo", e.target.checked)}
+              onBlur={() => handleFieldBlur("ativo")}
               className="app-checkbox"
             />
-            <label htmlFor="ativo" className="ml-2 block text-sm text-[rgb(var(--app-text-secondary))]">
-              Descrição ativa
+            <label
+              htmlFor="ativo"
+              className="ml-2 block text-sm text-[rgb(var(--app-text-secondary))]"
+            >
+              Descricao ativa
             </label>
           </div>
+
+          <FormErrorSummary generalMessage={generalError} />
 
           <div className="flex gap-3 pt-4">
             <AppButton
@@ -274,7 +325,7 @@ export default function DescricaoModal({
               tone="outline-danger"
               fullWidth
               startIcon={<Ban size={16} />}
-              disabled={loading}
+              disabled={isSubmitting}
             >
               Cancelar
             </AppButton>
@@ -283,9 +334,9 @@ export default function DescricaoModal({
               tone="primary"
               fullWidth
               startIcon={<Save size={16} />}
-              disabled={loading || categoriesLoading}
+              disabled={isSubmitting || categoriesLoading}
             >
-              {loading ? "Salvando..." : "Salvar"}
+              {isSubmitting ? "Salvando..." : "Salvar"}
             </AppButton>
           </div>
         </form>
@@ -293,4 +344,3 @@ export default function DescricaoModal({
     </div>
   );
 }
-

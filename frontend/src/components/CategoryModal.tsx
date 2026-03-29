@@ -1,11 +1,19 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useId, useRef, useState } from "react";
 import { Ban, Save } from "lucide-react";
+import { MenuItem, TextField } from "@mui/material";
+import AppButton from "@/components/AppButton";
+import FormErrorSummary from "@/forms/components/FormErrorSummary";
+import {
+  focusFirstInvalidField,
+  FormFieldErrors,
+  hasFormFieldErrors,
+  normalizeApiFormError,
+} from "@/forms/core/form-error";
+import { useFormFeedback } from "@/forms/hooks/useFormFeedback";
 import { categoryService } from "@/services/categoryService";
 import { Category, CategoryInput } from "@/types/category";
-import AppButton from "@/components/AppButton";
-import { MenuItem, TextField } from "@mui/material";
 import { useAccessibleModal } from "@/utils/useAccessibleModal";
 
 interface CategoryModalProps {
@@ -14,12 +22,32 @@ interface CategoryModalProps {
   onSave: (message: string) => Promise<void> | void;
 }
 
+const categoryFields = ["nome", "tipo", "cor", "ativo"] as const;
+type CategoryField = (typeof categoryFields)[number];
+
+const validateCategoryForm = (
+  values: CategoryInput,
+): FormFieldErrors<CategoryField> => {
+  const errors: FormFieldErrors<CategoryField> = {};
+
+  if (!values.nome || values.nome.trim().length < 2) {
+    errors.nome = "Nome deve ter no minimo 2 caracteres.";
+  }
+
+  if (values.cor && !/^#[0-9A-Fa-f]{6}$/.test(values.cor)) {
+    errors.cor = "Cor deve estar no formato hexadecimal (#RRGGBB).";
+  }
+
+  return errors;
+};
+
 export default function CategoryModal({
   category,
   onClose,
   onSave,
 }: CategoryModalProps) {
   const modalRef = useRef<HTMLDivElement>(null);
+  const formRef = useRef<HTMLFormElement>(null);
   const titleId = useId();
   const [formData, setFormData] = useState<CategoryInput>({
     nome: "",
@@ -30,8 +58,22 @@ export default function CategoryModal({
   const [originalCategory, setOriginalCategory] = useState<Category | null>(
     null,
   );
-  const [loading, setLoading] = useState(false);
-  const [errors, setErrors] = useState<Record<string, string>>({});
+
+  const {
+    touched,
+    fieldErrors,
+    generalError,
+    isSubmitting,
+    setGeneralError,
+    clearGeneralError,
+    setIsSubmitting,
+    setFieldErrors,
+    markFieldTouched,
+    markAllTouched,
+    clearAllErrors,
+    resetTouched,
+    shouldShowError,
+  } = useFormFeedback<CategoryField>(categoryFields);
 
   useEffect(() => {
     if (category) {
@@ -42,17 +84,19 @@ export default function CategoryModal({
         ativo: category.ativo,
       });
       setOriginalCategory(category);
-      return;
+    } else {
+      setOriginalCategory(null);
+      setFormData({
+        nome: "",
+        tipo: "DESPESA",
+        cor: "#0EA5E9",
+        ativo: true,
+      });
     }
 
-    setOriginalCategory(null);
-    setFormData({
-      nome: "",
-      tipo: "DESPESA",
-      cor: "#0EA5E9",
-      ativo: true,
-    });
-  }, [category]);
+    clearAllErrors();
+    resetTouched();
+  }, [category, clearAllErrors, resetTouched]);
 
   useAccessibleModal({
     isOpen: true,
@@ -60,62 +104,72 @@ export default function CategoryModal({
     onClose,
   });
 
-  const validate = (): boolean => {
-    const newErrors: Record<string, string> = {};
+  const updateField = <K extends keyof CategoryInput>(
+    field: K,
+    value: CategoryInput[K],
+  ) => {
+    const nextFormData = {
+      ...formData,
+      [field]: value,
+    } as CategoryInput;
 
-    if (!formData.nome || formData.nome.trim().length < 2) {
-      newErrors.nome = "Nome deve ter no mínimo 2 caracteres";
+    setFormData(nextFormData);
+
+    if (generalError) {
+      clearGeneralError();
     }
 
-    if (formData.cor && !/^#[0-9A-Fa-f]{6}$/.test(formData.cor)) {
-      newErrors.cor = "Cor deve estar no formato hexadecimal (#RRGGBB)";
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  const handleChange = (field: keyof CategoryInput, value: any) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
-    if (errors[field]) {
-      setErrors((prev) => {
-        const newErrors = { ...prev };
-        delete newErrors[field];
-        return newErrors;
-      });
+    if (touched[field as CategoryField] || Object.values(touched).some(Boolean)) {
+      setFieldErrors(validateCategoryForm(nextFormData));
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleFieldBlur = (field: CategoryField) => {
+    markFieldTouched(field);
+    setFieldErrors(validateCategoryForm(formData));
+  };
 
-    if (!validate()) {
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+
+    clearGeneralError();
+
+    const nextFieldErrors = validateCategoryForm(formData);
+    markAllTouched();
+    setFieldErrors(nextFieldErrors);
+
+    if (hasFormFieldErrors(nextFieldErrors)) {
+      focusFirstInvalidField(formRef, nextFieldErrors, categoryFields);
       return;
     }
 
     try {
-      setLoading(true);
+      setIsSubmitting(true);
 
       if (originalCategory) {
         const updates: Partial<CategoryInput> = {};
         const trimmedNome = formData.nome.trim();
 
-        if (trimmedNome !== originalCategory.nome) updates.nome = trimmedNome;
-        if (formData.tipo !== originalCategory.tipo)
+        if (trimmedNome !== originalCategory.nome) {
+          updates.nome = trimmedNome;
+        }
+        if (formData.tipo !== originalCategory.tipo) {
           updates.tipo = formData.tipo;
-        if (formData.cor !== originalCategory.cor) updates.cor = formData.cor;
-        if (formData.ativo !== originalCategory.ativo)
+        }
+        if (formData.cor !== originalCategory.cor) {
+          updates.cor = formData.cor;
+        }
+        if (formData.ativo !== originalCategory.ativo) {
           updates.ativo = formData.ativo;
+        }
 
         if (Object.keys(updates).length === 0) {
-          setErrors({
-            geral: "Nenhuma alteração foi identificada para salvar.",
-          });
+          setGeneralError("Nenhuma alteracao foi identificada para salvar.");
           return;
         }
 
         await categoryService.update(originalCategory.id, updates);
-        await onSave(`Categoria "${trimmedNome}" atualizada com sucesso.`);
+        await onSave(`Categoria \"${trimmedNome}\" atualizada com sucesso.`);
       } else {
         const payload: CategoryInput = {
           nome: formData.nome.trim(),
@@ -125,26 +179,24 @@ export default function CategoryModal({
         };
 
         await categoryService.create(payload);
-        await onSave(`Categoria "${payload.nome}" criada com sucesso.`);
+        await onSave(`Categoria \"${payload.nome}\" criada com sucesso.`);
       }
-    } catch (error: any) {
-      console.error("Erro ao salvar categoria:", error);
+    } catch (error: unknown) {
+      const normalized = normalizeApiFormError<CategoryField>(
+        error,
+        "Nao foi possivel concluir a operacao.",
+      );
 
-      if (error.response?.data?.errors) {
-        const apiErrors: Record<string, string> = {};
-        error.response.data.errors.forEach((err: any) => {
-          apiErrors[err.field] = err.message;
-        });
-        setErrors(apiErrors);
+      setFieldErrors(normalized.fieldErrors);
+
+      if (hasFormFieldErrors(normalized.fieldErrors)) {
+        setGeneralError(null);
+        focusFirstInvalidField(formRef, normalized.fieldErrors, categoryFields);
       } else {
-        setErrors({
-          geral:
-            error.response?.data?.message ||
-            "Não foi possível concluir a operação.",
-        });
+        setGeneralError(normalized.generalMessage);
       }
     } finally {
-      setLoading(false);
+      setIsSubmitting(false);
     }
   };
 
@@ -164,15 +216,11 @@ export default function CategoryModal({
           </h2>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4 p-6">
-          {errors.geral && (
-            <p className="app-inline-error">
-              {errors.geral}
-            </p>
-          )}
-
+        <form ref={formRef} onSubmit={handleSubmit} className="space-y-4 p-6" noValidate>
           <div>
             <TextField
+              id="nome"
+              name="nome"
               type="text"
               label="Nome da Categoria *"
               autoFocus
@@ -180,16 +228,19 @@ export default function CategoryModal({
               size="small"
               fullWidth
               value={formData.nome}
-              onChange={(e) => handleChange("nome", e.target.value)}
-              placeholder="Ex: Alimentação, Salário"
+              onChange={(e) => updateField("nome", e.target.value)}
+              onBlur={() => handleFieldBlur("nome")}
+              placeholder="Ex: Alimentacao, Salario"
               InputLabelProps={{ shrink: true }}
-              error={Boolean(errors.nome)}
-              helperText={errors.nome}
+              error={shouldShowError("nome")}
+              helperText={shouldShowError("nome") ? fieldErrors.nome : ""}
             />
           </div>
 
           <div>
             <TextField
+              id="tipo"
+              name="tipo"
               select
               label="Tipo *"
               variant="outlined"
@@ -197,9 +248,12 @@ export default function CategoryModal({
               fullWidth
               value={formData.tipo}
               onChange={(e) =>
-                handleChange("tipo", e.target.value as "RECEITA" | "DESPESA")
+                updateField("tipo", e.target.value as "RECEITA" | "DESPESA")
               }
+              onBlur={() => handleFieldBlur("tipo")}
               InputLabelProps={{ shrink: true }}
+              error={shouldShowError("tipo")}
+              helperText={shouldShowError("tipo") ? fieldErrors.tipo : ""}
             >
               <MenuItem value="DESPESA">Despesa</MenuItem>
               <MenuItem value="RECEITA">Receita</MenuItem>
@@ -211,21 +265,24 @@ export default function CategoryModal({
               <input
                 type="color"
                 value={formData.cor}
-                onChange={(e) => handleChange("cor", e.target.value)}
+                onChange={(e) => updateField("cor", e.target.value)}
                 className="h-11 w-20 cursor-pointer rounded border border-[rgb(var(--app-border-default))] bg-[rgb(var(--app-bg-surface))]"
               />
               <TextField
+                id="cor"
+                name="cor"
                 type="text"
                 label="Cor"
                 variant="outlined"
                 size="small"
                 fullWidth
                 value={formData.cor}
-                onChange={(e) => handleChange("cor", e.target.value)}
+                onChange={(e) => updateField("cor", e.target.value)}
+                onBlur={() => handleFieldBlur("cor")}
                 placeholder="#0EA5E9"
                 InputLabelProps={{ shrink: true }}
-                error={Boolean(errors.cor)}
-                helperText={errors.cor}
+                error={shouldShowError("cor")}
+                helperText={shouldShowError("cor") ? fieldErrors.cor : ""}
               />
             </div>
           </div>
@@ -234,14 +291,21 @@ export default function CategoryModal({
             <input
               type="checkbox"
               id="ativo"
+              name="ativo"
               checked={formData.ativo}
-              onChange={(e) => handleChange("ativo", e.target.checked)}
+              onChange={(e) => updateField("ativo", e.target.checked)}
+              onBlur={() => handleFieldBlur("ativo")}
               className="app-checkbox"
             />
-            <label htmlFor="ativo" className="ml-2 block text-sm text-[rgb(var(--app-text-secondary))]">
+            <label
+              htmlFor="ativo"
+              className="ml-2 block text-sm text-[rgb(var(--app-text-secondary))]"
+            >
               Categoria ativa
             </label>
           </div>
+
+          <FormErrorSummary generalMessage={generalError} />
 
           <div className="flex gap-3 pt-4">
             <AppButton
@@ -250,7 +314,7 @@ export default function CategoryModal({
               tone="outline-danger"
               fullWidth
               startIcon={<Ban size={16} />}
-              disabled={loading}
+              disabled={isSubmitting}
             >
               Cancelar
             </AppButton>
@@ -259,9 +323,9 @@ export default function CategoryModal({
               tone="primary"
               fullWidth
               startIcon={<Save size={16} />}
-              disabled={loading}
+              disabled={isSubmitting}
             >
-              {loading ? "Salvando..." : category ? "Atualizar" : "Criar"}
+              {isSubmitting ? "Salvando..." : category ? "Atualizar" : "Criar"}
             </AppButton>
           </div>
         </form>

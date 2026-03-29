@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { FormFieldErrors, hasFormFieldErrors } from "@/forms/core/form-error";
 
 const buildInitialBooleanRecord = <TField extends string>(
@@ -39,7 +39,7 @@ export const useFormFeedback = <TField extends string>(
   const [generalError, setGeneralError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const setFieldErrors = (nextErrors: FormFieldErrors<TField>) => {
+  const setFieldErrors = useCallback((nextErrors: FormFieldErrors<TField>) => {
     const normalized = { ...initialFieldErrors };
     fields.forEach((field) => {
       const rawMessage = nextErrors[field];
@@ -47,16 +47,16 @@ export const useFormFeedback = <TField extends string>(
         typeof rawMessage === "string" ? rawMessage.trim() : "";
     });
     setFieldErrorsState(normalized);
-  };
+  }, [fields, initialFieldErrors]);
 
-  const setFieldError = (field: TField, message: string) => {
+  const setFieldError = useCallback((field: TField, message: string) => {
     setFieldErrorsState((prev) => ({
       ...prev,
       [field]: message.trim(),
     }));
-  };
+  }, []);
 
-  const clearFieldError = (field: TField) => {
+  const clearFieldError = useCallback((field: TField) => {
     setFieldErrorsState((prev) => {
       if (!prev[field]) return prev;
       return {
@@ -64,16 +64,16 @@ export const useFormFeedback = <TField extends string>(
         [field]: "",
       };
     });
-  };
+  }, []);
 
-  const markFieldTouched = (field: TField) => {
+  const markFieldTouched = useCallback((field: TField) => {
     setTouched((prev) => ({
       ...prev,
       [field]: true,
     }));
-  };
+  }, []);
 
-  const markAllTouched = () => {
+  const markAllTouched = useCallback(() => {
     setTouched((prev) => {
       const next = { ...prev };
       fields.forEach((field) => {
@@ -81,24 +81,24 @@ export const useFormFeedback = <TField extends string>(
       });
       return next;
     });
-  };
+  }, [fields]);
 
-  const resetTouched = () => {
+  const resetTouched = useCallback(() => {
     setTouched(initialTouched);
-  };
+  }, [initialTouched]);
 
-  const clearGeneralError = () => {
+  const clearGeneralError = useCallback(() => {
     setGeneralError(null);
-  };
+  }, []);
 
-  const clearAllErrors = () => {
+  const clearAllErrors = useCallback(() => {
     setFieldErrorsState(initialFieldErrors);
     setGeneralError(null);
-  };
+  }, [initialFieldErrors]);
 
-  const shouldShowError = (field: TField): boolean => {
+  const shouldShowError = useCallback((field: TField): boolean => {
     return touched[field] && Boolean(fieldErrors[field]);
-  };
+  }, [fieldErrors, touched]);
 
   const fieldErrorMessages = useMemo(() => {
     return fields

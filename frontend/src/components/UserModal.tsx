@@ -1,9 +1,17 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useId, useRef, useState } from "react";
 import { Ban, Save } from "lucide-react";
 import { MenuItem, TextField } from "@mui/material";
 import AppButton from "@/components/AppButton";
+import FormErrorSummary from "@/forms/components/FormErrorSummary";
+import {
+  focusFirstInvalidField,
+  FormFieldErrors,
+  hasFormFieldErrors,
+  normalizeApiFormError,
+} from "@/forms/core/form-error";
+import { useFormFeedback } from "@/forms/hooks/useFormFeedback";
 import { userService } from "@/services/userService";
 import {
   User,
@@ -42,6 +50,43 @@ const defaultFormState: UserFormState = {
 
 const PASSWORD_PLACEHOLDER = "********";
 
+const userFields = ["nome", "email", "senha", "confirmarSenha", "status", "role"] as const;
+type UserField = (typeof userFields)[number];
+
+const validateUserForm = (
+  values: UserFormState,
+  isEditing: boolean,
+): FormFieldErrors<UserField> => {
+  const errors: FormFieldErrors<UserField> = {};
+
+  if (!values.nome || values.nome.trim().length < 2) {
+    errors.nome = "Nome deve ter no minimo 2 caracteres.";
+  }
+
+  const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailPattern.test(values.email.trim())) {
+    errors.email = "Informe um email valido.";
+  }
+
+  const isKeepingCurrentPassword =
+    isEditing &&
+    (values.senha === PASSWORD_PLACEHOLDER || values.senha.trim() === "") &&
+    (values.confirmarSenha === PASSWORD_PLACEHOLDER ||
+      values.confirmarSenha.trim() === "");
+
+  if (!isEditing || !isKeepingCurrentPassword) {
+    if (!values.senha || values.senha.length < 6) {
+      errors.senha = "Senha deve ter no minimo 6 caracteres.";
+    }
+
+    if (values.confirmarSenha !== values.senha) {
+      errors.confirmarSenha = "A confirmacao de senha nao confere.";
+    }
+  }
+
+  return errors;
+};
+
 export default function UserModal({
   isOpen,
   user,
@@ -50,10 +95,25 @@ export default function UserModal({
   onSave,
 }: UserModalProps) {
   const modalRef = useRef<HTMLDivElement>(null);
+  const formRef = useRef<HTMLFormElement>(null);
   const titleId = useId();
   const [formData, setFormData] = useState<UserFormState>(defaultFormState);
-  const [loading, setLoading] = useState(false);
-  const [errors, setErrors] = useState<Record<string, string>>({});
+
+  const {
+    touched,
+    fieldErrors,
+    generalError,
+    isSubmitting,
+    setGeneralError,
+    clearGeneralError,
+    setIsSubmitting,
+    setFieldErrors,
+    markFieldTouched,
+    markAllTouched,
+    clearAllErrors,
+    resetTouched,
+    shouldShowError,
+  } = useFormFeedback<UserField>(userFields);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -67,11 +127,13 @@ export default function UserModal({
         status: user.status,
         role: user.role,
       });
-      return;
+    } else {
+      setFormData(defaultFormState);
     }
 
-    setFormData(defaultFormState);
-  }, [isOpen, user]);
+    clearAllErrors();
+    resetTouched();
+  }, [isOpen, user, clearAllErrors, resetTouched]);
 
   useAccessibleModal({
     isOpen,
@@ -79,63 +141,47 @@ export default function UserModal({
     onClose,
   });
 
-  const handleChange = (field: keyof UserFormState, value: string) => {
-    setFormData((prev) => ({
-      ...prev,
+  const updateField = <K extends keyof UserFormState>(
+    field: K,
+    value: UserFormState[K],
+  ) => {
+    const nextFormData = {
+      ...formData,
       [field]: value,
-    }));
+    } as UserFormState;
 
-    if (errors[field]) {
-      setErrors((prev) => {
-        const next = { ...prev };
-        delete next[field];
-        return next;
-      });
+    setFormData(nextFormData);
+
+    if (generalError) {
+      clearGeneralError();
+    }
+
+    if (touched[field as UserField] || Object.values(touched).some(Boolean)) {
+      setFieldErrors(validateUserForm(nextFormData, Boolean(user)));
     }
   };
 
-  const validate = (): boolean => {
-    const nextErrors: Record<string, string> = {};
-    const isEditing = Boolean(user);
-
-    if (!formData.nome || formData.nome.trim().length < 2) {
-      nextErrors.nome = "Nome deve ter no minimo 2 caracteres.";
-    }
-
-    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailPattern.test(formData.email.trim())) {
-      nextErrors.email = "Informe um email valido.";
-    }
-
-    const isKeepingCurrentPassword =
-      isEditing &&
-      (formData.senha === PASSWORD_PLACEHOLDER || formData.senha.trim() === "") &&
-      (formData.confirmarSenha === PASSWORD_PLACEHOLDER ||
-        formData.confirmarSenha.trim() === "");
-
-    if (!isEditing || !isKeepingCurrentPassword) {
-      if (!formData.senha || formData.senha.length < 6) {
-        nextErrors.senha = "Senha deve ter no minimo 6 caracteres.";
-      }
-
-      if (formData.confirmarSenha !== formData.senha) {
-        nextErrors.confirmarSenha = "A confirmacao de senha nao confere.";
-      }
-    }
-
-    setErrors(nextErrors);
-    return Object.keys(nextErrors).length === 0;
+  const handleFieldBlur = (field: UserField) => {
+    markFieldTouched(field);
+    setFieldErrors(validateUserForm(formData, Boolean(user)));
   };
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
-    if (!validate()) {
+    clearGeneralError();
+
+    const nextFieldErrors = validateUserForm(formData, Boolean(user));
+    markAllTouched();
+    setFieldErrors(nextFieldErrors);
+
+    if (hasFormFieldErrors(nextFieldErrors)) {
+      focusFirstInvalidField(formRef, nextFieldErrors, userFields);
       return;
     }
 
     try {
-      setLoading(true);
+      setIsSubmitting(true);
 
       const basePayload = {
         nome: formData.nome.trim(),
@@ -160,37 +206,32 @@ export default function UserModal({
         }
 
         await userService.update(user.id, payload);
-        await onSave(`Usuario "${payload.nome}" atualizado com sucesso.`);
+        await onSave(`Usuario \"${payload.nome}\" atualizado com sucesso.`);
       } else {
         const payload: UserCreateInput = {
           ...basePayload,
           senha: formData.senha,
         };
+
         await userService.create(payload);
-        await onSave(`Usuario "${payload.nome}" criado com sucesso.`);
+        await onSave(`Usuario \"${payload.nome}\" criado com sucesso.`);
       }
-    } catch (error: any) {
-      const apiMessage =
-        error?.response?.data?.message ||
-        "Nao foi possivel salvar os dados do usuario.";
-      const apiErrors = error?.response?.data?.errors;
+    } catch (error: unknown) {
+      const normalized = normalizeApiFormError<UserField>(
+        error,
+        "Nao foi possivel salvar os dados do usuario.",
+      );
 
-      if (Array.isArray(apiErrors) && apiErrors.length > 0) {
-        const normalizedErrors: Record<string, string> = {};
-        apiErrors.forEach((item: { field?: string; message?: string }) => {
-          if (!item?.field || !item?.message) return;
-          normalizedErrors[item.field] = item.message;
-        });
+      setFieldErrors(normalized.fieldErrors);
 
-        if (Object.keys(normalizedErrors).length > 0) {
-          setErrors((prev) => ({ ...prev, ...normalizedErrors }));
-          return;
-        }
+      if (hasFormFieldErrors(normalized.fieldErrors)) {
+        setGeneralError(null);
+        focusFirstInvalidField(formRef, normalized.fieldErrors, userFields);
+      } else {
+        setGeneralError(normalized.generalMessage);
       }
-
-      setErrors({ geral: apiMessage });
     } finally {
-      setLoading(false);
+      setIsSubmitting(false);
     }
   };
 
@@ -214,15 +255,11 @@ export default function UserModal({
           </h2>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4 p-6">
-          {errors.geral && (
-            <p className="app-inline-error">
-              {errors.geral}
-            </p>
-          )}
-
+        <form ref={formRef} onSubmit={handleSubmit} className="space-y-4 p-6" noValidate>
           <div>
             <TextField
+              id="nome"
+              name="nome"
               type="text"
               label="Nome"
               variant="outlined"
@@ -230,90 +267,119 @@ export default function UserModal({
               fullWidth
               autoFocus
               value={formData.nome}
-              onChange={(e) => handleChange("nome", e.target.value)}
+              onChange={(e) => updateField("nome", e.target.value)}
+              onBlur={() => handleFieldBlur("nome")}
               InputLabelProps={{ shrink: true }}
-              error={Boolean(errors.nome)}
-              helperText={errors.nome}
+              error={shouldShowError("nome")}
+              helperText={shouldShowError("nome") ? fieldErrors.nome : ""}
             />
           </div>
 
           <div>
             <TextField
+              id="email"
+              name="email"
               type="email"
               label="Email"
               variant="outlined"
               size="small"
               fullWidth
               value={formData.email}
-              onChange={(e) => handleChange("email", e.target.value)}
+              onChange={(e) => updateField("email", e.target.value)}
+              onBlur={() => handleFieldBlur("email")}
               InputLabelProps={{ shrink: true }}
-              error={Boolean(errors.email)}
-              helperText={errors.email}
+              error={shouldShowError("email")}
+              helperText={shouldShowError("email") ? fieldErrors.email : ""}
             />
           </div>
 
           <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
             <TextField
+              id="senha"
+              name="senha"
               type="password"
               label="Senha"
               variant="outlined"
               size="small"
               fullWidth
               value={formData.senha}
-              onChange={(e) => handleChange("senha", e.target.value)}
+              onChange={(e) => updateField("senha", e.target.value)}
+              onBlur={() => handleFieldBlur("senha")}
               InputLabelProps={{ shrink: true }}
-              error={Boolean(errors.senha)}
+              error={shouldShowError("senha")}
               helperText={
-                errors.senha ||
-                (user ? "Senha atual carregada. Altere apenas se desejar trocar." : "")
+                shouldShowError("senha")
+                  ? fieldErrors.senha
+                  : user
+                    ? "Senha atual carregada. Altere apenas se desejar trocar."
+                    : ""
               }
             />
 
             <TextField
+              id="confirmarSenha"
+              name="confirmarSenha"
               type="password"
               label="Confirmar senha"
               variant="outlined"
               size="small"
               fullWidth
               value={formData.confirmarSenha}
-              onChange={(e) => handleChange("confirmarSenha", e.target.value)}
+              onChange={(e) => updateField("confirmarSenha", e.target.value)}
+              onBlur={() => handleFieldBlur("confirmarSenha")}
               InputLabelProps={{ shrink: true }}
-              error={Boolean(errors.confirmarSenha)}
+              error={shouldShowError("confirmarSenha")}
               helperText={
-                errors.confirmarSenha ||
-                (user ? "Mantenha como esta para nao alterar a senha." : "")
+                shouldShowError("confirmarSenha")
+                  ? fieldErrors.confirmarSenha
+                  : user
+                    ? "Mantenha como esta para nao alterar a senha."
+                    : ""
               }
             />
           </div>
 
           <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
             <TextField
+              id="status"
+              name="status"
               select
               label="Status"
               variant="outlined"
               size="small"
               fullWidth
               value={formData.status}
-              onChange={(e) =>
-                handleChange("status", e.target.value as UserStatus)
-              }
+              onChange={(e) => updateField("status", e.target.value as UserStatus)}
+              onBlur={() => handleFieldBlur("status")}
               InputLabelProps={{ shrink: true }}
+              error={shouldShowError("status")}
+              helperText={shouldShowError("status") ? fieldErrors.status : ""}
             >
               <MenuItem value="ATIVO">Ativo</MenuItem>
               <MenuItem value="INATIVO">Inativo</MenuItem>
             </TextField>
 
             <TextField
+              id="role"
+              name="role"
               select
               label="Papel"
               variant="outlined"
               size="small"
               fullWidth
               value={formData.role}
-              onChange={(e) => handleChange("role", e.target.value as UserRole)}
+              onChange={(e) => updateField("role", e.target.value as UserRole)}
+              onBlur={() => handleFieldBlur("role")}
               InputLabelProps={{ shrink: true }}
               disabled={!isAdmin}
-              helperText={!isAdmin ? "Somente ADMIN pode alterar papel." : ""}
+              error={shouldShowError("role")}
+              helperText={
+                shouldShowError("role")
+                  ? fieldErrors.role
+                  : !isAdmin
+                    ? "Somente ADMIN pode alterar papel."
+                    : ""
+              }
             >
               <MenuItem value="USUARIO">Usuario</MenuItem>
               <MenuItem value="GESTOR">Gestor</MenuItem>
@@ -321,22 +387,24 @@ export default function UserModal({
             </TextField>
           </div>
 
+          <FormErrorSummary generalMessage={generalError} />
+
           <div className="flex justify-end gap-3 pt-2">
             <AppButton
               type="button"
               tone="outline-danger"
               onClick={onClose}
               startIcon={<Ban size={16} />}
-              disabled={loading}
+              disabled={isSubmitting}
             >
               Cancelar
             </AppButton>
             <AppButton
               type="submit"
               startIcon={<Save size={16} />}
-              disabled={loading}
+              disabled={isSubmitting}
             >
-              {loading ? "Salvando..." : user ? "Atualizar" : "Cadastrar"}
+              {isSubmitting ? "Salvando..." : user ? "Atualizar" : "Cadastrar"}
             </AppButton>
           </div>
         </form>
@@ -344,4 +412,3 @@ export default function UserModal({
     </div>
   );
 }
-

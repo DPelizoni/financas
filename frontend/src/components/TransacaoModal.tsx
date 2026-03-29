@@ -1,17 +1,25 @@
-"use client";
+﻿"use client";
 
 import React, { useEffect, useId, useMemo, useRef, useState } from "react";
-import { Transacao, TransacaoInput, TransacaoFilters } from "@/types/transacao";
-import { Category } from "@/types/category";
-import { Descricao } from "@/types/descricao";
-import { Bank } from "@/types/bank";
-import { transacaoService } from "@/services/transacaoService";
+import { Ban, Save } from "lucide-react";
+import { MenuItem, TextField } from "@mui/material";
+import AppButton from "@/components/AppButton";
+import FormErrorSummary from "@/forms/components/FormErrorSummary";
+import {
+  focusFirstInvalidField,
+  FormFieldErrors,
+  hasFormFieldErrors,
+  normalizeApiFormError,
+} from "@/forms/core/form-error";
+import { useFormFeedback } from "@/forms/hooks/useFormFeedback";
+import { bankService } from "@/services/bankService";
 import { categoryService } from "@/services/categoryService";
 import { descricaoService } from "@/services/descricaoService";
-import { bankService } from "@/services/bankService";
-import { Ban, Save } from "lucide-react";
-import AppButton from "@/components/AppButton";
-import { MenuItem, TextField } from "@mui/material";
+import { transacaoService } from "@/services/transacaoService";
+import { Bank } from "@/types/bank";
+import { Category } from "@/types/category";
+import { Descricao } from "@/types/descricao";
+import { Transacao, TransacaoInput } from "@/types/transacao";
 import { useAccessibleModal } from "@/utils/useAccessibleModal";
 
 interface TransacaoModalProps {
@@ -22,6 +30,54 @@ interface TransacaoModalProps {
   isEditing?: boolean;
 }
 
+const transacaoFields = [
+  "mes",
+  "vencimento",
+  "tipo",
+  "categoria_id",
+  "descricao_id",
+  "banco_id",
+  "situacao",
+  "valor",
+] as const;
+type TransacaoField = (typeof transacaoFields)[number];
+
+const validateTransacaoForm = (
+  values: TransacaoInput,
+): FormFieldErrors<TransacaoField> => {
+  const errors: FormFieldErrors<TransacaoField> = {};
+
+  if (!values.mes || !/^\d{2}\/\d{4}$/.test(values.mes)) {
+    errors.mes = "Mes deve estar no formato MM/AAAA.";
+  }
+
+  if (!values.vencimento || !/^\d{2}\/\d{2}\/\d{4}$/.test(values.vencimento)) {
+    errors.vencimento = "Vencimento deve estar no formato DD/MM/AAAA.";
+  }
+
+  if (!values.tipo) {
+    errors.tipo = "Tipo e obrigatorio.";
+  }
+
+  if (values.categoria_id <= 0) {
+    errors.categoria_id = "Categoria e obrigatoria.";
+  }
+
+  if (values.descricao_id <= 0) {
+    errors.descricao_id = "Descricao e obrigatoria.";
+  }
+
+  if (values.banco_id <= 0) {
+    errors.banco_id = "Banco e obrigatorio.";
+  }
+
+  if (values.valor <= 0) {
+    errors.valor = "Valor deve ser maior que zero.";
+  }
+
+  return errors;
+};
+
 export const TransacaoModal: React.FC<TransacaoModalProps> = ({
   isOpen,
   onClose,
@@ -30,6 +86,7 @@ export const TransacaoModal: React.FC<TransacaoModalProps> = ({
   isEditing = false,
 }) => {
   const modalRef = useRef<HTMLDivElement>(null);
+  const formRef = useRef<HTMLFormElement>(null);
   const titleId = useId();
   const [formData, setFormData] = useState<TransacaoInput>({
     mes: "",
@@ -45,8 +102,22 @@ export const TransacaoModal: React.FC<TransacaoModalProps> = ({
   const [categories, setCategories] = useState<Category[]>([]);
   const [descricoes, setDescricoes] = useState<Descricao[]>([]);
   const [banks, setBanks] = useState<Bank[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [errors, setErrors] = useState<Record<string, string>>({});
+
+  const {
+    touched,
+    fieldErrors,
+    generalError,
+    isSubmitting,
+    setGeneralError,
+    clearGeneralError,
+    setIsSubmitting,
+    setFieldErrors,
+    markFieldTouched,
+    markAllTouched,
+    clearAllErrors,
+    resetTouched,
+    shouldShowError,
+  } = useFormFeedback<TransacaoField>(transacaoFields);
 
   const sortedCategories = useMemo(
     () => [...categories].sort((a, b) => a.nome.localeCompare(b.nome, "pt-BR")),
@@ -97,15 +168,96 @@ export const TransacaoModal: React.FC<TransacaoModalProps> = ({
     return `${day}/${month}/${year}`;
   };
 
-  // Load data on mount
+  const loadBanks = async () => {
+    try {
+      const response = await bankService.getAll({ limit: 999 });
+      setBanks(response.data || []);
+    } catch {
+      setGeneralError("Nao foi possivel carregar os bancos.");
+    }
+  };
+
+  const loadCategoriesByType = async (
+    tipo: "DESPESA" | "RECEITA",
+    selectedCategoriaId?: number,
+  ) => {
+    try {
+      const response = await categoryService.getAll({ tipo, limit: 999 });
+      setCategories(response.data || []);
+      setDescricoes([]);
+      setFormData((prev) => {
+        const next = {
+          ...prev,
+          categoria_id: selectedCategoriaId ?? 0,
+          descricao_id: 0,
+        };
+
+        if (Object.values(touched).some(Boolean)) {
+          setFieldErrors(validateTransacaoForm(next));
+        }
+
+        return next;
+      });
+    } catch {
+      setGeneralError("Nao foi possivel carregar as categorias.");
+    }
+  };
+
+  const loadDescricoesByCategory = async (
+    categoria_id: number,
+    selectedDescricaoId?: number,
+  ) => {
+    if (categoria_id <= 0) {
+      setDescricoes([]);
+      setFormData((prev) => {
+        const next = {
+          ...prev,
+          descricao_id: 0,
+        };
+
+        if (Object.values(touched).some(Boolean)) {
+          setFieldErrors(validateTransacaoForm(next));
+        }
+
+        return next;
+      });
+      return;
+    }
+
+    try {
+      const response = await descricaoService.getAll({
+        categoria_id,
+        limit: 999,
+      });
+      setDescricoes(response.data || []);
+      setFormData((prev) => {
+        const next = {
+          ...prev,
+          descricao_id: selectedDescricaoId ?? 0,
+        };
+
+        if (Object.values(touched).some(Boolean)) {
+          setFieldErrors(validateTransacaoForm(next));
+        }
+
+        return next;
+      });
+    } catch {
+      setGeneralError("Nao foi possivel carregar as descricoes.");
+    }
+  };
+
   useEffect(() => {
     const initializeModal = async () => {
       if (!isOpen) return;
 
+      clearAllErrors();
+      resetTouched();
+
       await loadBanks();
 
       if (transacao && isEditing) {
-        setFormData({
+        const nextData: TransacaoInput = {
           mes: transacao.mes,
           vencimento: transacao.vencimento,
           tipo: transacao.tipo,
@@ -114,7 +266,9 @@ export const TransacaoModal: React.FC<TransacaoModalProps> = ({
           banco_id: transacao.banco_id,
           situacao: transacao.situacao,
           valor: Number(transacao.valor),
-        });
+        };
+
+        setFormData(nextData);
         await loadCategoriesByType(transacao.tipo, transacao.categoria_id);
         await loadDescricoesByCategory(
           transacao.categoria_id,
@@ -144,136 +298,83 @@ export const TransacaoModal: React.FC<TransacaoModalProps> = ({
     onClose,
   });
 
-  const loadBanks = async () => {
-    try {
-      const response = await bankService.getAll({ limit: 999 });
-      setBanks(response.data || []);
-    } catch (error) {
-      console.error("Erro ao carregar bancos:", error);
+  const updateField = <K extends keyof TransacaoInput>(
+    field: K,
+    value: TransacaoInput[K],
+  ) => {
+    const nextFormData = {
+      ...formData,
+      [field]: value,
+    } as TransacaoInput;
+
+    setFormData(nextFormData);
+
+    if (generalError) {
+      clearGeneralError();
+    }
+
+    if (touched[field as TransacaoField] || Object.values(touched).some(Boolean)) {
+      setFieldErrors(validateTransacaoForm(nextFormData));
     }
   };
 
-  const loadCategoriesByType = async (
-    tipo: "DESPESA" | "RECEITA",
-    selectedCategoriaId?: number,
-  ) => {
-    try {
-      const response = await categoryService.getAll({ tipo, limit: 999 });
-      setCategories(response.data || []);
-      setDescricoes([]);
-      setFormData((prev) => ({
-        ...prev,
-        categoria_id: selectedCategoriaId ?? 0,
-        descricao_id: 0,
-      }));
-    } catch (error) {
-      console.error("Erro ao carregar categorias:", error);
-    }
-  };
-
-  const loadDescricoesByCategory = async (
-    categoria_id: number,
-    selectedDescricaoId?: number,
-  ) => {
-    if (categoria_id <= 0) {
-      setDescricoes([]);
-      return;
-    }
-
-    try {
-      const response = await descricaoService.getAll({
-        categoria_id,
-        limit: 999,
-      });
-      setDescricoes(response.data || []);
-      setFormData((prev) => ({
-        ...prev,
-        descricao_id: selectedDescricaoId ?? 0,
-      }));
-    } catch (error) {
-      console.error("Erro ao carregar descrições:", error);
-    }
+  const handleFieldBlur = (field: TransacaoField) => {
+    markFieldTouched(field);
+    setFieldErrors(validateTransacaoForm(formData));
   };
 
   const handleTypeChange = (tipo: "DESPESA" | "RECEITA") => {
-    setFormData((prev) => ({
-      ...prev,
-      tipo,
-    }));
+    updateField("tipo", tipo);
     loadCategoriesByType(tipo);
   };
 
   const handleCategoryChange = (categoria_id: number) => {
-    setFormData((prev) => ({
-      ...prev,
-      categoria_id,
-    }));
+    updateField("categoria_id", categoria_id);
     loadDescricoesByCategory(categoria_id);
   };
 
-  const validateForm = () => {
-    const newErrors: Record<string, string> = {};
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
 
-    if (!formData.mes || !/^\d{2}\/\d{4}$/.test(formData.mes)) {
-      newErrors.mes = "Mês deve estar no formato MM/AAAA";
-    }
+    clearGeneralError();
 
-    if (
-      !formData.vencimento ||
-      !/^\d{2}\/\d{2}\/\d{4}$/.test(formData.vencimento)
-    ) {
-      newErrors.vencimento = "Vencimento deve estar no formato DD/MM/AAAA";
-    }
+    const nextFieldErrors = validateTransacaoForm(formData);
+    markAllTouched();
+    setFieldErrors(nextFieldErrors);
 
-    if (!formData.tipo) {
-      newErrors.tipo = "Tipo é obrigatório";
-    }
-
-    if (formData.categoria_id <= 0) {
-      newErrors.categoria_id = "Categoria é obrigatória";
-    }
-
-    if (formData.descricao_id <= 0) {
-      newErrors.descricao_id = "Descrição é obrigatória";
-    }
-
-    if (formData.banco_id <= 0) {
-      newErrors.banco_id = "Banco é obrigatório";
-    }
-
-    if (formData.valor <= 0) {
-      newErrors.valor = "Valor deve ser maior que zero";
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (!validateForm()) {
+    if (hasFormFieldErrors(nextFieldErrors)) {
+      focusFirstInvalidField(formRef, nextFieldErrors, transacaoFields);
       return;
     }
 
-    setLoading(true);
-
     try {
+      setIsSubmitting(true);
+
       if (isEditing && transacao) {
         await transacaoService.update(transacao.id, formData);
-        onSuccess(`Transação de ${formData.mes} atualizada com sucesso.`);
+        onSuccess(`Transacao de ${formData.mes} atualizada com sucesso.`);
       } else {
         await transacaoService.create(formData);
-        onSuccess(`Transação de ${formData.mes} criada com sucesso.`);
+        onSuccess(`Transacao de ${formData.mes} criada com sucesso.`);
       }
 
       onClose();
-    } catch (error: any) {
-      const errorMessage =
-        error.response?.data?.message || "Erro ao salvar transação";
-      setErrors({ submit: errorMessage });
+    } catch (error: unknown) {
+      const normalized = normalizeApiFormError<TransacaoField>(
+        error,
+        "Erro ao salvar transacao.",
+      );
+
+      setFieldErrors(normalized.fieldErrors);
+
+      if (hasFormFieldErrors(normalized.fieldErrors)) {
+        setGeneralError(null);
+        focusFirstInvalidField(formRef, normalized.fieldErrors, transacaoFields);
+      } else {
+        setGeneralError(normalized.generalMessage);
+      }
     } finally {
-      setLoading(false);
+      setIsSubmitting(false);
     }
   };
 
@@ -290,37 +391,38 @@ export const TransacaoModal: React.FC<TransacaoModalProps> = ({
         tabIndex={-1}
       >
         <div className="mb-6 flex items-center justify-between border-b border-[rgb(var(--app-border-default))] pb-4">
-          <h2 id={titleId} className="text-xl font-semibold text-[rgb(var(--app-text-primary))]">
-            {isEditing ? "Editar Transação" : "Nova Transação"}
+          <h2
+            id={titleId}
+            className="text-xl font-semibold text-[rgb(var(--app-text-primary))]"
+          >
+            {isEditing ? "Editar Transacao" : "Nova Transacao"}
           </h2>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* Mês */}
+        <form ref={formRef} onSubmit={handleSubmit} className="space-y-4" noValidate>
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <div>
               <TextField
+                id="mes"
+                name="mes"
                 type="month"
-                label="Mês"
+                label="Mes"
                 variant="outlined"
                 size="small"
                 fullWidth
                 value={toMonthInput(formData.mes)}
-                onChange={(e) =>
-                  setFormData((prev) => ({
-                    ...prev,
-                    mes: fromMonthInput(e.target.value),
-                  }))
-                }
+                onChange={(e) => updateField("mes", fromMonthInput(e.target.value))}
+                onBlur={() => handleFieldBlur("mes")}
                 InputLabelProps={{ shrink: true }}
-                error={Boolean(errors.mes)}
-                helperText={errors.mes}
+                error={shouldShowError("mes")}
+                helperText={shouldShowError("mes") ? fieldErrors.mes : ""}
               />
             </div>
 
-            {/* Vencimento */}
             <div>
               <TextField
+                id="vencimento"
+                name="vencimento"
                 type="date"
                 label="Vencimento"
                 variant="outlined"
@@ -328,57 +430,59 @@ export const TransacaoModal: React.FC<TransacaoModalProps> = ({
                 fullWidth
                 value={toDateInput(formData.vencimento)}
                 onChange={(e) =>
-                  setFormData((prev) => ({
-                    ...prev,
-                    vencimento: fromDateInput(e.target.value),
-                  }))
+                  updateField("vencimento", fromDateInput(e.target.value))
                 }
+                onBlur={() => handleFieldBlur("vencimento")}
                 InputLabelProps={{ shrink: true }}
-                error={Boolean(errors.vencimento)}
-                helperText={errors.vencimento}
+                error={shouldShowError("vencimento")}
+                helperText={
+                  shouldShowError("vencimento") ? fieldErrors.vencimento : ""
+                }
               />
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* Tipo */}
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <div>
               <TextField
+                id="tipo"
+                name="tipo"
                 select
                 label="Tipo"
                 variant="outlined"
                 size="small"
                 fullWidth
                 value={formData.tipo}
-                onChange={(e) =>
-                  handleTypeChange(e.target.value as "DESPESA" | "RECEITA")
-                }
+                onChange={(e) => handleTypeChange(e.target.value as "DESPESA" | "RECEITA")}
+                onBlur={() => handleFieldBlur("tipo")}
                 InputLabelProps={{ shrink: true }}
-                error={Boolean(errors.tipo)}
-                helperText={errors.tipo}
+                error={shouldShowError("tipo")}
+                helperText={shouldShowError("tipo") ? fieldErrors.tipo : ""}
               >
-                <MenuItem value="">Selecione...</MenuItem>
                 <MenuItem value="DESPESA">Despesa</MenuItem>
                 <MenuItem value="RECEITA">Receita</MenuItem>
               </TextField>
             </div>
 
-            {/* Situação */}
             <div>
               <TextField
+                id="situacao"
+                name="situacao"
                 select
-                label="Situação"
+                label="Situacao"
                 variant="outlined"
                 size="small"
                 fullWidth
                 value={formData.situacao}
                 onChange={(e) =>
-                  setFormData((prev) => ({
-                    ...prev,
-                    situacao: e.target.value as "PENDENTE" | "PAGO",
-                  }))
+                  updateField("situacao", e.target.value as "PENDENTE" | "PAGO")
                 }
+                onBlur={() => handleFieldBlur("situacao")}
                 InputLabelProps={{ shrink: true }}
+                error={shouldShowError("situacao")}
+                helperText={
+                  shouldShowError("situacao") ? fieldErrors.situacao : ""
+                }
               >
                 <MenuItem value="PAGO">Pago</MenuItem>
                 <MenuItem value="PENDENTE">Pendente</MenuItem>
@@ -386,10 +490,11 @@ export const TransacaoModal: React.FC<TransacaoModalProps> = ({
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* Categoria */}
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <div>
               <TextField
+                id="categoria_id"
+                name="categoria_id"
                 select
                 label="Categoria"
                 variant="outlined"
@@ -397,11 +502,14 @@ export const TransacaoModal: React.FC<TransacaoModalProps> = ({
                 fullWidth
                 value={formData.categoria_id}
                 onChange={(e) => handleCategoryChange(Number(e.target.value))}
+                onBlur={() => handleFieldBlur("categoria_id")}
                 InputLabelProps={{ shrink: true }}
-                error={Boolean(errors.categoria_id)}
-                helperText={errors.categoria_id}
+                error={shouldShowError("categoria_id")}
+                helperText={
+                  shouldShowError("categoria_id") ? fieldErrors.categoria_id : ""
+                }
               >
-                <MenuItem value="">Selecione...</MenuItem>
+                <MenuItem value={0}>Selecione...</MenuItem>
                 {sortedCategories.map((cat) => (
                   <MenuItem key={cat.id} value={cat.id}>
                     {cat.nome}
@@ -410,27 +518,26 @@ export const TransacaoModal: React.FC<TransacaoModalProps> = ({
               </TextField>
             </div>
 
-            {/* Descrição */}
             <div>
               <TextField
+                id="descricao_id"
+                name="descricao_id"
                 select
-                label="Descrição"
+                label="Descricao"
                 variant="outlined"
                 size="small"
                 fullWidth
                 value={formData.descricao_id}
-                onChange={(e) =>
-                  setFormData((prev) => ({
-                    ...prev,
-                    descricao_id: Number(e.target.value),
-                  }))
-                }
+                onChange={(e) => updateField("descricao_id", Number(e.target.value))}
+                onBlur={() => handleFieldBlur("descricao_id")}
                 disabled={formData.categoria_id <= 0}
                 InputLabelProps={{ shrink: true }}
-                error={Boolean(errors.descricao_id)}
-                helperText={errors.descricao_id}
+                error={shouldShowError("descricao_id")}
+                helperText={
+                  shouldShowError("descricao_id") ? fieldErrors.descricao_id : ""
+                }
               >
-                <MenuItem value="">Selecione uma categoria primeiro</MenuItem>
+                <MenuItem value={0}>Selecione uma categoria primeiro</MenuItem>
                 {sortedDescricoes.map((desc) => (
                   <MenuItem key={desc.id} value={desc.id}>
                     {desc.nome}
@@ -440,27 +547,26 @@ export const TransacaoModal: React.FC<TransacaoModalProps> = ({
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* Banco */}
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <div>
               <TextField
+                id="banco_id"
+                name="banco_id"
                 select
                 label="Banco"
                 variant="outlined"
                 size="small"
                 fullWidth
                 value={formData.banco_id}
-                onChange={(e) =>
-                  setFormData((prev) => ({
-                    ...prev,
-                    banco_id: Number(e.target.value),
-                  }))
-                }
+                onChange={(e) => updateField("banco_id", Number(e.target.value))}
+                onBlur={() => handleFieldBlur("banco_id")}
                 InputLabelProps={{ shrink: true }}
-                error={Boolean(errors.banco_id)}
-                helperText={errors.banco_id}
+                error={shouldShowError("banco_id")}
+                helperText={
+                  shouldShowError("banco_id") ? fieldErrors.banco_id : ""
+                }
               >
-                <MenuItem value="">Selecione...</MenuItem>
+                <MenuItem value={0}>Selecione...</MenuItem>
                 {sortedBanks.map((bank) => (
                   <MenuItem key={bank.id} value={bank.id}>
                     {bank.nome}
@@ -469,9 +575,10 @@ export const TransacaoModal: React.FC<TransacaoModalProps> = ({
               </TextField>
             </div>
 
-            {/* Valor */}
             <div>
               <TextField
+                id="valor"
+                name="valor"
                 type="number"
                 label="Valor"
                 placeholder="0.00"
@@ -480,24 +587,16 @@ export const TransacaoModal: React.FC<TransacaoModalProps> = ({
                 fullWidth
                 inputProps={{ step: "0.01" }}
                 value={formData.valor || ""}
-                onChange={(e) =>
-                  setFormData((prev) => ({
-                    ...prev,
-                    valor: Number(e.target.value),
-                  }))
-                }
+                onChange={(e) => updateField("valor", Number(e.target.value))}
+                onBlur={() => handleFieldBlur("valor")}
                 InputLabelProps={{ shrink: true }}
-                error={Boolean(errors.valor)}
-                helperText={errors.valor}
+                error={shouldShowError("valor")}
+                helperText={shouldShowError("valor") ? fieldErrors.valor : ""}
               />
             </div>
           </div>
 
-          {errors.submit && (
-            <div className="app-inline-error">
-              <p className="text-sm">{errors.submit}</p>
-            </div>
-          )}
+          <FormErrorSummary generalMessage={generalError} />
 
           <div className="flex justify-end gap-3 pt-4">
             <AppButton
@@ -505,16 +604,17 @@ export const TransacaoModal: React.FC<TransacaoModalProps> = ({
               onClick={onClose}
               tone="outline-danger"
               startIcon={<Ban size={16} />}
+              disabled={isSubmitting}
             >
               Cancelar
             </AppButton>
             <AppButton
               type="submit"
-              disabled={loading}
+              disabled={isSubmitting}
               tone="primary"
               startIcon={<Save size={16} />}
             >
-              {loading ? "Salvando..." : isEditing ? "Atualizar" : "Criar"}
+              {isSubmitting ? "Salvando..." : isEditing ? "Atualizar" : "Criar"}
             </AppButton>
           </div>
         </form>
@@ -522,6 +622,3 @@ export const TransacaoModal: React.FC<TransacaoModalProps> = ({
     </div>
   );
 };
-
-
-
