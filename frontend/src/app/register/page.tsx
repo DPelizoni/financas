@@ -1,26 +1,32 @@
-"use client";
+﻿"use client";
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { UserPlus } from "lucide-react";
-import FeedbackAlert from "@/components/FeedbackAlert";
-import ThemeToggle from "@/components/ThemeToggle";
-import { authService } from "@/services/authService";
 import { TextField } from "@mui/material";
 import AppButton from "@/components/AppButton";
+import FeedbackAlert from "@/components/FeedbackAlert";
+import ThemeToggle from "@/components/ThemeToggle";
+import FormErrorSummary from "@/forms/components/FormErrorSummary";
+import { authFieldSx } from "@/forms/core/auth-field-sx";
+import {
+  focusFirstInvalidField,
+  FormFieldErrors,
+  hasFormFieldErrors,
+  normalizeApiFormError,
+} from "@/forms/core/form-error";
+import { useFormFeedback } from "@/forms/hooks/useFormFeedback";
+import { usePageFeedback } from "@/forms/hooks/usePageFeedback";
+import { authService } from "@/services/authService";
 
-type RegisterField = "nome" | "email" | "senha" | "confirmarSenha";
+const registerFields = ["nome", "email", "senha", "confirmarSenha"] as const;
+type RegisterField = (typeof registerFields)[number];
 
 const validateRegisterFields = (
   values: Record<RegisterField, string>,
-): Record<RegisterField, string> => {
-  const errors: Record<RegisterField, string> = {
-    nome: "",
-    email: "",
-    senha: "",
-    confirmarSenha: "",
-  };
+): FormFieldErrors<RegisterField> => {
+  const errors: FormFieldErrors<RegisterField> = {};
 
   if (!values.nome.trim()) {
     errors.nome = "Informe o nome.";
@@ -49,47 +55,31 @@ const validateRegisterFields = (
   return errors;
 };
 
-const authFieldSx = {
-  "& .MuiOutlinedInput-root": {
-    borderRadius: "4px",
-    minHeight: "44px",
-    "&.MuiInputBase-sizeSmall": {
-      minHeight: "44px",
-    },
-    "& .MuiOutlinedInput-input": {
-      padding: "10px 14px",
-      lineHeight: 1.4,
-    },
-    "&.MuiInputBase-sizeSmall .MuiOutlinedInput-input": {
-      padding: "10px 14px",
-    },
-  },
-};
-
 export default function RegisterPage() {
   const router = useRouter();
-
-  const [nome, setNome] = useState("");
-  const [email, setEmail] = useState("");
-  const [senha, setSenha] = useState("");
-  const [confirmarSenha, setConfirmarSenha] = useState("");
-  const [touched, setTouched] = useState<Record<RegisterField, boolean>>({
-    nome: false,
-    email: false,
-    senha: false,
-    confirmarSenha: false,
-  });
-  const [fieldErrors, setFieldErrors] = useState<Record<RegisterField, string>>({
+  const formRef = useRef<HTMLFormElement>(null);
+  const [values, setValues] = useState<Record<RegisterField, string>>({
     nome: "",
     email: "",
     senha: "",
     confirmarSenha: "",
   });
-  const [loading, setLoading] = useState(false);
-  const [feedback, setFeedback] = useState<{
-    type: "success" | "error";
-    message: string;
-  } | null>(null);
+
+  const {
+    touched,
+    fieldErrors,
+    generalError,
+    isSubmitting,
+    setGeneralError,
+    clearGeneralError,
+    setIsSubmitting,
+    setFieldErrors,
+    markFieldTouched,
+    markAllTouched,
+    shouldShowError,
+  } = useFormFeedback<RegisterField>(registerFields);
+
+  const { feedback, showFeedback, clearFeedback } = usePageFeedback();
 
   useEffect(() => {
     if (authService.isAuthenticated()) {
@@ -97,43 +87,70 @@ export default function RegisterPage() {
     }
   }, [router]);
 
+  const updateField = (field: RegisterField, value: string) => {
+    const nextValues = {
+      ...values,
+      [field]: value,
+    };
+
+    setValues(nextValues);
+
+    if (generalError) {
+      clearGeneralError();
+    }
+
+    if (touched[field] || Object.values(touched).some(Boolean)) {
+      setFieldErrors(validateRegisterFields(nextValues));
+    }
+  };
+
+  const handleFieldBlur = (field: RegisterField) => {
+    markFieldTouched(field);
+    setFieldErrors(validateRegisterFields(values));
+  };
+
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
-    const values = { nome, email, senha, confirmarSenha };
+    clearFeedback();
+    clearGeneralError();
+
     const nextFieldErrors = validateRegisterFields(values);
-    setTouched({
-      nome: true,
-      email: true,
-      senha: true,
-      confirmarSenha: true,
-    });
+    markAllTouched();
     setFieldErrors(nextFieldErrors);
 
-    if (Object.values(nextFieldErrors).some(Boolean)) {
-      setFeedback({
-        type: "error",
-        message: "Revise os campos destacados antes de continuar.",
-      });
+    if (hasFormFieldErrors(nextFieldErrors)) {
+      setGeneralError(null);
+      focusFirstInvalidField(formRef, nextFieldErrors, registerFields);
       return;
     }
 
     try {
-      setLoading(true);
-      await authService.register({ nome, email, senha });
-      setFeedback({
-        type: "success",
-        message: "Usuario cadastrado com sucesso.",
+      setIsSubmitting(true);
+      await authService.register({
+        nome: values.nome.trim(),
+        email: values.email.trim(),
+        senha: values.senha,
       });
+      showFeedback("success", "Usuario cadastrado com sucesso.");
       router.replace("/dashboard");
       router.refresh();
-    } catch (error: any) {
-      const message =
-        error?.response?.data?.message ||
-        "Nao foi possivel cadastrar o usuario.";
-      setFeedback({ type: "error", message });
+    } catch (error: unknown) {
+      const normalized = normalizeApiFormError<RegisterField>(
+        error,
+        "Nao foi possivel cadastrar o usuario.",
+      );
+
+      setFieldErrors(normalized.fieldErrors);
+
+      if (hasFormFieldErrors(normalized.fieldErrors)) {
+        setGeneralError(null);
+        focusFirstInvalidField(formRef, normalized.fieldErrors, registerFields);
+      } else {
+        setGeneralError(normalized.generalMessage);
+      }
     } finally {
-      setLoading(false);
+      setIsSubmitting(false);
     }
   };
 
@@ -167,178 +184,100 @@ export default function RegisterPage() {
           </p>
         </div>
 
-        <FeedbackAlert feedback={feedback} onClose={() => setFeedback(null)} />
+        <FeedbackAlert feedback={feedback} onClose={clearFeedback} />
 
         <form
+          ref={formRef}
           onSubmit={handleSubmit}
           className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2"
+          noValidate
         >
           <div className="md:col-span-2">
             <TextField
               id="nome"
+              name="nome"
               type="text"
               label="Nome"
               variant="outlined"
               size="small"
               fullWidth
               sx={authFieldSx}
-              value={nome}
-              onChange={(e) => {
-                const nextNome = e.target.value;
-                setNome(nextNome);
-                if (Object.values(touched).some(Boolean)) {
-                  setFieldErrors(
-                    validateRegisterFields({
-                      nome: nextNome,
-                      email,
-                      senha,
-                      confirmarSenha,
-                    }),
-                  );
-                }
-              }}
-              onBlur={() => {
-                setTouched((prev) => ({ ...prev, nome: true }));
-                setFieldErrors(
-                  validateRegisterFields({
-                    nome,
-                    email,
-                    senha,
-                    confirmarSenha,
-                  }),
-                );
-              }}
+              value={values.nome}
+              onChange={(e) => updateField("nome", e.target.value)}
+              onBlur={() => handleFieldBlur("nome")}
               placeholder="Nome completo"
               InputLabelProps={{ shrink: true }}
-              error={touched.nome && Boolean(fieldErrors.nome)}
-              helperText={touched.nome ? fieldErrors.nome : ""}
+              error={shouldShowError("nome")}
+              helperText={shouldShowError("nome") ? fieldErrors.nome : ""}
             />
           </div>
 
           <div className="md:col-span-2">
             <TextField
               id="email"
+              name="email"
               type="email"
               label="Email"
               variant="outlined"
               size="small"
               fullWidth
               sx={authFieldSx}
-              value={email}
-              onChange={(e) => {
-                const nextEmail = e.target.value;
-                setEmail(nextEmail);
-                if (Object.values(touched).some(Boolean)) {
-                  setFieldErrors(
-                    validateRegisterFields({
-                      nome,
-                      email: nextEmail,
-                      senha,
-                      confirmarSenha,
-                    }),
-                  );
-                }
-              }}
-              onBlur={() => {
-                setTouched((prev) => ({ ...prev, email: true }));
-                setFieldErrors(
-                  validateRegisterFields({
-                    nome,
-                    email,
-                    senha,
-                    confirmarSenha,
-                  }),
-                );
-              }}
+              value={values.email}
+              onChange={(e) => updateField("email", e.target.value)}
+              onBlur={() => handleFieldBlur("email")}
               placeholder="voce@empresa.com"
               InputLabelProps={{ shrink: true }}
-              error={touched.email && Boolean(fieldErrors.email)}
-              helperText={touched.email ? fieldErrors.email : ""}
+              error={shouldShowError("email")}
+              helperText={shouldShowError("email") ? fieldErrors.email : ""}
             />
           </div>
 
           <div>
             <TextField
               id="senha"
+              name="senha"
               type="password"
               label="Senha"
               variant="outlined"
               size="small"
               fullWidth
               sx={authFieldSx}
-              value={senha}
-              onChange={(e) => {
-                const nextSenha = e.target.value;
-                setSenha(nextSenha);
-                if (Object.values(touched).some(Boolean)) {
-                  setFieldErrors(
-                    validateRegisterFields({
-                      nome,
-                      email,
-                      senha: nextSenha,
-                      confirmarSenha,
-                    }),
-                  );
-                }
-              }}
-              onBlur={() => {
-                setTouched((prev) => ({ ...prev, senha: true }));
-                setFieldErrors(
-                  validateRegisterFields({
-                    nome,
-                    email,
-                    senha,
-                    confirmarSenha,
-                  }),
-                );
-              }}
+              value={values.senha}
+              onChange={(e) => updateField("senha", e.target.value)}
+              onBlur={() => handleFieldBlur("senha")}
               placeholder="Minimo de 6 caracteres"
               InputLabelProps={{ shrink: true }}
-              error={touched.senha && Boolean(fieldErrors.senha)}
-              helperText={touched.senha ? fieldErrors.senha : ""}
+              error={shouldShowError("senha")}
+              helperText={shouldShowError("senha") ? fieldErrors.senha : ""}
             />
           </div>
 
           <div>
             <TextField
               id="confirmarSenha"
+              name="confirmarSenha"
               type="password"
               label="Confirmar senha"
               variant="outlined"
               size="small"
               fullWidth
               sx={authFieldSx}
-              value={confirmarSenha}
-              onChange={(e) => {
-                const nextConfirmarSenha = e.target.value;
-                setConfirmarSenha(nextConfirmarSenha);
-                if (Object.values(touched).some(Boolean)) {
-                  setFieldErrors(
-                    validateRegisterFields({
-                      nome,
-                      email,
-                      senha,
-                      confirmarSenha: nextConfirmarSenha,
-                    }),
-                  );
-                }
-              }}
-              onBlur={() => {
-                setTouched((prev) => ({ ...prev, confirmarSenha: true }));
-                setFieldErrors(
-                  validateRegisterFields({
-                    nome,
-                    email,
-                    senha,
-                    confirmarSenha,
-                  }),
-                );
-              }}
+              value={values.confirmarSenha}
+              onChange={(e) => updateField("confirmarSenha", e.target.value)}
+              onBlur={() => handleFieldBlur("confirmarSenha")}
               placeholder="Repita a senha"
               InputLabelProps={{ shrink: true }}
-              error={touched.confirmarSenha && Boolean(fieldErrors.confirmarSenha)}
-              helperText={touched.confirmarSenha ? fieldErrors.confirmarSenha : ""}
+              error={shouldShowError("confirmarSenha")}
+              helperText={
+                shouldShowError("confirmarSenha")
+                  ? fieldErrors.confirmarSenha
+                  : ""
+              }
             />
+          </div>
+
+          <div className="md:col-span-2">
+            <FormErrorSummary generalMessage={generalError} />
           </div>
 
           <div className="md:col-span-2">
@@ -346,11 +285,11 @@ export default function RegisterPage() {
               type="submit"
               tone="success"
               fullWidth
-              disabled={loading}
+              disabled={isSubmitting}
               startIcon={<UserPlus size={16} />}
               className="h-11"
             >
-              {loading ? "Cadastrando..." : "Cadastrar usuario"}
+              {isSubmitting ? "Cadastrando..." : "Cadastrar usuario"}
             </AppButton>
           </div>
         </form>

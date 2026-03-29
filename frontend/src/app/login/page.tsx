@@ -1,24 +1,32 @@
-"use client";
+﻿"use client";
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { LogIn } from "lucide-react";
-import { authService } from "@/services/authService";
-import FeedbackAlert from "@/components/FeedbackAlert";
-import ThemeToggle from "@/components/ThemeToggle";
 import { TextField } from "@mui/material";
 import AppButton from "@/components/AppButton";
+import FeedbackAlert from "@/components/FeedbackAlert";
+import ThemeToggle from "@/components/ThemeToggle";
+import FormErrorSummary from "@/forms/components/FormErrorSummary";
+import { authFieldSx } from "@/forms/core/auth-field-sx";
+import {
+  focusFirstInvalidField,
+  FormFieldErrors,
+  hasFormFieldErrors,
+  normalizeApiFormError,
+} from "@/forms/core/form-error";
+import { useFormFeedback } from "@/forms/hooks/useFormFeedback";
+import { usePageFeedback } from "@/forms/hooks/usePageFeedback";
+import { authService } from "@/services/authService";
 
-type LoginField = "email" | "senha";
+const loginFields = ["email", "senha"] as const;
+type LoginField = (typeof loginFields)[number];
 
 const validateLoginFields = (
   values: Record<LoginField, string>,
-): Record<LoginField, string> => {
-  const errors: Record<LoginField, string> = {
-    email: "",
-    senha: "",
-  };
+): FormFieldErrors<LoginField> => {
+  const errors: FormFieldErrors<LoginField> = {};
 
   if (!values.email.trim()) {
     errors.email = "Informe o email.";
@@ -33,42 +41,30 @@ const validateLoginFields = (
   return errors;
 };
 
-const authFieldSx = {
-  "& .MuiOutlinedInput-root": {
-    borderRadius: "4px",
-    minHeight: "44px",
-    "&.MuiInputBase-sizeSmall": {
-      minHeight: "44px",
-    },
-    "& .MuiOutlinedInput-input": {
-      padding: "10px 14px",
-      lineHeight: 1.4,
-    },
-    "&.MuiInputBase-sizeSmall .MuiOutlinedInput-input": {
-      padding: "10px 14px",
-    },
-  },
-};
-
 export default function LoginPage() {
   const router = useRouter();
+  const formRef = useRef<HTMLFormElement>(null);
   const [nextRoute, setNextRoute] = useState("/dashboard");
-
-  const [email, setEmail] = useState("");
-  const [senha, setSenha] = useState("");
-  const [touched, setTouched] = useState<Record<LoginField, boolean>>({
-    email: false,
-    senha: false,
-  });
-  const [fieldErrors, setFieldErrors] = useState<Record<LoginField, string>>({
+  const [values, setValues] = useState<Record<LoginField, string>>({
     email: "",
     senha: "",
   });
-  const [loading, setLoading] = useState(false);
-  const [feedback, setFeedback] = useState<{
-    type: "success" | "error";
-    message: string;
-  } | null>(null);
+
+  const {
+    touched,
+    fieldErrors,
+    generalError,
+    isSubmitting,
+    setGeneralError,
+    clearGeneralError,
+    setIsSubmitting,
+    setFieldErrors,
+    markFieldTouched,
+    markAllTouched,
+    shouldShowError,
+  } = useFormFeedback<LoginField>(loginFields);
+
+  const { feedback, showFeedback, clearFeedback } = usePageFeedback();
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -83,30 +79,69 @@ export default function LoginPage() {
     }
   }, [router]);
 
+  const updateField = (field: LoginField, value: string) => {
+    const nextValues = {
+      ...values,
+      [field]: value,
+    };
+
+    setValues(nextValues);
+
+    if (generalError) {
+      clearGeneralError();
+    }
+
+    if (touched[field] || Object.values(touched).some(Boolean)) {
+      setFieldErrors(validateLoginFields(nextValues));
+    }
+  };
+
+  const handleFieldBlur = (field: LoginField) => {
+    markFieldTouched(field);
+    setFieldErrors(validateLoginFields(values));
+  };
+
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
-    const nextFieldErrors = validateLoginFields({ email, senha });
-    setTouched({ email: true, senha: true });
+    clearFeedback();
+    clearGeneralError();
+
+    const nextFieldErrors = validateLoginFields(values);
+    markAllTouched();
     setFieldErrors(nextFieldErrors);
 
-    if (nextFieldErrors.email || nextFieldErrors.senha) {
-      setFeedback({ type: "error", message: "Revise os campos destacados." });
+    if (hasFormFieldErrors(nextFieldErrors)) {
+      setGeneralError(null);
+      focusFirstInvalidField(formRef, nextFieldErrors, loginFields);
       return;
     }
 
     try {
-      setLoading(true);
-      await authService.login({ email, senha });
-      setFeedback({ type: "success", message: "Login realizado com sucesso." });
+      setIsSubmitting(true);
+      await authService.login({
+        email: values.email.trim(),
+        senha: values.senha,
+      });
+      showFeedback("success", "Login realizado com sucesso.");
       router.replace(nextRoute);
       router.refresh();
-    } catch (error: any) {
-      const message =
-        error?.response?.data?.message || "Nao foi possivel realizar login.";
-      setFeedback({ type: "error", message });
+    } catch (error: unknown) {
+      const normalized = normalizeApiFormError<LoginField>(
+        error,
+        "Nao foi possivel realizar login.",
+      );
+
+      setFieldErrors(normalized.fieldErrors);
+
+      if (hasFormFieldErrors(normalized.fieldErrors)) {
+        setGeneralError(null);
+        focusFirstInvalidField(formRef, normalized.fieldErrors, loginFields);
+      } else {
+        setGeneralError(normalized.generalMessage);
+      }
     } finally {
-      setLoading(false);
+      setIsSubmitting(false);
     }
   };
 
@@ -140,72 +175,58 @@ export default function LoginPage() {
           </p>
         </div>
 
-        <FeedbackAlert feedback={feedback} onClose={() => setFeedback(null)} />
+        <FeedbackAlert feedback={feedback} onClose={clearFeedback} />
 
-        <form onSubmit={handleSubmit} className="mt-4 space-y-4">
+        <form ref={formRef} onSubmit={handleSubmit} className="mt-4 space-y-4" noValidate>
           <TextField
             id="email"
+            name="email"
             type="email"
             label="Email"
             variant="outlined"
             size="small"
             fullWidth
             sx={authFieldSx}
-            value={email}
-            onChange={(e) => {
-              const nextEmail = e.target.value;
-              setEmail(nextEmail);
-              if (touched.email || touched.senha) {
-                setFieldErrors(validateLoginFields({ email: nextEmail, senha }));
-              }
-            }}
-            onBlur={() => {
-              setTouched((prev) => ({ ...prev, email: true }));
-              setFieldErrors(validateLoginFields({ email, senha }));
-            }}
+            value={values.email}
+            onChange={(e) => updateField("email", e.target.value)}
+            onBlur={() => handleFieldBlur("email")}
             autoComplete="email"
             placeholder="voce@empresa.com"
             InputLabelProps={{ shrink: true }}
-            error={touched.email && Boolean(fieldErrors.email)}
-            helperText={touched.email ? fieldErrors.email : ""}
+            error={shouldShowError("email")}
+            helperText={shouldShowError("email") ? fieldErrors.email : ""}
           />
 
           <TextField
             id="senha"
+            name="senha"
             type="password"
             label="Senha"
             variant="outlined"
             size="small"
             fullWidth
             sx={authFieldSx}
-            value={senha}
-            onChange={(e) => {
-              const nextSenha = e.target.value;
-              setSenha(nextSenha);
-              if (touched.email || touched.senha) {
-                setFieldErrors(validateLoginFields({ email, senha: nextSenha }));
-              }
-            }}
-            onBlur={() => {
-              setTouched((prev) => ({ ...prev, senha: true }));
-              setFieldErrors(validateLoginFields({ email, senha }));
-            }}
+            value={values.senha}
+            onChange={(e) => updateField("senha", e.target.value)}
+            onBlur={() => handleFieldBlur("senha")}
             autoComplete="current-password"
             placeholder="Digite sua senha"
             InputLabelProps={{ shrink: true }}
-            error={touched.senha && Boolean(fieldErrors.senha)}
-            helperText={touched.senha ? fieldErrors.senha : ""}
+            error={shouldShowError("senha")}
+            helperText={shouldShowError("senha") ? fieldErrors.senha : ""}
           />
+
+          <FormErrorSummary generalMessage={generalError} />
 
           <AppButton
             type="submit"
             tone="primary"
             fullWidth
-            disabled={loading}
+            disabled={isSubmitting}
             startIcon={<LogIn size={16} />}
             className="h-11"
           >
-            {loading ? "Entrando..." : "Entrar"}
+            {isSubmitting ? "Entrando..." : "Entrar"}
           </AppButton>
         </form>
 
