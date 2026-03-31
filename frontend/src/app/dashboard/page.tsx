@@ -67,6 +67,31 @@ const chartColors = {
   pieE: "rgb(var(--app-chart-pie-e))",
 };
 
+const normalizeSeriesKey = (value: string): string =>
+  value
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase();
+
+const getTooltipSeriesColor = (
+  seriesName: string,
+  fallback = "rgb(var(--app-text-primary))",
+): string => {
+  const normalized = normalizeSeriesKey(seriesName || "");
+
+  if (normalized.includes("receita")) return chartColors.receitas;
+  if (normalized.includes("despesa")) return chartColors.despesas;
+  if (normalized.includes("saldo") || normalized.includes("liquido")) {
+    return chartColors.saldo;
+  }
+  if (normalized.includes("pago")) return chartColors.pago;
+  if (normalized.includes("provisao") || normalized.includes("pendente")) {
+    return chartColors.pendente;
+  }
+
+  return fallback;
+};
+
 const monthLabel = (monthKey: string): string => {
   const [year, month] = monthKey.split("-");
   return `${month}/${year.slice(2)}`;
@@ -757,7 +782,16 @@ export default function DashboardPage() {
                   ]}
                 />
                 <Tooltip
-                  formatter={(v) => currency(Number(v || 0))}
+                  formatter={(v, name) => (
+                    <span
+                      style={{
+                        color: getTooltipSeriesColor(String(name)),
+                        fontWeight: 700,
+                      }}
+                    >
+                      {currency(Number(v || 0))}
+                    </span>
+                  )}
                   contentStyle={tooltipContentStyle}
                   labelStyle={tooltipLabelStyle}
                   itemStyle={tooltipItemStyle}
@@ -839,14 +873,23 @@ export default function DashboardPage() {
                               ))}
                             </Pie>
                             <Tooltip
-                              formatter={(v) => {
+                              formatter={(v, name) => {
                                 const total =
                                   (timeline[0]?.receitas || 0) +
                                   (timeline[0]?.despesas || 0);
                                 const value = Number(v || 0);
                                 const percent =
                                   total > 0 ? (value / total) * 100 : 0;
-                                return `${currency(value)} (${Math.round(percent)}%)`;
+                                return (
+                                  <span
+                                    style={{
+                                      color: getTooltipSeriesColor(String(name)),
+                                      fontWeight: 700,
+                                    }}
+                                  >
+                                    {`${currency(value)} (${Math.round(percent)}%)`}
+                                  </span>
+                                );
                               }}
                               contentStyle={tooltipContentStyle}
                               labelStyle={tooltipLabelStyle}
@@ -940,7 +983,16 @@ export default function DashboardPage() {
                     />
                     <YAxis hide />
                     <Tooltip
-                      formatter={(v) => currency(Number(v || 0))}
+                      formatter={(v, name) => (
+                        <span
+                          style={{
+                            color: getTooltipSeriesColor(String(name)),
+                            fontWeight: 700,
+                          }}
+                        >
+                          {currency(Number(v || 0))}
+                        </span>
+                      )}
                       contentStyle={tooltipContentStyle}
                       labelStyle={tooltipLabelStyle}
                       itemStyle={tooltipItemStyle}
@@ -1001,7 +1053,24 @@ export default function DashboardPage() {
                     domain={[0, (dataMax: number) => Math.ceil(dataMax * 1.2)]}
                   />
                   <Tooltip
-                    formatter={(v) => [currency(Number(v || 0)), "Total"]}
+                    formatter={(v, _name, item) => {
+                      const itemColor =
+                        typeof (item as { color?: unknown })?.color === "string"
+                          ? ((item as { color?: string }).color as string)
+                          : chartColors.saldo;
+
+                      return [
+                        <span
+                          style={{
+                            color: itemColor,
+                            fontWeight: 700,
+                          }}
+                        >
+                          {currency(Number(v || 0))}
+                        </span>,
+                        "Total",
+                      ];
+                    }}
                     labelFormatter={(label) => `Categoria: ${label}`}
                     contentStyle={tooltipContentStyle}
                     labelStyle={tooltipLabelStyle}
