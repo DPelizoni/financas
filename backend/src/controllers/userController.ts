@@ -107,12 +107,12 @@ class UserController {
     try {
       const currentUserId = req.user?.id;
       if (!currentUserId) {
-        throw new AppError(401, "Usuario nao autenticado");
+        throw new AppError(401, "Usuário não autenticado");
       }
 
       const id = parseInt(req.params.id);
       await userService.deleteUser(id, currentUserId);
-      res.json(successResponse("Usuario excluido com sucesso"));
+      res.json(successResponse("Usuário excluído com sucesso"));
     } catch (error) {
       next(error);
     }

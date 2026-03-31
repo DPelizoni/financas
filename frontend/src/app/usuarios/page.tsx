@@ -33,7 +33,7 @@ const roleBadgeClass: Record<UserRole, string> = {
 const roleLabel: Record<UserRole, string> = {
   ADMIN: "Admin",
   GESTOR: "Gestor",
-  USUARIO: "Usuario",
+  USUARIO: "Usuário",
 };
 
 const statusLabel: Record<UserStatus, string> = {
@@ -91,7 +91,7 @@ export default function UsuariosPage() {
     } catch (error: any) {
       const message =
         error?.response?.data?.message ||
-        "Nao foi possivel carregar os usuarios.";
+        "Não foi possível carregar os usuários.";
       showFeedback("error", message);
     } finally {
       setLoading(false);
@@ -120,7 +120,7 @@ export default function UsuariosPage() {
         setAuthorized(false);
         setFeedback({
           type: "error",
-          message: "Sessao invalida. Faca login novamente.",
+          message: "Sessão inválida. Faça login novamente.",
         });
         window.setTimeout(() => router.replace("/login"), 800);
       }
@@ -166,7 +166,7 @@ export default function UsuariosPage() {
     } catch (error: any) {
       const message =
         error?.response?.data?.message ||
-        "Nao foi possivel atualizar o status do usuario.";
+        "Não foi possível atualizar o status do usuário.";
       showFeedback("error", message);
     } finally {
       setUpdatingId(null);
@@ -348,7 +348,7 @@ export default function UsuariosPage() {
                 }}
               >
                 <MenuItem value="TODOS">Todos</MenuItem>
-                <MenuItem value="USUARIO">Usuario</MenuItem>
+                <MenuItem value="USUARIO">Usuário</MenuItem>
                 <MenuItem value="GESTOR">Gestor</MenuItem>
                 <MenuItem value="ADMIN">Admin</MenuItem>
               </TextField>
@@ -359,11 +359,11 @@ export default function UsuariosPage() {
         <div className="app-surface p-4">
           {loading ? (
             <div className="py-12 text-center text-gray-500">
-              Carregando usuarios...
+              Carregando usuários...
             </div>
           ) : sortedUsers.length === 0 ? (
             <div className="py-12 text-center text-gray-500">
-              Nenhum usuario encontrado com os filtros atuais.
+              Nenhum usuário encontrado com os filtros atuais.
             </div>
           ) : (
             <>
@@ -578,7 +578,7 @@ export default function UsuariosPage() {
 
       <ViewDataModal
         isOpen={!!viewingUser}
-        title="Visualizar Usuario"
+        title="Visualizar Usuário"
         data={viewingUser}
         onClose={() => setViewingUser(null)}
       />

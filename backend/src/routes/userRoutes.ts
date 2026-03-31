@@ -141,8 +141,8 @@ router.patch(
  * @swagger
  * /api/users/{id}:
  *   delete:
- *     summary: Excluir usuario
- *     description: Remove definitivamente um usuario. Apenas ADMIN pode executar.
+ *     summary: Excluir usuário
+ *     description: Remove definitivamente um usuário. Apenas ADMIN pode executar.
  *     tags: [Auth]
  *     security:
  *       - bearerAuth: []
@@ -154,15 +154,15 @@ router.patch(
  *           type: integer
  *     responses:
  *       200:
- *         description: Usuario excluido com sucesso
+ *         description: Usuário excluído com sucesso
  *       400:
- *         description: Regra de negocio para exclusao nao permitiu a operacao
+ *         description: Regra de negócio para exclusão não permitiu a operação
  *       403:
- *         description: Acesso negado para perfil sem permissao
+ *         description: Acesso negado para perfil sem permissão
  *       404:
- *         description: Usuario nao encontrado
+ *         description: Usuário não encontrado
  *       401:
- *         description: Usuario nao autenticado
+ *         description: Usuário não autenticado
  */
 router.delete("/:id", authorizeRoles("ADMIN"), userController.delete);
 

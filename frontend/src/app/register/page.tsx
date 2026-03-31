@@ -31,25 +31,25 @@ const validateRegisterFields = (
   if (!values.nome.trim()) {
     errors.nome = "Informe o nome.";
   } else if (values.nome.trim().length < 2) {
-    errors.nome = "Nome deve ter no minimo 2 caracteres.";
+    errors.nome = "Nome deve ter no mínimo 2 caracteres.";
   }
 
   if (!values.email.trim()) {
-    errors.email = "Informe o email.";
+    errors.email = "Informe o e-mail.";
   } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(values.email.trim())) {
-    errors.email = "Informe um email valido.";
+    errors.email = "Informe um e-mail válido.";
   }
 
   if (!values.senha) {
     errors.senha = "Informe a senha.";
   } else if (values.senha.length < 6) {
-    errors.senha = "A senha deve ter no minimo 6 caracteres.";
+    errors.senha = "A senha deve ter no mínimo 6 caracteres.";
   }
 
   if (!values.confirmarSenha) {
     errors.confirmarSenha = "Confirme a senha.";
   } else if (values.confirmarSenha !== values.senha) {
-    errors.confirmarSenha = "A confirmacao de senha nao confere.";
+    errors.confirmarSenha = "A confirmação de senha não confere.";
   }
 
   return errors;
@@ -132,13 +132,13 @@ export default function RegisterPage() {
         email: values.email.trim(),
         senha: values.senha,
       });
-      showFeedback("success", "Usuario cadastrado com sucesso.");
+      showFeedback("success", "Usuário cadastrado com sucesso.");
       router.replace("/dashboard");
       router.refresh();
     } catch (error: unknown) {
       const normalized = normalizeApiFormError<RegisterField>(
         error,
-        "Nao foi possivel cadastrar o usuario.",
+        "Não foi possível cadastrar o usuário.",
       );
 
       setFieldErrors(normalized.fieldErrors);
@@ -177,10 +177,10 @@ export default function RegisterPage() {
             Sistema Financeiro
           </p>
           <h1 className="mt-2 text-3xl font-black tracking-tight text-[rgb(var(--app-text-primary))]">
-            Criar Usuario
+            Criar Usuário
           </h1>
           <p className="mt-1 text-sm text-[rgb(var(--app-text-secondary))]">
-            Cadastre um usuario para acessar o sistema.
+            Cadastre um usuário para acessar o sistema.
           </p>
         </div>
 
@@ -205,7 +205,6 @@ export default function RegisterPage() {
               value={values.nome}
               onChange={(e) => updateField("nome", e.target.value)}
               onBlur={() => handleFieldBlur("nome")}
-              placeholder="Nome completo"
               InputLabelProps={{ shrink: true }}
               error={shouldShowError("nome")}
               helperText={shouldShowError("nome") ? fieldErrors.nome : ""}
@@ -217,7 +216,7 @@ export default function RegisterPage() {
               id="email"
               name="email"
               type="email"
-              label="Email"
+              label="E-mail"
               variant="outlined"
               size="small"
               fullWidth
@@ -225,7 +224,6 @@ export default function RegisterPage() {
               value={values.email}
               onChange={(e) => updateField("email", e.target.value)}
               onBlur={() => handleFieldBlur("email")}
-              placeholder="voce@empresa.com"
               InputLabelProps={{ shrink: true }}
               error={shouldShowError("email")}
               helperText={shouldShowError("email") ? fieldErrors.email : ""}
@@ -245,7 +243,6 @@ export default function RegisterPage() {
               value={values.senha}
               onChange={(e) => updateField("senha", e.target.value)}
               onBlur={() => handleFieldBlur("senha")}
-              placeholder="Minimo de 6 caracteres"
               InputLabelProps={{ shrink: true }}
               error={shouldShowError("senha")}
               helperText={shouldShowError("senha") ? fieldErrors.senha : ""}
@@ -265,7 +262,6 @@ export default function RegisterPage() {
               value={values.confirmarSenha}
               onChange={(e) => updateField("confirmarSenha", e.target.value)}
               onBlur={() => handleFieldBlur("confirmarSenha")}
-              placeholder="Repita a senha"
               InputLabelProps={{ shrink: true }}
               error={shouldShowError("confirmarSenha")}
               helperText={
@@ -289,13 +285,13 @@ export default function RegisterPage() {
               startIcon={<UserPlus size={16} />}
               className="h-11"
             >
-              {isSubmitting ? "Cadastrando..." : "Cadastrar usuario"}
+              {isSubmitting ? "Cadastrando..." : "Cadastrar usuário"}
             </AppButton>
           </div>
         </form>
 
         <p className="mt-5 text-center text-sm text-[rgb(var(--app-text-secondary))]">
-          Ja possui conta?{" "}
+          Já possui conta?{" "}
           <Link
             href="/login"
             className="font-semibold text-[rgb(var(--app-semantic-success))] hover:opacity-90"

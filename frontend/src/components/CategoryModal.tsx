@@ -31,7 +31,7 @@ const validateCategoryForm = (
   const errors: FormFieldErrors<CategoryField> = {};
 
   if (!values.nome || values.nome.trim().length < 2) {
-    errors.nome = "Nome deve ter no minimo 2 caracteres.";
+    errors.nome = "Nome deve ter no mínimo 2 caracteres.";
   }
 
   if (values.cor && !/^#[0-9A-Fa-f]{6}$/.test(values.cor)) {
@@ -164,7 +164,7 @@ export default function CategoryModal({
         }
 
         if (Object.keys(updates).length === 0) {
-          setGeneralError("Nenhuma alteracao foi identificada para salvar.");
+          setGeneralError("Nenhuma alteração foi identificada para salvar.");
           return;
         }
 
@@ -184,7 +184,7 @@ export default function CategoryModal({
     } catch (error: unknown) {
       const normalized = normalizeApiFormError<CategoryField>(
         error,
-        "Nao foi possivel concluir a operacao.",
+        "Não foi possível concluir a operação.",
       );
 
       setFieldErrors(normalized.fieldErrors);
@@ -230,7 +230,6 @@ export default function CategoryModal({
               value={formData.nome}
               onChange={(e) => updateField("nome", e.target.value)}
               onBlur={() => handleFieldBlur("nome")}
-              placeholder="Ex: Alimentacao, Salario"
               InputLabelProps={{ shrink: true }}
               error={shouldShowError("nome")}
               helperText={shouldShowError("nome") ? fieldErrors.nome : ""}
@@ -279,7 +278,6 @@ export default function CategoryModal({
                 value={formData.cor}
                 onChange={(e) => updateField("cor", e.target.value)}
                 onBlur={() => handleFieldBlur("cor")}
-                placeholder="#0EA5E9"
                 InputLabelProps={{ shrink: true }}
                 error={shouldShowError("cor")}
                 helperText={shouldShowError("cor") ? fieldErrors.cor : ""}

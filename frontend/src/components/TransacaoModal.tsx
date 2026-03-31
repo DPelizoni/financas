@@ -48,7 +48,7 @@ const validateTransacaoForm = (
   const errors: FormFieldErrors<TransacaoField> = {};
 
   if (!values.mes || !/^\d{2}\/\d{4}$/.test(values.mes)) {
-    errors.mes = "Mes deve estar no formato MM/AAAA.";
+    errors.mes = "Mês deve estar no formato MM/AAAA.";
   }
 
   if (!values.vencimento || !/^\d{2}\/\d{2}\/\d{4}$/.test(values.vencimento)) {
@@ -56,19 +56,19 @@ const validateTransacaoForm = (
   }
 
   if (!values.tipo) {
-    errors.tipo = "Tipo e obrigatorio.";
+    errors.tipo = "Tipo é obrigatório.";
   }
 
   if (values.categoria_id <= 0) {
-    errors.categoria_id = "Categoria e obrigatoria.";
+    errors.categoria_id = "Categoria é obrigatória.";
   }
 
   if (values.descricao_id <= 0) {
-    errors.descricao_id = "Descricao e obrigatoria.";
+    errors.descricao_id = "Descrição é obrigatória.";
   }
 
   if (values.banco_id <= 0) {
-    errors.banco_id = "Banco e obrigatorio.";
+    errors.banco_id = "Banco é obrigatório.";
   }
 
   if (values.valor <= 0) {
@@ -173,7 +173,7 @@ export const TransacaoModal: React.FC<TransacaoModalProps> = ({
       const response = await bankService.getAll({ limit: 999 });
       setBanks(response.data || []);
     } catch {
-      setGeneralError("Nao foi possivel carregar os bancos.");
+      setGeneralError("Não foi possível carregar os bancos.");
     }
   };
 
@@ -199,7 +199,7 @@ export const TransacaoModal: React.FC<TransacaoModalProps> = ({
         return next;
       });
     } catch {
-      setGeneralError("Nao foi possivel carregar as categorias.");
+      setGeneralError("Não foi possível carregar as categorias.");
     }
   };
 
@@ -243,7 +243,7 @@ export const TransacaoModal: React.FC<TransacaoModalProps> = ({
         return next;
       });
     } catch {
-      setGeneralError("Nao foi possivel carregar as descricoes.");
+      setGeneralError("Não foi possível carregar as descrições.");
     }
   };
 
@@ -352,17 +352,17 @@ export const TransacaoModal: React.FC<TransacaoModalProps> = ({
 
       if (isEditing && transacao) {
         await transacaoService.update(transacao.id, formData);
-        onSuccess(`Transacao de ${formData.mes} atualizada com sucesso.`);
+        onSuccess(`Transação de ${formData.mes} atualizada com sucesso.`);
       } else {
         await transacaoService.create(formData);
-        onSuccess(`Transacao de ${formData.mes} criada com sucesso.`);
+        onSuccess(`Transação de ${formData.mes} criada com sucesso.`);
       }
 
       onClose();
     } catch (error: unknown) {
       const normalized = normalizeApiFormError<TransacaoField>(
         error,
-        "Erro ao salvar transacao.",
+        "Erro ao salvar transação.",
       );
 
       setFieldErrors(normalized.fieldErrors);
@@ -395,7 +395,7 @@ export const TransacaoModal: React.FC<TransacaoModalProps> = ({
             id={titleId}
             className="text-xl font-semibold text-[rgb(var(--app-text-primary))]"
           >
-            {isEditing ? "Editar Transacao" : "Nova Transacao"}
+            {isEditing ? "Editar Transação" : "Nova Transação"}
           </h2>
         </div>
 
@@ -406,7 +406,7 @@ export const TransacaoModal: React.FC<TransacaoModalProps> = ({
                 id="mes"
                 name="mes"
                 type="month"
-                label="Mes"
+                label="Mês"
                 variant="outlined"
                 size="small"
                 fullWidth
@@ -469,7 +469,7 @@ export const TransacaoModal: React.FC<TransacaoModalProps> = ({
                 id="situacao"
                 name="situacao"
                 select
-                label="Situacao"
+                label="Situação"
                 variant="outlined"
                 size="small"
                 fullWidth
@@ -523,7 +523,7 @@ export const TransacaoModal: React.FC<TransacaoModalProps> = ({
                 id="descricao_id"
                 name="descricao_id"
                 select
-                label="Descricao"
+                label="Descrição"
                 variant="outlined"
                 size="small"
                 fullWidth
@@ -581,7 +581,6 @@ export const TransacaoModal: React.FC<TransacaoModalProps> = ({
                 name="valor"
                 type="number"
                 label="Valor"
-                placeholder="0.00"
                 variant="outlined"
                 size="small"
                 fullWidth

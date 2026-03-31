@@ -17,21 +17,21 @@ interface ViewDataModalProps {
 const defaultFieldLabels: Record<string, string> = {
   id: "ID",
   nome: "Nome",
-  codigo: "Codigo",
+  codigo: "Código",
   cor: "Cor",
-  icone: "Icone",
+  icone: "Ícone",
   saldo_inicial: "Saldo inicial",
   ativo: "Status",
   tipo: "Tipo",
   categoria_id: "ID da categoria",
   categoria_nome: "Categoria",
-  descricao_id: "ID da descricao",
-  descricao_nome: "Descricao",
+  descricao_id: "ID da descrição",
+  descricao_nome: "Descrição",
   banco_id: "ID do banco",
   banco_nome: "Banco",
-  situacao: "Situacao",
+  situacao: "Situação",
   valor: "Valor",
-  mes: "Mes",
+  mes: "Mês",
   vencimento: "Vencimento",
   created_at: "Criado em",
   updated_at: "Atualizado em",
@@ -138,7 +138,7 @@ const formatValue = (key: string, value: unknown): string => {
   }
 
   if (typeof value === "boolean") {
-    return value ? "Sim" : "Nao";
+    return value ? "Sim" : "Não";
   }
 
   if (Array.isArray(value)) {
@@ -226,7 +226,7 @@ export default function ViewDataModal({
         <div className="max-h-[60vh] overflow-y-auto p-6">
           {entries.length === 0 ? (
             <p className="text-sm text-[rgb(var(--app-text-secondary))]">
-              Nenhum dado disponivel para exibicao.
+              Nenhum dado disponível para exibição.
             </p>
           ) : (
             <div className="grid grid-cols-1 gap-3 md:grid-cols-2">

@@ -22,7 +22,7 @@ interface BankModalProps {
   onSave: (message: string) => Promise<void> | void;
 }
 
-const bankFields = ["nome", "codigo", "cor", "icone", "saldo_inicial", "ativo"] as const;
+const bankFields = ["nome", "codigo", "cor", "saldo_inicial", "ativo"] as const;
 type BankField = (typeof bankFields)[number];
 
 const formatBrlInput = (value: number) =>
@@ -79,7 +79,7 @@ const validateBankForm = (values: BankInput): FormFieldErrors<BankField> => {
   const errors: FormFieldErrors<BankField> = {};
 
   if (!values.nome || values.nome.trim().length < 2) {
-    errors.nome = "Nome deve ter no minimo 2 caracteres.";
+    errors.nome = "Nome deve ter no mínimo 2 caracteres.";
   }
 
   if (values.cor && !/^#[0-9A-Fa-f]{6}$/.test(values.cor)) {
@@ -87,7 +87,7 @@ const validateBankForm = (values: BankInput): FormFieldErrors<BankField> => {
   }
 
   if (valueToNumber(values.saldo_inicial) < 0) {
-    errors.saldo_inicial = "Saldo inicial nao pode ser negativo.";
+    errors.saldo_inicial = "Saldo inicial não pode ser negativo.";
   }
 
   return errors;
@@ -101,7 +101,6 @@ export default function BankModal({ bank, onClose, onSave }: BankModalProps) {
     nome: "",
     codigo: "",
     cor: "#3B82F6",
-    icone: "",
     saldo_inicial: 0,
     ativo: true,
   });
@@ -131,7 +130,6 @@ export default function BankModal({ bank, onClose, onSave }: BankModalProps) {
         nome: bank.nome,
         codigo: bank.codigo || "",
         cor: bank.cor,
-        icone: bank.icone || "",
         saldo_inicial: currentSaldo,
         ativo: bank.ativo,
       });
@@ -143,7 +141,6 @@ export default function BankModal({ bank, onClose, onSave }: BankModalProps) {
         nome: "",
         codigo: "",
         cor: "#3B82F6",
-        icone: "",
         saldo_inicial: 0,
         ativo: true,
       });
@@ -206,7 +203,6 @@ export default function BankModal({ bank, onClose, onSave }: BankModalProps) {
         const updates: Partial<BankInput> = {};
         const trimmedNome = formData.nome.trim();
         const trimmedCodigo = formData.codigo?.trim() || "";
-        const trimmedIcone = formData.icone?.trim() || "";
         const currentSaldo = valueToNumber(formData.saldo_inicial);
         const originalSaldo = valueToNumber(originalBank.saldo_inicial);
 
@@ -219,9 +215,6 @@ export default function BankModal({ bank, onClose, onSave }: BankModalProps) {
         if (formData.cor !== originalBank.cor) {
           updates.cor = formData.cor;
         }
-        if (trimmedIcone !== (originalBank.icone || "")) {
-          updates.icone = trimmedIcone || undefined;
-        }
         if (Math.abs(currentSaldo - originalSaldo) > 0.01) {
           updates.saldo_inicial = currentSaldo;
         }
@@ -230,7 +223,7 @@ export default function BankModal({ bank, onClose, onSave }: BankModalProps) {
         }
 
         if (Object.keys(updates).length === 0) {
-          setGeneralError("Nenhuma alteracao foi identificada para salvar.");
+          setGeneralError("Nenhuma alteração foi identificada para salvar.");
           return;
         }
 
@@ -241,7 +234,6 @@ export default function BankModal({ bank, onClose, onSave }: BankModalProps) {
           nome: formData.nome.trim(),
           codigo: formData.codigo?.trim() || undefined,
           cor: formData.cor,
-          icone: formData.icone?.trim() || undefined,
           saldo_inicial: valueToNumber(formData.saldo_inicial),
           ativo: formData.ativo,
         };
@@ -252,7 +244,7 @@ export default function BankModal({ bank, onClose, onSave }: BankModalProps) {
     } catch (error: unknown) {
       const normalized = normalizeApiFormError<BankField>(
         error,
-        "Nao foi possivel concluir a operacao.",
+        "Não foi possível concluir a operação.",
       );
 
       setFieldErrors(normalized.fieldErrors);
@@ -298,7 +290,6 @@ export default function BankModal({ bank, onClose, onSave }: BankModalProps) {
               value={formData.nome}
               onChange={(e) => updateField("nome", e.target.value)}
               onBlur={() => handleFieldBlur("nome")}
-              placeholder="Ex: Nubank, Itau, Bradesco"
               InputLabelProps={{ shrink: true }}
               error={shouldShowError("nome")}
               helperText={shouldShowError("nome") ? fieldErrors.nome : ""}
@@ -310,14 +301,13 @@ export default function BankModal({ bank, onClose, onSave }: BankModalProps) {
               id="codigo"
               name="codigo"
               type="text"
-              label="Codigo do Banco"
+              label="Código do Banco"
               variant="outlined"
               size="small"
               fullWidth
               value={formData.codigo}
               onChange={(e) => updateField("codigo", e.target.value)}
               onBlur={() => handleFieldBlur("codigo")}
-              placeholder="Ex: 260, 341"
               InputLabelProps={{ shrink: true }}
               error={shouldShowError("codigo")}
               helperText={shouldShowError("codigo") ? fieldErrors.codigo : ""}
@@ -343,31 +333,11 @@ export default function BankModal({ bank, onClose, onSave }: BankModalProps) {
                 value={formData.cor}
                 onChange={(e) => updateField("cor", e.target.value)}
                 onBlur={() => handleFieldBlur("cor")}
-                placeholder="#3B82F6"
                 InputLabelProps={{ shrink: true }}
                 error={shouldShowError("cor")}
                 helperText={shouldShowError("cor") ? fieldErrors.cor : ""}
               />
             </div>
-          </div>
-
-          <div>
-            <TextField
-              id="icone"
-              name="icone"
-              type="text"
-              label="Icone"
-              variant="outlined"
-              size="small"
-              fullWidth
-              value={formData.icone || ""}
-              onChange={(e) => updateField("icone", e.target.value)}
-              onBlur={() => handleFieldBlur("icone")}
-              placeholder="Ex: bank"
-              InputLabelProps={{ shrink: true }}
-              error={shouldShowError("icone")}
-              helperText={shouldShowError("icone") ? fieldErrors.icone : ""}
-            />
           </div>
 
           <div>
@@ -392,7 +362,6 @@ export default function BankModal({ bank, onClose, onSave }: BankModalProps) {
                 const formatted = formatBrlInput(valueToNumber(formData.saldo_inicial));
                 setSaldoDisplay(formatted);
               }}
-              placeholder="0,00"
               InputLabelProps={{ shrink: true }}
               error={shouldShowError("saldo_inicial")}
               helperText={

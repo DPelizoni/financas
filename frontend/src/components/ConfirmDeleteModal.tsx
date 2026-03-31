@@ -62,7 +62,7 @@ export default function ConfirmDeleteModal({
 
         <div className="app-modal-body">
           <p className="text-sm text-[rgb(var(--app-text-secondary))]">
-            Deseja continuar? Esta operacao nao pode ser desfeita.
+            Deseja continuar? Esta operação não pode ser desfeita.
           </p>
         </div>
 

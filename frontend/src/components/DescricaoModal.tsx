@@ -38,7 +38,7 @@ const validateDescricaoForm = (
   const errors: FormFieldErrors<DescricaoField> = {};
 
   if (!values.nome || values.nome.trim().length < 2) {
-    errors.nome = "Nome deve ter no minimo 2 caracteres.";
+    errors.nome = "Nome deve ter no mínimo 2 caracteres.";
   }
 
   if (!values.categoria_id || values.categoria_id <= 0) {
@@ -96,7 +96,7 @@ export default function DescricaoModal({
         const response = await categoryService.getAll({ limit: 100 });
         setCategories(response.data || []);
       } catch {
-        setGeneralError("Nao foi possivel carregar as categorias.");
+        setGeneralError("Não foi possível carregar as categorias.");
       } finally {
         setCategoriesLoading(false);
       }
@@ -189,12 +189,12 @@ export default function DescricaoModal({
         }
 
         if (Object.keys(updates).length === 0) {
-          setGeneralError("Nenhuma alteracao foi identificada para salvar.");
+          setGeneralError("Nenhuma alteração foi identificada para salvar.");
           return;
         }
 
         await descricaoService.update(originalDescricao.id, updates);
-        await onSave(`Descricao \"${trimmedNome}\" atualizada com sucesso.`);
+        await onSave(`Descrição \"${trimmedNome}\" atualizada com sucesso.`);
       } else {
         const payload: DescricaoInput = {
           nome: formData.nome.trim(),
@@ -203,12 +203,12 @@ export default function DescricaoModal({
         };
 
         await descricaoService.create(payload);
-        await onSave(`Descricao \"${payload.nome}\" criada com sucesso.`);
+        await onSave(`Descrição \"${payload.nome}\" criada com sucesso.`);
       }
     } catch (error: unknown) {
       const normalized = normalizeApiFormError<DescricaoField>(
         error,
-        "Nao foi possivel concluir a operacao.",
+        "Não foi possível concluir a operação.",
       );
 
       setFieldErrors(normalized.fieldErrors);
@@ -236,7 +236,7 @@ export default function DescricaoModal({
       >
         <div className="app-modal-header p-6">
           <h2 id={titleId} className="text-xl font-bold text-gray-900">
-            {descricao ? "Editar Descricao" : "Nova Descricao"}
+            {descricao ? "Editar Descrição" : "Nova Descrição"}
           </h2>
         </div>
 
@@ -246,7 +246,7 @@ export default function DescricaoModal({
               id="nome"
               name="nome"
               type="text"
-              label="Nome da Descricao *"
+              label="Nome da Descrição *"
               autoFocus
               variant="outlined"
               size="small"
@@ -254,7 +254,6 @@ export default function DescricaoModal({
               value={formData.nome}
               onChange={(e) => updateField("nome", e.target.value)}
               onBlur={() => handleFieldBlur("nome")}
-              placeholder="Ex: Supermercado, Padaria"
               InputLabelProps={{ shrink: true }}
               error={shouldShowError("nome")}
               helperText={shouldShowError("nome") ? fieldErrors.nome : ""}
@@ -268,7 +267,7 @@ export default function DescricaoModal({
               </div>
             ) : categories.length === 0 ? (
               <div className="app-inline-error flex h-11 items-center justify-center">
-                <p className="text-sm text-red-600">Nenhuma categoria disponivel</p>
+                <p className="text-sm text-red-600">Nenhuma categoria disponível</p>
               </div>
             ) : (
               <TextField
@@ -312,7 +311,7 @@ export default function DescricaoModal({
               htmlFor="ativo"
               className="ml-2 block text-sm text-[rgb(var(--app-text-secondary))]"
             >
-              Descricao ativa
+              Descrição ativa
             </label>
           </div>
 

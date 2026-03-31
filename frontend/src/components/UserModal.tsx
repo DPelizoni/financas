@@ -60,12 +60,12 @@ const validateUserForm = (
   const errors: FormFieldErrors<UserField> = {};
 
   if (!values.nome || values.nome.trim().length < 2) {
-    errors.nome = "Nome deve ter no minimo 2 caracteres.";
+    errors.nome = "Nome deve ter no mínimo 2 caracteres.";
   }
 
   const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   if (!emailPattern.test(values.email.trim())) {
-    errors.email = "Informe um email valido.";
+    errors.email = "Informe um e-mail válido.";
   }
 
   const isKeepingCurrentPassword =
@@ -76,11 +76,11 @@ const validateUserForm = (
 
   if (!isEditing || !isKeepingCurrentPassword) {
     if (!values.senha || values.senha.length < 6) {
-      errors.senha = "Senha deve ter no minimo 6 caracteres.";
+      errors.senha = "Senha deve ter no mínimo 6 caracteres.";
     }
 
     if (values.confirmarSenha !== values.senha) {
-      errors.confirmarSenha = "A confirmacao de senha nao confere.";
+      errors.confirmarSenha = "A confirmação de senha não confere.";
     }
   }
 
@@ -206,7 +206,7 @@ export default function UserModal({
         }
 
         await userService.update(user.id, payload);
-        await onSave(`Usuario \"${payload.nome}\" atualizado com sucesso.`);
+        await onSave(`Usuário \"${payload.nome}\" atualizado com sucesso.`);
       } else {
         const payload: UserCreateInput = {
           ...basePayload,
@@ -214,12 +214,12 @@ export default function UserModal({
         };
 
         await userService.create(payload);
-        await onSave(`Usuario \"${payload.nome}\" criado com sucesso.`);
+        await onSave(`Usuário \"${payload.nome}\" criado com sucesso.`);
       }
     } catch (error: unknown) {
       const normalized = normalizeApiFormError<UserField>(
         error,
-        "Nao foi possivel salvar os dados do usuario.",
+        "Não foi possível salvar os dados do usuário.",
       );
 
       setFieldErrors(normalized.fieldErrors);
@@ -251,7 +251,7 @@ export default function UserModal({
       >
         <div className="app-modal-header">
           <h2 id={titleId} className="text-lg font-semibold text-gray-900">
-            {user ? "Editar Usuario" : "Novo Usuario"}
+            {user ? "Editar Usuário" : "Novo Usuário"}
           </h2>
         </div>
 
@@ -280,7 +280,7 @@ export default function UserModal({
               id="email"
               name="email"
               type="email"
-              label="Email"
+              label="E-mail"
               variant="outlined"
               size="small"
               fullWidth
@@ -333,7 +333,7 @@ export default function UserModal({
                 shouldShowError("confirmarSenha")
                   ? fieldErrors.confirmarSenha
                   : user
-                    ? "Mantenha como esta para nao alterar a senha."
+                    ? "Mantenha como está para não alterar a senha."
                     : ""
               }
             />
@@ -381,7 +381,7 @@ export default function UserModal({
                     : ""
               }
             >
-              <MenuItem value="USUARIO">Usuario</MenuItem>
+              <MenuItem value="USUARIO">Usuário</MenuItem>
               <MenuItem value="GESTOR">Gestor</MenuItem>
               <MenuItem value="ADMIN">Admin</MenuItem>
             </TextField>

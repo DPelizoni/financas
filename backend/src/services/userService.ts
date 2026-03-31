@@ -219,17 +219,17 @@ class UserService {
     try {
       const target = await userRepository.findById(id);
       if (!target) {
-        throw new AppError(404, "Usuario nao encontrado");
+        throw new AppError(404, "Usuário não encontrado");
       }
 
       if (id === currentUserId) {
-        throw new AppError(400, "Voce nao pode excluir o proprio usuario");
+        throw new AppError(400, "Você não pode excluir o próprio usuário");
       }
 
       if (target.role === "ADMIN") {
         const adminsCount = await userRepository.countByRole("ADMIN");
         if (adminsCount <= 1) {
-          throw new AppError(400, "Nao e permitido excluir o ultimo ADMIN do sistema");
+          throw new AppError(400, "Não é permitido excluir o último ADMIN do sistema");
         }
 
         if (target.status === "ATIVO") {
@@ -237,7 +237,7 @@ class UserService {
           if (activeAdmins <= 1) {
             throw new AppError(
               400,
-              "Nao e permitido excluir o ultimo ADMIN ativo do sistema",
+              "Não é permitido excluir o último ADMIN ativo do sistema",
             );
           }
         }
@@ -245,12 +245,12 @@ class UserService {
 
       const deleted = await userRepository.delete(id);
       if (!deleted) {
-        throw new AppError(500, "Erro ao excluir usuario");
+        throw new AppError(500, "Erro ao excluir usuário");
       }
     } catch (error) {
       if (error instanceof AppError) throw error;
-      console.error("Erro ao excluir usuario:", error);
-      throw new AppError(500, "Erro ao excluir usuario");
+      console.error("Erro ao excluir usuário:", error);
+      throw new AppError(500, "Erro ao excluir usuário");
     }
   }
 }

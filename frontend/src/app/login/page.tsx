@@ -29,9 +29,9 @@ const validateLoginFields = (
   const errors: FormFieldErrors<LoginField> = {};
 
   if (!values.email.trim()) {
-    errors.email = "Informe o email.";
+    errors.email = "Informe o e-mail.";
   } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(values.email.trim())) {
-    errors.email = "Informe um email valido.";
+    errors.email = "Informe um e-mail válido.";
   }
 
   if (!values.senha.trim()) {
@@ -129,7 +129,7 @@ export default function LoginPage() {
     } catch (error: unknown) {
       const normalized = normalizeApiFormError<LoginField>(
         error,
-        "Nao foi possivel realizar login.",
+        "Não foi possível realizar login.",
       );
 
       setFieldErrors(normalized.fieldErrors);
@@ -191,7 +191,6 @@ export default function LoginPage() {
             onChange={(e) => updateField("email", e.target.value)}
             onBlur={() => handleFieldBlur("email")}
             autoComplete="email"
-            placeholder="voce@empresa.com"
             InputLabelProps={{ shrink: true }}
             error={shouldShowError("email")}
             helperText={shouldShowError("email") ? fieldErrors.email : ""}
@@ -210,7 +209,6 @@ export default function LoginPage() {
             onChange={(e) => updateField("senha", e.target.value)}
             onBlur={() => handleFieldBlur("senha")}
             autoComplete="current-password"
-            placeholder="Digite sua senha"
             InputLabelProps={{ shrink: true }}
             error={shouldShowError("senha")}
             helperText={shouldShowError("senha") ? fieldErrors.senha : ""}
@@ -231,12 +229,12 @@ export default function LoginPage() {
         </form>
 
         <p className="mt-5 text-center text-sm text-[rgb(var(--app-text-secondary))]">
-          Ainda nao tem conta?{" "}
+          Ainda não tem conta?{" "}
           <Link
             href="/register"
             className="font-semibold text-[rgb(var(--app-brand-primary))] hover:text-[rgb(var(--app-brand-primary-hover))]"
           >
-            Criar usuario
+            Criar usuário
           </Link>
         </p>
       </div>
