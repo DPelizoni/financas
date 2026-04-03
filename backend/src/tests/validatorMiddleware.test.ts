@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { z } from "zod";
 import { AppError } from "../middlewares/errorHandler";
 import { validate } from "../middlewares/validator";
-import { TestCase } from "./transacaoService.test";
+import { TestCase } from "./types";
 
 const validaComSucessoQuandoPayloadEhValido = async () => {
   const schema = z.object({

@@ -3,7 +3,7 @@ import { AppError } from "../middlewares/errorHandler";
 import { User } from "../models/User";
 import userRepository from "../repositories/userRepository";
 import userService from "../services/userService";
-import { TestCase } from "./transacaoService.test";
+import { TestCase } from "./types";
 
 const createUserRecord = (overrides: Partial<User> = {}): User => ({
   id: 1,

@@ -278,14 +278,20 @@ router.delete(
 router.delete(
   "/delete-transaction-months",
   validate(transacaoDeleteTransactionMonthsSchema),
-  async (req, res) => {
-    const { transacao_id, meses } = req.body;
-    const result = await transacaoService.deleteTransacaoByMeses(
-      Number(transacao_id),
-      meses,
-    );
+  async (req, res, next) => {
+    try {
+      const { transacao_id, meses } = req.body;
+      const result = await transacaoService.deleteTransacaoByMeses(
+        Number(transacao_id),
+        meses,
+      );
 
-    res.json(successResponse("Transacao excluida nos meses selecionados", result));
+      res.json(
+        successResponse("Transacao excluida nos meses selecionados", result),
+      );
+    } catch (error) {
+      next(error);
+    }
   },
 );
 

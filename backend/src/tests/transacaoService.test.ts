@@ -2,11 +2,7 @@ import assert from "node:assert/strict";
 import { AppError } from "../middlewares/errorHandler";
 import { Transacao } from "../models/Transacao";
 import { TransacaoService } from "../services/transacaoService";
-
-export interface TestCase {
-  name: string;
-  run: () => Promise<void>;
-}
+import { TestCase } from "./types";
 
 type TransacaoSemAuditoria = Omit<Transacao, "created_at" | "updated_at">;
 type TransacaoCreateInput = Omit<Transacao, "id" | "created_at" | "updated_at">;

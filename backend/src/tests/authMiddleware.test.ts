@@ -4,7 +4,7 @@ import { authenticateToken, authorizeRoles } from "../middlewares/authMiddleware
 import { User } from "../models/User";
 import userRepository from "../repositories/userRepository";
 import { authService } from "../services";
-import { TestCase } from "./transacaoService.test";
+import { TestCase } from "./types";
 
 type RequestLike = {
   headers: Record<string, string | undefined>;

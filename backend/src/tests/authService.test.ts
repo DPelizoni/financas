@@ -5,7 +5,7 @@ import { AppError } from "../middlewares/errorHandler";
 import { User } from "../models/User";
 import userRepository from "../repositories/userRepository";
 import authService from "../services/authService";
-import { TestCase } from "./transacaoService.test";
+import { TestCase } from "./types";
 
 const createAuthUser = (overrides: Partial<User> = {}): User => ({
   id: 1,
