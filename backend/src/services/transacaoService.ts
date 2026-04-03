@@ -29,6 +29,11 @@ interface DeleteMonthsResult {
   total_excluidas: number;
 }
 
+interface CreateBatchResult {
+  total_recebidas: number;
+  total_criadas: number;
+}
+
 export class TransacaoService {
   private transacaoRepository = new TransacaoRepository();
   private bankRepository = new BankRepository();
@@ -50,43 +55,37 @@ export class TransacaoService {
   async createTransacao(
     data: Omit<Transacao, "id" | "created_at" | "updated_at">,
   ) {
-    // Cast para garantir que os IDs são números
-    const banco_id = Number(data.banco_id);
-    const categoria_id = Number(data.categoria_id);
-    const descricao_id = Number(data.descricao_id);
-
-    // Validate references
-    const bancoExists = await this.bankRepository.findById(banco_id);
-    if (!bancoExists) {
-      throw new AppError(404, "Banco não encontrado");
-    }
-
-    const categoriaExists =
-      await this.categoryRepository.findById(categoria_id);
-    if (!categoriaExists) {
-      throw new AppError(404, "Categoria não encontrada");
-    }
-
-    // Validate tipo matches categoria
-    if (categoriaExists.tipo !== data.tipo) {
-      throw new AppError(
-        400,
-        `Categoria do tipo ${categoriaExists.tipo} não pode ser usada com o tipo ${data.tipo}`,
-      );
-    }
-
-    const descricaoExists =
-      await this.descricaoRepository.findById(descricao_id);
-    if (!descricaoExists) {
-      throw new AppError(404, "Descrição não encontrada");
-    }
-
-    // Validate descricao belongs to categoria
-    if (descricaoExists.categoria_id !== categoria_id) {
-      throw new AppError(400, "Descrição não pertence à categoria selecionada");
-    }
-
+    await this.validateCreateTransacaoRefs(data);
     return this.transacaoRepository.create(data);
+  }
+
+  async createTransacoesBatch(
+    data: Omit<Transacao, "id" | "created_at" | "updated_at">[],
+  ): Promise<CreateBatchResult> {
+    if (data.length === 0) {
+      throw new AppError(400, "Informe ao menos uma transacao para criacao");
+    }
+
+    if (data.length > 12) {
+      throw new AppError(400, "O limite de criacao em lote e de 12 transacoes");
+    }
+
+    const caches = {
+      bancos: new Map<number, unknown>(),
+      categorias: new Map<number, unknown>(),
+      descricoes: new Map<number, unknown>(),
+    };
+
+    for (const transacao of data) {
+      await this.validateCreateTransacaoRefs(transacao, caches);
+    }
+
+    const totalCriadas = await this.transacaoRepository.createMany(data);
+
+    return {
+      total_recebidas: data.length,
+      total_criadas: totalCriadas,
+    };
   }
 
   async updateTransacao(
@@ -299,6 +298,60 @@ export class TransacaoService {
       meses,
       total_excluidas: totalExcluidas,
     };
+  }
+
+  private async validateCreateTransacaoRefs(
+    data: Omit<Transacao, "id" | "created_at" | "updated_at">,
+    caches?: {
+      bancos: Map<number, unknown>;
+      categorias: Map<number, unknown>;
+      descricoes: Map<number, unknown>;
+    },
+  ): Promise<void> {
+    const banco_id = Number(data.banco_id);
+    const categoria_id = Number(data.categoria_id);
+    const descricao_id = Number(data.descricao_id);
+
+    const bancoFromCache = caches?.bancos.get(banco_id);
+    const bancoExists =
+      bancoFromCache ?? (await this.bankRepository.findById(banco_id));
+    if (!bancoExists) {
+      throw new AppError(404, "Banco nao encontrado");
+    }
+    caches?.bancos.set(banco_id, bancoExists);
+
+    const categoriaFromCache = caches?.categorias.get(categoria_id);
+    const categoriaExists =
+      categoriaFromCache ??
+      (await this.categoryRepository.findById(categoria_id));
+    if (!categoriaExists) {
+      throw new AppError(404, "Categoria nao encontrada");
+    }
+    caches?.categorias.set(categoria_id, categoriaExists);
+
+    const categoriaTipo = (categoriaExists as { tipo: "DESPESA" | "RECEITA" })
+      .tipo;
+    if (categoriaTipo !== data.tipo) {
+      throw new AppError(
+        400,
+        `Categoria do tipo ${categoriaTipo} nao pode ser usada com o tipo ${data.tipo}`,
+      );
+    }
+
+    const descricaoFromCache = caches?.descricoes.get(descricao_id);
+    const descricaoExists =
+      descricaoFromCache ??
+      (await this.descricaoRepository.findById(descricao_id));
+    if (!descricaoExists) {
+      throw new AppError(404, "Descricao nao encontrada");
+    }
+    caches?.descricoes.set(descricao_id, descricaoExists);
+
+    const descricaoCategoriaId = (descricaoExists as { categoria_id: number })
+      .categoria_id;
+    if (descricaoCategoriaId !== categoria_id) {
+      throw new AppError(400, "Descricao nao pertence a categoria selecionada");
+    }
   }
 
   private normalizeMes(mes: string): string {

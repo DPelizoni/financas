@@ -9,6 +9,8 @@ import {
   CopyMonthResult,
   DeleteMonthsPayload,
   DeleteMonthsResult,
+  CreateBatchPayload,
+  CreateBatchResult,
 } from "@/types/transacao";
 
 export const transacaoService = {
@@ -45,6 +47,15 @@ export const transacaoService = {
       success: boolean;
       data: Transacao;
     }>(`/api/transacoes`, data);
+    return response.data.data;
+  },
+
+  async createBatch(payload: CreateBatchPayload): Promise<CreateBatchResult> {
+    const response = await apiClient.post<{
+      success: boolean;
+      data: CreateBatchResult;
+    }>(`/api/transacoes/batch`, payload);
+
     return response.data.data;
   },
 

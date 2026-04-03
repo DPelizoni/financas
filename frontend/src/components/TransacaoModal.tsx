@@ -1,6 +1,7 @@
 ﻿"use client";
 
 import React, { useEffect, useId, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { Ban, Save } from "lucide-react";
 import { MenuItem, TextField } from "@mui/material";
 import AppButton from "@/components/AppButton";
@@ -182,6 +183,7 @@ export const TransacaoModal: React.FC<TransacaoModalProps> = ({
   const modalRef = useRef<HTMLDivElement>(null);
   const formRef = useRef<HTMLFormElement>(null);
   const titleId = useId();
+  const [isPortalReady, setIsPortalReady] = useState(false);
   const [formData, setFormData] = useState<TransacaoInput>({
     mes: "",
     vencimento: "",
@@ -389,6 +391,11 @@ export const TransacaoModal: React.FC<TransacaoModalProps> = ({
     initializeModal();
   }, [isOpen, transacao, isEditing]);
 
+  useEffect(() => {
+    setIsPortalReady(true);
+    return () => setIsPortalReady(false);
+  }, []);
+
   useAccessibleModal({
     isOpen,
     modalRef,
@@ -461,10 +468,7 @@ export const TransacaoModal: React.FC<TransacaoModalProps> = ({
         }
 
         const lancamentos = buildRecurringTransacoes(formData, quantidadeMeses);
-
-        for (const lancamento of lancamentos) {
-          await transacaoService.create(lancamento);
-        }
+        await transacaoService.createBatch({ transacoes: lancamentos });
 
         if (lancamentos.length === 1) {
           onSuccess(`Transação de ${formData.mes} criada com sucesso.`);
@@ -495,9 +499,9 @@ export const TransacaoModal: React.FC<TransacaoModalProps> = ({
     }
   };
 
-  if (!isOpen) return null;
+  if (!isOpen || !isPortalReady) return null;
 
-  return (
+  return createPortal(
     <div className="app-modal-overlay">
       <div
         ref={modalRef}
@@ -764,6 +768,7 @@ export const TransacaoModal: React.FC<TransacaoModalProps> = ({
           </div>
         </form>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 };

@@ -28,6 +28,13 @@ export const transacaoCreateSchema = z.object({
 
 export const transacaoUpdateSchema = transacaoCreateSchema.partial();
 
+export const transacaoCreateBatchSchema = z.object({
+  transacoes: z
+    .array(transacaoCreateSchema)
+    .min(1, "Informe ao menos uma transação para criação")
+    .max(12, "O limite de criação em lote é de 12 transações"),
+});
+
 export const transacaoFiltersSchema = z.object({
   page: z.number().int().positive().optional(),
   limit: z.number().int().positive().optional(),

@@ -57,7 +57,16 @@ export const transacaoController = {
     const transacao = await transacaoService.createTransacao(data);
     res
       .status(201)
-      .json(successResponse("Transa√ß√£o criada com sucesso", transacao));
+      .json(successResponse("TransaÁ„o criada com sucesso", transacao));
+  },
+
+  createBatch: async (req: Request, res: Response) => {
+    const { transacoes } = req.body;
+    const result = await transacaoService.createTransacoesBatch(transacoes);
+
+    res
+      .status(201)
+      .json(successResponse("TransaÁıes criadas com sucesso", result));
   },
 
   update: async (req: Request, res: Response) => {
@@ -117,3 +126,4 @@ export const transacaoController = {
     res.json(successResponse("Transa√ß√µes exclu√≠das com sucesso", result));
   },
 };
+

@@ -3,6 +3,7 @@ import { transacaoController } from "../controllers/transacaoController";
 import { validate } from "../middlewares/validator";
 import {
   transacaoCreateSchema,
+  transacaoCreateBatchSchema,
   transacaoUpdateSchema,
   transacaoFiltersSchema,
   transacaoCopyMonthSchema,
@@ -171,6 +172,12 @@ router.get("/", transacaoController.getAll);
  *                       type: number
  */
 router.get("/summary", transacaoController.getSummary);
+
+router.post(
+  "/batch",
+  validate(transacaoCreateBatchSchema),
+  transacaoController.createBatch,
+);
 
 /**
  * @swagger
