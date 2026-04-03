@@ -86,6 +86,18 @@ export interface DeleteMonthsResult {
   total_excluidas: number;
 }
 
+export interface DeleteTransactionMonthsPayload {
+  transacao_id: number;
+  meses: string[];
+}
+
+export interface DeleteTransactionMonthsResult {
+  transacao_id: number;
+  mes_origem: string;
+  meses: string[];
+  total_excluidas: number;
+}
+
 export interface CreateBatchPayload {
   transacoes: TransacaoInput[];
 }

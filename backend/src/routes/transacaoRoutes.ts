@@ -1,6 +1,8 @@
 import { Router } from "express";
 import { transacaoController } from "../controllers/transacaoController";
 import { validate } from "../middlewares/validator";
+import { TransacaoService } from "../services/transacaoService";
+import { successResponse } from "../utils/response";
 import {
   transacaoCreateSchema,
   transacaoCreateBatchSchema,
@@ -8,9 +10,11 @@ import {
   transacaoFiltersSchema,
   transacaoCopyMonthSchema,
   transacaoDeleteMonthsSchema,
+  transacaoDeleteTransactionMonthsSchema,
 } from "../schemas/transacaoSchema";
 
 const router = Router();
+const transacaoService = new TransacaoService();
 
 /**
  * @swagger
@@ -241,6 +245,48 @@ router.delete(
   "/delete-months",
   validate(transacaoDeleteMonthsSchema),
   transacaoController.deleteByMonths,
+);
+
+/**
+ * @swagger
+ * /api/transacoes/delete-transaction-months:
+ *   delete:
+ *     summary: Excluir uma transacao especifica em um ou mais meses
+ *     tags: [Transacoes]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - transacao_id
+ *               - meses
+ *             properties:
+ *               transacao_id:
+ *                 type: integer
+ *                 example: 123
+ *               meses:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *                 example: ["03/2026", "04/2026", "05/2026"]
+ *     responses:
+ *       200:
+ *         description: Transacao excluida nos meses selecionados
+ */
+router.delete(
+  "/delete-transaction-months",
+  validate(transacaoDeleteTransactionMonthsSchema),
+  async (req, res) => {
+    const { transacao_id, meses } = req.body;
+    const result = await transacaoService.deleteTransacaoByMeses(
+      Number(transacao_id),
+      meses,
+    );
+
+    res.json(successResponse("Transacao excluida nos meses selecionados", result));
+  },
 );
 
 /**

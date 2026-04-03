@@ -75,3 +75,18 @@ export const transacaoDeleteMonthsSchema = z.object({
     )
     .min(1, "Informe ao menos um mês para exclusão"),
 });
+
+export const transacaoDeleteTransactionMonthsSchema = z.object({
+  transacao_id: z
+    .coerce
+    .number()
+    .int("Transacao deve ser um numero inteiro")
+    .positive("Transacao deve ser maior que zero"),
+  meses: z
+    .array(
+      z
+        .string()
+        .regex(mesRegex, "Mes deve estar no formato MM/AAAA (ou YYYY-MM)"),
+    )
+    .min(1, "Informe ao menos um mes para exclusao"),
+});

@@ -29,6 +29,13 @@ interface DeleteMonthsResult {
   total_excluidas: number;
 }
 
+interface DeleteTransactionMonthsResult {
+  transacao_id: number;
+  mes_origem: string;
+  meses: string[];
+  total_excluidas: number;
+}
+
 interface CreateBatchResult {
   total_recebidas: number;
   total_criadas: number;
@@ -300,6 +307,97 @@ export class TransacaoService {
     };
   }
 
+  async deleteTransacaoByMeses(
+    transacaoIdInput: number,
+    mesesInput: string[],
+  ): Promise<DeleteTransactionMonthsResult> {
+    const transacaoId = Number(transacaoIdInput);
+    if (!Number.isInteger(transacaoId) || transacaoId <= 0) {
+      throw new AppError(400, "Transacao invalida para exclusao");
+    }
+
+    const transacaoOrigem = await this.transacaoRepository.findById(transacaoId);
+    if (!transacaoOrigem) {
+      throw new AppError(404, "Transacao nao encontrada");
+    }
+
+    const meses = Array.from(
+      new Set(mesesInput.map((mes) => this.normalizeMes(mes))),
+    );
+
+    if (meses.length === 0) {
+      throw new AppError(400, "Informe ao menos um mes para exclusao");
+    }
+
+    const registrosMesOrigem = await this.transacaoRepository.findByMes(
+      transacaoOrigem.mes,
+    );
+    const assinaturaBase = this.buildDeleteIdentitySignature(transacaoOrigem);
+    const candidatosOrigem = registrosMesOrigem.filter(
+      (registro) => this.buildDeleteIdentitySignature(registro) === assinaturaBase,
+    );
+    const indiceOrigem = candidatosOrigem.findIndex(
+      (registro) => registro.id === transacaoId,
+    );
+
+    if (indiceOrigem < 0) {
+      throw new AppError(
+        500,
+        "Nao foi possivel localizar a transacao base para exclusao em lote",
+      );
+    }
+
+    const idsParaExcluir = new Set<number>();
+
+    for (const mes of meses) {
+      if (mes === transacaoOrigem.mes) {
+        idsParaExcluir.add(transacaoId);
+        continue;
+      }
+
+      const registrosMes = await this.transacaoRepository.findByMes(mes);
+      const candidatosMes = registrosMes.filter(
+        (registro) =>
+          this.buildDeleteIdentitySignature(registro) === assinaturaBase,
+      );
+
+      if (candidatosMes.length === 0) {
+        continue;
+      }
+
+      const vencimentoEsperado = this.buildVencimento(
+        transacaoOrigem.vencimento,
+        transacaoOrigem.mes,
+        mes,
+      );
+
+      const candidatosMesmoVencimento = candidatosMes.filter(
+        (registro) => registro.vencimento === vencimentoEsperado,
+      );
+
+      const candidatosPrioritarios =
+        candidatosMesmoVencimento.length > 0
+          ? candidatosMesmoVencimento
+          : candidatosMes;
+
+      const alvo = candidatosPrioritarios[indiceOrigem];
+      if (alvo) {
+        idsParaExcluir.add(alvo.id);
+      }
+    }
+
+    const totalExcluidas = await this.transacaoRepository.deleteByIds(
+      Array.from(idsParaExcluir),
+    );
+
+    return {
+      transacao_id: transacaoId,
+      mes_origem: transacaoOrigem.mes,
+      meses,
+      total_excluidas: totalExcluidas,
+    };
+  }
+
   private async validateCreateTransacaoRefs(
     data: Omit<Transacao, "id" | "created_at" | "updated_at">,
     caches?: {
@@ -454,6 +552,21 @@ export class TransacaoService {
       Number(registro.descricao_id),
       Number(registro.banco_id),
       registro.situacao,
+      Number(registro.valor),
+    ].join("|");
+  }
+
+  private buildDeleteIdentitySignature(
+    registro: Pick<
+      Transacao,
+      "tipo" | "categoria_id" | "descricao_id" | "banco_id" | "valor"
+    >,
+  ): string {
+    return [
+      registro.tipo,
+      Number(registro.categoria_id),
+      Number(registro.descricao_id),
+      Number(registro.banco_id),
       Number(registro.valor),
     ].join("|");
   }

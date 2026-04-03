@@ -232,6 +232,16 @@ export class TransacaoRepository {
     return deleteResult.affectedRows > 0;
   }
 
+  async deleteByIds(ids: number[]): Promise<number> {
+    if (ids.length === 0) return 0;
+
+    const placeholders = ids.map(() => "?").join(", ");
+    const query = `DELETE FROM transacoes WHERE id IN (${placeholders})`;
+    const [result] = await pool.query(query, ids);
+    const deleteResult = result as { affectedRows: number };
+    return deleteResult.affectedRows || 0;
+  }
+
   async deleteByMeses(meses: string[]): Promise<number> {
     if (meses.length === 0) return 0;
 

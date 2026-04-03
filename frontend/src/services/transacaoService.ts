@@ -9,6 +9,8 @@ import {
   CopyMonthResult,
   DeleteMonthsPayload,
   DeleteMonthsResult,
+  DeleteTransactionMonthsPayload,
+  DeleteTransactionMonthsResult,
   CreateBatchPayload,
   CreateBatchResult,
 } from "@/types/transacao";
@@ -124,6 +126,17 @@ export const transacaoService = {
       success: boolean;
       data: DeleteMonthsResult;
     }>(`/api/transacoes/delete-months`, { data: payload });
+
+    return response.data.data;
+  },
+
+  async deleteByTransactionMonths(
+    payload: DeleteTransactionMonthsPayload,
+  ): Promise<DeleteTransactionMonthsResult> {
+    const response = await apiClient.delete<{
+      success: boolean;
+      data: DeleteTransactionMonthsResult;
+    }>(`/api/transacoes/delete-transaction-months`, { data: payload });
 
     return response.data.data;
   },
