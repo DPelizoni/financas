@@ -78,6 +78,100 @@ const validateTransacaoForm = (
   return errors;
 };
 
+const parseMes = (mes: string): { month: number; year: number } => {
+  if (!/^\d{2}\/\d{4}$/.test(mes)) {
+    throw new Error("Mês deve estar no formato MM/AAAA.");
+  }
+
+  const [monthStr, yearStr] = mes.split("/");
+  const month = Number(monthStr);
+  const year = Number(yearStr);
+
+  if (!Number.isInteger(month) || month < 1 || month > 12) {
+    throw new Error("Mês inválido.");
+  }
+
+  return { month, year };
+};
+
+const parseVencimento = (
+  vencimento: string,
+): { day: number; month: number; year: number } => {
+  if (!/^\d{2}\/\d{2}\/\d{4}$/.test(vencimento)) {
+    throw new Error("Vencimento deve estar no formato DD/MM/AAAA.");
+  }
+
+  const [dayStr, monthStr, yearStr] = vencimento.split("/");
+  const day = Number(dayStr);
+  const month = Number(monthStr);
+  const year = Number(yearStr);
+
+  const parsed = new Date(year, month - 1, day);
+  const isValidDate =
+    parsed.getFullYear() === year &&
+    parsed.getMonth() === month - 1 &&
+    parsed.getDate() === day;
+
+  if (!isValidDate) {
+    throw new Error("Vencimento inválido.");
+  }
+
+  return { day, month, year };
+};
+
+const addMonths = (
+  base: { month: number; year: number },
+  offset: number,
+): { month: number; year: number } => {
+  const absoluteMonths = base.year * 12 + (base.month - 1) + offset;
+  const targetYear = Math.floor(absoluteMonths / 12);
+  const targetMonth = (absoluteMonths % 12) + 1;
+
+  return { month: targetMonth, year: targetYear };
+};
+
+const formatMes = ({ month, year }: { month: number; year: number }): string =>
+  `${String(month).padStart(2, "0")}/${year}`;
+
+const formatVencimento = (
+  day: number,
+  month: number,
+  year: number,
+): string =>
+  `${String(day).padStart(2, "0")}/${String(month).padStart(2, "0")}/${year}`;
+
+const buildRecurringTransacoes = (
+  base: TransacaoInput,
+  quantidadeMeses: number,
+): TransacaoInput[] => {
+  const baseMes = parseMes(base.mes);
+  const baseVencimento = parseVencimento(base.vencimento);
+  const offsetMeses =
+    (baseVencimento.year - baseMes.year) * 12 +
+    (baseVencimento.month - baseMes.month);
+
+  return Array.from({ length: quantidadeMeses }, (_, index) => {
+    const mesRef = addMonths(baseMes, index);
+    const vencimentoRef = addMonths(mesRef, offsetMeses);
+    const ultimoDiaMes = new Date(
+      vencimentoRef.year,
+      vencimentoRef.month,
+      0,
+    ).getDate();
+    const safeDay = Math.min(baseVencimento.day, ultimoDiaMes);
+
+    return {
+      ...base,
+      mes: formatMes(mesRef),
+      vencimento: formatVencimento(
+        safeDay,
+        vencimentoRef.month,
+        vencimentoRef.year,
+      ),
+    };
+  });
+};
+
 export const TransacaoModal: React.FC<TransacaoModalProps> = ({
   isOpen,
   onClose,
@@ -98,6 +192,7 @@ export const TransacaoModal: React.FC<TransacaoModalProps> = ({
     situacao: "PENDENTE",
     valor: 0,
   });
+  const [quantidadeMeses, setQuantidadeMeses] = useState(1);
 
   const [categories, setCategories] = useState<Category[]>([]);
   const [descricoes, setDescricoes] = useState<Descricao[]>([]);
@@ -257,6 +352,7 @@ export const TransacaoModal: React.FC<TransacaoModalProps> = ({
       await loadBanks();
 
       if (transacao && isEditing) {
+        setQuantidadeMeses(1);
         const nextData: TransacaoInput = {
           mes: transacao.mes,
           vencimento: transacao.vencimento,
@@ -275,6 +371,7 @@ export const TransacaoModal: React.FC<TransacaoModalProps> = ({
           transacao.descricao_id,
         );
       } else {
+        setQuantidadeMeses(1);
         setFormData({
           mes: "",
           vencimento: "",
@@ -354,8 +451,28 @@ export const TransacaoModal: React.FC<TransacaoModalProps> = ({
         await transacaoService.update(transacao.id, formData);
         onSuccess(`Transação de ${formData.mes} atualizada com sucesso.`);
       } else {
-        await transacaoService.create(formData);
-        onSuccess(`Transação de ${formData.mes} criada com sucesso.`);
+        if (
+          !Number.isInteger(quantidadeMeses) ||
+          quantidadeMeses < 1 ||
+          quantidadeMeses > 12
+        ) {
+          setGeneralError("A quantidade de meses deve estar entre 1 e 12.");
+          return;
+        }
+
+        const lancamentos = buildRecurringTransacoes(formData, quantidadeMeses);
+
+        for (const lancamento of lancamentos) {
+          await transacaoService.create(lancamento);
+        }
+
+        if (lancamentos.length === 1) {
+          onSuccess(`Transação de ${formData.mes} criada com sucesso.`);
+        } else {
+          onSuccess(
+            `${lancamentos.length} transações criadas de ${lancamentos[0].mes} até ${lancamentos[lancamentos.length - 1].mes}.`,
+          );
+        }
       }
 
       onClose();
@@ -441,6 +558,35 @@ export const TransacaoModal: React.FC<TransacaoModalProps> = ({
               />
             </div>
           </div>
+
+          {!isEditing && (
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+              <div>
+                <TextField
+                  id="quantidade_meses"
+                  name="quantidade_meses"
+                  type="number"
+                  label="Quantidade de meses"
+                  variant="outlined"
+                  size="small"
+                  fullWidth
+                  value={quantidadeMeses}
+                  onChange={(e) => {
+                    const parsed = Number(e.target.value);
+                    if (!Number.isFinite(parsed)) {
+                      setQuantidadeMeses(1);
+                      return;
+                    }
+                    const safe = Math.min(12, Math.max(1, Math.trunc(parsed)));
+                    setQuantidadeMeses(safe);
+                  }}
+                  inputProps={{ min: 1, max: 12, step: 1 }}
+                  InputLabelProps={{ shrink: true }}
+                  helperText="Inclui o mês informado e os próximos meses."
+                />
+              </div>
+            </div>
+          )}
 
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <div>
