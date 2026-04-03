@@ -211,6 +211,7 @@ Com backend em execução:
 - `npm run dev`: inicia em desenvolvimento
 - `npm run build`: compila TypeScript
 - `npm start`: executa build de produção
+- `npm run test`: executa os testes automatizados do backend
 
 ### Frontend (`frontend/`)
 
