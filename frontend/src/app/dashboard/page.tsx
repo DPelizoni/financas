@@ -164,7 +164,7 @@ export default function DashboardPage() {
   );
   const [filterBanco, setFilterBanco] = useState<number | "TODOS">("TODOS");
   const [filterMesAno, setFilterMesAno] = useState("");
-  const [filterAno, setFilterAno] = useState<string>("TODOS");
+  const [filterAno, setFilterAno] = useState<string>(currentYear);
   const [tableSortBy, setTableSortBy] = useState<
     "mes" | "tipo" | "categoria" | "banco" | "situacao" | "valor"
   >("mes");
@@ -682,7 +682,7 @@ export default function DashboardPage() {
                   type="button"
                   onClick={() => {
                     setFilterMesAno("");
-                    setFilterAno("TODOS");
+                    setFilterAno(currentYear);
                     setFilterTipo("TODOS");
                     setFilterSituacao("TODOS");
                     setFilterCategoria("TODOS");
