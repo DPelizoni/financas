@@ -1,11 +1,15 @@
+import { authMiddlewareTests } from "./authMiddleware.test";
 import { authServiceTests } from "./authService.test";
 import { transacaoServiceTests, TestCase } from "./transacaoService.test";
 import { userServiceTests } from "./userService.test";
+import { validatorMiddlewareTests } from "./validatorMiddleware.test";
 
 const tests: TestCase[] = [
+  ...authMiddlewareTests,
   ...authServiceTests,
   ...userServiceTests,
   ...transacaoServiceTests,
+  ...validatorMiddlewareTests,
 ];
 
 const run = async () => {
