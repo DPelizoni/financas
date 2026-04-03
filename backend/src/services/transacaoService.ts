@@ -210,17 +210,64 @@ export class TransacaoService {
     >[] = [];
 
     for (const mesDestino of mesesDestino) {
+      const existentesNoDestino = await this.transacaoRepository.findByMes(
+        mesDestino,
+      );
+      const existingByIdentity = new Map<
+        string,
+        Omit<Transacao, "created_at" | "updated_at">[]
+      >();
+
+      for (const existente of existentesNoDestino) {
+        const identity = this.buildCopyIdentitySignature({
+          mes: existente.mes,
+          vencimento: existente.vencimento,
+          tipo: existente.tipo,
+          categoria_id: Number(existente.categoria_id),
+          descricao_id: Number(existente.descricao_id),
+          banco_id: Number(existente.banco_id),
+          situacao: existente.situacao,
+          valor: Number(existente.valor),
+        });
+        const current = existingByIdentity.get(identity) || [];
+        current.push(existente);
+        existingByIdentity.set(identity, current);
+      }
+
+      const sourceCounts = new Map<string, number>();
+
       for (const transacao of origem) {
-        novosRegistros.push({
+        const novoRegistro = {
           mes: mesDestino,
-          vencimento: this.buildVencimento(transacao.vencimento, mesDestino),
+          vencimento: this.buildVencimento(
+            transacao.vencimento,
+            mesOrigem,
+            mesDestino,
+          ),
           tipo: transacao.tipo,
           categoria_id: Number(transacao.categoria_id),
           descricao_id: Number(transacao.descricao_id),
           banco_id: Number(transacao.banco_id),
           situacao: transacao.situacao,
           valor: Number(transacao.valor),
-        });
+        };
+
+        const identity = this.buildCopyIdentitySignature(novoRegistro);
+        const sourceCount = (sourceCounts.get(identity) || 0) + 1;
+        sourceCounts.set(identity, sourceCount);
+
+        const existingMatches = existingByIdentity.get(identity) || [];
+        const matchedExisting = existingMatches[sourceCount - 1];
+        if (matchedExisting) {
+          if (matchedExisting.vencimento !== novoRegistro.vencimento) {
+            await this.transacaoRepository.update(matchedExisting.id, {
+              vencimento: novoRegistro.vencimento,
+            });
+          }
+          continue;
+        }
+
+        novosRegistros.push(novoRegistro);
       }
     }
 
@@ -265,30 +312,97 @@ export class TransacaoService {
 
   private buildVencimento(
     vencimentoOriginal: string,
+    mesOrigem: string,
     mesDestino: string,
   ): string {
-    const day = this.extractDay(vencimentoOriginal);
-    const [monthStr, yearStr] = mesDestino.split("/");
+    const { day, month, year } = this.parseVencimento(vencimentoOriginal);
+    const origemMes = this.parseMes(mesOrigem);
+    const destinoMes = this.parseMes(mesDestino);
+    const offsetMeses =
+      (year - origemMes.year) * 12 + (month - origemMes.month);
+    const target = this.addMonthsToMes(destinoMes, offsetMeses);
+    const lastDayOfTargetMonth = new Date(target.year, target.month, 0).getDate();
+    const safeDay = Math.min(day, lastDayOfTargetMonth);
+
+    return `${String(safeDay).padStart(2, "0")}/${String(target.month).padStart(2, "0")}/${target.year}`;
+  }
+
+  private parseVencimento(
+    vencimento: string,
+  ): { day: number; month: number; year: number } {
+    let day: number;
+    let month: number;
+    let year: number;
+
+    if (/^\d{2}\/\d{2}\/\d{4}$/.test(vencimento)) {
+      const [dayStr, monthStr, yearStr] = vencimento.split("/");
+      day = Number(dayStr);
+      month = Number(monthStr);
+      year = Number(yearStr);
+    } else if (/^\d{4}-\d{2}-\d{2}$/.test(vencimento)) {
+      const [yearStr, monthStr, dayStr] = vencimento.split("-");
+      day = Number(dayStr);
+      month = Number(monthStr);
+      year = Number(yearStr);
+    } else {
+      throw new AppError(
+        400,
+        "Vencimento inválido para cópia. Use DD/MM/AAAA ou YYYY-MM-DD",
+      );
+    }
+
+    const parsedDate = new Date(year, month - 1, day);
+    const isValidDate =
+      parsedDate.getFullYear() === year &&
+      parsedDate.getMonth() === month - 1 &&
+      parsedDate.getDate() === day;
+
+    if (!isValidDate) {
+      throw new AppError(400, "Vencimento inválido para cópia");
+    }
+
+    return { day, month, year };
+  }
+
+  private parseMes(mes: string): { month: number; year: number } {
+    if (!/^\d{2}\/\d{4}$/.test(mes)) {
+      throw new AppError(400, "Mês inválido para cálculo de cópia");
+    }
+
+    const [monthStr, yearStr] = mes.split("/");
     const month = Number(monthStr);
     const year = Number(yearStr);
-    const lastDay = new Date(year, month, 0).getDate();
-    const safeDay = Math.min(day, lastDay);
 
-    return `${String(safeDay).padStart(2, "0")}/${String(month).padStart(2, "0")}/${year}`;
+    if (!Number.isInteger(month) || month < 1 || month > 12) {
+      throw new AppError(400, "Mês inválido para cálculo de cópia");
+    }
+
+    return { month, year };
   }
 
-  private extractDay(vencimento: string): number {
-    if (/^\d{2}\/\d{2}\/\d{4}$/.test(vencimento)) {
-      return Number(vencimento.split("/")[0]);
-    }
+  private addMonthsToMes(
+    base: { month: number; year: number },
+    offset: number,
+  ): { month: number; year: number } {
+    const absoluteMonths = base.year * 12 + (base.month - 1) + offset;
+    const targetYear = Math.floor(absoluteMonths / 12);
+    const targetMonth = (absoluteMonths % 12) + 1;
 
-    if (/^\d{4}-\d{2}-\d{2}$/.test(vencimento)) {
-      return Number(vencimento.split("-")[2]);
-    }
+    return { month: targetMonth, year: targetYear };
+  }
 
-    throw new AppError(
-      400,
-      "Vencimento inválido para cópia. Use DD/MM/AAAA ou YYYY-MM-DD",
-    );
+  private buildCopyIdentitySignature(
+    registro: Omit<Transacao, "id" | "created_at" | "updated_at">,
+  ): string {
+    return [
+      registro.mes,
+      registro.tipo,
+      Number(registro.categoria_id),
+      Number(registro.descricao_id),
+      Number(registro.banco_id),
+      registro.situacao,
+      Number(registro.valor),
+    ].join("|");
   }
 }
+
