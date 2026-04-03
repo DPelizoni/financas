@@ -1,6 +1,7 @@
 import { authMiddlewareTests } from "./authMiddleware.test";
 import { authControllerTests } from "./authController.test";
 import { authServiceTests } from "./authService.test";
+import { httpIntegrationTests } from "./httpIntegration.test";
 import { transacaoControllerTests } from "./transacaoController.test";
 import { transacaoServiceTests } from "./transacaoService.test";
 import { TestCase } from "./types";
@@ -9,6 +10,7 @@ import { userServiceTests } from "./userService.test";
 import { validatorMiddlewareTests } from "./validatorMiddleware.test";
 
 const tests: TestCase[] = [
+  ...httpIntegrationTests,
   ...authControllerTests,
   ...authMiddlewareTests,
   ...authServiceTests,
