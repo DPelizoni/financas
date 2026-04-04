@@ -747,11 +747,12 @@ export const TransacaoModal: React.FC<TransacaoModalProps> = ({
 
           <FormErrorSummary generalMessage={generalError} />
 
-          <div className="flex justify-end gap-3 pt-4">
+          <div className="app-modal-actions pt-4">
             <AppButton
               type="button"
               onClick={onClose}
               tone="outline-danger"
+              className="w-full sm:w-auto"
               startIcon={<Ban size={16} />}
               disabled={isSubmitting}
             >
@@ -759,6 +760,7 @@ export const TransacaoModal: React.FC<TransacaoModalProps> = ({
             </AppButton>
             <AppButton
               type="submit"
+              className="w-full sm:w-auto"
               disabled={isSubmitting}
               tone="primary"
               startIcon={<Save size={16} />}

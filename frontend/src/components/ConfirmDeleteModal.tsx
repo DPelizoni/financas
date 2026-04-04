@@ -66,10 +66,11 @@ export default function ConfirmDeleteModal({
           </p>
         </div>
 
-        <div className="flex justify-end gap-3 px-6 pb-5">
+        <div className="app-modal-actions px-6 pb-5">
           <AppButton
             onClick={onCancel}
             tone="outline-danger"
+            className="w-full sm:w-auto"
             startIcon={<XCircle size={16} />}
             data-modal-initial-focus
           >
@@ -78,6 +79,7 @@ export default function ConfirmDeleteModal({
           <AppButton
             onClick={onConfirm}
             tone="danger"
+            className="w-full sm:w-auto"
             startIcon={<Trash2 size={16} />}
           >
             {confirmLabel}

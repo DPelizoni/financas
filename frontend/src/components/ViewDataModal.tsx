@@ -251,6 +251,7 @@ export default function ViewDataModal({
           <AppButton
             onClick={onClose}
             tone="outline-danger"
+            className="w-full sm:w-auto"
             startIcon={<XCircle size={16} />}
             data-modal-initial-focus
           >

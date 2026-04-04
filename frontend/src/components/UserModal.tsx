@@ -389,11 +389,12 @@ export default function UserModal({
 
           <FormErrorSummary generalMessage={generalError} />
 
-          <div className="flex justify-end gap-3 pt-2">
+          <div className="app-modal-actions pt-2">
             <AppButton
               type="button"
               tone="outline-danger"
               onClick={onClose}
+              className="w-full sm:w-auto"
               startIcon={<Ban size={16} />}
               disabled={isSubmitting}
             >
@@ -401,6 +402,7 @@ export default function UserModal({
             </AppButton>
             <AppButton
               type="submit"
+              className="w-full sm:w-auto"
               startIcon={<Save size={16} />}
               disabled={isSubmitting}
             >

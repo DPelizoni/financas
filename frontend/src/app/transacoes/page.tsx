@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useId, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import {
   Transacao,
   TransacaoFilters,
@@ -125,6 +126,7 @@ export default function TransacoesPage() {
 
   const copySectionClasses = getTransactionSectionClasses("blue");
   const deleteSectionClasses = getTransactionSectionClasses("red");
+  const modalFooterClass = "app-modal-actions mt-5";
   const [transacoes, setTransacoes] = useState<Transacao[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [banks, setBanks] = useState<Bank[]>([]);
@@ -196,6 +198,7 @@ export default function TransacoesPage() {
   const [advancedActionsOpen, setAdvancedActionsOpen] = useState(false);
   const [copyModalOpen, setCopyModalOpen] = useState(false);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [isPortalReady, setIsPortalReady] = useState(false);
 
   const handleSort = (
     column:
@@ -224,6 +227,10 @@ export default function TransacoesPage() {
   // Load initial data
   useEffect(() => {
     loadData();
+  }, []);
+
+  useEffect(() => {
+    setIsPortalReady(true);
   }, []);
 
   // Load transacoes when filters change
@@ -1500,7 +1507,9 @@ export default function TransacoesPage() {
           </div>
         </div>
 
-        {copyModalOpen && (
+        {copyModalOpen &&
+          isPortalReady &&
+          createPortal(
           <div className="app-modal-overlay">
             <div
               ref={copyModalRef}
@@ -1601,37 +1610,37 @@ export default function TransacoesPage() {
                   )}
                 </div>
 
-                <div className="mt-5 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
-                  <button
+                <div className={modalFooterClass}>
+                  <AppButton
                     type="button"
                     onClick={() => setCopyModalOpen(false)}
-                    className={`${copySectionClasses.secondaryButton} inline-flex w-full items-center justify-center gap-2 sm:w-auto`}
+                    tone="outline-danger"
+                    className="w-full sm:w-auto"
+                    startIcon={<XCircle size={16} />}
+                    data-modal-initial-focus
                   >
-                    <XCircle size={16} />
                     Cancelar
-                  </button>
-                  <button
+                  </AppButton>
+                  <AppButton
                     type="button"
                     onClick={handleCopyByMonth}
                     disabled={copyLoading}
-                    className={`${copySectionClasses.primaryCompactButton} inline-flex w-full items-center justify-center gap-2 whitespace-normal text-center sm:w-auto sm:whitespace-nowrap`}
+                    tone="primary"
+                    className="w-full sm:w-auto"
+                    startIcon={copyLoading ? undefined : <Copy size={16} />}
                   >
-                    {copyLoading
-                      ? "Copiando..."
-                      : (
-                        <>
-                          <Copy size={16} />
-                          Copiar para meses selecionados
-                        </>
-                      )}
-                  </button>
+                    {copyLoading ? "Copiando..." : "Copiar para meses selecionados"}
+                  </AppButton>
                 </div>
               </div>
             </div>
-          </div>
+          </div>,
+          document.body,
         )}
 
-        {deleteModalOpen && (
+        {deleteModalOpen &&
+          isPortalReady &&
+          createPortal(
           <div className="app-modal-overlay">
             <div
               ref={deleteModalRef}
@@ -1720,37 +1729,39 @@ export default function TransacoesPage() {
                   )}
                 </div>
 
-                <div className="mt-5 flex justify-end gap-3">
-                  <button
+                <div className={modalFooterClass}>
+                  <AppButton
                     type="button"
                     onClick={() => setDeleteModalOpen(false)}
-                    className={`${deleteSectionClasses.secondaryButton} inline-flex items-center justify-center gap-2`}
+                    tone="outline-danger"
+                    className="w-full sm:w-auto"
+                    startIcon={<XCircle size={16} />}
+                    data-modal-initial-focus
                   >
-                    <XCircle size={16} />
                     Cancelar
-                  </button>
-                  <button
+                  </AppButton>
+                  <AppButton
                     type="button"
                     onClick={requestDeleteByMonths}
                     disabled={deleteMonthsLoading}
-                    className={`${deleteSectionClasses.primaryCompactButton} inline-flex items-center justify-center gap-2`}
+                    tone="danger"
+                    className="w-full sm:w-auto"
+                    startIcon={deleteMonthsLoading ? undefined : <Trash size={16} />}
                   >
                     {deleteMonthsLoading
                       ? "Excluindo..."
-                      : (
-                        <>
-                          <Trash size={16} />
-                          Excluir meses selecionados
-                        </>
-                      )}
-                  </button>
+                      : "Excluir meses selecionados"}
+                  </AppButton>
                 </div>
               </div>
             </div>
-          </div>
+          </div>,
+          document.body,
         )}
 
-        {deleteTransactionMonthsModalOpen && (
+        {deleteTransactionMonthsModalOpen &&
+          isPortalReady &&
+          createPortal(
           <div className="app-modal-overlay">
             <div
               ref={deleteTransactionMonthsModalRef}
@@ -1847,8 +1858,8 @@ export default function TransacoesPage() {
                   )}
                 </div>
 
-                <div className="mt-5 flex justify-end gap-3">
-                  <button
+                <div className={modalFooterClass}>
+                  <AppButton
                     type="button"
                     onClick={() => {
                       setDeleteTransactionMonthsModalOpen(false);
@@ -1856,30 +1867,30 @@ export default function TransacoesPage() {
                       setDeleteTransactionMeses([]);
                       setDeleteTransactionMesInput("");
                     }}
-                    className={`${deleteSectionClasses.secondaryButton} inline-flex items-center justify-center gap-2`}
+                    tone="outline-danger"
+                    className="w-full sm:w-auto"
+                    startIcon={<XCircle size={16} />}
+                    data-modal-initial-focus
                   >
-                    <XCircle size={16} />
                     Cancelar
-                  </button>
-                  <button
+                  </AppButton>
+                  <AppButton
                     type="button"
                     onClick={requestDeleteTransactionByMonths}
                     disabled={deleteTransactionMonthsLoading}
-                    className={`${deleteSectionClasses.primaryCompactButton} inline-flex items-center justify-center gap-2`}
+                    tone="danger"
+                    className="w-full sm:w-auto"
+                    startIcon={
+                      deleteTransactionMonthsLoading ? undefined : <Trash size={16} />
+                    }
                   >
-                    {deleteTransactionMonthsLoading ? (
-                      "Excluindo..."
-                    ) : (
-                      <>
-                        <Trash size={16} />
-                        Excluir transação nos meses
-                      </>
-                    )}
-                  </button>
+                    {deleteTransactionMonthsLoading ? "Excluindo..." : "Excluir transação nos meses"}
+                  </AppButton>
                 </div>
               </div>
             </div>
-          </div>
+          </div>,
+          document.body,
         )}
 
         {/* Pagination */}

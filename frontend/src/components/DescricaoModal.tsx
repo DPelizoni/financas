@@ -317,12 +317,12 @@ export default function DescricaoModal({
 
           <FormErrorSummary generalMessage={generalError} />
 
-          <div className="flex gap-3 pt-4">
+          <div className="app-modal-actions pt-4">
             <AppButton
               type="button"
               onClick={onClose}
               tone="outline-danger"
-              fullWidth
+              className="w-full sm:w-auto"
               startIcon={<Ban size={16} />}
               disabled={isSubmitting}
             >
@@ -331,7 +331,7 @@ export default function DescricaoModal({
             <AppButton
               type="submit"
               tone="primary"
-              fullWidth
+              className="w-full sm:w-auto"
               startIcon={<Save size={16} />}
               disabled={isSubmitting || categoriesLoading}
             >
