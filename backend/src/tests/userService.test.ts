@@ -219,7 +219,11 @@ const listaUsuariosRetornaDadosPublicos = async () => {
 };
 
 const listaUsuariosConverteErroDesconhecido = async () => {
+  const originalConsoleError = console.error;
+
   try {
+    console.error = () => undefined;
+
     userRepository.findAll = async () => {
       throw new Error("falha de banco");
     };
@@ -234,6 +238,7 @@ const listaUsuariosConverteErroDesconhecido = async () => {
       },
     );
   } finally {
+    console.error = originalConsoleError;
     restoreRepository();
   }
 };

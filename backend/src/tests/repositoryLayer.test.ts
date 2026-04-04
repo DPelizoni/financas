@@ -356,6 +356,328 @@ const transacaoRepositoryDeleteByMesesVazioNaoConsultaBanco = async () => {
   }
 };
 
+const transacaoRepositoryFindByMesRetornaRegistros = async () => {
+  const captures: QueryCapture[] = [];
+
+  try {
+    stubPoolQuery([[[{ id: 13, mes: "04/2026", valor: 230.9 }]]], captures);
+
+    const repository = new TransacaoRepository();
+    const result = await repository.findByMes("04/2026");
+
+    assert.equal(result.length, 1);
+    assert.equal(result[0].id, 13);
+    assert.equal(captures.length, 1);
+    assert.match(captures[0].sql, /FROM transacoes/i);
+    assert.match(captures[0].sql, /WHERE mes = \?/i);
+    assert.match(captures[0].sql, /ORDER BY STR_TO_DATE/i);
+    assert.deepEqual(captures[0].params, ["04/2026"]);
+  } finally {
+    restorePoolQuery();
+  }
+};
+
+const transacaoRepositoryCreateManyInsereRegistros = async () => {
+  const captures: QueryCapture[] = [];
+
+  try {
+    stubPoolQuery([[{ affectedRows: 2 }]], captures);
+
+    const repository = new TransacaoRepository();
+    const result = await repository.createMany([
+      {
+        mes: "04/2026",
+        vencimento: "10/04/2026",
+        tipo: "DESPESA",
+        categoria_id: 1,
+        descricao_id: 2,
+        banco_id: 3,
+        situacao: "PENDENTE",
+        valor: 150,
+      },
+      {
+        mes: "04/2026",
+        vencimento: "15/04/2026",
+        tipo: "RECEITA",
+        categoria_id: 4,
+        descricao_id: 5,
+        banco_id: 6,
+        situacao: "PAGO",
+        valor: 400,
+      },
+    ]);
+
+    assert.equal(result, 2);
+    assert.equal(captures.length, 1);
+    assert.match(captures[0].sql, /INSERT INTO transacoes/i);
+    assert.deepEqual(captures[0].params, [[
+      ["04/2026", "10/04/2026", "DESPESA", 1, 2, 3, "PENDENTE", 150],
+      ["04/2026", "15/04/2026", "RECEITA", 4, 5, 6, "PAGO", 400],
+    ]]);
+  } finally {
+    restorePoolQuery();
+  }
+};
+
+const transacaoRepositoryCreateRetornaRegistroCriado = async () => {
+  const captures: QueryCapture[] = [];
+
+  try {
+    stubPoolQuery(
+      [
+        [{ insertId: 21 }],
+        [[{ id: 21, mes: "05/2026", valor: 99.9 }]],
+      ],
+      captures,
+    );
+
+    const repository = new TransacaoRepository();
+    const result = await repository.create({
+      mes: "05/2026",
+      vencimento: "20/05/2026",
+      tipo: "DESPESA",
+      categoria_id: 2,
+      descricao_id: 3,
+      banco_id: 4,
+      situacao: "PENDENTE",
+      valor: 99.9,
+    });
+
+    assert.equal((result as { id?: number })?.id, 21);
+    assert.equal(captures.length, 2);
+    assert.match(captures[0].sql, /INSERT INTO transacoes/i);
+    assert.deepEqual(captures[0].params, [
+      "05/2026",
+      "20/05/2026",
+      "DESPESA",
+      2,
+      3,
+      4,
+      "PENDENTE",
+      99.9,
+    ]);
+    assert.match(captures[1].sql, /WHERE t\.id = \?/i);
+    assert.deepEqual(captures[1].params, [21]);
+  } finally {
+    restorePoolQuery();
+  }
+};
+
+const transacaoRepositoryFindByIdRetornaNullQuandoNaoExiste = async () => {
+  const captures: QueryCapture[] = [];
+
+  try {
+    stubPoolQuery([[[]]], captures);
+
+    const repository = new TransacaoRepository();
+    const result = await repository.findById(999);
+
+    assert.equal(result, null);
+    assert.equal(captures.length, 1);
+    assert.match(captures[0].sql, /WHERE t\.id = \?/i);
+    assert.deepEqual(captures[0].params, [999]);
+  } finally {
+    restorePoolQuery();
+  }
+};
+
+const transacaoRepositoryUpdateComCamposExecutaUpdate = async () => {
+  const captures: QueryCapture[] = [];
+
+  try {
+    stubPoolQuery(
+      [
+        [{ affectedRows: 1 }],
+        [[{ id: 31, situacao: "PAGO", valor: 220 }]],
+      ],
+      captures,
+    );
+
+    const repository = new TransacaoRepository();
+    const result = await repository.update(31, {
+      valor: 220,
+      situacao: "PAGO",
+    });
+
+    assert.equal((result as { id?: number })?.id, 31);
+    assert.equal(captures.length, 2);
+    assert.match(captures[0].sql, /UPDATE transacoes SET/i);
+    assert.match(captures[0].sql, /valor = \?/i);
+    assert.match(captures[0].sql, /situacao = \?/i);
+    assert.deepEqual(captures[0].params, [220, "PAGO", 31]);
+  } finally {
+    restorePoolQuery();
+  }
+};
+
+const transacaoRepositoryDeleteRetornaTrueQuandoAfetaLinhas = async () => {
+  const captures: QueryCapture[] = [];
+
+  try {
+    stubPoolQuery([[{ affectedRows: 1 }]], captures);
+
+    const repository = new TransacaoRepository();
+    const result = await repository.delete(45);
+
+    assert.equal(result, true);
+    assert.equal(captures.length, 1);
+    assert.match(captures[0].sql, /DELETE FROM transacoes WHERE id = \?/i);
+    assert.deepEqual(captures[0].params, [45]);
+  } finally {
+    restorePoolQuery();
+  }
+};
+
+const transacaoRepositoryDeleteRetornaFalseQuandoNaoAfetaLinhas = async () => {
+  const captures: QueryCapture[] = [];
+
+  try {
+    stubPoolQuery([[{ affectedRows: 0 }]], captures);
+
+    const repository = new TransacaoRepository();
+    const result = await repository.delete(46);
+
+    assert.equal(result, false);
+    assert.equal(captures.length, 1);
+  } finally {
+    restorePoolQuery();
+  }
+};
+
+const transacaoRepositoryDeleteByIdsExecutaDelete = async () => {
+  const captures: QueryCapture[] = [];
+
+  try {
+    stubPoolQuery([[{ affectedRows: 2 }]], captures);
+
+    const repository = new TransacaoRepository();
+    const result = await repository.deleteByIds([11, 12]);
+
+    assert.equal(result, 2);
+    assert.equal(captures.length, 1);
+    assert.match(captures[0].sql, /DELETE FROM transacoes WHERE id IN \(\?, \?\)/i);
+    assert.deepEqual(captures[0].params, [11, 12]);
+  } finally {
+    restorePoolQuery();
+  }
+};
+
+const transacaoRepositoryDeleteByMesesExecutaDelete = async () => {
+  const captures: QueryCapture[] = [];
+
+  try {
+    stubPoolQuery([[{ affectedRows: 3 }]], captures);
+
+    const repository = new TransacaoRepository();
+    const result = await repository.deleteByMeses(["01/2026", "02/2026"]);
+
+    assert.equal(result, 3);
+    assert.equal(captures.length, 1);
+    assert.match(captures[0].sql, /DELETE FROM transacoes WHERE mes IN \(\?, \?\)/i);
+    assert.deepEqual(captures[0].params, ["01/2026", "02/2026"]);
+  } finally {
+    restorePoolQuery();
+  }
+};
+
+const transacaoRepositoryExistsRetornaTrueQuandoEncontrada = async () => {
+  const captures: QueryCapture[] = [];
+
+  try {
+    stubPoolQuery([[[{ id: 1 }]]], captures);
+
+    const repository = new TransacaoRepository();
+    const result = await repository.exists(1);
+
+    assert.equal(result, true);
+    assert.equal(captures.length, 1);
+    assert.match(captures[0].sql, /SELECT 1 FROM transacoes WHERE id = \?/i);
+    assert.deepEqual(captures[0].params, [1]);
+  } finally {
+    restorePoolQuery();
+  }
+};
+
+const transacaoRepositoryExistsRetornaFalseQuandoNaoEncontrada = async () => {
+  const captures: QueryCapture[] = [];
+
+  try {
+    stubPoolQuery([[[]]], captures);
+
+    const repository = new TransacaoRepository();
+    const result = await repository.exists(2);
+
+    assert.equal(result, false);
+    assert.equal(captures.length, 1);
+  } finally {
+    restorePoolQuery();
+  }
+};
+
+const transacaoRepositoryGetSummaryComFiltros = async () => {
+  const captures: QueryCapture[] = [];
+
+  try {
+    stubPoolQuery(
+      [[[{ total_pago: 100, total_pendente: 50, total_registros: 3 }]]],
+      captures,
+    );
+
+    const repository = new TransacaoRepository();
+    const result = await repository.getSummary({
+      search: "mercado",
+      tipo: "DESPESA",
+      categoria_id: 8,
+      banco_id: 2,
+      situacao: "PAGO",
+      ano: "2026",
+    });
+
+    assert.equal(result.total_pago, 100);
+    assert.equal(result.total_pendente, 50);
+    assert.equal(captures.length, 1);
+    assert.match(captures[0].sql, /c\.nome LIKE \? OR d\.nome LIKE \? OR b\.nome LIKE \?/i);
+    assert.match(captures[0].sql, /t\.tipo = \?/i);
+    assert.match(captures[0].sql, /t\.categoria_id = \?/i);
+    assert.match(captures[0].sql, /t\.banco_id = \?/i);
+    assert.match(captures[0].sql, /t\.situacao = \?/i);
+    assert.match(captures[0].sql, /RIGHT\(t\.mes, 4\) = \?/i);
+    assert.deepEqual(captures[0].params, [
+      "%mercado%",
+      "%mercado%",
+      "%mercado%",
+      "DESPESA",
+      8,
+      2,
+      "PAGO",
+      "2026",
+    ]);
+  } finally {
+    restorePoolQuery();
+  }
+};
+
+const transacaoRepositoryGetSummaryPriorizaMesSobreAno = async () => {
+  const captures: QueryCapture[] = [];
+
+  try {
+    stubPoolQuery([[[]]], captures);
+
+    const repository = new TransacaoRepository();
+    await repository.getSummary({
+      mes: "03/2026",
+      ano: "2025",
+    });
+
+    assert.equal(captures.length, 1);
+    assert.match(captures[0].sql, /t\.mes = \?/i);
+    assert.doesNotMatch(captures[0].sql, /RIGHT\(t\.mes, 4\) = \?/i);
+    assert.deepEqual(captures[0].params, ["03/2026"]);
+  } finally {
+    restorePoolQuery();
+  }
+};
+
 const userRepositoryFindAllComFiltros = async () => {
   const captures: QueryCapture[] = [];
 
@@ -741,6 +1063,58 @@ export const repositoryLayerTests: TestCase[] = [
   {
     name: "Repository: Transacao deleteByMeses vazio nao consulta banco",
     run: transacaoRepositoryDeleteByMesesVazioNaoConsultaBanco,
+  },
+  {
+    name: "Repository: Transacao findByMes retorna registros",
+    run: transacaoRepositoryFindByMesRetornaRegistros,
+  },
+  {
+    name: "Repository: Transacao createMany insere registros",
+    run: transacaoRepositoryCreateManyInsereRegistros,
+  },
+  {
+    name: "Repository: Transacao create retorna registro criado",
+    run: transacaoRepositoryCreateRetornaRegistroCriado,
+  },
+  {
+    name: "Repository: Transacao findById retorna null quando nao existe",
+    run: transacaoRepositoryFindByIdRetornaNullQuandoNaoExiste,
+  },
+  {
+    name: "Repository: Transacao update com campos executa update",
+    run: transacaoRepositoryUpdateComCamposExecutaUpdate,
+  },
+  {
+    name: "Repository: Transacao delete retorna true quando remove",
+    run: transacaoRepositoryDeleteRetornaTrueQuandoAfetaLinhas,
+  },
+  {
+    name: "Repository: Transacao delete retorna false quando nao remove",
+    run: transacaoRepositoryDeleteRetornaFalseQuandoNaoAfetaLinhas,
+  },
+  {
+    name: "Repository: Transacao deleteByIds executa delete",
+    run: transacaoRepositoryDeleteByIdsExecutaDelete,
+  },
+  {
+    name: "Repository: Transacao deleteByMeses executa delete",
+    run: transacaoRepositoryDeleteByMesesExecutaDelete,
+  },
+  {
+    name: "Repository: Transacao exists retorna true quando encontra",
+    run: transacaoRepositoryExistsRetornaTrueQuandoEncontrada,
+  },
+  {
+    name: "Repository: Transacao exists retorna false quando nao encontra",
+    run: transacaoRepositoryExistsRetornaFalseQuandoNaoEncontrada,
+  },
+  {
+    name: "Repository: Transacao getSummary aplica filtros",
+    run: transacaoRepositoryGetSummaryComFiltros,
+  },
+  {
+    name: "Repository: Transacao getSummary prioriza mes sobre ano",
+    run: transacaoRepositoryGetSummaryPriorizaMesSobreAno,
   },
   {
     name: "Repository: User findAll monta query com filtros",
