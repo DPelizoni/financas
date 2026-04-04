@@ -1,6 +1,12 @@
 import { authMiddlewareTests } from "./authMiddleware.test";
 import { authControllerTests } from "./authController.test";
 import { authServiceTests } from "./authService.test";
+import { bankControllerTests } from "./bankController.test";
+import { bankServiceTests } from "./bankService.test";
+import { categoryControllerTests } from "./categoryController.test";
+import { categoryServiceTests } from "./categoryService.test";
+import { descricaoControllerTests } from "./descricaoController.test";
+import { descricaoServiceTests } from "./descricaoService.test";
 import { httpIntegrationTests } from "./httpIntegration.test";
 import { transacaoControllerTests } from "./transacaoController.test";
 import { transacaoServiceTests } from "./transacaoService.test";
@@ -14,6 +20,12 @@ const tests: TestCase[] = [
   ...authControllerTests,
   ...authMiddlewareTests,
   ...authServiceTests,
+  ...bankControllerTests,
+  ...bankServiceTests,
+  ...categoryControllerTests,
+  ...categoryServiceTests,
+  ...descricaoControllerTests,
+  ...descricaoServiceTests,
   ...transacaoControllerTests,
   ...userServiceTests,
   ...userControllerTests,
