@@ -1003,6 +1003,7 @@ export default function DashboardPage() {
                     <Line
                       type="monotone"
                       dataKey="receitas"
+                      name="Receitas"
                       stroke={chartColors.receitas}
                       strokeWidth={2}
                       dot={{ r: 3 }}
@@ -1010,6 +1011,7 @@ export default function DashboardPage() {
                     <Line
                       type="monotone"
                       dataKey="despesas"
+                      name="Despesas"
                       stroke={chartColors.despesas}
                       strokeWidth={2}
                       dot={{ r: 3 }}
@@ -1017,6 +1019,7 @@ export default function DashboardPage() {
                     <Line
                       type="monotone"
                       dataKey="saldo"
+                      name="Saldo"
                       stroke={chartColors.saldo}
                       strokeWidth={2}
                       dot={{ r: 3 }}
