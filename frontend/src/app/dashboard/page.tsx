@@ -1182,10 +1182,10 @@ export default function DashboardPage() {
           </div>
 
           <div className="hidden overflow-x-auto md:block">
-            <table className="min-w-[900px] w-full divide-y divide-gray-200 text-xs">
+            <table className="w-full table-fixed divide-y divide-gray-200 text-xs">
               <thead className="app-table-head">
                 <tr>
-                  <th className="app-table-head-cell">
+                  <th className="app-table-head-cell w-[10%]">
                     <button
                       type="button"
                       onClick={() => handleTableSort("mes")}
@@ -1199,7 +1199,7 @@ export default function DashboardPage() {
                       ) : null}
                     </button>
                   </th>
-                  <th className="app-table-head-cell">
+                  <th className="app-table-head-cell w-[10%]">
                     <button
                       type="button"
                       onClick={() => handleTableSort("tipo")}
@@ -1214,7 +1214,7 @@ export default function DashboardPage() {
                       ) : null}
                     </button>
                   </th>
-                  <th className="app-table-head-cell">
+                  <th className="app-table-head-cell w-[18%]">
                     <button
                       type="button"
                       onClick={() => handleTableSort("categoria")}
@@ -1229,10 +1229,10 @@ export default function DashboardPage() {
                       ) : null}
                     </button>
                   </th>
-                  <th className="app-table-head-cell">
+                  <th className="app-table-head-cell w-[22%]">
                     Descrição
                   </th>
-                  <th className="app-table-head-cell">
+                  <th className="app-table-head-cell w-[18%]">
                     <button
                       type="button"
                       onClick={() => handleTableSort("banco")}
@@ -1247,7 +1247,7 @@ export default function DashboardPage() {
                       ) : null}
                     </button>
                   </th>
-                  <th className="app-table-head-cell">
+                  <th className="app-table-head-cell w-[12%]">
                     <button
                       type="button"
                       onClick={() => handleTableSort("situacao")}
@@ -1262,7 +1262,7 @@ export default function DashboardPage() {
                       ) : null}
                     </button>
                   </th>
-                  <th className="app-table-head-cell-right">
+                  <th className="app-table-head-cell-right w-[10%]">
                     <button
                       type="button"
                       onClick={() => handleTableSort("valor")}
@@ -1307,13 +1307,28 @@ export default function DashboardPage() {
                         </span>
                       </td>
                       <td className="px-3 py-2 text-xs text-gray-700">
-                        {t.categoria_nome || "-"}
+                        <span
+                          className="block truncate"
+                          title={t.categoria_nome || "-"}
+                        >
+                          {t.categoria_nome || "-"}
+                        </span>
                       </td>
                       <td className="px-3 py-2 text-xs text-gray-700">
-                        {t.descricao_nome || "-"}
+                        <span
+                          className="block truncate"
+                          title={t.descricao_nome || "-"}
+                        >
+                          {t.descricao_nome || "-"}
+                        </span>
                       </td>
                       <td className="px-3 py-2 text-xs text-gray-700">
-                        {t.banco_nome || "-"}
+                        <span
+                          className="block truncate"
+                          title={t.banco_nome || "-"}
+                        >
+                          {t.banco_nome || "-"}
+                        </span>
                       </td>
                       <td className="px-3 py-2 text-xs">
                         <span

@@ -979,7 +979,7 @@ export default function TransacoesPage() {
         {/* Filters */}
         <div className="filter-panel-surface">
           <div className="space-y-3">
-            <div className="grid grid-cols-1 gap-3 lg:grid-cols-5">
+            <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-5">
                 <div>
                   <TextField
                     type="month"
@@ -1159,8 +1159,8 @@ export default function TransacoesPage() {
                 </div>
               </div>
 
-            <div className="grid grid-cols-1 gap-3 lg:grid-cols-5">
-                <div className="lg:col-span-4">
+            <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-5">
+                <div className="md:col-span-2 xl:col-span-4">
                   <TextField
                     type="search"
                     label="Buscar"
@@ -1183,7 +1183,7 @@ export default function TransacoesPage() {
                   <button
                     type="button"
                     onClick={handleClearFilters}
-                    className="app-button-outline-danger inline-flex w-full items-center justify-center gap-2 rounded-lg px-3 py-2 text-sm font-medium whitespace-nowrap transition lg:w-auto lg:justify-start"
+                    className="app-button-outline-danger inline-flex w-full items-center justify-center gap-2 rounded-lg px-3 py-2 text-sm font-medium whitespace-nowrap transition md:w-auto md:justify-start"
                   >
                     <Icon path={mdiBroom} size={0.75} />
                     Limpar Filtros
@@ -1290,10 +1290,10 @@ export default function TransacoesPage() {
           </div>
 
           <div className="hidden overflow-x-auto md:block">
-            <table className="min-w-[900px] w-full divide-y divide-gray-200 text-xs">
+            <table className="w-full table-fixed divide-y divide-gray-200 text-xs">
               <thead className="app-table-head">
                 <tr>
-                  <th className="app-table-head-cell">
+                  <th className="app-table-head-cell w-[7%]">
                     <button
                       type="button"
                       onClick={() => handleSort("mes")}
@@ -1307,7 +1307,7 @@ export default function TransacoesPage() {
                       ) : null}
                     </button>
                   </th>
-                  <th className="app-table-head-cell">
+                  <th className="app-table-head-cell hidden w-[9%] lg:table-cell">
                     <button
                       type="button"
                       onClick={() => handleSort("vencimento")}
@@ -1321,7 +1321,7 @@ export default function TransacoesPage() {
                       ) : null}
                     </button>
                   </th>
-                  <th className="app-table-head-cell">
+                  <th className="app-table-head-cell w-[7%]">
                     <button
                       type="button"
                       onClick={() => handleSort("tipo")}
@@ -1335,7 +1335,7 @@ export default function TransacoesPage() {
                       ) : null}
                     </button>
                   </th>
-                  <th className="app-table-head-cell">
+                  <th className="app-table-head-cell w-[12%]">
                     <button
                       type="button"
                       onClick={() => handleSort("categoria")}
@@ -1349,7 +1349,7 @@ export default function TransacoesPage() {
                       ) : null}
                     </button>
                   </th>
-                  <th className="app-table-head-cell">
+                  <th className="app-table-head-cell w-[16%]">
                     <button
                       type="button"
                       onClick={() => handleSort("descricao")}
@@ -1363,7 +1363,7 @@ export default function TransacoesPage() {
                       ) : null}
                     </button>
                   </th>
-                  <th className="app-table-head-cell">
+                  <th className="app-table-head-cell w-[11%]">
                     <button
                       type="button"
                       onClick={() => handleSort("banco")}
@@ -1377,7 +1377,7 @@ export default function TransacoesPage() {
                       ) : null}
                     </button>
                   </th>
-                  <th className="app-table-head-cell-right">
+                  <th className="app-table-head-cell-right w-[10%]">
                     <button
                       type="button"
                       onClick={() => handleSort("valor")}
@@ -1391,7 +1391,7 @@ export default function TransacoesPage() {
                       ) : null}
                     </button>
                   </th>
-                  <th className="app-table-head-cell-center">
+                  <th className="app-table-head-cell-center w-[11%]">
                     <button
                       type="button"
                       onClick={() => handleSort("situacao")}
@@ -1405,7 +1405,7 @@ export default function TransacoesPage() {
                       ) : null}
                     </button>
                   </th>
-                  <th className="app-table-head-cell-center">
+                  <th className="app-table-head-cell-center w-[17%]">
                     Ações
                   </th>
                 </tr>
@@ -1437,7 +1437,7 @@ export default function TransacoesPage() {
                       <td className="px-3 py-2 text-xs font-medium text-gray-900">
                         {transacao.mes}
                       </td>
-                      <td className="px-3 py-2 text-xs text-gray-900">
+                      <td className="hidden px-3 py-2 text-xs text-gray-900 lg:table-cell">
                         {transacao.vencimento}
                       </td>
                       <td className="px-3 py-2 text-xs">
@@ -1452,13 +1452,28 @@ export default function TransacoesPage() {
                         </span>
                       </td>
                       <td className="px-3 py-2 text-xs text-gray-900">
-                        {transacao.categoria_nome || "-"}
+                        <span
+                          className="block truncate"
+                          title={transacao.categoria_nome || "-"}
+                        >
+                          {transacao.categoria_nome || "-"}
+                        </span>
                       </td>
                       <td className="px-3 py-2 text-xs text-gray-900">
-                        {transacao.descricao_nome || "-"}
+                        <span
+                          className="block truncate"
+                          title={transacao.descricao_nome || "-"}
+                        >
+                          {transacao.descricao_nome || "-"}
+                        </span>
                       </td>
                       <td className="px-3 py-2 text-xs text-gray-900">
-                        {transacao.banco_nome || "-"}
+                        <span
+                          className="block truncate"
+                          title={transacao.banco_nome || "-"}
+                        >
+                          {transacao.banco_nome || "-"}
+                        </span>
                       </td>
                       <td className="px-3 py-2 text-right text-xs font-semibold">
                         {formatCurrency(transacao.valor)}
