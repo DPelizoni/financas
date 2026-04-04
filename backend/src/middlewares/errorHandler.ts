@@ -18,7 +18,12 @@ export const errorHandler = (
   res: Response,
   next: NextFunction,
 ) => {
-  console.error("❌ Erro:", err);
+  const isTestEnvironment = process.env.NODE_ENV === "test";
+  const shouldLogError = !isTestEnvironment || !(err instanceof AppError);
+
+  if (shouldLogError) {
+    console.error("❌ Erro:", err);
+  }
 
   if (err instanceof AppError) {
     return res

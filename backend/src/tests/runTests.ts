@@ -34,6 +34,8 @@ const tests: TestCase[] = [
 ];
 
 const run = async () => {
+  process.env.NODE_ENV = "test";
+
   let passed = 0;
   let failed = 0;
 
