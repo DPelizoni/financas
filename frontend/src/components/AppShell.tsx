@@ -14,6 +14,8 @@ import {
   Menu,
   X,
   LogOut,
+  ChevronLeft,
+  ChevronRight,
   LucideIcon,
 } from "lucide-react";
 import { authService } from "@/services/authService";
@@ -38,6 +40,8 @@ const navItems: NavItem[] = [
   { label: "Usuários", href: "/usuarios", icon: Users },
 ];
 
+const DESKTOP_SIDEBAR_STORAGE_KEY = "financas.desktop-sidebar-collapsed";
+
 const getPageTitle = (pathname: string): string => {
   if (pathname.startsWith("/dashboard")) return "Dashboard";
   if (pathname.startsWith("/banks")) return "Bancos";
@@ -52,10 +56,30 @@ export default function AppShell({ children }: AppShellProps) {
   const router = useRouter();
   const pathname = usePathname();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [isDesktopSidebarCollapsed, setIsDesktopSidebarCollapsed] =
+    useState(false);
+  const [hasLoadedSidebarPreference, setHasLoadedSidebarPreference] =
+    useState(false);
   const [userName, setUserName] = useState("Usuário");
   const [isManager, setIsManager] = useState(false);
 
   const pageTitle = useMemo(() => getPageTitle(pathname), [pathname]);
+
+  useEffect(() => {
+    const storedState = window.localStorage.getItem(
+      DESKTOP_SIDEBAR_STORAGE_KEY,
+    );
+    setIsDesktopSidebarCollapsed(storedState === "true");
+    setHasLoadedSidebarPreference(true);
+  }, []);
+
+  useEffect(() => {
+    if (!hasLoadedSidebarPreference) return;
+    window.localStorage.setItem(
+      DESKTOP_SIDEBAR_STORAGE_KEY,
+      String(isDesktopSidebarCollapsed),
+    );
+  }, [hasLoadedSidebarPreference, isDesktopSidebarCollapsed]);
 
   useEffect(() => {
     const user = authService.getStoredUser();
@@ -91,20 +115,22 @@ export default function AppShell({ children }: AppShellProps) {
         )}
 
         <aside
-          className={`fixed inset-y-0 left-0 z-40 w-60 transform border-r border-[rgb(var(--app-border-default))] bg-[rgb(var(--app-bg-surface))] transition-transform duration-300 lg:translate-x-0 ${
-            sidebarOpen ? "translate-x-0" : "-translate-x-full"
-          }`}
+          className={`fixed inset-y-0 left-0 z-40 w-60 transform border-r border-[rgb(var(--app-border-default))] bg-[rgb(var(--app-bg-surface))] transition-all duration-300 lg:translate-x-0 ${
+            isDesktopSidebarCollapsed ? "lg:w-20" : "lg:w-60"
+          } ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}`}
         >
           <div className="flex h-16 items-center justify-between border-b border-[rgb(var(--app-border-default))] px-5">
             <div className="flex items-center gap-3">
               <div className="flex h-9 w-9 items-center justify-center rounded-md bg-[rgb(var(--app-brand-primary))] text-[rgb(var(--app-text-inverse))]">
                 <Wallet size={18} />
               </div>
-              <div>
+              <div className={isDesktopSidebarCollapsed ? "lg:hidden" : ""}>
                 <p className="text-xs font-semibold uppercase tracking-wider text-[rgb(var(--app-text-muted))]">
                   Sistema
                 </p>
-                <h1 className="text-lg font-bold text-[rgb(var(--app-text-primary))]">Finanças</h1>
+                <h1 className="text-lg font-bold text-[rgb(var(--app-text-primary))]">
+                  Finanças
+                </h1>
               </div>
             </div>
             <button
@@ -127,30 +153,61 @@ export default function AppShell({ children }: AppShellProps) {
                   key={item.href}
                   href={item.href}
                   onClick={() => setSidebarOpen(false)}
+                  title={isDesktopSidebarCollapsed ? item.label : undefined}
                   className={`flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium transition-colors ${
                     isActive
                       ? "bg-[rgb(var(--app-brand-primary))] text-[rgb(var(--app-text-inverse))] shadow-sm"
                       : "text-[rgb(var(--app-text-secondary))] hover:bg-[rgb(var(--app-bg-muted))] hover:text-[rgb(var(--app-text-primary))]"
+                  } ${
+                    isDesktopSidebarCollapsed ? "lg:justify-center lg:px-2" : ""
                   } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400`}
                 >
                   <Icon size={18} />
-                  <span>{item.label}</span>
+                  <span className={isDesktopSidebarCollapsed ? "lg:hidden" : ""}>
+                    {item.label}
+                  </span>
                 </Link>
               );
             })}
           </nav>
 
           <div className="absolute bottom-0 left-0 right-0 border-t border-[rgb(var(--app-border-default))] p-4">
-            <div className="app-surface-muted p-3">
-              <p className="text-xs font-semibold text-[rgb(var(--app-text-muted))]">Ambiente</p>
-              <p className="text-sm font-medium text-[rgb(var(--app-text-secondary))]">
+            <div
+              className={`app-surface-muted p-3 ${
+                isDesktopSidebarCollapsed ? "lg:flex lg:justify-center" : ""
+              }`}
+              title={isDesktopSidebarCollapsed ? "Produção Local" : undefined}
+            >
+              <p
+                className={`text-xs font-semibold text-[rgb(var(--app-text-muted))] ${
+                  isDesktopSidebarCollapsed ? "lg:hidden" : ""
+                }`}
+              >
+                Ambiente
+              </p>
+              <p
+                className={`text-sm font-medium text-[rgb(var(--app-text-secondary))] ${
+                  isDesktopSidebarCollapsed ? "lg:hidden" : ""
+                }`}
+              >
                 Produção Local
+              </p>
+              <p
+                className={`hidden text-xs font-semibold text-[rgb(var(--app-text-muted))] ${
+                  isDesktopSidebarCollapsed ? "lg:block" : ""
+                }`}
+              >
+                Local
               </p>
             </div>
           </div>
         </aside>
 
-        <div className="flex min-h-screen flex-1 flex-col lg:pl-60">
+        <div
+          className={`flex min-h-screen flex-1 flex-col transition-all duration-300 ${
+            isDesktopSidebarCollapsed ? "lg:pl-20" : "lg:pl-60"
+          }`}
+        >
           <header className="sticky top-0 z-20 border-b border-[rgb(var(--app-border-default))] bg-white/95 backdrop-blur">
             <div className="flex h-16 items-center justify-between px-4 sm:px-6 lg:px-8">
               <div className="flex items-center gap-3">
@@ -161,6 +218,29 @@ export default function AppShell({ children }: AppShellProps) {
                   aria-label="Abrir menu lateral"
                 >
                   <Menu size={20} />
+                </button>
+                <button
+                  type="button"
+                  className="app-control-button hidden items-center justify-center p-1 lg:inline-flex"
+                  onClick={() =>
+                    setIsDesktopSidebarCollapsed((previous) => !previous)
+                  }
+                  aria-label={
+                    isDesktopSidebarCollapsed
+                      ? "Expandir menu lateral"
+                      : "Recolher menu lateral"
+                  }
+                  title={
+                    isDesktopSidebarCollapsed
+                      ? "Expandir menu lateral"
+                      : "Recolher menu lateral"
+                  }
+                >
+                  {isDesktopSidebarCollapsed ? (
+                    <ChevronRight size={20} />
+                  ) : (
+                    <ChevronLeft size={20} />
+                  )}
                 </button>
                 <div>
                   <p className="text-xs uppercase tracking-wider text-[rgb(var(--app-text-muted))]">
