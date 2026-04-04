@@ -1601,11 +1601,11 @@ export default function TransacoesPage() {
                   )}
                 </div>
 
-                <div className="mt-5 flex justify-end gap-3">
+                <div className="mt-5 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
                   <button
                     type="button"
                     onClick={() => setCopyModalOpen(false)}
-                    className={`${copySectionClasses.secondaryButton} inline-flex items-center justify-center gap-2`}
+                    className={`${copySectionClasses.secondaryButton} inline-flex w-full items-center justify-center gap-2 sm:w-auto`}
                   >
                     <XCircle size={16} />
                     Cancelar
@@ -1614,7 +1614,7 @@ export default function TransacoesPage() {
                     type="button"
                     onClick={handleCopyByMonth}
                     disabled={copyLoading}
-                    className={`${copySectionClasses.primaryCompactButton} inline-flex items-center justify-center gap-2 whitespace-nowrap`}
+                    className={`${copySectionClasses.primaryCompactButton} inline-flex w-full items-center justify-center gap-2 whitespace-normal text-center sm:w-auto sm:whitespace-nowrap`}
                   >
                     {copyLoading
                       ? "Copiando..."
