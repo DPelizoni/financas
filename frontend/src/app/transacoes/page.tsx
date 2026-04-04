@@ -404,10 +404,16 @@ export default function TransacoesPage() {
     return banks.find((b) => b.id === id)?.nome || "-";
   };
 
-  const sortedCategories = useMemo(
-    () => [...categories].sort((a, b) => a.nome.localeCompare(b.nome, "pt-BR")),
-    [categories],
-  );
+  const sortedCategories = useMemo(() => {
+    const categoriesByType =
+      filterTipo === "TODOS"
+        ? categories
+        : categories.filter((category) => category.tipo === filterTipo);
+
+    return [...categoriesByType].sort((a, b) =>
+      a.nome.localeCompare(b.nome, "pt-BR"),
+    );
+  }, [categories, filterTipo]);
 
   const sortedBanks = useMemo(
     () => [...banks].sort((a, b) => a.nome.localeCompare(b.nome, "pt-BR")),
@@ -994,9 +1000,29 @@ export default function TransacoesPage() {
                     InputLabelProps={{ shrink: true }}
                     value={filterTipo}
                     onChange={(e) => {
-                      setFilterTipo(
-                        e.target.value as "DESPESA" | "RECEITA" | "TODOS",
-                      );
+                      const nextTipo = e.target.value as
+                        | "DESPESA"
+                        | "RECEITA"
+                        | "TODOS";
+
+                      setFilterTipo(nextTipo);
+                      setFilterCategoria((currentCategoria) => {
+                        if (currentCategoria === "TODOS") return currentCategoria;
+
+                        const selectedCategory = categories.find(
+                          (cat) => cat.id === currentCategoria,
+                        );
+
+                        if (!selectedCategory) return "TODOS";
+                        if (
+                          nextTipo !== "TODOS" &&
+                          selectedCategory.tipo !== nextTipo
+                        ) {
+                          return "TODOS";
+                        }
+
+                        return currentCategoria;
+                      });
                       handleFilterChange();
                     }}
                     SelectProps={{
