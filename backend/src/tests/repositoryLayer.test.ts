@@ -273,6 +273,485 @@ const descricaoRepositoryUpdateSemCamposRetornaFindById = async () => {
   }
 };
 
+const bankRepositoryFindByIdRetornaNullQuandoNaoExiste = async () => {
+  const captures: QueryCapture[] = [];
+
+  try {
+    stubPoolQuery([[[]]], captures);
+
+    const repository = new BankRepository();
+    const result = await repository.findById(999);
+
+    assert.equal(result, null);
+    assert.equal(captures.length, 1);
+    assert.match(captures[0].sql, /SELECT \* FROM banks WHERE id = \?/i);
+    assert.deepEqual(captures[0].params, [999]);
+  } finally {
+    restorePoolQuery();
+  }
+};
+
+const bankRepositoryCreateAplicaDefaults = async () => {
+  const captures: QueryCapture[] = [];
+
+  try {
+    stubPoolQuery(
+      [
+        [{ insertId: 15 }],
+        [[{ id: 15, nome: "Banco Novo", cor: "#3B82F6", ativo: true }]],
+      ],
+      captures,
+    );
+
+    const repository = new BankRepository();
+    const result = await repository.create({
+      nome: "Banco Novo",
+    });
+
+    assert.equal(result.id, 15);
+    assert.equal(captures.length, 2);
+    assert.match(captures[0].sql, /INSERT INTO banks/i);
+    assert.deepEqual(captures[0].params, [
+      "Banco Novo",
+      null,
+      "#3B82F6",
+      null,
+      0,
+      true,
+    ]);
+    assert.match(captures[1].sql, /SELECT \* FROM banks WHERE id = \?/i);
+    assert.deepEqual(captures[1].params, [15]);
+  } finally {
+    restorePoolQuery();
+  }
+};
+
+const bankRepositoryUpdateComCamposExecutaUpdate = async () => {
+  const captures: QueryCapture[] = [];
+
+  try {
+    stubPoolQuery(
+      [
+        [{ affectedRows: 1 }],
+        [[{ id: 2, nome: "Atualizado", ativo: false }]],
+      ],
+      captures,
+    );
+
+    const repository = new BankRepository();
+    const result = await repository.update(2, {
+      nome: "Atualizado",
+      ativo: false,
+    });
+
+    assert.equal((result as { id?: number })?.id, 2);
+    assert.equal(captures.length, 2);
+    assert.match(captures[0].sql, /UPDATE banks SET/i);
+    assert.match(captures[0].sql, /nome = \?/i);
+    assert.match(captures[0].sql, /ativo = \?/i);
+    assert.deepEqual(captures[0].params, ["Atualizado", false, 2]);
+  } finally {
+    restorePoolQuery();
+  }
+};
+
+const bankRepositoryDeleteRetornaTrueQuandoAfetaLinhas = async () => {
+  const captures: QueryCapture[] = [];
+
+  try {
+    stubPoolQuery([[{ affectedRows: 1 }]], captures);
+
+    const repository = new BankRepository();
+    const result = await repository.delete(2);
+
+    assert.equal(result, true);
+    assert.equal(captures.length, 1);
+    assert.match(captures[0].sql, /DELETE FROM banks WHERE id = \?/i);
+    assert.deepEqual(captures[0].params, [2]);
+  } finally {
+    restorePoolQuery();
+  }
+};
+
+const bankRepositoryDeleteRetornaFalseQuandoNaoAfetaLinhas = async () => {
+  const captures: QueryCapture[] = [];
+
+  try {
+    stubPoolQuery([[{ affectedRows: 0 }]], captures);
+
+    const repository = new BankRepository();
+    const result = await repository.delete(3);
+
+    assert.equal(result, false);
+    assert.equal(captures.length, 1);
+  } finally {
+    restorePoolQuery();
+  }
+};
+
+const bankRepositoryExistsRetornaTrueQuandoBancoExiste = async () => {
+  const captures: QueryCapture[] = [];
+
+  try {
+    stubPoolQuery([[[{ id: 4, nome: "Existe" }]]], captures);
+
+    const repository = new BankRepository();
+    const result = await repository.exists(4);
+
+    assert.equal(result, true);
+    assert.equal(captures.length, 1);
+  } finally {
+    restorePoolQuery();
+  }
+};
+
+const bankRepositoryExistsRetornaFalseQuandoBancoNaoExiste = async () => {
+  const captures: QueryCapture[] = [];
+
+  try {
+    stubPoolQuery([[[]]], captures);
+
+    const repository = new BankRepository();
+    const result = await repository.exists(5);
+
+    assert.equal(result, false);
+    assert.equal(captures.length, 1);
+  } finally {
+    restorePoolQuery();
+  }
+};
+
+const categoryRepositoryFindByIdRetornaNullQuandoNaoExiste = async () => {
+  const captures: QueryCapture[] = [];
+
+  try {
+    stubPoolQuery([[[]]], captures);
+
+    const repository = new CategoryRepository();
+    const result = await repository.findById(999);
+
+    assert.equal(result, null);
+    assert.equal(captures.length, 1);
+    assert.match(captures[0].sql, /FROM categories c/i);
+    assert.match(captures[0].sql, /WHERE c\.id = \?/i);
+    assert.deepEqual(captures[0].params, [999]);
+  } finally {
+    restorePoolQuery();
+  }
+};
+
+const categoryRepositoryCreateAplicaDefaults = async () => {
+  const captures: QueryCapture[] = [];
+
+  try {
+    stubPoolQuery(
+      [
+        [{ insertId: 21 }],
+        [[{ id: 21, nome: "Nova Categoria", tipo: "RECEITA", ativo: true }]],
+      ],
+      captures,
+    );
+
+    const repository = new CategoryRepository();
+    const result = await repository.create({
+      nome: "Nova Categoria",
+      tipo: "RECEITA",
+    });
+
+    assert.equal(result.id, 21);
+    assert.equal(captures.length, 2);
+    assert.match(captures[0].sql, /INSERT INTO categories/i);
+    assert.deepEqual(captures[0].params, [
+      "Nova Categoria",
+      "RECEITA",
+      "#0EA5E9",
+      true,
+    ]);
+    assert.deepEqual(captures[1].params, [21]);
+  } finally {
+    restorePoolQuery();
+  }
+};
+
+const categoryRepositoryUpdateComCamposExecutaUpdate = async () => {
+  const captures: QueryCapture[] = [];
+
+  try {
+    stubPoolQuery(
+      [
+        [{ affectedRows: 1 }],
+        [[{ id: 6, nome: "Nova", tipo: "DESPESA", ativo: false }]],
+      ],
+      captures,
+    );
+
+    const repository = new CategoryRepository();
+    const result = await repository.update(6, {
+      nome: "Nova",
+      ativo: false,
+    });
+
+    assert.equal((result as { id?: number })?.id, 6);
+    assert.equal(captures.length, 2);
+    assert.match(captures[0].sql, /UPDATE categories SET/i);
+    assert.match(captures[0].sql, /nome = \?/i);
+    assert.match(captures[0].sql, /ativo = \?/i);
+    assert.deepEqual(captures[0].params, ["Nova", false, 6]);
+  } finally {
+    restorePoolQuery();
+  }
+};
+
+const categoryRepositoryDeleteRetornaTrueQuandoAfetaLinhas = async () => {
+  const captures: QueryCapture[] = [];
+
+  try {
+    stubPoolQuery([[{ affectedRows: 1 }]], captures);
+
+    const repository = new CategoryRepository();
+    const result = await repository.delete(6);
+
+    assert.equal(result, true);
+    assert.equal(captures.length, 1);
+    assert.match(captures[0].sql, /DELETE FROM categories WHERE id = \?/i);
+    assert.deepEqual(captures[0].params, [6]);
+  } finally {
+    restorePoolQuery();
+  }
+};
+
+const categoryRepositoryDeleteRetornaFalseQuandoNaoAfetaLinhas = async () => {
+  const captures: QueryCapture[] = [];
+
+  try {
+    stubPoolQuery([[{ affectedRows: 0 }]], captures);
+
+    const repository = new CategoryRepository();
+    const result = await repository.delete(7);
+
+    assert.equal(result, false);
+    assert.equal(captures.length, 1);
+  } finally {
+    restorePoolQuery();
+  }
+};
+
+const categoryRepositoryExistsRetornaTrueQuandoCategoriaExiste = async () => {
+  const captures: QueryCapture[] = [];
+
+  try {
+    stubPoolQuery([[[{ id: 8, nome: "Existe" }]]], captures);
+
+    const repository = new CategoryRepository();
+    const result = await repository.exists(8);
+
+    assert.equal(result, true);
+    assert.equal(captures.length, 1);
+  } finally {
+    restorePoolQuery();
+  }
+};
+
+const categoryRepositoryExistsRetornaFalseQuandoCategoriaNaoExiste = async () => {
+  const captures: QueryCapture[] = [];
+
+  try {
+    stubPoolQuery([[[]]], captures);
+
+    const repository = new CategoryRepository();
+    const result = await repository.exists(9);
+
+    assert.equal(result, false);
+    assert.equal(captures.length, 1);
+  } finally {
+    restorePoolQuery();
+  }
+};
+
+const descricaoRepositoryFindByIdRetornaNullQuandoNaoExiste = async () => {
+  const captures: QueryCapture[] = [];
+
+  try {
+    stubPoolQuery([[[]]], captures);
+
+    const repository = new DescricaoRepository();
+    const result = await repository.findById(404);
+
+    assert.equal(result, null);
+    assert.equal(captures.length, 1);
+    assert.match(captures[0].sql, /SELECT \* FROM descricoes WHERE id = \?/i);
+    assert.deepEqual(captures[0].params, [404]);
+  } finally {
+    restorePoolQuery();
+  }
+};
+
+const descricaoRepositoryCreateAplicaAtivoPadraoTrue = async () => {
+  const captures: QueryCapture[] = [];
+
+  try {
+    stubPoolQuery(
+      [
+        [{ insertId: 30 }],
+        [[{ id: 30, nome: "Academia", categoria_id: 2, ativo: true }]],
+      ],
+      captures,
+    );
+
+    const repository = new DescricaoRepository();
+    const result = await repository.create({
+      nome: "Academia",
+      categoria_id: 2,
+    });
+
+    assert.equal(result.id, 30);
+    assert.equal(captures.length, 2);
+    assert.match(captures[0].sql, /INSERT INTO descricoes/i);
+    assert.deepEqual(captures[0].params, ["Academia", 2, true]);
+    assert.match(captures[1].sql, /SELECT \* FROM descricoes WHERE id = \?/i);
+    assert.deepEqual(captures[1].params, [30]);
+  } finally {
+    restorePoolQuery();
+  }
+};
+
+const descricaoRepositoryCreateLancaErroQuandoFindByIdRetornaVazio = async () => {
+  const captures: QueryCapture[] = [];
+
+  try {
+    stubPoolQuery(
+      [
+        [{ insertId: 31 }],
+        [[]],
+      ],
+      captures,
+    );
+
+    const repository = new DescricaoRepository();
+
+    await assert.rejects(
+      async () =>
+        repository.create({
+          nome: "Sem Retorno",
+          categoria_id: 2,
+        }),
+      (error: unknown) => {
+        assert.ok(error instanceof Error);
+        assert.match(error.message, /falha ao criar descri/i);
+        return true;
+      },
+    );
+  } finally {
+    restorePoolQuery();
+  }
+};
+
+const descricaoRepositoryUpdateComCamposIncluiUpdatedAt = async () => {
+  const captures: QueryCapture[] = [];
+
+  try {
+    stubPoolQuery(
+      [
+        [{ affectedRows: 1 }],
+        [[{ id: 40, nome: "Atualizada", categoria_id: 5, ativo: false }]],
+      ],
+      captures,
+    );
+
+    const repository = new DescricaoRepository();
+    const result = await repository.update(40, {
+      nome: "Atualizada",
+      ativo: false,
+    });
+
+    assert.equal(result.id, 40);
+    assert.equal(captures.length, 2);
+    assert.match(captures[0].sql, /UPDATE descricoes SET/i);
+    assert.match(captures[0].sql, /nome = \?/i);
+    assert.match(captures[0].sql, /ativo = \?/i);
+    assert.match(captures[0].sql, /updated_at = NOW\(\)/i);
+    assert.deepEqual(captures[0].params, ["Atualizada", false, 40]);
+  } finally {
+    restorePoolQuery();
+  }
+};
+
+const descricaoRepositoryUpdateSemCamposLancaErroQuandoNaoEncontra = async () => {
+  const captures: QueryCapture[] = [];
+
+  try {
+    stubPoolQuery([[[]]], captures);
+
+    const repository = new DescricaoRepository();
+
+    await assert.rejects(
+      async () => repository.update(77, {}),
+      (error: unknown) => {
+        assert.ok(error instanceof Error);
+        assert.match(error.message, /descri/i);
+        return true;
+      },
+    );
+
+    assert.equal(captures.length, 1);
+    assert.match(captures[0].sql, /SELECT \* FROM descricoes WHERE id = \?/i);
+    assert.deepEqual(captures[0].params, [77]);
+  } finally {
+    restorePoolQuery();
+  }
+};
+
+const descricaoRepositoryDeleteExecutaQuery = async () => {
+  const captures: QueryCapture[] = [];
+
+  try {
+    stubPoolQuery([[{ affectedRows: 1 }]], captures);
+
+    const repository = new DescricaoRepository();
+    await repository.delete(50);
+
+    assert.equal(captures.length, 1);
+    assert.match(captures[0].sql, /DELETE FROM descricoes WHERE id = \?/i);
+    assert.deepEqual(captures[0].params, [50]);
+  } finally {
+    restorePoolQuery();
+  }
+};
+
+const descricaoRepositoryExistsRetornaTrueQuandoDescricaoExiste = async () => {
+  const captures: QueryCapture[] = [];
+
+  try {
+    stubPoolQuery([[[{ id: 60 }]]], captures);
+
+    const repository = new DescricaoRepository();
+    const result = await repository.exists(60);
+
+    assert.equal(result, true);
+    assert.equal(captures.length, 1);
+    assert.match(captures[0].sql, /SELECT id FROM descricoes WHERE id = \? LIMIT 1/i);
+    assert.deepEqual(captures[0].params, [60]);
+  } finally {
+    restorePoolQuery();
+  }
+};
+
+const descricaoRepositoryExistsRetornaFalseQuandoDescricaoNaoExiste = async () => {
+  const captures: QueryCapture[] = [];
+
+  try {
+    stubPoolQuery([[[]]], captures);
+
+    const repository = new DescricaoRepository();
+    const result = await repository.exists(61);
+
+    assert.equal(result, false);
+    assert.equal(captures.length, 1);
+  } finally {
+    restorePoolQuery();
+  }
+};
+
 const transacaoRepositoryFindAllPriorizaFiltroMes = async () => {
   const captures: QueryCapture[] = [];
 
@@ -1025,6 +1504,34 @@ export const repositoryLayerTests: TestCase[] = [
     run: bankRepositoryUpdateSemCamposRetornaFindById,
   },
   {
+    name: "Repository: Bank findById retorna null quando nao existe",
+    run: bankRepositoryFindByIdRetornaNullQuandoNaoExiste,
+  },
+  {
+    name: "Repository: Bank create aplica defaults",
+    run: bankRepositoryCreateAplicaDefaults,
+  },
+  {
+    name: "Repository: Bank update com campos executa update",
+    run: bankRepositoryUpdateComCamposExecutaUpdate,
+  },
+  {
+    name: "Repository: Bank delete retorna true quando remove",
+    run: bankRepositoryDeleteRetornaTrueQuandoAfetaLinhas,
+  },
+  {
+    name: "Repository: Bank delete retorna false quando nao remove",
+    run: bankRepositoryDeleteRetornaFalseQuandoNaoAfetaLinhas,
+  },
+  {
+    name: "Repository: Bank exists retorna true quando encontra",
+    run: bankRepositoryExistsRetornaTrueQuandoBancoExiste,
+  },
+  {
+    name: "Repository: Bank exists retorna false quando nao encontra",
+    run: bankRepositoryExistsRetornaFalseQuandoBancoNaoExiste,
+  },
+  {
     name: "Repository: Category findAll inclui tipo na consulta",
     run: categoryRepositoryFindAllIncluiTipoNaConsulta,
   },
@@ -1033,12 +1540,72 @@ export const repositoryLayerTests: TestCase[] = [
     run: categoryRepositoryUpdateSemCamposRetornaFindById,
   },
   {
+    name: "Repository: Category findById retorna null quando nao existe",
+    run: categoryRepositoryFindByIdRetornaNullQuandoNaoExiste,
+  },
+  {
+    name: "Repository: Category create aplica defaults",
+    run: categoryRepositoryCreateAplicaDefaults,
+  },
+  {
+    name: "Repository: Category update com campos executa update",
+    run: categoryRepositoryUpdateComCamposExecutaUpdate,
+  },
+  {
+    name: "Repository: Category delete retorna true quando remove",
+    run: categoryRepositoryDeleteRetornaTrueQuandoAfetaLinhas,
+  },
+  {
+    name: "Repository: Category delete retorna false quando nao remove",
+    run: categoryRepositoryDeleteRetornaFalseQuandoNaoAfetaLinhas,
+  },
+  {
+    name: "Repository: Category exists retorna true quando encontra",
+    run: categoryRepositoryExistsRetornaTrueQuandoCategoriaExiste,
+  },
+  {
+    name: "Repository: Category exists retorna false quando nao encontra",
+    run: categoryRepositoryExistsRetornaFalseQuandoCategoriaNaoExiste,
+  },
+  {
     name: "Repository: Descricao findAll respeita filtros e paginacao",
     run: descricaoRepositoryFindAllRespeitaFiltrosEPaginacao,
   },
   {
     name: "Repository: Descricao update sem campos retorna findById",
     run: descricaoRepositoryUpdateSemCamposRetornaFindById,
+  },
+  {
+    name: "Repository: Descricao findById retorna null quando nao existe",
+    run: descricaoRepositoryFindByIdRetornaNullQuandoNaoExiste,
+  },
+  {
+    name: "Repository: Descricao create aplica ativo padrao",
+    run: descricaoRepositoryCreateAplicaAtivoPadraoTrue,
+  },
+  {
+    name: "Repository: Descricao create lanca erro sem findById",
+    run: descricaoRepositoryCreateLancaErroQuandoFindByIdRetornaVazio,
+  },
+  {
+    name: "Repository: Descricao update com campos inclui updated_at",
+    run: descricaoRepositoryUpdateComCamposIncluiUpdatedAt,
+  },
+  {
+    name: "Repository: Descricao update sem campos lanca erro sem registro",
+    run: descricaoRepositoryUpdateSemCamposLancaErroQuandoNaoEncontra,
+  },
+  {
+    name: "Repository: Descricao delete executa query",
+    run: descricaoRepositoryDeleteExecutaQuery,
+  },
+  {
+    name: "Repository: Descricao exists retorna true quando encontra",
+    run: descricaoRepositoryExistsRetornaTrueQuandoDescricaoExiste,
+  },
+  {
+    name: "Repository: Descricao exists retorna false quando nao encontra",
+    run: descricaoRepositoryExistsRetornaFalseQuandoDescricaoNaoExiste,
   },
   {
     name: "Repository: Transacao findAll filtra por ano com paginacao",
