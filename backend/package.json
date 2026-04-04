@@ -8,7 +8,7 @@
     "build": "tsc",
     "start": "node dist/server.js",
     "test": "npm run build && node dist/tests/runTests.js",
-    "test:coverage": "npm run build && c8 --reporter=text-summary --reporter=lcov --check-coverage --lines 74 --functions 60 --branches 55 --statements 74 node dist/tests/runTests.js"
+    "test:coverage": "npm run build && c8 --reporter=text-summary --reporter=lcov --check-coverage --lines 78 --functions 70 --branches 58 --statements 78 node dist/tests/runTests.js"
   },
   "keywords": [
     "finance",

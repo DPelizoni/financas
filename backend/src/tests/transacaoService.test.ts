@@ -11,6 +11,11 @@ interface TransacaoRepositoryMock {
   findByMes(mes: string): Promise<TransacaoSemAuditoria[]>;
   createMany(records: TransacaoCreateInput[]): Promise<number>;
   update(id: number, data: Partial<TransacaoCreateInput>): Promise<unknown>;
+  findById(id: number): Promise<TransacaoSemAuditoria | null>;
+  exists(id: number): Promise<boolean>;
+  delete(id: number): Promise<boolean>;
+  deleteByMeses(meses: string[]): Promise<number>;
+  deleteByIds(ids: number[]): Promise<number>;
 }
 
 const createTransacaoOrigem = (
@@ -28,12 +33,49 @@ const createTransacaoOrigem = (
   ...overrides,
 });
 
+const setTransacaoRepository = (
+  service: TransacaoService,
+  overrides: Partial<TransacaoRepositoryMock>,
+) => {
+  const repositoryMock: TransacaoRepositoryMock = {
+    async findByMes(): Promise<TransacaoSemAuditoria[]> {
+      return [];
+    },
+    async createMany(records: TransacaoCreateInput[]): Promise<number> {
+      return records.length;
+    },
+    async update(): Promise<unknown> {
+      return null;
+    },
+    async findById(): Promise<TransacaoSemAuditoria | null> {
+      return null;
+    },
+    async exists(): Promise<boolean> {
+      return false;
+    },
+    async delete(): Promise<boolean> {
+      return false;
+    },
+    async deleteByMeses(): Promise<number> {
+      return 0;
+    },
+    async deleteByIds(): Promise<number> {
+      return 0;
+    },
+    ...overrides,
+  };
+
+  (
+    service as unknown as { transacaoRepository: TransacaoRepositoryMock }
+  ).transacaoRepository = repositoryMock;
+};
+
 const copiaAjustaVencimentoFimMes = async () => {
   const service = new TransacaoService();
   const createdRecords: TransacaoCreateInput[] = [];
   const findByMesCalls: string[] = [];
 
-  const repositoryMock: TransacaoRepositoryMock = {
+  setTransacaoRepository(service, {
     async findByMes(mes: string): Promise<TransacaoSemAuditoria[]> {
       findByMesCalls.push(mes);
       if (mes === "01/2024") {
@@ -48,11 +90,7 @@ const copiaAjustaVencimentoFimMes = async () => {
     async update(): Promise<unknown> {
       throw new Error("update nao deveria ser chamado neste teste");
     },
-  };
-
-  (
-    service as unknown as { transacaoRepository: TransacaoRepositoryMock }
-  ).transacaoRepository = repositoryMock;
+  });
 
   const result = await service.copyTransacoesByMes("2024-01", ["2024-02"]);
 
@@ -90,7 +128,7 @@ const atualizaVencimentoExistenteSemDuplicar = async () => {
     valor: 300,
   });
 
-  const repositoryMock: TransacaoRepositoryMock = {
+  setTransacaoRepository(service, {
     async findByMes(mes: string): Promise<TransacaoSemAuditoria[]> {
       if (mes === "01/2025") return [origem];
       if (mes === "03/2025") return [existenteDestino];
@@ -107,11 +145,7 @@ const atualizaVencimentoExistenteSemDuplicar = async () => {
       updateCalls.push({ id, data });
       return null;
     },
-  };
-
-  (
-    service as unknown as { transacaoRepository: TransacaoRepositoryMock }
-  ).transacaoRepository = repositoryMock;
+  });
 
   const result = await service.copyTransacoesByMes("01/2025", ["03/2025"]);
 
@@ -147,6 +181,141 @@ const bloqueiaLoteMaiorQueDoze = async () => {
   );
 };
 
+const bloqueiaLoteVazio = async () => {
+  const service = new TransacaoService();
+
+  await assert.rejects(
+    async () => service.createTransacoesBatch([]),
+    (error: unknown) => {
+      assert.ok(error instanceof AppError);
+      assert.equal(error.statusCode, 400);
+      assert.match(error.message, /ao menos uma transa/i);
+      return true;
+    },
+  );
+};
+
+const getByIdRetorna404QuandoNaoEncontrada = async () => {
+  const service = new TransacaoService();
+  setTransacaoRepository(service, {
+    async findById(): Promise<TransacaoSemAuditoria | null> {
+      return null;
+    },
+  });
+
+  await assert.rejects(
+    async () => service.getById(999),
+    (error: unknown) => {
+      assert.ok(error instanceof AppError);
+      assert.equal(error.statusCode, 404);
+      assert.match(error.message, /transa/i);
+      return true;
+    },
+  );
+};
+
+const deleteTransacaoMapeiaErroDeChaveEstrangeira = async () => {
+  const service = new TransacaoService();
+  setTransacaoRepository(service, {
+    async exists(): Promise<boolean> {
+      return true;
+    },
+    async delete(): Promise<boolean> {
+      throw { code: "ER_ROW_IS_REFERENCED_2" };
+    },
+  });
+
+  await assert.rejects(
+    async () => service.deleteTransacao(10),
+    (error: unknown) => {
+      assert.ok(error instanceof AppError);
+      assert.equal(error.statusCode, 409);
+      assert.match(error.message, /n[aã]o [eé] poss[íi]vel excluir/i);
+      return true;
+    },
+  );
+};
+
+const deleteTransacoesByMesesExigeAoMenosUmMes = async () => {
+  const service = new TransacaoService();
+
+  await assert.rejects(
+    async () => service.deleteTransacoesByMeses([]),
+    (error: unknown) => {
+      assert.ok(error instanceof AppError);
+      assert.equal(error.statusCode, 400);
+      assert.match(error.message, /ao menos um m[eê]s/i);
+      return true;
+    },
+  );
+};
+
+const deleteTransacaoByMesesValidaId = async () => {
+  const service = new TransacaoService();
+
+  await assert.rejects(
+    async () => service.deleteTransacaoByMeses(0, ["01/2026"]),
+    (error: unknown) => {
+      assert.ok(error instanceof AppError);
+      assert.equal(error.statusCode, 400);
+      assert.match(error.message, /transa/i);
+      return true;
+    },
+  );
+};
+
+const deleteTransacaoByMesesRetorna404QuandoNaoEncontraOrigem = async () => {
+  const service = new TransacaoService();
+  setTransacaoRepository(service, {
+    async findById(): Promise<TransacaoSemAuditoria | null> {
+      return null;
+    },
+  });
+
+  await assert.rejects(
+    async () => service.deleteTransacaoByMeses(15, ["01/2026"]),
+    (error: unknown) => {
+      assert.ok(error instanceof AppError);
+      assert.equal(error.statusCode, 404);
+      assert.match(error.message, /transa/i);
+      return true;
+    },
+  );
+};
+
+const copyTransacoesByMesExigeDestinoDiferenteDaOrigem = async () => {
+  const service = new TransacaoService();
+
+  await assert.rejects(
+    async () => service.copyTransacoesByMes("01/2026", ["01/2026"]),
+    (error: unknown) => {
+      assert.ok(error instanceof AppError);
+      assert.equal(error.statusCode, 400);
+      assert.match(error.message, /m[eê]s de destino/i);
+      return true;
+    },
+  );
+};
+
+const copyTransacoesByMesRetorna404SemDadosNaOrigem = async () => {
+  const service = new TransacaoService();
+  setTransacaoRepository(service, {
+    async findByMes(): Promise<TransacaoSemAuditoria[]> {
+      return [];
+    },
+  });
+
+  await assert.rejects(
+    async () => service.copyTransacoesByMes("01/2026", ["02/2026"]),
+    (error: unknown) => {
+      assert.ok(error instanceof AppError);
+      assert.equal(error.statusCode, 404);
+      assert.match(error.message, /m[eê]s de origem/i);
+      return true;
+    },
+  );
+};
+
 export const transacaoServiceTests: TestCase[] = [
   {
     name: "TransacaoService: copia transacoes com ajuste de fim de mes",
@@ -159,5 +328,37 @@ export const transacaoServiceTests: TestCase[] = [
   {
     name: "TransacaoService: bloqueia criacao em lote maior que 12",
     run: bloqueiaLoteMaiorQueDoze,
+  },
+  {
+    name: "TransacaoService: bloqueia criacao em lote vazio",
+    run: bloqueiaLoteVazio,
+  },
+  {
+    name: "TransacaoService: getById retorna 404 quando nao encontrada",
+    run: getByIdRetorna404QuandoNaoEncontrada,
+  },
+  {
+    name: "TransacaoService: delete mapeia erro de chave estrangeira",
+    run: deleteTransacaoMapeiaErroDeChaveEstrangeira,
+  },
+  {
+    name: "TransacaoService: deleteTransacoesByMeses exige lista",
+    run: deleteTransacoesByMesesExigeAoMenosUmMes,
+  },
+  {
+    name: "TransacaoService: deleteTransacaoByMeses valida id",
+    run: deleteTransacaoByMesesValidaId,
+  },
+  {
+    name: "TransacaoService: deleteTransacaoByMeses retorna 404 sem origem",
+    run: deleteTransacaoByMesesRetorna404QuandoNaoEncontraOrigem,
+  },
+  {
+    name: "TransacaoService: copyByMonth exige destino diferente",
+    run: copyTransacoesByMesExigeDestinoDiferenteDaOrigem,
+  },
+  {
+    name: "TransacaoService: copyByMonth retorna 404 sem transacoes na origem",
+    run: copyTransacoesByMesRetorna404SemDadosNaOrigem,
   },
 ];

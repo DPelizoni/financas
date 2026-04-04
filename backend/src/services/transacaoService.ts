@@ -155,7 +155,7 @@ export class TransacaoService {
       if (!exists) {
         throw new AppError(404, "Transação não encontrada");
       }
-      return this.transacaoRepository.delete(id);
+      return await this.transacaoRepository.delete(id);
     } catch (error) {
       if (error instanceof AppError) throw error;
 

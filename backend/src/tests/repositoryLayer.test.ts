@@ -4,6 +4,7 @@ import { BankRepository } from "../repositories/bankRepository";
 import { CategoryRepository } from "../repositories/categoryRepository";
 import { DescricaoRepository } from "../repositories/descricaoRepository";
 import { TransacaoRepository } from "../repositories/transacaoRepository";
+import { UserRepository } from "../repositories/userRepository";
 import { TestCase } from "./types";
 
 interface QueryCapture {
@@ -355,6 +356,343 @@ const transacaoRepositoryDeleteByMesesVazioNaoConsultaBanco = async () => {
   }
 };
 
+const userRepositoryFindAllComFiltros = async () => {
+  const captures: QueryCapture[] = [];
+
+  try {
+    stubPoolQuery(
+      [
+        [[{ total: 5 }]],
+        [[{ id: 1, nome: "Ana", email: "ana@email.com", role: "ADMIN" }]],
+      ],
+      captures,
+    );
+
+    const repository = new UserRepository();
+    const result = await repository.findAll({
+      search: "ana",
+      status: "ATIVO",
+      role: "ADMIN",
+      page: 2,
+      limit: 3,
+    });
+
+    assert.equal(result.total, 5);
+    assert.equal(result.users.length, 1);
+    assert.equal(captures.length, 2);
+
+    assert.match(captures[0].sql, /SELECT COUNT\(\*\) as total/i);
+    assert.match(captures[0].sql, /nome LIKE \? OR email LIKE \?/i);
+    assert.match(captures[0].sql, /status = \?/i);
+    assert.match(captures[0].sql, /role = \?/i);
+    assert.deepEqual(
+      captures[0].params,
+      ["%ana%", "%ana%", "ATIVO", "ADMIN"],
+    );
+
+    assert.match(
+      captures[1].sql,
+      /ORDER BY created_at DESC, id DESC LIMIT \? OFFSET \?/i,
+    );
+    assert.deepEqual(
+      captures[1].params,
+      ["%ana%", "%ana%", "ATIVO", "ADMIN", 3, 3],
+    );
+  } finally {
+    restorePoolQuery();
+  }
+};
+
+const userRepositoryCreateAplicaDefaultsERetornaUsuario = async () => {
+  const captures: QueryCapture[] = [];
+
+  try {
+    stubPoolQuery(
+      [
+        [{ insertId: 8 }],
+        [[{ id: 8, nome: "Novo", email: "novo@email.com", role: "USUARIO" }]],
+      ],
+      captures,
+    );
+
+    const repository = new UserRepository();
+    const result = await repository.create({
+      nome: "Novo",
+      email: "novo@email.com",
+      senha: "senha-123",
+    });
+
+    assert.equal(result.id, 8);
+    assert.equal(captures.length, 2);
+
+    assert.match(captures[0].sql, /INSERT INTO users/i);
+    assert.deepEqual(captures[0].params, [
+      "Novo",
+      "novo@email.com",
+      "senha-123",
+      "ATIVO",
+      "USUARIO",
+    ]);
+
+    assert.match(captures[1].sql, /SELECT \* FROM users WHERE id = \? LIMIT 1/i);
+    assert.deepEqual(captures[1].params, [8]);
+  } finally {
+    restorePoolQuery();
+  }
+};
+
+const userRepositoryCreateLancaErroQuandoNaoEncontraUsuarioCriado = async () => {
+  const captures: QueryCapture[] = [];
+
+  try {
+    stubPoolQuery([[{ insertId: 11 }], [[]]], captures);
+
+    const repository = new UserRepository();
+
+    await assert.rejects(
+      repository.create({
+        nome: "Sem Retorno",
+        email: "sem-retorno@email.com",
+        senha: "segredo",
+      }),
+      (error: unknown) =>
+        error instanceof Error && /Erro ao criar usu/i.test(error.message),
+    );
+
+    assert.equal(captures.length, 2);
+  } finally {
+    restorePoolQuery();
+  }
+};
+
+const userRepositoryUpdateStatusAtualizaERetornaUsuario = async () => {
+  const captures: QueryCapture[] = [];
+
+  try {
+    stubPoolQuery(
+      [
+        [{ affectedRows: 1 }],
+        [[{ id: 4, status: "INATIVO" }]],
+      ],
+      captures,
+    );
+
+    const repository = new UserRepository();
+    const result = await repository.updateStatus(4, { status: "INATIVO" });
+
+    assert.equal((result as { id?: number })?.id, 4);
+    assert.equal(captures.length, 2);
+    assert.match(captures[0].sql, /UPDATE users SET status = \? WHERE id = \?/i);
+    assert.deepEqual(captures[0].params, ["INATIVO", 4]);
+  } finally {
+    restorePoolQuery();
+  }
+};
+
+const userRepositoryUpdateRoleAtualizaERetornaUsuario = async () => {
+  const captures: QueryCapture[] = [];
+
+  try {
+    stubPoolQuery(
+      [
+        [{ affectedRows: 1 }],
+        [[{ id: 4, role: "GESTOR" }]],
+      ],
+      captures,
+    );
+
+    const repository = new UserRepository();
+    const result = await repository.updateRole(4, { role: "GESTOR" });
+
+    assert.equal((result as { id?: number })?.id, 4);
+    assert.equal(captures.length, 2);
+    assert.match(captures[0].sql, /UPDATE users SET role = \? WHERE id = \?/i);
+    assert.deepEqual(captures[0].params, ["GESTOR", 4]);
+  } finally {
+    restorePoolQuery();
+  }
+};
+
+const userRepositoryUpdateUserComSenhaUsaQueryComSenha = async () => {
+  const captures: QueryCapture[] = [];
+
+  try {
+    stubPoolQuery(
+      [
+        [{ affectedRows: 1 }],
+        [[{ id: 5, nome: "Ana Atualizada", role: "ADMIN" }]],
+      ],
+      captures,
+    );
+
+    const repository = new UserRepository();
+    const result = await repository.updateUser(5, {
+      nome: "Ana Atualizada",
+      email: "ana@novo.com",
+      senha: "nova-senha",
+      status: "ATIVO",
+      role: "ADMIN",
+    });
+
+    assert.equal((result as { id?: number })?.id, 5);
+    assert.equal(captures.length, 2);
+    assert.match(captures[0].sql, /SET nome = \?, email = \?, senha = \?, status = \?, role = \?/i);
+    assert.deepEqual(captures[0].params, [
+      "Ana Atualizada",
+      "ana@novo.com",
+      "nova-senha",
+      "ATIVO",
+      "ADMIN",
+      5,
+    ]);
+  } finally {
+    restorePoolQuery();
+  }
+};
+
+const userRepositoryUpdateUserSemSenhaUsaQuerySemSenha = async () => {
+  const captures: QueryCapture[] = [];
+
+  try {
+    stubPoolQuery(
+      [
+        [{ affectedRows: 1 }],
+        [[{ id: 6, nome: "Bruno", role: "USUARIO" }]],
+      ],
+      captures,
+    );
+
+    const repository = new UserRepository();
+    const result = await repository.updateUser(6, {
+      nome: "Bruno",
+      email: "bruno@email.com",
+      status: "ATIVO",
+      role: "USUARIO",
+    });
+
+    assert.equal((result as { id?: number })?.id, 6);
+    assert.equal(captures.length, 2);
+    assert.match(captures[0].sql, /SET nome = \?, email = \?, status = \?, role = \?/i);
+    assert.doesNotMatch(captures[0].sql, /senha = \?/i);
+    assert.deepEqual(captures[0].params, [
+      "Bruno",
+      "bruno@email.com",
+      "ATIVO",
+      "USUARIO",
+      6,
+    ]);
+  } finally {
+    restorePoolQuery();
+  }
+};
+
+const userRepositoryDeleteRetornaTrueQuandoAfetaLinhas = async () => {
+  const captures: QueryCapture[] = [];
+
+  try {
+    stubPoolQuery([[{ affectedRows: 1 }]], captures);
+
+    const repository = new UserRepository();
+    const result = await repository.delete(7);
+
+    assert.equal(result, true);
+    assert.equal(captures.length, 1);
+    assert.match(captures[0].sql, /DELETE FROM users WHERE id = \?/i);
+    assert.deepEqual(captures[0].params, [7]);
+  } finally {
+    restorePoolQuery();
+  }
+};
+
+const userRepositoryDeleteRetornaFalseQuandoNaoAfetaLinhas = async () => {
+  const captures: QueryCapture[] = [];
+
+  try {
+    stubPoolQuery([[{ affectedRows: 0 }]], captures);
+
+    const repository = new UserRepository();
+    const result = await repository.delete(9);
+
+    assert.equal(result, false);
+    assert.equal(captures.length, 1);
+  } finally {
+    restorePoolQuery();
+  }
+};
+
+const userRepositoryCountByRoleConverteParaNumero = async () => {
+  const captures: QueryCapture[] = [];
+
+  try {
+    stubPoolQuery([[[{ total: "3" }]]], captures);
+
+    const repository = new UserRepository();
+    const result = await repository.countByRole("ADMIN");
+
+    assert.equal(result, 3);
+    assert.equal(captures.length, 1);
+    assert.match(captures[0].sql, /COUNT\(\*\) as total FROM users WHERE role = \?/i);
+    assert.deepEqual(captures[0].params, ["ADMIN"]);
+  } finally {
+    restorePoolQuery();
+  }
+};
+
+const userRepositoryCountActiveByRoleConverteParaNumero = async () => {
+  const captures: QueryCapture[] = [];
+
+  try {
+    stubPoolQuery([[[{ total: "2" }]]], captures);
+
+    const repository = new UserRepository();
+    const result = await repository.countActiveByRole("GESTOR");
+
+    assert.equal(result, 2);
+    assert.equal(captures.length, 1);
+    assert.match(
+      captures[0].sql,
+      /COUNT\(\*\) as total FROM users WHERE role = \? AND status = 'ATIVO'/i,
+    );
+    assert.deepEqual(captures[0].params, ["GESTOR"]);
+  } finally {
+    restorePoolQuery();
+  }
+};
+
+const userRepositoryExistsRetornaFalseQuandoUsuarioNaoExiste = async () => {
+  const captures: QueryCapture[] = [];
+
+  try {
+    stubPoolQuery([[[]]], captures);
+
+    const repository = new UserRepository();
+    const result = await repository.exists(99);
+
+    assert.equal(result, false);
+    assert.equal(captures.length, 1);
+    assert.match(captures[0].sql, /SELECT \* FROM users WHERE id = \? LIMIT 1/i);
+    assert.deepEqual(captures[0].params, [99]);
+  } finally {
+    restorePoolQuery();
+  }
+};
+
+const userRepositoryExistsRetornaTrueQuandoUsuarioExiste = async () => {
+  const captures: QueryCapture[] = [];
+
+  try {
+    stubPoolQuery([[[{ id: 10, nome: "Existe" }]]], captures);
+
+    const repository = new UserRepository();
+    const result = await repository.exists(10);
+
+    assert.equal(result, true);
+    assert.equal(captures.length, 1);
+  } finally {
+    restorePoolQuery();
+  }
+};
+
 export const repositoryLayerTests: TestCase[] = [
   {
     name: "Repository: Bank findAll monta query com filtros",
@@ -403,5 +741,57 @@ export const repositoryLayerTests: TestCase[] = [
   {
     name: "Repository: Transacao deleteByMeses vazio nao consulta banco",
     run: transacaoRepositoryDeleteByMesesVazioNaoConsultaBanco,
+  },
+  {
+    name: "Repository: User findAll monta query com filtros",
+    run: userRepositoryFindAllComFiltros,
+  },
+  {
+    name: "Repository: User create aplica defaults e retorna usuario",
+    run: userRepositoryCreateAplicaDefaultsERetornaUsuario,
+  },
+  {
+    name: "Repository: User create lanca erro quando findById retorna vazio",
+    run: userRepositoryCreateLancaErroQuandoNaoEncontraUsuarioCriado,
+  },
+  {
+    name: "Repository: User updateStatus atualiza e retorna usuario",
+    run: userRepositoryUpdateStatusAtualizaERetornaUsuario,
+  },
+  {
+    name: "Repository: User updateRole atualiza e retorna usuario",
+    run: userRepositoryUpdateRoleAtualizaERetornaUsuario,
+  },
+  {
+    name: "Repository: User updateUser com senha usa query completa",
+    run: userRepositoryUpdateUserComSenhaUsaQueryComSenha,
+  },
+  {
+    name: "Repository: User updateUser sem senha usa query reduzida",
+    run: userRepositoryUpdateUserSemSenhaUsaQuerySemSenha,
+  },
+  {
+    name: "Repository: User delete retorna true quando remove",
+    run: userRepositoryDeleteRetornaTrueQuandoAfetaLinhas,
+  },
+  {
+    name: "Repository: User delete retorna false quando nao remove",
+    run: userRepositoryDeleteRetornaFalseQuandoNaoAfetaLinhas,
+  },
+  {
+    name: "Repository: User countByRole converte total para numero",
+    run: userRepositoryCountByRoleConverteParaNumero,
+  },
+  {
+    name: "Repository: User countActiveByRole converte total para numero",
+    run: userRepositoryCountActiveByRoleConverteParaNumero,
+  },
+  {
+    name: "Repository: User exists retorna false quando nao encontra",
+    run: userRepositoryExistsRetornaFalseQuandoUsuarioNaoExiste,
+  },
+  {
+    name: "Repository: User exists retorna true quando encontra",
+    run: userRepositoryExistsRetornaTrueQuandoUsuarioExiste,
   },
 ];
