@@ -8,6 +8,7 @@ import { categoryServiceTests } from "./categoryService.test";
 import { descricaoControllerTests } from "./descricaoController.test";
 import { descricaoServiceTests } from "./descricaoService.test";
 import { httpIntegrationTests } from "./httpIntegration.test";
+import { repositoryLayerTests } from "./repositoryLayer.test";
 import { transacaoControllerTests } from "./transacaoController.test";
 import { transacaoServiceTests } from "./transacaoService.test";
 import { TestCase } from "./types";
@@ -26,6 +27,7 @@ const tests: TestCase[] = [
   ...categoryServiceTests,
   ...descricaoControllerTests,
   ...descricaoServiceTests,
+  ...repositoryLayerTests,
   ...transacaoControllerTests,
   ...userServiceTests,
   ...userControllerTests,
