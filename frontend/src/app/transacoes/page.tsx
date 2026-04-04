@@ -365,7 +365,7 @@ export default function TransacoesPage() {
 
   const handleOpenDeleteTransactionMonths = () => {
     if (!deleteConfirm.transacaoId || !deleteConfirm.transacaoMes) {
-      showFeedback("error", "Nao foi possivel identificar a transacao base.");
+      showFeedback("error", "Não foi possível identificar a transação base.");
       return;
     }
 

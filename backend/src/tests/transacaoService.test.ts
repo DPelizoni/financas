@@ -141,7 +141,7 @@ const bloqueiaLoteMaiorQueDoze = async () => {
     (error: unknown) => {
       assert.ok(error instanceof AppError);
       assert.equal(error.statusCode, 400);
-      assert.match(error.message, /12 transacoes/i);
+      assert.match(error.message, /12 transa(?:coes|ções)/i);
       return true;
     },
   );

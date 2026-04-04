@@ -251,8 +251,8 @@ router.delete(
  * @swagger
  * /api/transacoes/delete-transaction-months:
  *   delete:
- *     summary: Excluir uma transacao especifica em um ou mais meses
- *     tags: [Transacoes]
+ *     summary: Excluir uma transação específica em um ou mais meses
+ *     tags: [Transações]
  *     requestBody:
  *       required: true
  *       content:
@@ -273,7 +273,7 @@ router.delete(
  *                 example: ["03/2026", "04/2026", "05/2026"]
  *     responses:
  *       200:
- *         description: Transacao excluida nos meses selecionados
+ *         description: Transação excluída nos meses selecionados
  */
 router.delete(
   "/delete-transaction-months",
@@ -287,7 +287,7 @@ router.delete(
       );
 
       res.json(
-        successResponse("Transacao excluida nos meses selecionados", result),
+        successResponse("Transação excluída nos meses selecionados", result),
       );
     } catch (error) {
       next(error);

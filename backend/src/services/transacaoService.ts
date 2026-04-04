@@ -70,11 +70,11 @@ export class TransacaoService {
     data: Omit<Transacao, "id" | "created_at" | "updated_at">[],
   ): Promise<CreateBatchResult> {
     if (data.length === 0) {
-      throw new AppError(400, "Informe ao menos uma transacao para criacao");
+      throw new AppError(400, "Informe ao menos uma transação para criação");
     }
 
     if (data.length > 12) {
-      throw new AppError(400, "O limite de criacao em lote e de 12 transacoes");
+      throw new AppError(400, "O limite de criação em lote é de 12 transações");
     }
 
     const caches = {
@@ -313,12 +313,12 @@ export class TransacaoService {
   ): Promise<DeleteTransactionMonthsResult> {
     const transacaoId = Number(transacaoIdInput);
     if (!Number.isInteger(transacaoId) || transacaoId <= 0) {
-      throw new AppError(400, "Transacao invalida para exclusao");
+      throw new AppError(400, "Transação inválida para exclusão");
     }
 
     const transacaoOrigem = await this.transacaoRepository.findById(transacaoId);
     if (!transacaoOrigem) {
-      throw new AppError(404, "Transacao nao encontrada");
+      throw new AppError(404, "Transação não encontrada");
     }
 
     const meses = Array.from(
@@ -326,7 +326,7 @@ export class TransacaoService {
     );
 
     if (meses.length === 0) {
-      throw new AppError(400, "Informe ao menos um mes para exclusao");
+      throw new AppError(400, "Informe ao menos um mês para exclusão");
     }
 
     const registrosMesOrigem = await this.transacaoRepository.findByMes(
@@ -343,7 +343,7 @@ export class TransacaoService {
     if (indiceOrigem < 0) {
       throw new AppError(
         500,
-        "Nao foi possivel localizar a transacao base para exclusao em lote",
+        "Não foi possível localizar a transação base para exclusão em lote",
       );
     }
 
@@ -414,7 +414,7 @@ export class TransacaoService {
     const bancoExists =
       bancoFromCache ?? (await this.bankRepository.findById(banco_id));
     if (!bancoExists) {
-      throw new AppError(404, "Banco nao encontrado");
+      throw new AppError(404, "Banco não encontrado");
     }
     caches?.bancos.set(banco_id, bancoExists);
 
@@ -423,7 +423,7 @@ export class TransacaoService {
       categoriaFromCache ??
       (await this.categoryRepository.findById(categoria_id));
     if (!categoriaExists) {
-      throw new AppError(404, "Categoria nao encontrada");
+      throw new AppError(404, "Categoria não encontrada");
     }
     caches?.categorias.set(categoria_id, categoriaExists);
 
@@ -432,7 +432,7 @@ export class TransacaoService {
     if (categoriaTipo !== data.tipo) {
       throw new AppError(
         400,
-        `Categoria do tipo ${categoriaTipo} nao pode ser usada com o tipo ${data.tipo}`,
+        `Categoria do tipo ${categoriaTipo} não pode ser usada com o tipo ${data.tipo}`,
       );
     }
 
@@ -441,14 +441,14 @@ export class TransacaoService {
       descricaoFromCache ??
       (await this.descricaoRepository.findById(descricao_id));
     if (!descricaoExists) {
-      throw new AppError(404, "Descricao nao encontrada");
+      throw new AppError(404, "Descrição não encontrada");
     }
     caches?.descricoes.set(descricao_id, descricaoExists);
 
     const descricaoCategoriaId = (descricaoExists as { categoria_id: number })
       .categoria_id;
     if (descricaoCategoriaId !== categoria_id) {
-      throw new AppError(400, "Descricao nao pertence a categoria selecionada");
+      throw new AppError(400, "Descrição não pertence à categoria selecionada");
     }
   }
 

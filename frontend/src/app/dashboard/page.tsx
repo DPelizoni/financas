@@ -378,7 +378,7 @@ export default function DashboardPage() {
         Provisao: summaryCards.provisao_despesa,
       },
       {
-        name: "Liquido",
+        name: "Líquido",
         Pago: summaryCards.pago_liquido,
         Provisao: summaryCards.provisao_liquido,
       },
@@ -818,6 +818,7 @@ export default function DashboardPage() {
                 </Bar>
                 <Bar
                   dataKey="Provisao"
+                  name="Provisão"
                   fill={chartColors.pendente}
                   radius={[6, 6, 0, 0]}
                 >

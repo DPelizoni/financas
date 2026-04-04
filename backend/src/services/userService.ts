@@ -121,7 +121,7 @@ class UserService {
         currentUserRole === "ADMIN" ? input.role : "USUARIO";
 
       if (!input.senha) {
-        throw new AppError(400, "Senha e obrigatoria para cadastro");
+        throw new AppError(400, "Senha é obrigatória para cadastro");
       }
 
       const senhaHash = await bcrypt.hash(input.senha, 10);
