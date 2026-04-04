@@ -7,7 +7,8 @@
     "dev": "ts-node-dev --respawn --transpile-only src/server.ts",
     "build": "tsc",
     "start": "node dist/server.js",
-    "test": "npm run build && node dist/tests/runTests.js"
+    "test": "npm run build && node dist/tests/runTests.js",
+    "test:coverage": "npm run build && c8 --reporter=text-summary --reporter=lcov --check-coverage --lines 70 --functions 55 --branches 55 --statements 70 node dist/tests/runTests.js"
   },
   "keywords": [
     "finance",
@@ -35,6 +36,7 @@
     "@types/node": "^20.10.5",
     "@types/swagger-jsdoc": "^6.0.4",
     "@types/swagger-ui-express": "^4.1.6",
+    "c8": "^11.0.0",
     "ts-node-dev": "^2.0.0",
     "typescript": "^5.3.3"
   }

@@ -6,6 +6,9 @@ import { User } from "../models/User";
 import userRepository from "../repositories/userRepository";
 import { authService } from "../services";
 import authServiceDefault from "../services/authService";
+import bankService from "../services/bankService";
+import categoryService from "../services/categoryService";
+import descricaoService from "../services/descricaoService";
 import { TransacaoService } from "../services/transacaoService";
 import userService from "../services/userService";
 import { startTestHttpServer } from "./helpers/httpServer";
@@ -42,6 +45,11 @@ const originalMethods = {
   authVerifyToken: authService.verifyToken,
   userRepoFindById: userRepository.findById,
   userServiceListUsers: userService.listUsers,
+  bankServiceGetAllBanks: bankService.getAllBanks,
+  bankServiceDeleteBank: bankService.deleteBank,
+  categoryServiceGetAllCategories: categoryService.getAllCategories,
+  descricaoServiceGetAllDescricoes: descricaoService.getAllDescricoes,
+  descricaoServiceGetById: descricaoService.getDescricaoById,
   transacaoDeleteByMeses: TransacaoService.prototype.deleteTransacaoByMeses,
 };
 
@@ -50,6 +58,11 @@ const restoreMethods = () => {
   authService.verifyToken = originalMethods.authVerifyToken;
   userRepository.findById = originalMethods.userRepoFindById;
   userService.listUsers = originalMethods.userServiceListUsers;
+  bankService.getAllBanks = originalMethods.bankServiceGetAllBanks;
+  bankService.deleteBank = originalMethods.bankServiceDeleteBank;
+  categoryService.getAllCategories = originalMethods.categoryServiceGetAllCategories;
+  descricaoService.getAllDescricoes = originalMethods.descricaoServiceGetAllDescricoes;
+  descricaoService.getDescricaoById = originalMethods.descricaoServiceGetById;
   TransacaoService.prototype.deleteTransacaoByMeses =
     originalMethods.transacaoDeleteByMeses;
 };
@@ -274,6 +287,203 @@ const usersComTokenRetornaPaginado = async () => {
   }
 };
 
+const banksComTokenRetornaPaginado = async () => {
+  try {
+    mockAuthenticatedContext();
+    bankService.getAllBanks = async (filters) => {
+      assert.deepEqual(filters, {
+        search: "nu",
+        ativo: false,
+        page: 2,
+        limit: 3,
+      });
+
+      return {
+        banks: [{ id: 2, nome: "Nubank" }] as Awaited<
+          ReturnType<typeof bankService.getAllBanks>
+        >["banks"],
+        total: 4,
+      };
+    };
+
+    await withAppServer(async (baseUrl) => {
+      const result = await callHttpJson(baseUrl, {
+        method: "GET",
+        path: "/api/banks?search=nu&ativo=false&page=2&limit=3",
+        headers: {
+          Authorization: "Bearer token-valido",
+        },
+      });
+
+      assert.equal(result.status, 200);
+      assert.deepEqual(result.body, {
+        success: true,
+        message: "Bancos listados com sucesso",
+        data: [{ id: 2, nome: "Nubank" }],
+        pagination: {
+          page: 2,
+          limit: 3,
+          total: 4,
+          totalPages: 2,
+        },
+      });
+    });
+  } finally {
+    restoreMethods();
+  }
+};
+
+const categoriesComTokenRetornaPaginado = async () => {
+  try {
+    mockAuthenticatedContext();
+    categoryService.getAllCategories = async (filters) => {
+      assert.deepEqual(filters, {
+        search: "ali",
+        ativo: true,
+        tipo: "DESPESA",
+        page: 4,
+        limit: 2,
+      });
+
+      return {
+        categories: [{ id: 3, nome: "Alimentação" }] as Awaited<
+          ReturnType<typeof categoryService.getAllCategories>
+        >["categories"],
+        total: 9,
+      };
+    };
+
+    await withAppServer(async (baseUrl) => {
+      const result = await callHttpJson(baseUrl, {
+        method: "GET",
+        path: "/api/categories?search=ali&ativo=true&tipo=DESPESA&page=4&limit=2",
+        headers: {
+          Authorization: "Bearer token-valido",
+        },
+      });
+
+      assert.equal(result.status, 200);
+      assert.deepEqual(result.body, {
+        success: true,
+        message: "Categorias listadas com sucesso",
+        data: [{ id: 3, nome: "Alimentação" }],
+        pagination: {
+          page: 4,
+          limit: 2,
+          total: 9,
+          totalPages: 5,
+        },
+      });
+    });
+  } finally {
+    restoreMethods();
+  }
+};
+
+const descricoesComTokenRetornaPaginado = async () => {
+  try {
+    mockAuthenticatedContext();
+    descricaoService.getAllDescricoes = async (filters) => {
+      assert.deepEqual(filters, {
+        page: 2,
+        limit: 4,
+        search: "net",
+        ativo: false,
+        categoria_id: 8,
+      });
+
+      return {
+        descricoes: [{ id: 5, nome: "Netflix" }] as Awaited<
+          ReturnType<typeof descricaoService.getAllDescricoes>
+        >["descricoes"],
+        total: 6,
+      };
+    };
+
+    await withAppServer(async (baseUrl) => {
+      const result = await callHttpJson(baseUrl, {
+        method: "GET",
+        path: "/api/descricoes?page=2&limit=4&search=net&ativo=false&categoria_id=8",
+        headers: {
+          Authorization: "Bearer token-valido",
+        },
+      });
+
+      assert.equal(result.status, 200);
+      assert.deepEqual(result.body, {
+        success: true,
+        message: "Descrições listadas com sucesso",
+        data: [{ id: 5, nome: "Netflix" }],
+        pagination: {
+          page: 2,
+          limit: 4,
+          total: 6,
+          totalPages: 2,
+        },
+      });
+    });
+  } finally {
+    restoreMethods();
+  }
+};
+
+const categoriesCreateInvalidoRetorna400 = async () => {
+  try {
+    mockAuthenticatedContext();
+
+    await withAppServer(async (baseUrl) => {
+      const result = await callHttpJson(baseUrl, {
+        method: "POST",
+        path: "/api/categories",
+        headers: {
+          Authorization: "Bearer token-valido",
+        },
+        body: {
+          nome: "A",
+          tipo: "INVALIDO",
+        },
+      });
+
+      assert.equal(result.status, 400);
+      assert.equal((result.body as { success: boolean }).success, false);
+      assert.match(
+        String((result.body as { message?: string }).message || ""),
+        /valida/i,
+      );
+    });
+  } finally {
+    restoreMethods();
+  }
+};
+
+const banksDeletePropagaErro = async () => {
+  try {
+    mockAuthenticatedContext();
+    bankService.deleteBank = async () => {
+      throw new AppError(409, "Banco vinculado a transações");
+    };
+
+    await withAppServer(async (baseUrl) => {
+      const result = await callHttpJson(baseUrl, {
+        method: "DELETE",
+        path: "/api/banks/10",
+        headers: {
+          Authorization: "Bearer token-valido",
+        },
+      });
+
+      assert.equal(result.status, 409);
+      assert.equal((result.body as { success: boolean }).success, false);
+      assert.equal(
+        (result.body as { message?: string }).message,
+        "Banco vinculado a transações",
+      );
+    });
+  } finally {
+    restoreMethods();
+  }
+};
+
 const transacaoBatchInvalidoRetorna400 = async () => {
   try {
     mockAuthenticatedContext();
@@ -370,6 +580,26 @@ export const httpIntegrationTests: TestCase[] = [
   {
     name: "HTTP Integration: /api/users com token retorna paginado",
     run: usersComTokenRetornaPaginado,
+  },
+  {
+    name: "HTTP Integration: /api/banks com token retorna paginado",
+    run: banksComTokenRetornaPaginado,
+  },
+  {
+    name: "HTTP Integration: /api/categories com token retorna paginado",
+    run: categoriesComTokenRetornaPaginado,
+  },
+  {
+    name: "HTTP Integration: /api/descricoes com token retorna paginado",
+    run: descricoesComTokenRetornaPaginado,
+  },
+  {
+    name: "HTTP Integration: /api/categories invalido retorna 400",
+    run: categoriesCreateInvalidoRetorna400,
+  },
+  {
+    name: "HTTP Integration: /api/banks/:id delete propaga erro",
+    run: banksDeletePropagaErro,
   },
   {
     name: "HTTP Integration: /api/transacoes/batch invalido retorna 400",
