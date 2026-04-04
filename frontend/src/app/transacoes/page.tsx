@@ -1183,7 +1183,7 @@ export default function TransacoesPage() {
                   <button
                     type="button"
                     onClick={handleClearFilters}
-                    className="app-button-outline-danger inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium whitespace-nowrap transition"
+                    className="app-button-outline-danger inline-flex w-full items-center justify-center gap-2 rounded-lg px-3 py-2 text-sm font-medium whitespace-nowrap transition lg:w-auto lg:justify-start"
                   >
                     <Icon path={mdiBroom} size={0.75} />
                     Limpar Filtros
