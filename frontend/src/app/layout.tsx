@@ -8,8 +8,8 @@ import { themeInitScript } from "@/theme/theme-script";
 const inter = Inter({ subsets: ["latin"], variable: "--font-app" });
 
 export const metadata: Metadata = {
-  title: "Financas Pessoais",
-  description: "Sistema de gerenciamento de financas pessoais",
+  title: "Finanças Pessoais",
+  description: "Sistema de gerenciamento de finanças pessoais",
   icons: {
     icon: "/icon.svg",
     shortcut: "/icon.svg",
