@@ -11,11 +11,13 @@ import {
   ArrowLeftRight,
   Users,
   Wallet,
+  TrendingUp,
   Menu,
   X,
   LogOut,
   ChevronLeft,
   ChevronRight,
+  ChevronDown,
   LucideIcon,
 } from "lucide-react";
 import { authService } from "@/services/authService";
@@ -25,19 +27,46 @@ interface AppShellProps {
   children: React.ReactNode;
 }
 
-interface NavItem {
+interface NavLinkItem {
+  type: "link";
   label: string;
   href: string;
   icon: LucideIcon;
 }
 
+interface NavGroupItem {
+  type: "group";
+  id: string;
+  label: string;
+  icon: LucideIcon;
+  baseHref: string;
+  children: Array<{
+    label: string;
+    href: string;
+  }>;
+}
+
+type NavItem = NavLinkItem | NavGroupItem;
+
 const navItems: NavItem[] = [
-  { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-  { label: "Bancos", href: "/banks", icon: Landmark },
-  { label: "Categorias", href: "/categories", icon: Tags },
-  { label: "Descrições", href: "/descricoes", icon: FileText },
-  { label: "Transações", href: "/transacoes", icon: ArrowLeftRight },
-  { label: "Usuários", href: "/usuarios", icon: Users },
+  { type: "link", label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
+  { type: "link", label: "Bancos", href: "/banks", icon: Landmark },
+  { type: "link", label: "Categorias", href: "/categories", icon: Tags },
+  { type: "link", label: "Descrições", href: "/descricoes", icon: FileText },
+  { type: "link", label: "Transações", href: "/transacoes", icon: ArrowLeftRight },
+  {
+    type: "group",
+    id: "investimentos",
+    label: "Investimentos",
+    icon: TrendingUp,
+    baseHref: "/investimentos",
+    children: [
+      { label: "Dashboard", href: "/investimentos/dashboard" },
+      { label: "Ativos", href: "/investimentos/ativos" },
+      { label: "Movimentações", href: "/investimentos/movimentacoes" },
+    ],
+  },
+  { type: "link", label: "Usuários", href: "/usuarios", icon: Users },
 ];
 
 const DESKTOP_SIDEBAR_STORAGE_KEY = "financas.desktop-sidebar-collapsed";
@@ -48,6 +77,16 @@ const getPageTitle = (pathname: string): string => {
   if (pathname.startsWith("/categories")) return "Categorias";
   if (pathname.startsWith("/descricoes")) return "Descrições";
   if (pathname.startsWith("/transacoes")) return "Transações";
+  if (pathname.startsWith("/investimentos/dashboard")) {
+    return "Dashboard de Investimentos";
+  }
+  if (pathname.startsWith("/investimentos/movimentacoes")) {
+    return "Movimentações de Investimento";
+  }
+  if (pathname.startsWith("/investimentos/ativos")) {
+    return "Ativos de Investimento";
+  }
+  if (pathname.startsWith("/investimentos")) return "Investimentos";
   if (pathname.startsWith("/usuarios")) return "Usuários";
   return "Finanças";
 };
@@ -62,6 +101,9 @@ export default function AppShell({ children }: AppShellProps) {
     useState(false);
   const [userName, setUserName] = useState("Usuário");
   const [isManager, setIsManager] = useState(false);
+  const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({
+    investimentos: true,
+  });
 
   const pageTitle = useMemo(() => getPageTitle(pathname), [pathname]);
 
@@ -92,8 +134,22 @@ export default function AppShell({ children }: AppShellProps) {
     setIsManager(user.role === "GESTOR" || user.role === "ADMIN");
   }, []);
 
+  useEffect(() => {
+    if (pathname.startsWith("/investimentos")) {
+      setOpenGroups((prev) => ({
+        ...prev,
+        investimentos: true,
+      }));
+    }
+  }, [pathname]);
+
   const visibleNavItems = useMemo(() => {
-    return navItems.filter((item) => item.href !== "/usuarios" || isManager);
+    return navItems.filter((item) => {
+      if (item.type === "link" && item.href === "/usuarios") {
+        return isManager;
+      }
+      return true;
+    });
   }, [isManager]);
 
   const handleLogout = async () => {
@@ -145,28 +201,103 @@ export default function AppShell({ children }: AppShellProps) {
 
           <nav className="space-y-1 px-3 py-5">
             {visibleNavItems.map((item) => {
-              const isActive = pathname.startsWith(item.href);
-              const Icon = item.icon;
+              if (item.type === "link") {
+                const isActive = pathname.startsWith(item.href);
+                const Icon = item.icon;
+
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    onClick={() => setSidebarOpen(false)}
+                    title={isDesktopSidebarCollapsed ? item.label : undefined}
+                    className={`flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium transition-colors ${
+                      isActive
+                        ? "bg-[rgb(var(--app-brand-primary))] text-[rgb(var(--app-text-inverse))] shadow-sm"
+                        : "text-[rgb(var(--app-text-secondary))] hover:bg-[rgb(var(--app-bg-muted))] hover:text-[rgb(var(--app-text-primary))]"
+                    } ${
+                      isDesktopSidebarCollapsed ? "lg:justify-center lg:px-2" : ""
+                    } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400`}
+                  >
+                    <Icon size={18} />
+                    <span className={isDesktopSidebarCollapsed ? "lg:hidden" : ""}>
+                      {item.label}
+                    </span>
+                  </Link>
+                );
+              }
+
+              const GroupIcon = item.icon;
+              const groupIsActive = pathname.startsWith(item.baseHref);
+              const isGroupOpen = openGroups[item.id] ?? false;
+
+              if (isDesktopSidebarCollapsed) {
+                const firstChild = item.children[0];
+                return (
+                  <Link
+                    key={item.id}
+                    href={firstChild.href}
+                    onClick={() => setSidebarOpen(false)}
+                    title={item.label}
+                    className={`flex items-center justify-center rounded-md px-2 py-2.5 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400 ${
+                      groupIsActive
+                        ? "bg-[rgb(var(--app-brand-primary))] text-[rgb(var(--app-text-inverse))] shadow-sm"
+                        : "text-[rgb(var(--app-text-secondary))] hover:bg-[rgb(var(--app-bg-muted))] hover:text-[rgb(var(--app-text-primary))]"
+                    }`}
+                  >
+                    <GroupIcon size={18} />
+                  </Link>
+                );
+              }
 
               return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  onClick={() => setSidebarOpen(false)}
-                  title={isDesktopSidebarCollapsed ? item.label : undefined}
-                  className={`flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium transition-colors ${
-                    isActive
-                      ? "bg-[rgb(var(--app-brand-primary))] text-[rgb(var(--app-text-inverse))] shadow-sm"
-                      : "text-[rgb(var(--app-text-secondary))] hover:bg-[rgb(var(--app-bg-muted))] hover:text-[rgb(var(--app-text-primary))]"
-                  } ${
-                    isDesktopSidebarCollapsed ? "lg:justify-center lg:px-2" : ""
-                  } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400`}
-                >
-                  <Icon size={18} />
-                  <span className={isDesktopSidebarCollapsed ? "lg:hidden" : ""}>
-                    {item.label}
-                  </span>
-                </Link>
+                <div key={item.id} className="space-y-1">
+                  <button
+                    type="button"
+                    className={`flex w-full items-center justify-between rounded-md px-3 py-2.5 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400 ${
+                      groupIsActive
+                        ? "bg-[rgb(var(--app-brand-primary))] text-[rgb(var(--app-text-inverse))] shadow-sm"
+                        : "text-[rgb(var(--app-text-secondary))] hover:bg-[rgb(var(--app-bg-muted))] hover:text-[rgb(var(--app-text-primary))]"
+                    }`}
+                    onClick={() =>
+                      setOpenGroups((prev) => ({
+                        ...prev,
+                        [item.id]: !isGroupOpen,
+                      }))
+                    }
+                  >
+                    <span className="flex items-center gap-3">
+                      <GroupIcon size={18} />
+                      {item.label}
+                    </span>
+                    <ChevronDown
+                      size={16}
+                      className={`transition-transform ${isGroupOpen ? "rotate-180" : ""}`}
+                    />
+                  </button>
+
+                  {isGroupOpen && (
+                    <div className="space-y-1 pl-9">
+                      {item.children.map((child) => {
+                        const childIsActive = pathname.startsWith(child.href);
+                        return (
+                          <Link
+                            key={child.href}
+                            href={child.href}
+                            onClick={() => setSidebarOpen(false)}
+                            className={`block rounded-md px-3 py-2 text-sm transition-colors ${
+                              childIsActive
+                                ? "bg-[rgb(var(--app-bg-muted))] font-semibold text-[rgb(var(--app-text-primary))]"
+                                : "text-[rgb(var(--app-text-secondary))] hover:bg-[rgb(var(--app-bg-muted))] hover:text-[rgb(var(--app-text-primary))]"
+                            }`}
+                          >
+                            {child.label}
+                          </Link>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
               );
             })}
           </nav>

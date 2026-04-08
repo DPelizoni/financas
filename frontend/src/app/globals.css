@@ -487,6 +487,18 @@ body {
     @apply rounded;
   }
 
+  .dashboard-summary-card-warning {
+    border: 1px solid rgb(var(--app-status-warning-border) / 0.78);
+    background: linear-gradient(
+      to bottom right,
+      rgb(var(--app-status-warning-bg)),
+      rgb(var(--app-bg-surface)) 58%,
+      rgb(var(--app-bg-elevated))
+    );
+    box-shadow: var(--app-shadow-sm);
+    @apply rounded;
+  }
+
   .dashboard-summary-card-error {
     border: 1px solid rgb(var(--app-status-error-border) / 0.78);
     background: linear-gradient(

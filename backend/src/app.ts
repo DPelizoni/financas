@@ -9,6 +9,7 @@ import authRoutes from "./routes/authRoutes";
 import bankRoutes from "./routes/bankRoutes";
 import categoryRoutes from "./routes/categoryRoutes";
 import descricaoRoutes from "./routes/descricaoRoutes";
+import investimentoRoutes from "./routes/investimentoRoutes";
 import transacaoRoutes from "./routes/transacaoRoutes";
 import userRoutes from "./routes/userRoutes";
 
@@ -52,6 +53,7 @@ export const createApp = (): Application => {
   app.use("/api/banks", bankRoutes);
   app.use("/api/categories", categoryRoutes);
   app.use("/api/descricoes", descricaoRoutes);
+  app.use("/api/investimentos", investimentoRoutes);
   app.use("/api/transacoes", transacaoRoutes);
   app.use("/api/users", userRoutes);
 

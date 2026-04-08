@@ -116,6 +116,74 @@ const formatStatusValue = (value: unknown): string | null => {
   return null;
 };
 
+const isDateField = (key: string): boolean => {
+  const normalizedKey = key.toLowerCase();
+
+  if (normalizedKey === "created_at" || normalizedKey === "updated_at") {
+    return false;
+  }
+
+  return (
+    normalizedKey === "data" ||
+    normalizedKey === "date" ||
+    normalizedKey === "vencimento" ||
+    normalizedKey.startsWith("data_") ||
+    normalizedKey.endsWith("_data") ||
+    normalizedKey.endsWith("_date")
+  );
+};
+
+const formatDateOnlyBR = (value: unknown): string | null => {
+  if (value instanceof Date) {
+    if (Number.isNaN(value.getTime())) {
+      return null;
+    }
+
+    return new Intl.DateTimeFormat("pt-BR", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+    }).format(value);
+  }
+
+  if (typeof value !== "string") {
+    return null;
+  }
+
+  const rawValue = value.trim();
+  if (!rawValue) {
+    return null;
+  }
+
+  const isoDateMatch = rawValue.match(/^(\d{4})-(\d{2})-(\d{2})(?:[T\s].*)?$/);
+  if (isoDateMatch) {
+    const [, year, month, day] = isoDateMatch;
+    return `${day}/${month}/${year}`;
+  }
+
+  const brDateMatch = rawValue.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+  if (brDateMatch) {
+    const [, day, month, year] = brDateMatch;
+    return `${day}/${month}/${year}`;
+  }
+
+  const normalizedValue =
+    rawValue.includes(" ") && !rawValue.includes("T")
+      ? rawValue.replace(" ", "T")
+      : rawValue;
+
+  const parsedDate = new Date(normalizedValue);
+  if (Number.isNaN(parsedDate.getTime())) {
+    return null;
+  }
+
+  return new Intl.DateTimeFormat("pt-BR", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  }).format(parsedDate);
+};
+
 const formatValue = (key: string, value: unknown): string => {
   if (value === null || value === undefined || value === "") {
     return "-";
@@ -125,7 +193,14 @@ const formatValue = (key: string, value: unknown): string => {
     return formatDateTimeBR(value);
   }
 
-  if (key === "ativo" || key === "status") {
+  if (isDateField(key)) {
+    const formattedDate = formatDateOnlyBR(value);
+    if (formattedDate) {
+      return formattedDate;
+    }
+  }
+
+  if (key === "ativo" || key === "status" || key.endsWith("_status")) {
     const formattedStatus = formatStatusValue(value);
     if (formattedStatus) {
       return formattedStatus;

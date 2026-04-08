@@ -199,6 +199,41 @@ export const initDatabase = async (): Promise<void> => {
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
     `);
 
+    // Cria a tabela de ativos de investimento
+    await connection.query(`
+      CREATE TABLE IF NOT EXISTS investimento_ativos (
+        id INT PRIMARY KEY AUTO_INCREMENT,
+        nome VARCHAR(120) NOT NULL,
+        banco_id INT NOT NULL,
+        saldo_inicial DECIMAL(15, 2) NOT NULL DEFAULT 0.00,
+        data_saldo_inicial DATE NOT NULL,
+        ativo BOOLEAN DEFAULT true,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        FOREIGN KEY (banco_id) REFERENCES banks(id) ON DELETE RESTRICT,
+        INDEX idx_investimento_ativo_nome (nome),
+        INDEX idx_investimento_ativo_banco (banco_id),
+        INDEX idx_investimento_ativo_status (ativo)
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+    `);
+
+    // Cria a tabela de movimentacoes de investimento
+    await connection.query(`
+      CREATE TABLE IF NOT EXISTS investimento_movimentacoes (
+        id INT PRIMARY KEY AUTO_INCREMENT,
+        investimento_ativo_id INT NOT NULL,
+        tipo ENUM('APORTE', 'RESGATE', 'RENDIMENTO') NOT NULL,
+        data DATE NOT NULL,
+        valor DECIMAL(15, 2) NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        FOREIGN KEY (investimento_ativo_id) REFERENCES investimento_ativos(id) ON DELETE RESTRICT,
+        INDEX idx_investimento_mov_ativo (investimento_ativo_id),
+        INDEX idx_investimento_mov_tipo (tipo),
+        INDEX idx_investimento_mov_data (data)
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+    `);
+
     console.log("✅ Tabelas criadas/verificadas com sucesso!");
     connection.release();
   } catch (error) {
