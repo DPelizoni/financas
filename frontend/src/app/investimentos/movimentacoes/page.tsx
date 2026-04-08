@@ -427,137 +427,196 @@ export default function InvestimentosMovimentacoesPage() {
               Nenhuma movimentação encontrada com os filtros atuais.
             </div>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="min-w-[760px] w-full divide-y divide-gray-200 text-xs">
-                <thead className="app-table-head">
-                  <tr>
-                    <th className="app-table-head-cell">
-                      <button
-                        type="button"
-                        onClick={() => handleSort("data")}
-                        className="inline-flex items-center gap-1"
+            <>
+              <div className="space-y-2 px-2 sm:px-0 lg:hidden">
+                {sortedMovimentacoes.map((item) => (
+                  <div
+                    key={item.id}
+                    className="rounded-xl border border-gray-200/80 bg-gradient-to-b from-white to-gray-50 p-4 shadow-[0_1px_2px_rgba(0,0,0,0.06)]"
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <p className="text-sm font-semibold text-gray-900">{item.ativo_nome}</p>
+                        <p className="mt-1 text-xs text-gray-600">
+                          Data: {formatDateBR(item.data)}
+                        </p>
+                        <p className="mt-1 text-xs text-gray-600">
+                          Banco: {item.banco_nome || "-"}
+                        </p>
+                      </div>
+
+                      <span
+                        className={`${
+                          item.tipo === "APORTE"
+                            ? "app-badge-info"
+                            : item.tipo === "RESGATE"
+                              ? "app-badge-error"
+                              : "app-badge-success"
+                        }`}
                       >
-                        Data
-                        {sortBy === "data" && sortDirection === "asc" ? (
-                          <ArrowUpNarrowWide size={14} />
-                        ) : sortBy === "data" ? (
-                          <ArrowDownWideNarrow size={14} />
-                        ) : null}
-                      </button>
-                    </th>
-                    <th className="app-table-head-cell">
-                      <button
-                        type="button"
-                        onClick={() => handleSort("ativo")}
-                        className="inline-flex items-center gap-1"
-                      >
-                        Ativo
-                        {sortBy === "ativo" && sortDirection === "asc" ? (
-                          <ArrowUpNarrowWide size={14} />
-                        ) : sortBy === "ativo" ? (
-                          <ArrowDownWideNarrow size={14} />
-                        ) : null}
-                      </button>
-                    </th>
-                    <th className="app-table-head-cell">
-                      <button
-                        type="button"
-                        onClick={() => handleSort("banco")}
-                        className="inline-flex items-center gap-1"
-                      >
-                        Banco
-                        {sortBy === "banco" && sortDirection === "asc" ? (
-                          <ArrowUpNarrowWide size={14} />
-                        ) : sortBy === "banco" ? (
-                          <ArrowDownWideNarrow size={14} />
-                        ) : null}
-                      </button>
-                    </th>
-                    <th className="app-table-head-cell-center">
-                      <button
-                        type="button"
-                        onClick={() => handleSort("tipo")}
-                        className="inline-flex items-center justify-center gap-1"
-                      >
-                        Tipo
-                        {sortBy === "tipo" && sortDirection === "asc" ? (
-                          <ArrowUpNarrowWide size={14} />
-                        ) : sortBy === "tipo" ? (
-                          <ArrowDownWideNarrow size={14} />
-                        ) : null}
-                      </button>
-                    </th>
-                    <th className="app-table-head-cell-right">
-                      <button
-                        type="button"
-                        onClick={() => handleSort("valor")}
-                        className="inline-flex items-center gap-1"
-                      >
-                        Valor
-                        {sortBy === "valor" && sortDirection === "asc" ? (
-                          <ArrowUpNarrowWide size={14} />
-                        ) : sortBy === "valor" ? (
-                          <ArrowDownWideNarrow size={14} />
-                        ) : null}
-                      </button>
-                    </th>
-                    <th className="app-table-head-cell-center">Ações</th>
-                    
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-100 bg-white">
-                  {sortedMovimentacoes.map((item) => (
-                    <tr key={item.id} className="app-table-row">
-                      <td className="px-3 py-2 text-xs text-gray-700">
-                        {formatDateBR(item.data)}
-                      </td>
-                      <td className="px-3 py-2 text-xs text-gray-700">{item.ativo_nome}</td>
-                      <td className="px-3 py-2 text-xs text-gray-700">{item.banco_nome}</td>
-                      <td className="px-3 py-2 text-center text-xs">
-                        <div className="flex justify-center">
-                          <span
-                            className={`${
-                              item.tipo === "APORTE"
-                                ? "app-badge-info"
-                                : item.tipo === "RESGATE"
-                                  ? "app-badge-error"
-                                  : "app-badge-success"
-                            }`}
-                          >
-                            {tipoLabel[item.tipo]}
-                          </span>
-                        </div>
-                      </td>
-                      <td className="px-3 py-2 text-right text-xs font-semibold text-gray-900">
+                        {tipoLabel[item.tipo]}
+                      </span>
+                    </div>
+
+                    <div className="mt-3 text-xs text-gray-700">
+                      <span className="font-medium">Valor: </span>
+                      <span className="font-semibold text-gray-900">
                         {formatCurrencyBRL(Number(item.valor))}
-                      </td>
-                      <td className="px-3 py-2 text-center text-xs">
-                        <div className="flex justify-center gap-1">
-                          <TableActionButton
-                            action="view"
-                            title="Visualizar"
-                            onClick={() => setViewingMovimentacao(item)}
-                            compact
-                          />
-                          <TableActionButton
-                            action="edit"
-                            title="Editar"
-                            onClick={() => handleEdit(item)}
-                            compact
-                          />
-                          <TableActionButton
-                            action="delete"
-                            title="Excluir"
-                            onClick={() => setDeleteTarget(item)}
-                            compact
-                          />
-                        </div>
-                      </td>
+                      </span>
+                    </div>
+
+                    <div className="mt-3 flex items-center justify-end gap-2 border-t border-gray-100 pt-3">
+                      <TableActionButton
+                        action="view"
+                        title="Visualizar"
+                        onClick={() => setViewingMovimentacao(item)}
+                      />
+                      <TableActionButton
+                        action="edit"
+                        title="Editar"
+                        onClick={() => handleEdit(item)}
+                      />
+                      <TableActionButton
+                        action="delete"
+                        title="Excluir"
+                        onClick={() => setDeleteTarget(item)}
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div className="hidden overflow-x-auto lg:block">
+                <table className="min-w-[760px] w-full divide-y divide-gray-200 text-xs">
+                  <thead className="app-table-head">
+                    <tr>
+                      <th className="app-table-head-cell">
+                        <button
+                          type="button"
+                          onClick={() => handleSort("data")}
+                          className="inline-flex items-center gap-1"
+                        >
+                          Data
+                          {sortBy === "data" && sortDirection === "asc" ? (
+                            <ArrowUpNarrowWide size={14} />
+                          ) : sortBy === "data" ? (
+                            <ArrowDownWideNarrow size={14} />
+                          ) : null}
+                        </button>
+                      </th>
+                      <th className="app-table-head-cell">
+                        <button
+                          type="button"
+                          onClick={() => handleSort("ativo")}
+                          className="inline-flex items-center gap-1"
+                        >
+                          Ativo
+                          {sortBy === "ativo" && sortDirection === "asc" ? (
+                            <ArrowUpNarrowWide size={14} />
+                          ) : sortBy === "ativo" ? (
+                            <ArrowDownWideNarrow size={14} />
+                          ) : null}
+                        </button>
+                      </th>
+                      <th className="app-table-head-cell">
+                        <button
+                          type="button"
+                          onClick={() => handleSort("banco")}
+                          className="inline-flex items-center gap-1"
+                        >
+                          Banco
+                          {sortBy === "banco" && sortDirection === "asc" ? (
+                            <ArrowUpNarrowWide size={14} />
+                          ) : sortBy === "banco" ? (
+                            <ArrowDownWideNarrow size={14} />
+                          ) : null}
+                        </button>
+                      </th>
+                      <th className="app-table-head-cell-center">
+                        <button
+                          type="button"
+                          onClick={() => handleSort("tipo")}
+                          className="inline-flex items-center justify-center gap-1"
+                        >
+                          Tipo
+                          {sortBy === "tipo" && sortDirection === "asc" ? (
+                            <ArrowUpNarrowWide size={14} />
+                          ) : sortBy === "tipo" ? (
+                            <ArrowDownWideNarrow size={14} />
+                          ) : null}
+                        </button>
+                      </th>
+                      <th className="app-table-head-cell-right">
+                        <button
+                          type="button"
+                          onClick={() => handleSort("valor")}
+                          className="inline-flex items-center gap-1"
+                        >
+                          Valor
+                          {sortBy === "valor" && sortDirection === "asc" ? (
+                            <ArrowUpNarrowWide size={14} />
+                          ) : sortBy === "valor" ? (
+                            <ArrowDownWideNarrow size={14} />
+                          ) : null}
+                        </button>
+                      </th>
+                      <th className="app-table-head-cell-center">Ações</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                  </thead>
+                  <tbody className="divide-y divide-gray-100 bg-white">
+                    {sortedMovimentacoes.map((item) => (
+                      <tr key={item.id} className="app-table-row">
+                        <td className="px-3 py-2 text-xs text-gray-700">
+                          {formatDateBR(item.data)}
+                        </td>
+                        <td className="px-3 py-2 text-xs text-gray-700">{item.ativo_nome}</td>
+                        <td className="px-3 py-2 text-xs text-gray-700">{item.banco_nome}</td>
+                        <td className="px-3 py-2 text-center text-xs">
+                          <div className="flex justify-center">
+                            <span
+                              className={`${
+                                item.tipo === "APORTE"
+                                  ? "app-badge-info"
+                                  : item.tipo === "RESGATE"
+                                    ? "app-badge-error"
+                                    : "app-badge-success"
+                              }`}
+                            >
+                              {tipoLabel[item.tipo]}
+                            </span>
+                          </div>
+                        </td>
+                        <td className="px-3 py-2 text-right text-xs font-semibold text-gray-900">
+                          {formatCurrencyBRL(Number(item.valor))}
+                        </td>
+                        <td className="px-3 py-2 text-center text-xs">
+                          <div className="flex justify-center gap-1">
+                            <TableActionButton
+                              action="view"
+                              title="Visualizar"
+                              onClick={() => setViewingMovimentacao(item)}
+                              compact
+                            />
+                            <TableActionButton
+                              action="edit"
+                              title="Editar"
+                              onClick={() => handleEdit(item)}
+                              compact
+                            />
+                            <TableActionButton
+                              action="delete"
+                              title="Excluir"
+                              onClick={() => setDeleteTarget(item)}
+                              compact
+                            />
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </>
           )}
         </div>
 

@@ -422,151 +422,215 @@ export default function InvestimentosAtivosPage() {
               Nenhum ativo encontrado com os filtros atuais.
             </div>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="min-w-[860px] w-full divide-y divide-gray-200 text-xs">
-                <thead className="app-table-head">
-                  <tr>
-                    <th className="app-table-head-cell">
-                      <button
-                        type="button"
-                        onClick={() => handleSort("data_saldo_inicial")}
-                        className="inline-flex items-center gap-1"
-                      >
-                        Início Ativo
-                        {sortBy === "data_saldo_inicial" && sortDirection === "asc" ? (
-                          <ArrowUpNarrowWide size={14} />
-                        ) : sortBy === "data_saldo_inicial" ? (
-                          <ArrowDownWideNarrow size={14} />
-                        ) : null}
-                      </button>
-                    </th>
-                    <th className="app-table-head-cell">
-                      <button
-                        type="button"
-                        onClick={() => handleSort("nome")}
-                        className="inline-flex items-center gap-1"
-                      >
-                        Ativo
-                        {sortBy === "nome" && sortDirection === "asc" ? (
-                          <ArrowUpNarrowWide size={14} />
-                        ) : sortBy === "nome" ? (
-                          <ArrowDownWideNarrow size={14} />
-                        ) : null}
-                      </button>
-                    </th>
-                    <th className="app-table-head-cell">
-                      <button
-                        type="button"
-                        onClick={() => handleSort("banco")}
-                        className="inline-flex items-center gap-1"
-                      >
-                        Banco
-                        {sortBy === "banco" && sortDirection === "asc" ? (
-                          <ArrowUpNarrowWide size={14} />
-                        ) : sortBy === "banco" ? (
-                          <ArrowDownWideNarrow size={14} />
-                        ) : null}
-                      </button>
-                    </th>
-                    <th className="app-table-head-cell-right">
-                      <button
-                        type="button"
-                        onClick={() => handleSort("saldo_inicial")}
-                        className="inline-flex items-center gap-1"
-                      >
-                        Saldo Inicial
-                        {sortBy === "saldo_inicial" && sortDirection === "asc" ? (
-                          <ArrowUpNarrowWide size={14} />
-                        ) : sortBy === "saldo_inicial" ? (
-                          <ArrowDownWideNarrow size={14} />
-                        ) : null}
-                      </button>
-                    </th>
-                    <th className="app-table-head-cell-right">
-                      <button
-                        type="button"
-                        onClick={() => handleSort("saldo_atual")}
-                        className="inline-flex items-center gap-1"
-                      >
-                        Saldo Atual
-                        {sortBy === "saldo_atual" && sortDirection === "asc" ? (
-                          <ArrowUpNarrowWide size={14} />
-                        ) : sortBy === "saldo_atual" ? (
-                          <ArrowDownWideNarrow size={14} />
-                        ) : null}
-                      </button>
-                    </th>
-                    <th className="app-table-head-cell-center">
-                      <button
-                        type="button"
-                        onClick={() => handleSort("status")}
-                        className="inline-flex items-center gap-1"
-                      >
-                        Status
-                        {sortBy === "status" && sortDirection === "asc" ? (
-                          <ArrowUpNarrowWide size={14} />
-                        ) : sortBy === "status" ? (
-                          <ArrowDownWideNarrow size={14} />
-                        ) : null}
-                      </button>
-                    </th>
-                    <th className="app-table-head-cell-center">Ações</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-100 bg-white">
-                  {sortedAtivos.map((item) => (
-                    <tr key={item.id} className="app-table-row">
-                      <td className="px-3 py-2 text-xs text-gray-700">
-                        {formatDateBR(item.data_saldo_inicial)}
-                      </td>
-                      <td className="px-3 py-2 text-xs text-gray-700">{item.nome}</td>
-                      <td className="px-3 py-2 text-xs text-gray-700">
-                        {item.banco_nome || "-"}
-                      </td>
-                      <td className="px-3 py-2 text-right text-xs text-gray-700">
+            <>
+              <div className="space-y-2 px-2 sm:px-0 lg:hidden">
+                {sortedAtivos.map((item) => (
+                  <div
+                    key={item.id}
+                    className="rounded-xl border border-gray-200/80 bg-gradient-to-b from-white to-gray-50 p-4 shadow-[0_1px_2px_rgba(0,0,0,0.06)]"
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <p className="text-sm font-semibold text-gray-900">{item.nome}</p>
+                        <p className="mt-1 text-xs text-gray-600">
+                          Início: {formatDateBR(item.data_saldo_inicial)}
+                        </p>
+                        <p className="mt-1 text-xs text-gray-600">
+                          Banco: {item.banco_nome || "-"}
+                        </p>
+                      </div>
+
+                      {item.ativo ? (
+                        <span className="inline-flex items-center rounded-full bg-green-100 px-2.5 py-1 text-[11px] font-semibold leading-none text-green-800">
+                          Ativo
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center rounded-full bg-red-100 px-2.5 py-1 text-[11px] font-semibold leading-none text-red-800">
+                          Inativo
+                        </span>
+                      )}
+                    </div>
+
+                    <div className="mt-3 space-y-1 text-xs text-gray-700">
+                      <p>
+                        <span className="font-medium">Saldo inicial: </span>
                         {formatCurrencyBRL(Number(item.saldo_inicial))}
-                      </td>
-                      <td className="px-3 py-2 text-right text-xs font-semibold text-gray-900">
-                        {formatCurrencyBRL(Number(item.saldo_atual || 0))}
-                      </td>
-                      <td className="px-3 py-2 text-center text-xs">
-                        {item.ativo ? (
-                          <span className="inline-flex items-center rounded-full bg-green-100 px-2.5 py-1 text-[11px] font-semibold leading-none text-green-800">
-                            Ativo
-                          </span>
-                        ) : (
-                          <span className="inline-flex items-center rounded-full bg-red-100 px-2.5 py-1 text-[11px] font-semibold leading-none text-red-800">
-                            Inativo
-                          </span>
-                        )}
-                      </td>
-                      <td className="px-3 py-2 text-center text-xs">
-                        <div className="flex justify-center gap-1">
-                          <TableActionButton
-                            action="view"
-                            title="Visualizar"
-                            onClick={() => setViewingAtivo(item)}
-                            compact
-                          />
-                          <TableActionButton
-                            action="edit"
-                            title="Editar"
-                            onClick={() => handleEdit(item)}
-                            compact
-                          />
-                          <TableActionButton
-                            action="delete"
-                            title="Excluir"
-                            onClick={() => setDeleteTarget(item)}
-                            compact
-                          />
-                        </div>
-                      </td>
+                      </p>
+                      <p>
+                        <span className="font-medium">Saldo atual: </span>
+                        <span className="font-semibold text-gray-900">
+                          {formatCurrencyBRL(Number(item.saldo_atual || 0))}
+                        </span>
+                      </p>
+                    </div>
+
+                    <div className="mt-3 flex items-center justify-end gap-2 border-t border-gray-100 pt-3">
+                      <TableActionButton
+                        action="view"
+                        title="Visualizar"
+                        onClick={() => setViewingAtivo(item)}
+                      />
+                      <TableActionButton
+                        action="edit"
+                        title="Editar"
+                        onClick={() => handleEdit(item)}
+                      />
+                      <TableActionButton
+                        action="delete"
+                        title="Excluir"
+                        onClick={() => setDeleteTarget(item)}
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div className="hidden overflow-x-auto lg:block">
+                <table className="min-w-[860px] w-full divide-y divide-gray-200 text-xs">
+                  <thead className="app-table-head">
+                    <tr>
+                      <th className="app-table-head-cell">
+                        <button
+                          type="button"
+                          onClick={() => handleSort("data_saldo_inicial")}
+                          className="inline-flex items-center gap-1"
+                        >
+                          Início Ativo
+                          {sortBy === "data_saldo_inicial" && sortDirection === "asc" ? (
+                            <ArrowUpNarrowWide size={14} />
+                          ) : sortBy === "data_saldo_inicial" ? (
+                            <ArrowDownWideNarrow size={14} />
+                          ) : null}
+                        </button>
+                      </th>
+                      <th className="app-table-head-cell">
+                        <button
+                          type="button"
+                          onClick={() => handleSort("nome")}
+                          className="inline-flex items-center gap-1"
+                        >
+                          Ativo
+                          {sortBy === "nome" && sortDirection === "asc" ? (
+                            <ArrowUpNarrowWide size={14} />
+                          ) : sortBy === "nome" ? (
+                            <ArrowDownWideNarrow size={14} />
+                          ) : null}
+                        </button>
+                      </th>
+                      <th className="app-table-head-cell">
+                        <button
+                          type="button"
+                          onClick={() => handleSort("banco")}
+                          className="inline-flex items-center gap-1"
+                        >
+                          Banco
+                          {sortBy === "banco" && sortDirection === "asc" ? (
+                            <ArrowUpNarrowWide size={14} />
+                          ) : sortBy === "banco" ? (
+                            <ArrowDownWideNarrow size={14} />
+                          ) : null}
+                        </button>
+                      </th>
+                      <th className="app-table-head-cell-right">
+                        <button
+                          type="button"
+                          onClick={() => handleSort("saldo_inicial")}
+                          className="inline-flex items-center gap-1"
+                        >
+                          Saldo Inicial
+                          {sortBy === "saldo_inicial" && sortDirection === "asc" ? (
+                            <ArrowUpNarrowWide size={14} />
+                          ) : sortBy === "saldo_inicial" ? (
+                            <ArrowDownWideNarrow size={14} />
+                          ) : null}
+                        </button>
+                      </th>
+                      <th className="app-table-head-cell-right">
+                        <button
+                          type="button"
+                          onClick={() => handleSort("saldo_atual")}
+                          className="inline-flex items-center gap-1"
+                        >
+                          Saldo Atual
+                          {sortBy === "saldo_atual" && sortDirection === "asc" ? (
+                            <ArrowUpNarrowWide size={14} />
+                          ) : sortBy === "saldo_atual" ? (
+                            <ArrowDownWideNarrow size={14} />
+                          ) : null}
+                        </button>
+                      </th>
+                      <th className="app-table-head-cell-center">
+                        <button
+                          type="button"
+                          onClick={() => handleSort("status")}
+                          className="inline-flex items-center gap-1"
+                        >
+                          Status
+                          {sortBy === "status" && sortDirection === "asc" ? (
+                            <ArrowUpNarrowWide size={14} />
+                          ) : sortBy === "status" ? (
+                            <ArrowDownWideNarrow size={14} />
+                          ) : null}
+                        </button>
+                      </th>
+                      <th className="app-table-head-cell-center">Ações</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                  </thead>
+                  <tbody className="divide-y divide-gray-100 bg-white">
+                    {sortedAtivos.map((item) => (
+                      <tr key={item.id} className="app-table-row">
+                        <td className="px-3 py-2 text-xs text-gray-700">
+                          {formatDateBR(item.data_saldo_inicial)}
+                        </td>
+                        <td className="px-3 py-2 text-xs text-gray-700">{item.nome}</td>
+                        <td className="px-3 py-2 text-xs text-gray-700">
+                          {item.banco_nome || "-"}
+                        </td>
+                        <td className="px-3 py-2 text-right text-xs text-gray-700">
+                          {formatCurrencyBRL(Number(item.saldo_inicial))}
+                        </td>
+                        <td className="px-3 py-2 text-right text-xs font-semibold text-gray-900">
+                          {formatCurrencyBRL(Number(item.saldo_atual || 0))}
+                        </td>
+                        <td className="px-3 py-2 text-center text-xs">
+                          {item.ativo ? (
+                            <span className="inline-flex items-center rounded-full bg-green-100 px-2.5 py-1 text-[11px] font-semibold leading-none text-green-800">
+                              Ativo
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center rounded-full bg-red-100 px-2.5 py-1 text-[11px] font-semibold leading-none text-red-800">
+                              Inativo
+                            </span>
+                          )}
+                        </td>
+                        <td className="px-3 py-2 text-center text-xs">
+                          <div className="flex justify-center gap-1">
+                            <TableActionButton
+                              action="view"
+                              title="Visualizar"
+                              onClick={() => setViewingAtivo(item)}
+                              compact
+                            />
+                            <TableActionButton
+                              action="edit"
+                              title="Editar"
+                              onClick={() => handleEdit(item)}
+                              compact
+                            />
+                            <TableActionButton
+                              action="delete"
+                              title="Excluir"
+                              onClick={() => setDeleteTarget(item)}
+                              compact
+                            />
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </>
           )}
         </div>
 
