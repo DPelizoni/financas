@@ -428,7 +428,7 @@ export default function InvestimentosMovimentacoesPage() {
             </div>
           ) : (
             <>
-              <div className="space-y-2 px-2 sm:px-0 lg:hidden">
+              <div className="space-y-2 px-2 sm:px-0 md:hidden">
                 {sortedMovimentacoes.map((item) => (
                   <div
                     key={item.id}
@@ -486,8 +486,8 @@ export default function InvestimentosMovimentacoesPage() {
                 ))}
               </div>
 
-              <div className="hidden overflow-x-auto lg:block">
-                <table className="min-w-[760px] w-full divide-y divide-gray-200 text-xs">
+              <div className="hidden overflow-x-auto md:block">
+                <table className="w-full table-fixed divide-y divide-gray-200 text-xs">
                   <thead className="app-table-head">
                     <tr>
                       <th className="app-table-head-cell">
@@ -518,7 +518,7 @@ export default function InvestimentosMovimentacoesPage() {
                           ) : null}
                         </button>
                       </th>
-                      <th className="app-table-head-cell">
+                      <th className="app-table-head-cell hidden xl:table-cell">
                         <button
                           type="button"
                           onClick={() => handleSort("banco")}
@@ -569,8 +569,16 @@ export default function InvestimentosMovimentacoesPage() {
                         <td className="px-3 py-2 text-xs text-gray-700">
                           {formatDateBR(item.data)}
                         </td>
-                        <td className="px-3 py-2 text-xs text-gray-700">{item.ativo_nome}</td>
-                        <td className="px-3 py-2 text-xs text-gray-700">{item.banco_nome}</td>
+                        <td className="px-3 py-2 text-xs text-gray-700">
+                          <span className="block truncate" title={item.ativo_nome || "-"}>
+                            {item.ativo_nome || "-"}
+                          </span>
+                        </td>
+                        <td className="hidden px-3 py-2 text-xs text-gray-700 xl:table-cell">
+                          <span className="block truncate" title={item.banco_nome || "-"}>
+                            {item.banco_nome || "-"}
+                          </span>
+                        </td>
                         <td className="px-3 py-2 text-center text-xs">
                           <div className="flex justify-center">
                             <span

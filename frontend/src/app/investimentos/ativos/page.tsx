@@ -300,7 +300,7 @@ export default function InvestimentosAtivosPage() {
         </PageContainer>
 
         <div className="filter-panel-surface">
-          <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-5">
+          <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-5">
             <TextField
               type="text"
               label="Buscar ativo"
@@ -423,7 +423,7 @@ export default function InvestimentosAtivosPage() {
             </div>
           ) : (
             <>
-              <div className="space-y-2 px-2 sm:px-0 lg:hidden">
+              <div className="space-y-2 px-2 sm:px-0 md:hidden">
                 {sortedAtivos.map((item) => (
                   <div
                     key={item.id}
@@ -485,11 +485,11 @@ export default function InvestimentosAtivosPage() {
                 ))}
               </div>
 
-              <div className="hidden overflow-x-auto lg:block">
-                <table className="min-w-[860px] w-full divide-y divide-gray-200 text-xs">
+              <div className="hidden overflow-x-auto md:block">
+                <table className="w-full table-fixed divide-y divide-gray-200 text-xs">
                   <thead className="app-table-head">
                     <tr>
-                      <th className="app-table-head-cell">
+                      <th className="app-table-head-cell hidden xl:table-cell">
                         <button
                           type="button"
                           onClick={() => handleSort("data_saldo_inicial")}
@@ -531,7 +531,7 @@ export default function InvestimentosAtivosPage() {
                           ) : null}
                         </button>
                       </th>
-                      <th className="app-table-head-cell-right">
+                      <th className="app-table-head-cell-right hidden xl:table-cell">
                         <button
                           type="button"
                           onClick={() => handleSort("saldo_inicial")}
@@ -579,14 +579,20 @@ export default function InvestimentosAtivosPage() {
                   <tbody className="divide-y divide-gray-100 bg-white">
                     {sortedAtivos.map((item) => (
                       <tr key={item.id} className="app-table-row">
-                        <td className="px-3 py-2 text-xs text-gray-700">
+                        <td className="hidden px-3 py-2 text-xs text-gray-700 xl:table-cell">
                           {formatDateBR(item.data_saldo_inicial)}
                         </td>
-                        <td className="px-3 py-2 text-xs text-gray-700">{item.nome}</td>
                         <td className="px-3 py-2 text-xs text-gray-700">
-                          {item.banco_nome || "-"}
+                          <span className="block truncate" title={item.nome}>
+                            {item.nome}
+                          </span>
                         </td>
-                        <td className="px-3 py-2 text-right text-xs text-gray-700">
+                        <td className="px-3 py-2 text-xs text-gray-700">
+                          <span className="block truncate" title={item.banco_nome || "-"}>
+                            {item.banco_nome || "-"}
+                          </span>
+                        </td>
+                        <td className="hidden px-3 py-2 text-right text-xs text-gray-700 xl:table-cell">
                           {formatCurrencyBRL(Number(item.saldo_inicial))}
                         </td>
                         <td className="px-3 py-2 text-right text-xs font-semibold text-gray-900">
