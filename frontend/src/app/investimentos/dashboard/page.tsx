@@ -688,7 +688,53 @@ export default function InvestimentosDashboardPage() {
             </div>
           </div>
 
-          <div className="overflow-x-auto">
+          <div className="space-y-2 px-2 sm:px-0 md:hidden">
+            {dashboard.carteira.ativos.length === 0 ? (
+              <div className="rounded-lg border border-dashed border-gray-300 px-4 py-8 text-center text-sm text-gray-500">
+                Nenhum ativo encontrado para os filtros atuais.
+              </div>
+            ) : (
+              dashboard.carteira.ativos.map((item) => (
+                <div
+                  key={item.id}
+                  className="rounded-xl border border-gray-200/80 bg-gradient-to-b from-white to-gray-50 p-4 shadow-[0_1px_2px_rgba(0,0,0,0.06)]"
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <p className="text-sm font-semibold text-gray-900">{item.nome}</p>
+                      <p className="mt-1 text-xs text-gray-600">
+                        Banco: {item.banco_nome || "-"}
+                      </p>
+                    </div>
+                    {item.ativo ? (
+                      <span className="inline-flex items-center rounded-full bg-green-100 px-2.5 py-1 text-[11px] font-semibold leading-none text-green-800">
+                        Ativo
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center rounded-full bg-red-100 px-2.5 py-1 text-[11px] font-semibold leading-none text-red-800">
+                        Inativo
+                      </span>
+                    )}
+                  </div>
+
+                  <div className="mt-3 space-y-1 text-sm text-gray-700">
+                    <p>
+                      <span className="font-medium">Saldo inicial: </span>
+                      {formatCurrencyBRL(Number(item.saldo_inicial))}
+                    </p>
+                    <p>
+                      <span className="font-medium">Saldo atual: </span>
+                      <span className="font-semibold text-gray-900">
+                        {formatCurrencyBRL(Number(item.saldo_atual || 0))}
+                      </span>
+                    </p>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+
+          <div className="hidden overflow-x-auto md:block">
             <table className="min-w-[680px] w-full divide-y divide-gray-200 text-xs">
               <thead className="app-table-head">
                 <tr>
