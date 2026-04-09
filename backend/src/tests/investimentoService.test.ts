@@ -702,7 +702,7 @@ const dashboardGetDashboardCalculaCardsCarteiraETimeline = async () => {
   assert.equal(result.cards.aporte, 300);
   assert.equal(result.cards.rendimentos, 50);
   assert.equal(result.cards.resgate, 100);
-  assert.equal(result.cards.liquido, 400);
+  assert.equal(result.cards.liquido, 200);
   assert.equal(result.carteira.total_ativos, 2);
   assert.equal(result.carteira.saldo_total, 200);
   assert.equal(result.timeline[0].month_label, "01/26");

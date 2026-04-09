@@ -51,12 +51,6 @@ export class InvestimentoDashboardService {
       (acc, item) => acc + Number(item.saldo_atual || 0),
       0,
     );
-    const saldoInicialTotal = carteiraAtivos.reduce(
-      (acc, item) => acc + Number(item.saldo_inicial || 0),
-      0,
-    );
-    const liquidoComSaldoInicial =
-      saldoInicialTotal + cards.aporte + cards.rendimentos - cards.resgate;
     const timeline = timelineRows.map((row) => {
       const [year, month] = row.month_key.split("-");
       const monthLabel = year && month ? `${month}/${year.slice(2)}` : row.month_key;
@@ -75,7 +69,7 @@ export class InvestimentoDashboardService {
     return {
       cards: {
         ...cards,
-        liquido: liquidoComSaldoInicial,
+        liquido: saldoTotal,
       },
       carteira: {
         total_ativos: carteiraAtivos.length,

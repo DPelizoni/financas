@@ -29,7 +29,7 @@ const chartColors = {
   aporte: "rgb(var(--app-chart-pendente))",
   resgate: "rgb(var(--app-chart-despesa))",
   rendimento: "rgb(var(--app-chart-pago))",
-  bruto: "rgb(var(--app-chart-saldo))",
+  resultado: "rgb(var(--app-chart-saldo))",
 };
 
 const formatCurrencyBRL = (value: number) =>
@@ -214,17 +214,17 @@ export default function InvestimentosDashboardPage() {
   };
 
   const timelineTitle = filterMesAno
-    ? `Evolução no Tempo e Bruto (${formatMonthYearLabel(filterMesAno)})`
+    ? `Evolução no Tempo e Resultado líquido (${formatMonthYearLabel(filterMesAno)})`
     : filterAno !== "TODOS"
-      ? `Evolução no Tempo e Bruto (Ano ${filterAno})`
-      : "Evolução no Tempo e Bruto (12 meses)";
+      ? `Evolução no Tempo e Resultado líquido (Ano ${filterAno})`
+      : "Evolução no Tempo e Resultado líquido (12 meses)";
 
-  const timelineWithBrutoBands = useMemo(
+  const timelineWithResultadoBands = useMemo(
     () =>
       dashboard.timeline.map((point) => ({
         ...point,
-        bruto_positivo: point.saldo >= 0 ? point.saldo : null,
-        bruto_negativo: point.saldo < 0 ? point.saldo : null,
+        resultado_positivo: point.saldo >= 0 ? point.saldo : null,
+        resultado_negativo: point.saldo < 0 ? point.saldo : null,
       })),
     [dashboard.timeline],
   );
@@ -469,7 +469,7 @@ export default function InvestimentosDashboardPage() {
                     dashboard.cards.liquido >= 0 ? "text-blue-700" : "text-red-700"
                   }`}
                 >
-                  Bruto
+                  Saldo atual
                 </p>
                 <p
                   className={`text-2xl font-bold ${
@@ -600,7 +600,9 @@ export default function InvestimentosDashboardPage() {
                     }`}
                   >
                     <div className="text-center">
-                      <p className="text-sm font-semibold text-gray-700">Bruto</p>
+                      <p className="text-sm font-semibold text-gray-700">
+                        Resultado líquido
+                      </p>
                       <p
                         className={`mt-2 text-3xl font-bold ${
                           singleMonthPoint.saldo >= 0 ? "text-blue-600" : "text-red-600"
@@ -615,7 +617,7 @@ export default function InvestimentosDashboardPage() {
             ) : (
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart
-                  data={timelineWithBrutoBands}
+                  data={timelineWithResultadoBands}
                   margin={{ top: 30, right: 28, left: 20, bottom: 12 }}
                 >
                   <CartesianGrid strokeDasharray="3 3" vertical={false} />
@@ -656,17 +658,17 @@ export default function InvestimentosDashboardPage() {
                   />
                   <Line
                     type="monotone"
-                    dataKey="bruto_positivo"
-                    name="Bruto"
-                    stroke={chartColors.bruto}
+                    dataKey="resultado_positivo"
+                    name="Resultado líquido"
+                    stroke={chartColors.resultado}
                     strokeWidth={2}
                     dot={{ r: 3 }}
                     connectNulls
                   />
                   <Line
                     type="monotone"
-                    dataKey="bruto_negativo"
-                    name="Bruto"
+                    dataKey="resultado_negativo"
+                    name="Resultado líquido"
                     stroke={chartColors.resgate}
                     strokeWidth={2}
                     dot={{ r: 3 }}
