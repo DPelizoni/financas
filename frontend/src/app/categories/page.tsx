@@ -2,9 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import {
-  Search,
   Tags,
-  X,
   ArrowDownWideNarrow,
   ArrowUpNarrowWide,
   Filter,
@@ -12,7 +10,7 @@ import {
 import Icon from "@mdi/react";
 import { mdiPlusBoxOutline } from "@mdi/js";
 import { categoryService } from "@/services/categoryService";
-import { Category, CategoryFilters, CategoryType } from "@/types/category";
+import { Category, CategoryFilters as ICategoryFilters, CategoryType } from "@/types/category";
 
 import CategoryModal from "@/components/CategoryModal";
 import Pagination from "@/components/Pagination";
@@ -22,9 +20,9 @@ import PageContainer from "@/components/PageContainer";
 import AppButton from "@/components/AppButton";
 import TableActionButton from "@/components/TableActionButton";
 import ViewDataModal from "@/components/ViewDataModal";
-import { IconButton, InputAdornment, MenuItem, TextField } from "@mui/material";
 import { TableSkeleton, CardSkeleton } from "@/components/skeletons/DataSkeletons";
 import EmptyState from "@/components/EmptyState";
+import { CategoryFilters } from "./components/CategoryFilters";
 
 export default function CategoriesPage() {
   const [categories, setCategories] = useState<Category[]>([]);
@@ -40,7 +38,7 @@ export default function CategoriesPage() {
     undefined,
   );
   const [filterTipo, setFilterTipo] = useState<
-    "RECEITA" | "DESPESA" | "TODOS"
+    CategoryType | "TODOS"
   >("TODOS");
   const [feedback, setFeedback] = useState<{
     type: "success" | "error";
@@ -48,8 +46,11 @@ export default function CategoriesPage() {
   } | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<Category | null>(null);
   const [viewingCategory, setViewingCategory] = useState<Category | null>(null);
-  const [sortBy, setSortBy] = useState<"nome" | "tipo" | "status">("nome");
+  
+  // Estados de ordenação
+  const [sortBy, setSortBy] = useState<string>("nome");
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
+  
   const [showFilters, setShowFilters] = useState(false);
 
   const activeFiltersCount = useMemo(() => {
@@ -60,7 +61,7 @@ export default function CategoriesPage() {
     return count;
   }, [searchTerm, filterTipo, filterAtivo]);
 
-  const handleSort = (column: "nome" | "tipo" | "status") => {
+  const handleSort = (column: string) => {
     if (sortBy === column) {
       setSortDirection((prev) => (prev === "asc" ? "desc" : "asc"));
       return;
@@ -68,21 +69,6 @@ export default function CategoriesPage() {
     setSortBy(column);
     setSortDirection("asc");
   };
-
-  const sortedCategories = useMemo(() => {
-    const direction = sortDirection === "asc" ? 1 : -1;
-    return [...categories].sort((a, b) => {
-      if (sortBy === "nome") {
-        return a.nome.localeCompare(b.nome, "pt-BR") * direction;
-      }
-      if (sortBy === "tipo") {
-        return a.tipo.localeCompare(b.tipo, "pt-BR") * direction;
-      }
-      return Number(a.ativo === true) === Number(b.ativo === true)
-        ? 0
-        : (a.ativo ? 1 : -1) * direction;
-    });
-  }, [categories, sortBy, sortDirection]);
 
   const showFeedback = (type: "success" | "error", message: string) => {
     setFeedback({ type, message });
@@ -92,12 +78,14 @@ export default function CategoriesPage() {
   const loadCategories = async () => {
     try {
       setLoading(true);
-      const filters: CategoryFilters = {
+      const filters: ICategoryFilters = {
         page: currentPage,
         limit: itemsPerPage,
         search: searchTerm || undefined,
         ativo: filterAtivo,
         tipo: filterTipo === "TODOS" ? undefined : filterTipo,
+        sortBy,
+        sortDirection,
       };
 
       const response = await categoryService.getAll(filters);
@@ -117,10 +105,17 @@ export default function CategoriesPage() {
 
   useEffect(() => {
     loadCategories();
-  }, [currentPage, searchTerm, filterAtivo, filterTipo, itemsPerPage]);
+  }, [currentPage, searchTerm, filterAtivo, filterTipo, itemsPerPage, sortBy, sortDirection]);
 
   const handleSearch = (value: string) => {
     setSearchTerm(value);
+    setCurrentPage(1);
+  };
+
+  const handleClearFilters = () => {
+    setSearchTerm("");
+    setFilterAtivo(undefined);
+    setFilterTipo("TODOS");
     setCurrentPage(1);
   };
 
@@ -183,11 +178,11 @@ export default function CategoriesPage() {
       })()
     : null;
 
-  const tipoBadge = (tipo: "RECEITA" | "DESPESA") => {
+  const tipoBadge = (tipo: CategoryType) => {
     if (tipo === "RECEITA") {
-      return "bg-emerald-100 text-emerald-700";
+      return "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400";
     }
-    return "bg-amber-100 text-amber-700";
+    return "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400";
   };
 
   return (
@@ -198,11 +193,11 @@ export default function CategoriesPage() {
         <PageContainer>
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <h1 className="flex items-center gap-3 text-2xl font-bold text-gray-900 sm:text-3xl">
-                <Tags size={32} className="text-blue-600" />
+              <h1 className="flex items-center gap-3 text-2xl font-bold text-gray-900 sm:text-3xl dark:text-white">
+                <Tags size={32} className="text-blue-600 dark:text-blue-400" />
                 Gerenciamento de Categorias
               </h1>
-              <p className="mt-2 text-sm text-gray-600">
+              <p className="mt-2 text-sm text-gray-600 dark:text-slate-400">
                 Organize categorias para classificar receitas e despesas
               </p>
             </div>
@@ -232,108 +227,22 @@ export default function CategoriesPage() {
           </div>
         </PageContainer>
 
-        <div className={`filter-panel-surface ${!showFilters ? "hidden" : "block animate-in fade-in slide-in-from-top-2 duration-300"}`}>
-          <div className="mb-4 flex items-center justify-between border-b border-gray-100 pb-3 dark:border-slate-800">
-            <h3 className="text-sm font-semibold text-gray-700 dark:text-slate-300">Filtros de Categorias</h3>
-            <button
-              type="button"
-              onClick={() => {
-                setSearchTerm("");
-                setFilterAtivo(undefined);
-                setFilterTipo("TODOS");
-                setCurrentPage(1);
-              }}
-              className="text-xs font-medium text-blue-600 hover:text-blue-800 transition dark:text-blue-400 dark:hover:text-blue-300"
-            >
-              Limpar tudo
-            </button>
-          </div>
-          <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
-            <div className="md:col-span-2">
-              <TextField
-                type="text"
-                label="Buscar"
-                variant="outlined"
-                size="small"
-                fullWidth
-                value={searchTerm}
-                onChange={(e) => handleSearch(e.target.value)}
-                InputLabelProps={{ shrink: true }}
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <Search size={20} className="text-gray-400" />
-                    </InputAdornment>
-                  ),
-                  endAdornment: searchTerm ? (
-                    <InputAdornment position="end">
-                      <IconButton
-                        size="small"
-                        onClick={() => handleSearch("")}
-                        aria-label="Limpar pesquisa"
-                      >
-                        <X size={16} />
-                      </IconButton>
-                    </InputAdornment>
-                  ) : undefined,
-                }}
-              />
-            </div>
-
-            <TextField
-              select
-              label="Tipo"
-              variant="outlined"
-              size="small"
-              fullWidth
-              InputLabelProps={{ shrink: true }}
-              value={filterTipo}
-              onChange={(e) => {
-                setFilterTipo(
-                  e.target.value as "RECEITA" | "DESPESA" | "TODOS",
-                );
-                setCurrentPage(1);
-              }}
-            >
-              <MenuItem value="TODOS">Todos</MenuItem>
-              <MenuItem value="DESPESA">Despesa</MenuItem>
-              <MenuItem value="RECEITA">Receita</MenuItem>
-            </TextField>
-
-            <div className="flex flex-wrap gap-2 md:col-span-4">
-              <AppButton
-                onClick={() => {
-                  setFilterAtivo(undefined);
-                  setCurrentPage(1);
-                }}
-                tone={filterAtivo === undefined ? "primary" : "outline-primary"}
-                size="sm"
-              >
-                Todos
-              </AppButton>
-              <AppButton
-                onClick={() => {
-                  setFilterAtivo(true);
-                  setCurrentPage(1);
-                }}
-                tone={filterAtivo === true ? "success" : "outline-success"}
-                size="sm"
-              >
-                Ativos
-              </AppButton>
-              <AppButton
-                onClick={() => {
-                  setFilterAtivo(false);
-                  setCurrentPage(1);
-                }}
-                tone={filterAtivo === false ? "danger" : "outline-danger"}
-                size="sm"
-              >
-                Inativos
-              </AppButton>
-            </div>
-          </div>
-        </div>
+        <CategoryFilters
+          showFilters={showFilters}
+          searchTerm={searchTerm}
+          filterTipo={filterTipo}
+          filterAtivo={filterAtivo}
+          onSearch={handleSearch}
+          onFilterTipoChange={(val) => {
+            setFilterTipo(val);
+            setCurrentPage(1);
+          }}
+          onFilterAtivoChange={(val) => {
+            setFilterAtivo(val);
+            setCurrentPage(1);
+          }}
+          onClearFilters={handleClearFilters}
+        />
 
         <div className="app-surface p-4">
           {loading ? (
@@ -357,32 +266,29 @@ export default function CategoriesPage() {
               actionLabel={searchTerm || filterAtivo !== undefined || filterTipo !== "TODOS" ? "Limpar Filtros" : "Nova Categoria"}
               onAction={
                 searchTerm || filterAtivo !== undefined || filterTipo !== "TODOS"
-                  ? () => {
-                      setSearchTerm("");
-                      setFilterAtivo(undefined);
-                      setFilterTipo("TODOS");
-                    }
+                  ? handleClearFilters
                   : handleCreate
               }
             />
           ) : (
             <>
+              {/* Visão Mobile - Cards */}
               <div className="space-y-2 px-2 sm:px-0 md:hidden">
-                {sortedCategories.map((category) => (
+                {categories.map((category) => (
                   <div
                     key={category.id}
-                    className="rounded-xl border border-gray-200/80 bg-gradient-to-b from-white to-gray-50 p-4 shadow-[0_1px_2px_rgba(0,0,0,0.06)]"
+                    className="rounded-xl border border-gray-200/80 bg-gradient-to-b from-white to-gray-50 p-4 shadow-[0_1px_2px_rgba(0,0,0,0.06)] dark:border-slate-800 dark:from-slate-900 dark:to-slate-900/50"
                   >
                     <div className="flex items-start justify-between gap-3">
                       <div className="flex items-center gap-3">
                         <div
-                          className="flex h-10 w-10 items-center justify-center rounded-full font-bold text-white"
+                          className="flex h-10 w-10 items-center justify-center rounded-full font-bold text-white shadow-sm"
                           style={{ backgroundColor: category.cor }}
                         >
                           {category.nome.substring(0, 2).toUpperCase()}
                         </div>
                         <div>
-                          <p className="text-sm font-semibold text-gray-900">
+                          <p className="text-sm font-semibold text-gray-900 dark:text-white">
                             {category.nome}
                           </p>
                           <span
@@ -398,17 +304,17 @@ export default function CategoriesPage() {
                       </div>
 
                       {category.ativo ? (
-                        <span className="inline-flex items-center rounded-full bg-green-100 px-2.5 py-1 text-[11px] font-semibold leading-none text-green-800">
+                        <span className="inline-flex items-center rounded-full bg-green-100 px-2.5 py-1 text-[11px] font-semibold leading-none text-green-800 dark:bg-green-900/30 dark:text-green-400">
                           Ativo
                         </span>
                       ) : (
-                        <span className="inline-flex items-center rounded-full bg-red-100 px-2.5 py-1 text-[11px] font-semibold leading-none text-red-800">
+                        <span className="inline-flex items-center rounded-full bg-red-100 px-2.5 py-1 text-[11px] font-semibold leading-none text-red-800 dark:bg-red-900/30 dark:text-red-400">
                           Inativo
                         </span>
                       )}
                     </div>
 
-                    <div className="mt-3 flex items-center justify-end gap-2 border-t border-gray-100 pt-3">
+                    <div className="mt-3 flex items-center justify-end gap-2 border-t border-gray-100 pt-3 dark:border-slate-800">
                       <TableActionButton
                         action="view"
                         title="Visualizar"
@@ -429,21 +335,22 @@ export default function CategoriesPage() {
                 ))}
               </div>
 
+              {/* Visão Desktop - Tabela */}
               <div className="hidden overflow-x-auto md:block">
-                <table className="min-w-[640px] w-full table-fixed divide-y divide-gray-200 text-xs">
+                <table className="min-w-[640px] w-full table-fixed divide-y divide-gray-200 text-xs dark:divide-slate-800">
                   <thead className="app-table-head">
                     <tr>
                       <th className="app-table-head-cell w-[55%]">
                         <button
                           type="button"
                           onClick={() => handleSort("nome")}
-                          className="inline-flex items-center gap-1"
+                          className="inline-flex items-center gap-1 hover:text-blue-600 transition-colors"
                         >
                           Categoria
                           {sortBy === "nome" && sortDirection === "asc" ? (
-                            <ArrowUpNarrowWide size={14} />
+                            <ArrowUpNarrowWide size={14} className="text-blue-600" />
                           ) : sortBy === "nome" ? (
-                            <ArrowDownWideNarrow size={14} />
+                            <ArrowDownWideNarrow size={14} className="text-blue-600" />
                           ) : null}
                         </button>
                       </th>
@@ -451,27 +358,27 @@ export default function CategoriesPage() {
                         <button
                           type="button"
                           onClick={() => handleSort("tipo")}
-                          className="inline-flex items-center gap-1"
+                          className="inline-flex items-center gap-1 hover:text-blue-600 transition-colors"
                         >
                           Tipo
                           {sortBy === "tipo" && sortDirection === "asc" ? (
-                            <ArrowUpNarrowWide size={14} />
+                            <ArrowUpNarrowWide size={14} className="text-blue-600" />
                           ) : sortBy === "tipo" ? (
-                            <ArrowDownWideNarrow size={14} />
+                            <ArrowDownWideNarrow size={14} className="text-blue-600" />
                           ) : null}
                         </button>
                       </th>
                       <th className="app-table-head-cell w-[15%]">
                         <button
                           type="button"
-                          onClick={() => handleSort("status")}
-                          className="inline-flex items-center gap-1"
+                          onClick={() => handleSort("ativo")}
+                          className="inline-flex items-center gap-1 hover:text-blue-600 transition-colors"
                         >
                           Status
-                          {sortBy === "status" && sortDirection === "asc" ? (
-                            <ArrowUpNarrowWide size={14} />
-                          ) : sortBy === "status" ? (
-                            <ArrowDownWideNarrow size={14} />
+                          {sortBy === "ativo" && sortDirection === "asc" ? (
+                            <ArrowUpNarrowWide size={14} className="text-blue-600" />
+                          ) : sortBy === "ativo" ? (
+                            <ArrowDownWideNarrow size={14} className="text-blue-600" />
                           ) : null}
                         </button>
                       </th>
@@ -480,8 +387,8 @@ export default function CategoriesPage() {
                       </th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-gray-200 bg-white">
-                    {sortedCategories.map((category) => (
+                  <tbody className="divide-y divide-gray-200 bg-white dark:divide-slate-800 dark:bg-slate-900">
+                    {categories.map((category) => (
                       <tr
                         key={category.id}
                         className="app-table-row"
@@ -489,12 +396,12 @@ export default function CategoriesPage() {
                         <td className="whitespace-nowrap px-3 py-2">
                           <div className="flex items-center">
                             <div
-                              className="mr-2 flex h-7 w-7 items-center justify-center rounded-full text-[10px] font-bold text-white"
+                              className="mr-2 flex h-7 w-7 items-center justify-center rounded-full text-[10px] font-bold text-white shadow-sm"
                               style={{ backgroundColor: category.cor }}
                             >
                               {category.nome.substring(0, 2).toUpperCase()}
                             </div>
-                            <div className="text-xs font-medium text-gray-900">
+                            <div className="text-xs font-medium text-gray-900 dark:text-slate-200">
                               {category.nome}
                             </div>
                           </div>
@@ -512,11 +419,11 @@ export default function CategoriesPage() {
                         </td>
                         <td className="whitespace-nowrap px-3 py-2">
                           {category.ativo ? (
-                            <span className="inline-flex items-center rounded-full bg-green-100 px-2.5 py-1 text-[11px] font-semibold leading-none text-green-800">
+                            <span className="inline-flex items-center rounded-full bg-green-100 px-2.5 py-1 text-[11px] font-semibold leading-none text-green-800 dark:bg-green-900/30 dark:text-green-400">
                               Ativo
                             </span>
                           ) : (
-                            <span className="inline-flex items-center rounded-full bg-red-100 px-2.5 py-1 text-[11px] font-semibold leading-none text-red-800">
+                            <span className="inline-flex items-center rounded-full bg-red-100 px-2.5 py-1 text-[11px] font-semibold leading-none text-red-800 dark:bg-red-900/30 dark:text-red-400">
                               Inativo
                             </span>
                           )}
@@ -548,7 +455,6 @@ export default function CategoriesPage() {
                   </tbody>
                 </table>
               </div>
-
             </>
           )}
         </div>
@@ -566,23 +472,23 @@ export default function CategoriesPage() {
           />
         )}
       </div>
-<ViewDataModal
-  isOpen={!!viewingCategory}
-  title="Visualizar Categoria"
-  data={viewingCategory}
-  onClose={() => setViewingCategory(null)}
-/>
 
-{/* Modal */}
-<CategoryModal
-  isOpen={showModal}
-  category={editingCategory}
-  onClose={handleCloseModal}
-  onSave={handleSaveSuccess}
-/>
+      <ViewDataModal
+        isOpen={!!viewingCategory}
+        title="Visualizar Categoria"
+        data={viewingCategoryData}
+        onClose={() => setViewingCategory(null)}
+      />
 
-<ConfirmDeleteModal
+      {/* Modal */}
+      <CategoryModal
+        isOpen={showModal}
+        category={editingCategory}
+        onClose={handleCloseModal}
+        onSave={handleSaveSuccess}
+      />
 
+      <ConfirmDeleteModal
         isOpen={!!deleteTarget}
         title="Confirmar exclusão"
         description={
@@ -598,5 +504,3 @@ export default function CategoriesPage() {
     </div>
   );
 }
-
-

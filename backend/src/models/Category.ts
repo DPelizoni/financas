@@ -23,4 +23,6 @@ export interface CategoryFilters {
   tipo?: CategoryType;
   page?: number;
   limit?: number;
+  sortBy?: string;
+  sortDirection?: "ASC" | "DESC";
 }

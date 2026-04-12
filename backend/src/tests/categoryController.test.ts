@@ -27,6 +27,8 @@ const listParseiaTipoEStatus = async () => {
         tipo: "DESPESA",
         page: 3,
         limit: 5,
+        sortBy: undefined,
+        sortDirection: "ASC",
       });
       return {
         categories: [{ id: 1, nome: "Alimentação" }] as Awaited<

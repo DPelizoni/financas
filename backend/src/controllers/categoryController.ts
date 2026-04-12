@@ -24,6 +24,12 @@ export class CategoryController {
             : undefined,
         page: parseInt(req.query.page as string) || 1,
         limit: parseInt(req.query.limit as string) || 10,
+        sortBy: req.query.sortBy as string,
+        sortDirection:
+          req.query.sortDirection === "DESC" ||
+          req.query.sortDirection === "desc"
+            ? "DESC"
+            : "ASC",
       };
 
       const { categories, total } =

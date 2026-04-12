@@ -25,7 +25,7 @@ export function TransactionSummaryCards({
   };
 
   return (
-    <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+    <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
       {/* Totais */}
       <div className="rounded-lg border border-blue-200 bg-blue-50 p-4 dark:border-blue-900/30 dark:bg-blue-900/20">
         <h3 className="mb-3 text-sm font-semibold text-blue-900 dark:text-blue-300">

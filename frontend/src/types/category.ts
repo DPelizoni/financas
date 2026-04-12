@@ -22,4 +22,6 @@ export interface CategoryInput {
 export interface CategoryFilters extends BaseFilters {
   ativo?: boolean;
   tipo?: CategoryType;
+  sortBy?: string;
+  sortDirection?: "asc" | "desc";
 }

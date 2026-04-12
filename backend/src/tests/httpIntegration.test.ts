@@ -343,6 +343,8 @@ const categoriesComTokenRetornaPaginado = async () => {
         tipo: "DESPESA",
         page: 4,
         limit: 2,
+        sortBy: undefined,
+        sortDirection: "ASC",
       });
 
       return {

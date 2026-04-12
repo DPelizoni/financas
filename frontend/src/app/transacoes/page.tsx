@@ -4,10 +4,10 @@ import React, { useEffect, useId, useMemo, useRef, useState } from "react";
 import {
   Transacao,
   TransacaoFilters,
+  TransacaoSummary,
   CopyMonthResult,
   DeleteMonthsResult,
   DeleteTransactionMonthsResult,
-  TransacaoSummary,
 } from "@/types/transacao";
 import { Category } from "@/types/category";
 import { Bank } from "@/types/bank";
@@ -160,7 +160,7 @@ export default function TransacoesPage() {
     | "banco"
     | "valor"
     | "situacao"
-  >("mes");
+  >("vencimento");
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
   const [copyMesOrigem, setCopyMesOrigem] = useState("");
   const [copyMesDestinoInput, setCopyMesDestinoInput] = useState("");
@@ -278,8 +278,8 @@ export default function TransacoesPage() {
 
       const response = await transacaoService.getAll(filters);
       setTransacoes(response.data || []);
-      setTotalPages(response.pagination.totalPages);
-      setTotal(response.pagination.total);
+      setTotalPages(response.pagination?.totalPages || 1);
+      setTotal(response.pagination?.total || 0);
 
       const summaryResponse = await transacaoService.getSummary({
         search: searchTerm || undefined,
@@ -741,158 +741,154 @@ export default function TransacoesPage() {
     setCurrentPage(1);
   };
 
-  const viewingTransacaoData = viewingTransacao
-    ? (() => {
-        const baseData = { ...viewingTransacao } as Record<string, unknown>;
-        delete baseData.categoria_id;
-        delete baseData.descricao_id;
-        delete baseData.banco_id;
-        delete baseData.created_at;
-        delete baseData.updated_at;
-
-        return {
-          ...baseData,
-          created_at: viewingTransacao.created_at ?? null,
-          updated_at: viewingTransacao.updated_at ?? null,
-        };
-      })()
-    : null;
+  const viewingTransacaoData = useMemo(() => {
+    if (!viewingTransacao) return null;
+    const { categoria_id, banco_id, descricao_id, ...rest } = viewingTransacao;
+    
+    // Removendo campos internos e formatando para exibição
+    const data = { ...rest } as Record<string, any>;
+    delete data.id;
+    delete data.created_at;
+    delete data.updated_at;
+    
+    return data;
+  }, [viewingTransacao]);
 
   return (
     <div className="app-page py-4 sm:py-8">
       <div className="mx-auto max-w-7xl space-y-6 px-4 sm:px-6 lg:px-8">
+        <FeedbackAlert feedback={feedback} onClose={() => setFeedback(null)} />
+
         <PageContainer>
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <h1 className="flex items-center gap-3 text-2xl font-bold text-gray-900 sm:text-3xl">
-                <ArrowLeftRight size={32} className="text-blue-600" />
+              <h1 className="flex items-center gap-3 text-2xl font-bold text-gray-900 sm:text-3xl dark:text-white">
+                <ArrowLeftRight size={32} className="text-blue-600 dark:text-blue-400" />
                 Gerenciamento de Transações
               </h1>
-              <p className="mt-2 text-sm text-gray-600">
-                Controle seus lançamentos de receitas e despesas
+              <p className="mt-2 text-sm text-gray-600 dark:text-slate-400">
+                Controle suas receitas e despesas mensais
               </p>
             </div>
-            <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center">
-              <div className="flex w-full items-center gap-2 sm:w-auto">
-                <AppButton
-                  tone={showFilters ? "outline-primary" : "outline"}
-                  onClick={() => setShowFilters(!showFilters)}
-                  className="relative"
-                  startIcon={<Filter size={18} className={showFilters ? "fill-blue-100 dark:fill-blue-900/50" : ""} />}
-                >
-                  Filtros
-                  {activeFiltersCount > 0 && (
-                    <span className="absolute -right-2 -top-2 flex h-5 w-5 items-center justify-center rounded-full bg-blue-600 text-[10px] font-bold text-white shadow-md ring-2 ring-white dark:ring-slate-900">
-                      {activeFiltersCount}
-                    </span>
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+              <AppButton
+                tone={showFilters ? "outline-primary" : "outline"}
+                onClick={() => setShowFilters(!showFilters)}
+                className="relative"
+                startIcon={<Filter size={18} className={showFilters ? "fill-blue-100 dark:fill-blue-900/50" : ""} />}
+              >
+                Filtros
+                {activeFiltersCount > 0 && (
+                  <span className="absolute -right-2 -top-2 flex h-5 w-5 items-center justify-center rounded-full bg-blue-600 text-[10px] font-bold text-white shadow-md ring-2 ring-white dark:ring-slate-900">
+                    {activeFiltersCount}
+                  </span>
+                )}
+              </AppButton>
+              
+              <div className="relative inline-block text-left">
+                {/* Desktop Dropdown Button */}
+                <div className="hidden sm:block">
+                  <AppButton
+                    tone="outline"
+                    onClick={() => setAdvancedActionsOpen((prev) => !prev)}
+                    endIcon={<ChevronDown size={18} />}
+                    className="w-full sm:w-auto"
+                  >
+                    Ações Avançadas
+                  </AppButton>
+
+                  {advancedActionsOpen && (
+                    <div className="absolute right-0 z-20 mt-2 w-full rounded-lg border border-gray-200 bg-white p-2 shadow-lg sm:w-72 dark:bg-slate-800 dark:border-slate-700">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setAdvancedActionsOpen(false);
+                          setCopyModalOpen(true);
+                        }}
+                        className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-left text-sm font-medium text-blue-700 transition hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-900/30"
+                      >
+                        <Copy size={16} />
+                        Copiar transações por mês
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setAdvancedActionsOpen(false);
+                          setDeleteModalOpen(true);
+                        }}
+                        className="mt-1 flex w-full items-center gap-2 rounded-md px-3 py-2 text-left text-sm font-medium text-red-700 transition hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/30"
+                      >
+                        <Trash size={16} />
+                        Excluir transações por mês
+                      </button>
+                    </div>
                   )}
-                </AppButton>
+                </div>
 
-                <div className="relative flex-1 sm:w-auto">
-                  {/* Desktop Dropdown Button */}
-                  <div className="hidden sm:block">
-                    <AppButton
-                      tone="outline"
-                      onClick={() => setAdvancedActionsOpen((prev) => !prev)}
-                      endIcon={<ChevronDown size={18} />}
-                      className="w-full sm:w-auto"
-                    >
-                      Ações Avançadas
-                    </AppButton>
-                    
-                    {advancedActionsOpen && (
-                      <div className="absolute right-0 z-20 mt-2 w-full rounded-lg border border-gray-200 bg-white p-2 shadow-lg sm:w-72 dark:bg-slate-800 dark:border-slate-700">
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setAdvancedActionsOpen(false);
-                            setCopyModalOpen(true);
-                          }}
-                          className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-left text-sm font-medium text-blue-700 transition hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-900/30"
-                        >
-                          <Copy size={16} />
-                          Copiar transações por mês
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setAdvancedActionsOpen(false);
-                            setDeleteModalOpen(true);
-                          }}
-                          className="mt-1 flex w-full items-center gap-2 rounded-md px-3 py-2 text-left text-sm font-medium text-red-700 transition hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/30"
-                        >
-                          <Trash size={16} />
-                          Excluir transações por mês
-                        </button>
-                      </div>
-                    )}
-                  </div>
+                {/* Mobile Bottom Sheet Trigger */}
+                <div className="sm:hidden">
+                  <AppButton
+                    tone="outline"
+                    onClick={() => setAdvancedActionsOpen(true)}
+                    startIcon={<MoreVertical size={18} />}
+                    className="w-full"
+                  >
+                    Ações
+                  </AppButton>
 
-                  {/* Mobile Bottom Sheet Trigger */}
-                  <div className="sm:hidden">
-                    <AppButton
-                      tone="outline"
-                      onClick={() => setAdvancedActionsOpen(true)}
-                      startIcon={<MoreVertical size={18} />}
-                      className="w-full"
-                    >
-                      Ações
-                    </AppButton>
-
-                    {advancedActionsOpen && isPortalReady && createPortal(
-                      <div className="fixed inset-0 z-[100] md:hidden">
-                        <div 
-                          className="absolute inset-0 bg-black/40 backdrop-blur-[2px]" 
-                          onClick={() => setAdvancedActionsOpen(false)}
-                        />
-                        <div className="absolute inset-x-0 bottom-0 animate-in slide-in-from-bottom duration-300 rounded-t-2xl bg-white p-4 pb-8 shadow-2xl dark:bg-slate-900">
-                          <div className="mx-auto mb-4 h-1.5 w-12 rounded-full bg-gray-200 dark:bg-slate-700" />
-                          <h3 className="mb-4 text-center text-xs font-bold text-gray-400 uppercase tracking-widest">
-                            Menu de Ações
-                          </h3>
-                          <div className="grid grid-cols-1 gap-3">
-                            <button
-                              onClick={() => {
-                                setAdvancedActionsOpen(false);
-                                setCopyModalOpen(true);
-                              }}
-                              className="flex w-full items-center gap-4 rounded-xl border border-blue-100 bg-blue-50/50 p-4 text-left text-blue-700 transition active:bg-blue-100 dark:border-blue-900/30 dark:bg-blue-900/20 dark:text-blue-400"
-                            >
-                              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-100 text-blue-600 dark:bg-blue-900 dark:text-blue-400">
-                                <Copy size={20} />
-                              </div>
-                              <div>
-                                <p className="font-bold">Copiar por Mês</p>
-                                <p className="text-xs opacity-70">Replicar dados para outros períodos</p>
-                              </div>
-                            </button>
-                            <button
-                              onClick={() => {
-                                setAdvancedActionsOpen(false);
-                                setDeleteModalOpen(true);
-                              }}
-                              className="flex w-full items-center gap-4 rounded-xl border border-red-100 bg-red-50/50 p-4 text-left text-red-700 transition active:bg-red-100 dark:border-red-900/30 dark:bg-red-900/20 dark:text-red-400"
-                            >
-                              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-red-100 text-red-600 dark:bg-red-900 dark:text-red-400">
-                                <Trash size={20} />
-                              </div>
-                              <div>
-                                <p className="font-bold text-red-700 dark:text-red-400">Excluir por Mês</p>
-                                <p className="text-xs text-red-600 opacity-70 dark:text-red-400">Limpeza de dados em lote</p>
-                              </div>
-                            </button>
-                          </div>
+                  {advancedActionsOpen && isPortalReady && createPortal(
+                    <div className="fixed inset-0 z-[100] md:hidden">
+                      <div
+                        className="absolute inset-0 bg-black/40 backdrop-blur-[2px]"
+                        onClick={() => setAdvancedActionsOpen(false)}
+                      />
+                      <div className="absolute inset-x-0 bottom-0 animate-in slide-in-from-bottom duration-300 rounded-t-2xl bg-white p-4 pb-8 shadow-2xl dark:bg-slate-900">
+                        <div className="mx-auto mb-4 h-1.5 w-12 rounded-full bg-gray-200 dark:bg-slate-700" />
+                        <h3 className="mb-4 text-center text-xs font-bold text-gray-400 uppercase tracking-widest">
+                          Menu de Ações
+                        </h3>
+                        <div className="grid grid-cols-1 gap-3">
                           <button
-                            onClick={() => setAdvancedActionsOpen(false)}
-                            className="mt-4 w-full rounded-xl bg-gray-100 p-4 text-sm font-bold text-gray-700 transition active:bg-gray-200 dark:bg-slate-800 dark:text-slate-300"
+                            onClick={() => {
+                              setAdvancedActionsOpen(false);
+                              setCopyModalOpen(true);
+                            }}
+                            className="flex w-full items-center gap-4 rounded-xl border border-blue-100 bg-blue-50/50 p-4 text-left text-blue-700 transition active:bg-blue-100 dark:border-blue-900/30 dark:bg-blue-900/20 dark:text-blue-400"
                           >
-                            Cancelar
+                            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-100 text-blue-600 dark:bg-blue-900 dark:text-blue-400">
+                              <Copy size={20} />
+                            </div>
+                            <div>
+                              <p className="font-bold">Copiar por Mês</p>
+                              <p className="text-xs opacity-70">Replicar dados para outros períodos</p>
+                            </div>
+                          </button>
+                          <button
+                            onClick={() => {
+                              setAdvancedActionsOpen(false);
+                              setDeleteModalOpen(true);
+                            }}
+                            className="flex w-full items-center gap-4 rounded-xl border border-red-100 bg-red-50/50 p-4 text-left text-red-700 transition active:bg-red-100 dark:border-red-900/30 dark:bg-red-900/20 dark:text-red-400"
+                          >
+                            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-red-100 text-red-600 dark:bg-red-900 dark:text-red-400">
+                              <Trash size={20} />
+                            </div>
+                            <div>
+                              <p className="font-bold text-red-700 dark:text-red-400">Excluir por Mês</p>
+                              <p className="text-xs text-red-600 opacity-70 dark:text-red-400">Limpeza de dados em lote</p>
+                            </div>
                           </button>
                         </div>
-                      </div>,
-                      document.body
-                    )}
-                  </div>
+                        <button
+                          onClick={() => setAdvancedActionsOpen(false)}
+                          className="mt-4 w-full rounded-xl bg-gray-100 p-4 text-sm font-bold text-gray-700 transition active:bg-gray-200 dark:bg-slate-800 dark:text-slate-300"
+                        >
+                          Cancelar
+                        </button>
+                      </div>
+                    </div>,
+                    document.body
+                  )}
                 </div>
               </div>
 
@@ -901,17 +897,15 @@ export default function TransacoesPage() {
                   setEditingTransacao(undefined);
                   setIsModalOpen(true);
                 }}
-                startIcon={<Icon path={mdiPlusBoxOutline} size={0.9} />}
+                tone="primary"
+                startIcon={<Icon path={mdiPlusBoxOutline} size={0.8} />}
                 className="w-full sm:w-auto"
               >
                 Nova Transação
               </AppButton>
-
             </div>
           </div>
         </PageContainer>
-
-        <FeedbackAlert feedback={feedback} onClose={() => setFeedback(null)} />
 
         <TransactionFilters
           searchTerm={searchTerm}
@@ -926,13 +920,7 @@ export default function TransacoesPage() {
           onSearch={handleSearch}
           onFilterTipoChange={(val) => {
             setFilterTipo(val);
-            setFilterCategoria((currentCategoria) => {
-              if (currentCategoria === "TODOS") return currentCategoria;
-              const selectedCategory = categories.find((cat) => cat.id === currentCategoria);
-              if (!selectedCategory) return "TODOS";
-              if (val !== "TODOS" && selectedCategory.tipo !== val) return "TODOS";
-              return currentCategoria;
-            });
+            setFilterCategoria("TODOS");
             setCurrentPage(1);
           }}
           onFilterCategoriaChange={(val) => {
@@ -956,182 +944,186 @@ export default function TransacoesPage() {
 
         <TransactionSummaryCards summary={summary} />
 
-        <TransactionList
-          transacoes={sortedTransacoes}
-          loading={loading}
-          sortBy={sortBy}
-          sortDirection={sortDirection}
-          onSort={handleSort}
-          onView={handleView}
-          onEdit={handleEdit}
-          onDelete={handleDelete}
-          onToggleSituacao={handleToggleSituacao}
-          onAddTransaction={() => {
-            setEditingTransacao(undefined);
-            setIsModalOpen(true);
-          }}
-          onClearFilters={handleClearFilters}
-        />
+        <div className="app-surface p-4">
+          <TransactionList
+            transacoes={sortedTransacoes}
+            loading={loading}
+            sortBy={sortBy}
+            sortDirection={sortDirection}
+            onSort={handleSort}
+            onView={handleView}
+            onEdit={handleEdit}
+            onDelete={handleDelete}
+            onToggleSituacao={handleToggleSituacao}
+            onAddTransaction={() => {
+              setEditingTransacao(undefined);
+              setIsModalOpen(true);
+            }}
+            onClearFilters={handleClearFilters}
+          />
+        </div>
 
-        <Pagination
-          currentPage={currentPage}
-          totalPages={totalPages}
-          total={total}
-          itemsPerPage={itemsPerPage}
-          onPageChange={setCurrentPage}
-          onItemsPerPageChange={setItemsPerPage}
-          itemsPerPageOptions={[5, 10, 20, 50, 100]}
-          centeredLayout
-        />
-
-        <ViewDataModal
-          isOpen={!!viewingTransacao}
-          title="Visualizar Transação"
-          data={viewingTransacaoData}
-          onClose={() => setViewingTransacao(null)}
-        />
-
-        <TransacaoModal
-          isOpen={isModalOpen}
-          onClose={() => {
-            setIsModalOpen(false);
-            setEditingTransacao(undefined);
-          }}
-          onSuccess={async (message) => {
-            showFeedback("success", message);
-            await loadTransacoes();
-          }}
-          transacao={editingTransacao}
-          isEditing={!!editingTransacao}
-        />
-
-        <ConfirmDeleteModal
-          isOpen={deleteConfirm.isOpen}
-          title="Confirmar exclusão"
-          description={
-            <>
-              Esta ação removerá a transação do mês{" "}
-              <strong>{deleteConfirm.transacaoMes}</strong>.
-              <span className="mt-2 block text-xs text-[rgb(var(--app-text-secondary))]">
-                Quer excluir esta mesma transação em vários meses?{" "}
-                <button
-                  type="button"
-                  onClick={handleOpenDeleteTransactionMonths}
-                  className="font-semibold text-red-700 underline-offset-2 hover:underline dark:text-red-400"
-                >
-                  Selecionar meses
-                </button>
-              </span>
-            </>
-          }
-          confirmLabel="Excluir transação"
-          onCancel={() =>
-            setDeleteConfirm({
-              isOpen: false,
-              transacaoId: null,
-              transacaoMes: null,
-            })
-          }
-          onConfirm={confirmDelete}
-        />
-
-        <ConfirmDeleteModal
-          isOpen={deleteMonthsConfirmOpen}
-          title="Confirmar exclusão por meses"
-          description={
-            deleteMeses.length === 1 ? (
-              <>
-                Esta ação removerá todas as transações do mês{" "}
-                <strong>{deleteMeses[0]}</strong>.
-              </>
-            ) : (
-              <>
-                Esta ação removerá todas as transações de{" "}
-                <strong>{deleteMeses.length} meses</strong> selecionados.
-              </>
-            )
-          }
-          confirmLabel="Excluir transações"
-          onCancel={() => setDeleteMonthsConfirmOpen(false)}
-          onConfirm={async () => {
-            setDeleteMonthsConfirmOpen(false);
-            await handleDeleteByMonths();
-          }}
-        />
-
-        <ConfirmDeleteModal
-          isOpen={deleteTransactionMonthsConfirmOpen}
-          title="Confirmar exclusão da transação por meses"
-          description={
-            deleteTransactionMeses.length === 1 ? (
-              <>
-                Esta ação removerá a transação selecionada do mês{" "}
-                <strong>{deleteTransactionMeses[0]}</strong>.
-              </>
-            ) : (
-              <>
-                Esta ação removerá a transação selecionada em{" "}
-                <strong>{deleteTransactionMeses.length} meses</strong>.
-              </>
-            )
-          }
-          confirmLabel="Excluir transação"
-          onCancel={() => setDeleteTransactionMonthsConfirmOpen(false)}
-          onConfirm={async () => {
-            setDeleteTransactionMonthsConfirmOpen(false);
-            await handleDeleteTransactionByMonths();
-          }}
-        />
-
-        <AdvancedActionModals
-          isPortalReady={isPortalReady}
-          copyModalOpen={copyModalOpen}
-          onCopyModalClose={() => setCopyModalOpen(false)}
-          copyMesOrigem={copyMesOrigem}
-          setCopyMesOrigem={setCopyMesOrigem}
-          copyMesDestinoInput={copyMesDestinoInput}
-          setCopyMesDestinoInput={setCopyMesDestinoInput}
-          copyMesesDestino={copyMesesDestino}
-          onAddDestinoMes={handleAddDestinoMes}
-          onRemoveDestinoMes={handleRemoveDestinoMes}
-          onAddNextMonths={handleAddNextMonths}
-          onCopyByMonth={handleCopyByMonth}
-          copyLoading={copyLoading}
-          deleteModalOpen={deleteModalOpen}
-          onDeleteModalClose={() => setDeleteModalOpen(false)}
-          deleteMesInput={deleteMesInput}
-          setDeleteMesInput={setDeleteMesInput}
-          deleteMeses={deleteMeses}
-          onAddDeleteMes={handleAddDeleteMes}
-          onRemoveDeleteMes={handleRemoveDeleteMes}
-          onAddDeleteNextMonths={handleAddDeleteNextMonths}
-          onRequestDeleteByMonths={requestDeleteByMonths}
-          deleteMonthsLoading={deleteMonthsLoading}
-          deleteTransactionMonthsModalOpen={deleteTransactionMonthsModalOpen}
-          onDeleteTransactionMonthsModalClose={() => {
-            setDeleteTransactionMonthsModalOpen(false);
-            setDeleteTransactionMonthsTarget(null);
-            setDeleteTransactionMeses([]);
-            setDeleteTransactionMesInput("");
-          }}
-          deleteTransactionMonthsTarget={deleteTransactionMonthsTarget}
-          deleteTransactionMesInput={deleteTransactionMesInput}
-          setDeleteTransactionMesInput={setDeleteTransactionMesInput}
-          deleteTransactionMeses={deleteTransactionMeses}
-          onAddDeleteTransactionMes={handleAddDeleteTransactionMes}
-          onRemoveDeleteTransactionMes={handleRemoveDeleteTransactionMes}
-          onAddDeleteTransactionNextMonths={handleAddDeleteTransactionNextMonths}
-          onRequestDeleteTransactionByMonths={requestDeleteTransactionByMonths}
-          deleteTransactionMonthsLoading={deleteTransactionMonthsLoading}
-          copyModalRef={copyModalRef}
-          copyModalTitleId={copyModalTitleId}
-          deleteModalRef={deleteModalRef}
-          deleteModalTitleId={deleteModalTitleId}
-          deleteTransactionMonthsModalRef={deleteTransactionMonthsModalRef}
-          deleteTransactionMonthsModalTitleId={deleteTransactionMonthsModalTitleId}
-          monthApiToInput={monthApiToInput}
-        />
+        {!loading && transacoes.length > 0 && (
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            total={total}
+            itemsPerPage={itemsPerPage}
+            onPageChange={setCurrentPage}
+            onItemsPerPageChange={setItemsPerPage}
+            itemsPerPageOptions={[5, 10, 20, 50, 100]}
+            centeredLayout
+          />
+        )}
       </div>
+
+      <ViewDataModal
+        isOpen={!!viewingTransacao}
+        title="Visualizar Transação"
+        data={viewingTransacaoData}
+        onClose={() => setViewingTransacao(null)}
+      />
+
+      <TransacaoModal
+        isOpen={isModalOpen}
+        onClose={() => {
+          setIsModalOpen(false);
+          setEditingTransacao(undefined);
+        }}
+        onSuccess={async (message) => {
+          showFeedback("success", message);
+          await loadTransacoes();
+        }}
+        transacao={editingTransacao}
+        isEditing={!!editingTransacao}
+      />
+
+      <AdvancedActionModals
+        isPortalReady={isPortalReady}
+        copyModalOpen={copyModalOpen}
+        onCopyModalClose={() => setCopyModalOpen(false)}
+        copyMesOrigem={copyMesOrigem}
+        setCopyMesOrigem={setCopyMesOrigem}
+        copyMesDestinoInput={copyMesDestinoInput}
+        setCopyMesDestinoInput={setCopyMesDestinoInput}
+        copyMesesDestino={copyMesesDestino}
+        onAddDestinoMes={handleAddDestinoMes}
+        onRemoveDestinoMes={handleRemoveDestinoMes}
+        onAddNextMonths={handleAddNextMonths}
+        onCopyByMonth={handleCopyByMonth}
+        copyLoading={copyLoading}
+        deleteModalOpen={deleteModalOpen}
+        onDeleteModalClose={() => setDeleteModalOpen(false)}
+        deleteMesInput={deleteMesInput}
+        setDeleteMesInput={setDeleteMesInput}
+        deleteMeses={deleteMeses}
+        onAddDeleteMes={handleAddDeleteMes}
+        onRemoveDeleteMes={handleRemoveDeleteMes}
+        onAddDeleteNextMonths={handleAddDeleteNextMonths}
+        onRequestDeleteByMonths={requestDeleteByMonths}
+        deleteMonthsLoading={deleteMonthsLoading}
+        deleteTransactionMonthsModalOpen={deleteTransactionMonthsModalOpen}
+        onDeleteTransactionMonthsModalClose={() => {
+          setDeleteTransactionMonthsModalOpen(false);
+          setDeleteTransactionMonthsTarget(null);
+          setDeleteTransactionMeses([]);
+          setDeleteTransactionMesInput("");
+        }}
+        deleteTransactionMonthsTarget={deleteTransactionMonthsTarget}
+        deleteTransactionMesInput={deleteTransactionMesInput}
+        setDeleteTransactionMesInput={setDeleteTransactionMesInput}
+        deleteTransactionMeses={deleteTransactionMeses}
+        onAddDeleteTransactionMes={handleAddDeleteTransactionMes}
+        onRemoveDeleteTransactionMes={handleRemoveDeleteTransactionMes}
+        onAddDeleteTransactionNextMonths={handleAddDeleteTransactionNextMonths}
+        onRequestDeleteTransactionByMonths={requestDeleteTransactionByMonths}
+        deleteTransactionMonthsLoading={deleteTransactionMonthsLoading}
+        copyModalRef={copyModalRef}
+        copyModalTitleId={copyModalTitleId}
+        deleteModalRef={deleteModalRef}
+        deleteModalTitleId={deleteModalTitleId}
+        deleteTransactionMonthsModalRef={deleteTransactionMonthsModalRef}
+        deleteTransactionMonthsModalTitleId={deleteTransactionMonthsModalTitleId}
+        monthApiToInput={monthApiToInput}
+      />
+
+      <ConfirmDeleteModal
+        isOpen={deleteConfirm.isOpen}
+        title="Confirmar exclusão"
+        description={
+          <>
+            Esta ação removerá a transação do mês{" "}
+            <strong>{deleteConfirm.transacaoMes}</strong>.
+            <span className="mt-2 block text-xs text-[rgb(var(--app-text-secondary))]">
+              Quer excluir esta mesma transação em vários meses?{" "}
+              <button
+                type="button"
+                onClick={handleOpenDeleteTransactionMonths}
+                className="font-semibold text-red-700 underline-offset-2 hover:underline dark:text-red-400"
+              >
+                Selecionar meses
+              </button>
+            </span>
+          </>
+        }
+        confirmLabel="Excluir transação"
+        onCancel={() =>
+          setDeleteConfirm({
+            isOpen: false,
+            transacaoId: null,
+            transacaoMes: null,
+          })
+        }
+        onConfirm={confirmDelete}
+      />
+
+      <ConfirmDeleteModal
+        isOpen={deleteMonthsConfirmOpen}
+        title="Confirmar exclusão por meses"
+        description={
+          deleteMeses.length === 1 ? (
+            <>
+              Esta ação removerá todas as transações do mês{" "}
+              <strong>{deleteMeses[0]}</strong>.
+            </>
+          ) : (
+            <>
+              Esta ação removerá todas as transações de{" "}
+              <strong>{deleteMeses.length} meses</strong> selecionados.
+            </>
+          )
+        }
+        confirmLabel="Excluir transações"
+        onCancel={() => setDeleteMonthsConfirmOpen(false)}
+        onConfirm={async () => {
+          setDeleteMonthsConfirmOpen(false);
+          await handleDeleteByMonths();
+        }}
+      />
+
+      <ConfirmDeleteModal
+        isOpen={deleteTransactionMonthsConfirmOpen}
+        title="Confirmar exclusão da transação por meses"
+        description={
+          deleteTransactionMeses.length === 1 ? (
+            <>
+              Esta ação removerá a transação selecionada do mês{" "}
+              <strong>{deleteTransactionMeses[0]}</strong>.
+            </>
+          ) : (
+            <>
+              Esta ação removerá a transação selecionada em{" "}
+              <strong>{deleteTransactionMeses.length} meses</strong>.
+            </>
+          )
+        }
+        confirmLabel="Excluir transação"
+        onCancel={() => setDeleteTransactionMonthsConfirmOpen(false)}
+        onConfirm={async () => {
+          setDeleteTransactionMonthsConfirmOpen(false);
+          await handleDeleteTransactionByMonths();
+        }}
+      />
     </div>
   );
 }

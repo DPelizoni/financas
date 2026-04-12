@@ -210,6 +210,13 @@ export default function AppShell({ children }: AppShellProps) {
 
           <nav className="space-y-1 px-3 py-5">
             {visibleNavItems.map((item) => {
+              const GroupIcon = item.icon;
+              const groupIsActive = item.type === "group" && pathname.startsWith(item.baseHref);
+              
+              // Em desktop colapsado, mostramos apenas o ícone. 
+              // Mas no mobile (sidebarOpen) ou desktop expandido, mostramos tudo.
+              const showFullNavigation = !isDesktopSidebarCollapsed || sidebarOpen;
+
               if (item.type === "link") {
                 const isActive = pathname.startsWith(item.href);
                 const Icon = item.icon;
@@ -219,28 +226,27 @@ export default function AppShell({ children }: AppShellProps) {
                     key={item.href}
                     href={item.href}
                     onClick={() => setSidebarOpen(false)}
-                    title={isDesktopSidebarCollapsed ? item.label : undefined}
+                    title={!showFullNavigation ? item.label : undefined}
                     className={`flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium transition-colors ${
                       isActive
                         ? "bg-[rgb(var(--app-brand-primary))] text-[rgb(var(--app-text-inverse))] shadow-sm"
                         : "text-[rgb(var(--app-text-secondary))] hover:bg-[rgb(var(--app-bg-muted))] hover:text-[rgb(var(--app-text-primary))]"
                     } ${
-                      isDesktopSidebarCollapsed ? "lg:justify-center lg:px-2" : ""
+                      !showFullNavigation ? "lg:justify-center lg:px-2" : ""
                     } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400`}
                   >
                     <Icon size={18} />
-                    <span className={isDesktopSidebarCollapsed ? "lg:hidden" : ""}>
+                    <span className={!showFullNavigation ? "lg:hidden" : ""}>
                       {item.label}
                     </span>
                   </Link>
                 );
               }
 
-              const GroupIcon = item.icon;
-              const groupIsActive = pathname.startsWith(item.baseHref);
+              // Lógica de Grupo
               const isGroupOpen = openGroups[item.id] ?? false;
 
-              if (isDesktopSidebarCollapsed) {
+              if (!showFullNavigation) {
                 const firstChild = item.children[0];
                 return (
                   <Link

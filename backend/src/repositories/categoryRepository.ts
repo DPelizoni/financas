@@ -9,7 +9,15 @@ export class CategoryRepository {
   async findAll(
     filters: CategoryFilters,
   ): Promise<{ categories: Category[]; total: number }> {
-    const { search, ativo, tipo, page = 1, limit = 10 } = filters;
+    const {
+      search,
+      ativo,
+      tipo,
+      page = 1,
+      limit = 10,
+      sortBy = "nome",
+      sortDirection = "ASC",
+    } = filters;
     const offset = (page - 1) * limit;
 
     let baseQuery = `FROM categories c WHERE 1=1`;
@@ -36,10 +44,15 @@ export class CategoryRepository {
     );
     const total = countResult[0].total;
 
+    // Validação básica para evitar SQL Injection no ORDER BY
+    const allowedSortColumns = ["id", "nome", "tipo", "ativo", "created_at"];
+    const sortColumn = allowedSortColumns.includes(sortBy) ? sortBy : "nome";
+    const direction = sortDirection.toUpperCase() === "DESC" ? "DESC" : "ASC";
+
     const [categories] = await pool.query<RowDataPacket[]>(
       `SELECT c.*
        ${baseQuery}
-       ORDER BY c.nome ASC, c.id ASC
+       ORDER BY c.${sortColumn} ${direction}, c.id ASC
        LIMIT ? OFFSET ?`,
       [...params, limit, offset],
     );
