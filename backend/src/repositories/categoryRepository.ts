@@ -3,6 +3,9 @@ import pool from "../config/database";
 import { Category, CategoryInput, CategoryFilters } from "../models/Category";
 
 export class CategoryRepository {
+  /**
+   * Lista todas as categorias com filtros e paginação
+   */
   async findAll(
     filters: CategoryFilters,
   ): Promise<{ categories: Category[]; total: number }> {
@@ -44,6 +47,9 @@ export class CategoryRepository {
     return { categories: categories as Category[], total };
   }
 
+  /**
+   * Busca categoria por ID
+   */
   async findById(id: number): Promise<Category | null> {
     const [categories] = await pool.query<RowDataPacket[]>(
       `SELECT c.*
@@ -55,6 +61,9 @@ export class CategoryRepository {
     return categories.length > 0 ? (categories[0] as Category) : null;
   }
 
+  /**
+   * Cria uma nova categoria
+   */
   async create(category: CategoryInput): Promise<Category> {
     const [result] = await pool.query<ResultSetHeader>(
       `INSERT INTO categories (nome, tipo, cor, ativo)
@@ -75,6 +84,9 @@ export class CategoryRepository {
     return createdCategory;
   }
 
+  /**
+   * Atualiza uma categoria de forma dinâmica
+   */
   async update(
     id: number,
     category: Partial<CategoryInput>,
@@ -82,22 +94,19 @@ export class CategoryRepository {
     const fields: string[] = [];
     const values: any[] = [];
 
-    if (category.nome !== undefined) {
-      fields.push("nome = ?");
-      values.push(category.nome);
-    }
-    if (category.tipo !== undefined) {
-      fields.push("tipo = ?");
-      values.push(category.tipo);
-    }
-    if (category.cor !== undefined) {
-      fields.push("cor = ?");
-      values.push(category.cor);
-    }
-    if (category.ativo !== undefined) {
-      fields.push("ativo = ?");
-      values.push(category.ativo);
-    }
+    const allowedFields: (keyof CategoryInput)[] = [
+      "nome",
+      "tipo",
+      "cor",
+      "ativo",
+    ];
+
+    allowedFields.forEach((field) => {
+      if (category[field] !== undefined) {
+        fields.push(`${field} = ?`);
+        values.push(category[field]);
+      }
+    });
 
     if (fields.length === 0) {
       return this.findById(id);
@@ -112,6 +121,9 @@ export class CategoryRepository {
     return this.findById(id);
   }
 
+  /**
+   * Exclui uma categoria
+   */
   async delete(id: number): Promise<boolean> {
     const [result] = await pool.query<ResultSetHeader>(
       "DELETE FROM categories WHERE id = ?",
@@ -120,6 +132,9 @@ export class CategoryRepository {
     return result.affectedRows > 0;
   }
 
+  /**
+   * Verifica se uma categoria existe por ID
+   */
   async exists(id: number): Promise<boolean> {
     const category = await this.findById(id);
     return category !== null;

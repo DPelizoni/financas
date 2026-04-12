@@ -1,7 +1,7 @@
-import { TransacaoRepository } from "../repositories/transacaoRepository";
-import { BankRepository } from "../repositories/bankRepository";
-import { CategoryRepository } from "../repositories/categoryRepository";
-import { DescricaoRepository } from "../repositories/descricaoRepository";
+import transacaoRepository from "../repositories/transacaoRepository";
+import bankRepository from "../repositories/bankRepository";
+import categoryRepository from "../repositories/categoryRepository";
+import descricaoRepository from "../repositories/descricaoRepository";
 import { Transacao, TransacaoComDetalhes } from "../models/Transacao";
 import { AppError } from "../middlewares/errorHandler";
 
@@ -42,30 +42,37 @@ interface CreateBatchResult {
 }
 
 export class TransacaoService {
-  private transacaoRepository = new TransacaoRepository();
-  private bankRepository = new BankRepository();
-  private categoryRepository = new CategoryRepository();
-  private descricaoRepository = new DescricaoRepository();
-
+  /**
+   * Lista todas as transações com filtros
+   */
   async getAllTransacoes(filters: TransacaoFilters) {
-    return this.transacaoRepository.findAll(filters);
+    return transacaoRepository.findAll(filters);
   }
 
+  /**
+   * Busca transação por ID
+   */
   async getById(id: number) {
-    const transacao = await this.transacaoRepository.findById(id);
+    const transacao = await transacaoRepository.findById(id);
     if (!transacao) {
       throw new AppError(404, "Transação não encontrada");
     }
     return transacao;
   }
 
+  /**
+   * Cria uma nova transação com validação de referências
+   */
   async createTransacao(
     data: Omit<Transacao, "id" | "created_at" | "updated_at">,
   ) {
     await this.validateCreateTransacaoRefs(data);
-    return this.transacaoRepository.create(data);
+    return transacaoRepository.create(data);
   }
 
+  /**
+   * Cria múltiplas transações em lote
+   */
   async createTransacoesBatch(
     data: Omit<Transacao, "id" | "created_at" | "updated_at">[],
   ): Promise<CreateBatchResult> {
@@ -87,7 +94,7 @@ export class TransacaoService {
       await this.validateCreateTransacaoRefs(transacao, caches);
     }
 
-    const totalCriadas = await this.transacaoRepository.createMany(data);
+    const totalCriadas = await transacaoRepository.createMany(data);
 
     return {
       total_recebidas: data.length,
@@ -95,11 +102,14 @@ export class TransacaoService {
     };
   }
 
+  /**
+   * Atualiza uma transação com validação de referências
+   */
   async updateTransacao(
     id: number,
     data: Partial<Omit<Transacao, "id" | "created_at" | "updated_at">>,
   ) {
-    const exists = await this.transacaoRepository.exists(id);
+    const exists = await transacaoRepository.exists(id);
     if (!exists) {
       throw new AppError(404, "Transação não encontrada");
     }
@@ -107,7 +117,7 @@ export class TransacaoService {
     // Validate references if provided
     if (data.banco_id) {
       const banco_id = Number(data.banco_id);
-      const bancoExists = await this.bankRepository.findById(banco_id);
+      const bancoExists = await bankRepository.findById(banco_id);
       if (!bancoExists) {
         throw new AppError(404, "Banco não encontrado");
       }
@@ -116,7 +126,7 @@ export class TransacaoService {
     if (data.categoria_id) {
       const categoria_id = Number(data.categoria_id);
       const categoriaExists =
-        await this.categoryRepository.findById(categoria_id);
+        await categoryRepository.findById(categoria_id);
       if (!categoriaExists) {
         throw new AppError(404, "Categoria não encontrada");
       }
@@ -133,7 +143,7 @@ export class TransacaoService {
       const descricao_id = Number(data.descricao_id);
       const categoria_id = Number(data.categoria_id || 0);
       const descricaoExists =
-        await this.descricaoRepository.findById(descricao_id);
+        await descricaoRepository.findById(descricao_id);
       if (!descricaoExists) {
         throw new AppError(404, "Descrição não encontrada");
       }
@@ -146,16 +156,19 @@ export class TransacaoService {
       }
     }
 
-    return this.transacaoRepository.update(id, data);
+    return transacaoRepository.update(id, data);
   }
 
+  /**
+   * Exclui uma transação
+   */
   async deleteTransacao(id: number) {
     try {
-      const exists = await this.transacaoRepository.exists(id);
+      const exists = await transacaoRepository.exists(id);
       if (!exists) {
         throw new AppError(404, "Transação não encontrada");
       }
-      return await this.transacaoRepository.delete(id);
+      return await transacaoRepository.delete(id);
     } catch (error) {
       if (error instanceof AppError) throw error;
 
@@ -175,6 +188,9 @@ export class TransacaoService {
     }
   }
 
+  /**
+   * Obtém resumo financeiro
+   */
   async getSummary(
     filters: {
       search?: string;
@@ -186,9 +202,12 @@ export class TransacaoService {
       ano?: string;
     } = {},
   ) {
-    return this.transacaoRepository.getSummary(filters);
+    return transacaoRepository.getSummary(filters);
   }
 
+  /**
+   * Copia transações de um mês para outros meses
+   */
   async copyTransacoesByMes(
     mesOrigemInput: string,
     mesesDestinoInput: string[],
@@ -205,7 +224,7 @@ export class TransacaoService {
       );
     }
 
-    const origem = await this.transacaoRepository.findByMes(mesOrigem);
+    const origem = await transacaoRepository.findByMes(mesOrigem);
     if (origem.length === 0) {
       throw new AppError(404, "Não há transações no mês de origem informado");
     }
@@ -216,7 +235,7 @@ export class TransacaoService {
     >[] = [];
 
     for (const mesDestino of mesesDestino) {
-      const existentesNoDestino = await this.transacaoRepository.findByMes(
+      const existentesNoDestino = await transacaoRepository.findByMes(
         mesDestino,
       );
       const existingByIdentity = new Map<
@@ -266,7 +285,7 @@ export class TransacaoService {
         const matchedExisting = existingMatches[sourceCount - 1];
         if (matchedExisting) {
           if (matchedExisting.vencimento !== novoRegistro.vencimento) {
-            await this.transacaoRepository.update(matchedExisting.id, {
+            await transacaoRepository.update(matchedExisting.id, {
               vencimento: novoRegistro.vencimento,
             });
           }
@@ -278,7 +297,7 @@ export class TransacaoService {
     }
 
     const totalCriadas =
-      await this.transacaoRepository.createMany(novosRegistros);
+      await transacaoRepository.createMany(novosRegistros);
 
     return {
       mes_origem: mesOrigem,
@@ -288,6 +307,9 @@ export class TransacaoService {
     };
   }
 
+  /**
+   * Exclui todas as transações de determinados meses
+   */
   async deleteTransacoesByMeses(
     mesesInput: string[],
   ): Promise<DeleteMonthsResult> {
@@ -299,7 +321,7 @@ export class TransacaoService {
       throw new AppError(400, "Informe ao menos um mês para exclusão");
     }
 
-    const totalExcluidas = await this.transacaoRepository.deleteByMeses(meses);
+    const totalExcluidas = await transacaoRepository.deleteByMeses(meses);
 
     return {
       meses,
@@ -307,6 +329,9 @@ export class TransacaoService {
     };
   }
 
+  /**
+   * Exclui transações correspondentes em vários meses
+   */
   async deleteTransacaoByMeses(
     transacaoIdInput: number,
     mesesInput: string[],
@@ -316,7 +341,7 @@ export class TransacaoService {
       throw new AppError(400, "Transação inválida para exclusão");
     }
 
-    const transacaoOrigem = await this.transacaoRepository.findById(transacaoId);
+    const transacaoOrigem = await transacaoRepository.findById(transacaoId);
     if (!transacaoOrigem) {
       throw new AppError(404, "Transação não encontrada");
     }
@@ -329,7 +354,7 @@ export class TransacaoService {
       throw new AppError(400, "Informe ao menos um mês para exclusão");
     }
 
-    const registrosMesOrigem = await this.transacaoRepository.findByMes(
+    const registrosMesOrigem = await transacaoRepository.findByMes(
       transacaoOrigem.mes,
     );
     const assinaturaBase = this.buildDeleteIdentitySignature(transacaoOrigem);
@@ -355,7 +380,7 @@ export class TransacaoService {
         continue;
       }
 
-      const registrosMes = await this.transacaoRepository.findByMes(mes);
+      const registrosMes = await transacaoRepository.findByMes(mes);
       const candidatosMes = registrosMes.filter(
         (registro) =>
           this.buildDeleteIdentitySignature(registro) === assinaturaBase,
@@ -386,7 +411,7 @@ export class TransacaoService {
       }
     }
 
-    const totalExcluidas = await this.transacaoRepository.deleteByIds(
+    const totalExcluidas = await transacaoRepository.deleteByIds(
       Array.from(idsParaExcluir),
     );
 
@@ -398,6 +423,9 @@ export class TransacaoService {
     };
   }
 
+  /**
+   * Valida referências (banco, categoria, descrição) antes de criar/atualizar
+   */
   private async validateCreateTransacaoRefs(
     data: Omit<Transacao, "id" | "created_at" | "updated_at">,
     caches?: {
@@ -412,7 +440,7 @@ export class TransacaoService {
 
     const bancoFromCache = caches?.bancos.get(banco_id);
     const bancoExists =
-      bancoFromCache ?? (await this.bankRepository.findById(banco_id));
+      bancoFromCache ?? (await bankRepository.findById(banco_id));
     if (!bancoExists) {
       throw new AppError(404, "Banco não encontrado");
     }
@@ -421,7 +449,7 @@ export class TransacaoService {
     const categoriaFromCache = caches?.categorias.get(categoria_id);
     const categoriaExists =
       categoriaFromCache ??
-      (await this.categoryRepository.findById(categoria_id));
+      (await categoryRepository.findById(categoria_id));
     if (!categoriaExists) {
       throw new AppError(404, "Categoria não encontrada");
     }
@@ -439,7 +467,7 @@ export class TransacaoService {
     const descricaoFromCache = caches?.descricoes.get(descricao_id);
     const descricaoExists =
       descricaoFromCache ??
-      (await this.descricaoRepository.findById(descricao_id));
+      (await descricaoRepository.findById(descricao_id));
     if (!descricaoExists) {
       throw new AppError(404, "Descrição não encontrada");
     }
@@ -571,4 +599,6 @@ export class TransacaoService {
     ].join("|");
   }
 }
+
+export default new TransacaoService();
 

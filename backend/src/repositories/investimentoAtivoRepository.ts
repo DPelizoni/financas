@@ -19,6 +19,9 @@ export class InvestimentoAtivoRepository {
     ) ims ON ims.investimento_ativo_id = ia.id
   `;
 
+  /**
+   * Lista todos os ativos de investimento com filtros e paginação
+   */
   async findAll(
     filters: InvestimentoAtivoFilters,
   ): Promise<{ ativos: InvestimentoAtivo[]; total: number }> {
@@ -105,6 +108,9 @@ export class InvestimentoAtivoRepository {
     return { ativos: rows as InvestimentoAtivo[], total };
   }
 
+  /**
+   * Obtém os anos disponíveis com base nos ativos cadastrados
+   */
   async getAvailableYears(filters: {
     banco_id?: number;
     ativo?: boolean;
@@ -135,6 +141,9 @@ export class InvestimentoAtivoRepository {
       .filter((year) => /^\d{4}$/.test(year));
   }
 
+  /**
+   * Busca a carteira de ativos filtrada
+   */
   async findCarteira(filters: {
     banco_id?: number;
     ativo?: boolean;
@@ -183,6 +192,9 @@ export class InvestimentoAtivoRepository {
     return rows as InvestimentoAtivo[];
   }
 
+  /**
+   * Busca um ativo de investimento por ID
+   */
   async findById(id: number): Promise<InvestimentoAtivo | null> {
     const [rows] = await pool.query<RowDataPacket[]>(
       `
@@ -216,6 +228,9 @@ export class InvestimentoAtivoRepository {
     return rows.length > 0 ? (rows[0] as InvestimentoAtivo) : null;
   }
 
+  /**
+   * Cria um novo ativo de investimento
+   */
   async create(input: InvestimentoAtivoInput): Promise<InvestimentoAtivo> {
     const [result] = await pool.query<ResultSetHeader>(
       `
@@ -240,6 +255,9 @@ export class InvestimentoAtivoRepository {
     return created;
   }
 
+  /**
+   * Atualiza um ativo de investimento de forma dinâmica
+   */
   async update(
     id: number,
     input: Partial<InvestimentoAtivoInput>,
@@ -247,26 +265,20 @@ export class InvestimentoAtivoRepository {
     const fields: string[] = [];
     const values: Array<string | number | boolean> = [];
 
-    if (input.nome !== undefined) {
-      fields.push("nome = ?");
-      values.push(input.nome);
-    }
-    if (input.banco_id !== undefined) {
-      fields.push("banco_id = ?");
-      values.push(input.banco_id);
-    }
-    if (input.saldo_inicial !== undefined) {
-      fields.push("saldo_inicial = ?");
-      values.push(input.saldo_inicial);
-    }
-    if (input.data_saldo_inicial !== undefined) {
-      fields.push("data_saldo_inicial = ?");
-      values.push(input.data_saldo_inicial);
-    }
-    if (input.ativo !== undefined) {
-      fields.push("ativo = ?");
-      values.push(input.ativo);
-    }
+    const allowedFields: (keyof InvestimentoAtivoInput)[] = [
+      "nome",
+      "banco_id",
+      "saldo_inicial",
+      "data_saldo_inicial",
+      "ativo",
+    ];
+
+    allowedFields.forEach((field) => {
+      if (input[field] !== undefined) {
+        fields.push(`${field} = ?`);
+        values.push(input[field]);
+      }
+    });
 
     if (fields.length === 0) {
       return this.findById(id);
@@ -282,6 +294,9 @@ export class InvestimentoAtivoRepository {
     return this.findById(id);
   }
 
+  /**
+   * Exclui um ativo de investimento
+   */
   async delete(id: number): Promise<boolean> {
     const [result] = await pool.query<ResultSetHeader>(
       "DELETE FROM investimento_ativos WHERE id = ?",
@@ -290,6 +305,9 @@ export class InvestimentoAtivoRepository {
     return result.affectedRows > 0;
   }
 
+  /**
+   * Verifica se um ativo de investimento existe por ID
+   */
   async exists(id: number): Promise<boolean> {
     const [rows] = await pool.query<RowDataPacket[]>(
       "SELECT 1 FROM investimento_ativos WHERE id = ?",
@@ -298,3 +316,5 @@ export class InvestimentoAtivoRepository {
     return rows.length > 0;
   }
 }
+
+export default new InvestimentoAtivoRepository();

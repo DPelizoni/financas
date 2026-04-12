@@ -1,15 +1,17 @@
 import { NextFunction, Request, Response } from "express";
 import { paginatedResponse, successResponse } from "../utils/response";
-import { InvestimentoMovimentacaoService } from "../services/investimentoMovimentacaoService";
+import investimentoMovimentacaoService from "../services/investimentoMovimentacaoService";
 import {
   InvestimentoMovimentacaoFilters,
   InvestimentoMovimentacaoTipo,
 } from "../models/Investimento";
 
-const investimentoMovimentacaoService = new InvestimentoMovimentacaoService();
-
-export const investimentoMovimentacaoController = {
-  getAll: async (req: Request, res: Response, next: NextFunction) => {
+export class InvestimentoMovimentacaoController {
+  /**
+   * @route GET /api/investimentos/movimentacoes
+   * @desc Lista todas as movimentações de investimento com paginação e filtros
+   */
+  async getAll(req: Request, res: Response, next: NextFunction) {
     try {
       const tipoQuery = req.query.tipo as string | undefined;
       const tipo: InvestimentoMovimentacaoTipo | undefined =
@@ -55,9 +57,13 @@ export const investimentoMovimentacaoController = {
     } catch (error) {
       next(error);
     }
-  },
+  }
 
-  getById: async (req: Request, res: Response, next: NextFunction) => {
+  /**
+   * @route GET /api/investimentos/movimentacoes/:id
+   * @desc Busca uma movimentação de investimento por ID
+   */
+  async getById(req: Request, res: Response, next: NextFunction) {
     try {
       const id = Number(req.params.id);
       const movimentacao =
@@ -68,9 +74,13 @@ export const investimentoMovimentacaoController = {
     } catch (error) {
       next(error);
     }
-  },
+  }
 
-  create: async (req: Request, res: Response, next: NextFunction) => {
+  /**
+   * @route POST /api/investimentos/movimentacoes
+   * @desc Cria uma nova movimentação de investimento
+   */
+  async create(req: Request, res: Response, next: NextFunction) {
     try {
       const movimentacao =
         await investimentoMovimentacaoService.createMovimentacao(req.body);
@@ -85,9 +95,13 @@ export const investimentoMovimentacaoController = {
     } catch (error) {
       next(error);
     }
-  },
+  }
 
-  update: async (req: Request, res: Response, next: NextFunction) => {
+  /**
+   * @route PUT /api/investimentos/movimentacoes/:id
+   * @desc Atualiza uma movimentação de investimento
+   */
+  async update(req: Request, res: Response, next: NextFunction) {
     try {
       const id = Number(req.params.id);
       const movimentacao =
@@ -101,9 +115,13 @@ export const investimentoMovimentacaoController = {
     } catch (error) {
       next(error);
     }
-  },
+  }
 
-  delete: async (req: Request, res: Response, next: NextFunction) => {
+  /**
+   * @route DELETE /api/investimentos/movimentacoes/:id
+   * @desc Exclui uma movimentação de investimento
+   */
+  async delete(req: Request, res: Response, next: NextFunction) {
     try {
       const id = Number(req.params.id);
       await investimentoMovimentacaoService.deleteMovimentacao(id);
@@ -111,5 +129,7 @@ export const investimentoMovimentacaoController = {
     } catch (error) {
       next(error);
     }
-  },
-};
+  }
+}
+
+export default new InvestimentoMovimentacaoController();

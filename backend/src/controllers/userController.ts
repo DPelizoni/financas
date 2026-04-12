@@ -4,7 +4,11 @@ import userService from "../services/userService";
 import { UserFilters } from "../models/User";
 import { AppError } from "../middlewares/errorHandler";
 
-class UserController {
+export class UserController {
+  /**
+   * @route POST /api/users
+   * @desc Cria um novo usuário
+   */
   async create(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const currentUser = req.user;
@@ -19,6 +23,10 @@ class UserController {
     }
   }
 
+  /**
+   * @route GET /api/users
+   * @desc Lista usuários com paginação e filtros
+   */
   async list(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const page = parseInt(req.query.page as string) || 1;
@@ -48,6 +56,10 @@ class UserController {
     }
   }
 
+  /**
+   * @route PATCH /api/users/:id/status
+   * @desc Atualiza apenas o status do usuário
+   */
   async updateStatus(
     req: Request,
     res: Response,
@@ -64,6 +76,10 @@ class UserController {
     }
   }
 
+  /**
+   * @route PUT /api/users/:id
+   * @desc Atualiza os dados do usuário
+   */
   async update(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const currentUser = req.user;
@@ -82,6 +98,10 @@ class UserController {
     }
   }
 
+  /**
+   * @route PATCH /api/users/:id/role
+   * @desc Atualiza o papel (role) do usuário
+   */
   async updateRole(
     req: Request,
     res: Response,
@@ -103,6 +123,10 @@ class UserController {
     }
   }
 
+  /**
+   * @route DELETE /api/users/:id
+   * @desc Exclui um usuário
+   */
   async delete(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const currentUserId = req.user?.id;

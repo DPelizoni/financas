@@ -22,6 +22,7 @@ import {
 import { useAccessibleModal } from "@/utils/useAccessibleModal";
 
 interface InvestimentoMovimentacaoModalProps {
+  isOpen: boolean;
   movimentacao: InvestimentoMovimentacao | null;
   ativos: InvestimentoAtivo[];
   onClose: () => void;
@@ -68,6 +69,7 @@ const validateMovimentacaoForm = (
 };
 
 export default function InvestimentoMovimentacaoModal({
+  isOpen,
   movimentacao,
   ativos,
   onClose,
@@ -112,6 +114,8 @@ export default function InvestimentoMovimentacaoModal({
   );
 
   useEffect(() => {
+    if (!isOpen) return;
+
     if (movimentacao) {
       setFormData({
         investimento_ativo_id: movimentacao.investimento_ativo_id,
@@ -132,13 +136,15 @@ export default function InvestimentoMovimentacaoModal({
 
     clearAllErrors();
     resetTouched();
-  }, [movimentacao, sortedAtivos, clearAllErrors, resetTouched]);
+  }, [isOpen, movimentacao, sortedAtivos, clearAllErrors, resetTouched]);
 
   useAccessibleModal({
-    isOpen: true,
+    isOpen,
     modalRef,
     onClose,
   });
+
+  if (!isOpen) return null;
 
   const updateField = <K extends keyof InvestimentoMovimentacaoInput>(
     field: K,

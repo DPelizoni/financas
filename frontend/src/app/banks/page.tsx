@@ -7,11 +7,12 @@ import {
   X,
   ArrowDownWideNarrow,
   ArrowUpNarrowWide,
+  Filter,
 } from "lucide-react";
 import Icon from "@mdi/react";
 import { mdiPlusBoxOutline } from "@mdi/js";
-import { bankService, BankFilters } from "@/services/bankService";
-import { Bank } from "@/types/bank";
+import { bankService } from "@/services/bankService";
+import { Bank, BankFilters } from "@/types/bank";
 import BankModal from "@/components/BankModal";
 import Pagination from "@/components/Pagination";
 import FeedbackAlert from "@/components/FeedbackAlert";
@@ -21,8 +22,10 @@ import AppButton from "@/components/AppButton";
 import TableActionButton from "@/components/TableActionButton";
 import ViewDataModal from "@/components/ViewDataModal";
 import { IconButton, InputAdornment, TextField } from "@mui/material";
+import { TableSkeleton, CardSkeleton } from "@/components/skeletons/DataSkeletons";
+import EmptyState from "@/components/EmptyState";
 
-export default function BanksPage() {
+export default function BanksPage() {
   const [banks, setBanks] = useState<Bank[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
@@ -45,6 +48,14 @@ export default function BanksPage() {
     "nome",
   );
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
+  const [showFilters, setShowFilters] = useState(false);
+
+  const activeFiltersCount = useMemo(() => {
+    let count = 0;
+    if (searchTerm) count++;
+    if (filterAtivo !== undefined) count++;
+    return count;
+  }, [searchTerm, filterAtivo]);
 
   const handleSort = (column: "nome" | "codigo" | "saldo" | "status") => {
     if (sortBy === column) {
@@ -195,19 +206,48 @@ export default function BanksPage() {
                 Gerencie suas instituições financeiras e contas
               </p>
             </div>
-            <AppButton
-              onClick={handleCreate}
-              tone="primary"
-              startIcon={<Icon path={mdiPlusBoxOutline} size={0.8} />}
-              className="w-full sm:w-auto"
-            >
-              Novo Banco
-            </AppButton>
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+              <AppButton
+                tone={showFilters ? "outline-primary" : "outline"}
+                onClick={() => setShowFilters(!showFilters)}
+                className="relative"
+                startIcon={<Filter size={18} className={showFilters ? "fill-blue-100 dark:fill-blue-900/50" : ""} />}
+              >
+                Filtros
+                {activeFiltersCount > 0 && (
+                  <span className="absolute -right-2 -top-2 flex h-5 w-5 items-center justify-center rounded-full bg-blue-600 text-[10px] font-bold text-white shadow-md ring-2 ring-white dark:ring-slate-900">
+                    {activeFiltersCount}
+                  </span>
+                )}
+              </AppButton>
+              <AppButton
+                onClick={handleCreate}
+                tone="primary"
+                startIcon={<Icon path={mdiPlusBoxOutline} size={0.8} />}
+                className="w-full sm:w-auto"
+              >
+                Novo Banco
+              </AppButton>
+            </div>
           </div>
         </PageContainer>
 
         {/* Filters */}
-        <div className="filter-panel-surface">
+        <div className={`filter-panel-surface ${!showFilters ? "hidden" : "block animate-in fade-in slide-in-from-top-2 duration-300"}`}>
+          <div className="mb-4 flex items-center justify-between border-b border-gray-100 pb-3 dark:border-slate-800">
+            <h3 className="text-sm font-semibold text-gray-700 dark:text-slate-300">Filtros de Bancos</h3>
+            <button
+              type="button"
+              onClick={() => {
+                setSearchTerm("");
+                setFilterAtivo(undefined);
+                setCurrentPage(1);
+              }}
+              className="text-xs font-medium text-blue-600 hover:text-blue-800 transition dark:text-blue-400 dark:hover:text-blue-300"
+            >
+              Limpar tudo
+            </button>
+          </div>
           <div className="flex flex-col md:flex-row gap-4">
             <div className="flex-1">
               <TextField
@@ -268,23 +308,33 @@ export default function BanksPage() {
         {/* Table */}
         <div className="app-surface p-4">
           {loading ? (
-            <div className="text-center py-12">
-              <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-              <p className="mt-2 text-gray-600">Carregando dados...</p>
-            </div>
+            <>
+              <div className="md:hidden">
+                <CardSkeleton count={3} />
+              </div>
+              <div className="hidden md:block">
+                <TableSkeleton rows={5} columns={5} />
+              </div>
+            </>
           ) : banks.length === 0 ? (
-            <div className="text-center py-12">
-              <Building2 size={48} className="mx-auto text-gray-400 mb-4" />
-              <p className="text-gray-600">Nenhum registro encontrado</p>
-              <AppButton
-                onClick={handleCreate}
-                tone="ghost"
-                size="sm"
-                className="mt-4 text-blue-600 hover:text-blue-700"
-              >
-                Criar novo registro
-              </AppButton>
-            </div>
+            <EmptyState
+              icon={Building2}
+              title="Nenhum banco encontrado"
+              description={
+                searchTerm || filterAtivo !== undefined
+                  ? "Tente ajustar seus filtros para encontrar o que procura."
+                  : "Comece cadastrando sua primeira instituição financeira para gerenciar seu saldo."
+              }
+              actionLabel={searchTerm || filterAtivo !== undefined ? "Limpar Filtros" : "Novo Banco"}
+              onAction={
+                searchTerm || filterAtivo !== undefined
+                  ? () => {
+                      setSearchTerm("");
+                      setFilterAtivo(undefined);
+                    }
+                  : handleCreate
+              }
+            />
           ) : (
             <>
               <div className="space-y-2 px-2 sm:px-0 md:hidden">
@@ -348,10 +398,10 @@ export default function BanksPage() {
               </div>
 
               <div className="hidden overflow-x-auto md:block">
-                <table className="min-w-[640px] w-full divide-y divide-gray-200 text-xs">
+                <table className="min-w-[640px] w-full table-fixed divide-y divide-gray-200 text-xs">
                   <thead className="app-table-head">
                     <tr>
-                      <th className="app-table-head-cell">
+                      <th className="app-table-head-cell w-[40%]">
                         <button
                           type="button"
                           onClick={() => handleSort("nome")}
@@ -365,7 +415,7 @@ export default function BanksPage() {
                           ) : null}
                         </button>
                       </th>
-                      <th className="app-table-head-cell">
+                      <th className="app-table-head-cell w-[15%]">
                         <button
                           type="button"
                           onClick={() => handleSort("codigo")}
@@ -379,7 +429,7 @@ export default function BanksPage() {
                           ) : null}
                         </button>
                       </th>
-                      <th className="app-table-head-cell">
+                      <th className="app-table-head-cell w-[15%]">
                         <button
                           type="button"
                           onClick={() => handleSort("saldo")}
@@ -393,7 +443,7 @@ export default function BanksPage() {
                           ) : null}
                         </button>
                       </th>
-                      <th className="app-table-head-cell">
+                      <th className="app-table-head-cell w-[15%]">
                         <button
                           type="button"
                           onClick={() => handleSort("status")}
@@ -407,7 +457,7 @@ export default function BanksPage() {
                           ) : null}
                         </button>
                       </th>
-                      <th className="app-table-head-cell-center">
+                      <th className="app-table-head-cell-center w-[15%]">
                         Ações
                       </th>
                     </tr>
@@ -506,13 +556,12 @@ export default function BanksPage() {
       />
 
       {/* Modal */}
-      {showModal && (
-        <BankModal
-          bank={editingBank}
-          onClose={handleCloseModal}
-          onSave={handleSaveSuccess}
-        />
-      )}
+      <BankModal
+        isOpen={showModal}
+        bank={editingBank}
+        onClose={handleCloseModal}
+        onSave={handleSaveSuccess}
+      />
 
       <ConfirmDeleteModal
         isOpen={!!deleteTarget}

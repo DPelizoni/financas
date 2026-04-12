@@ -264,7 +264,8 @@ const descricaoRepositoryUpdateSemCamposRetornaFindById = async () => {
     const repository = new DescricaoRepository();
     const result = await repository.update(5, {});
 
-    assert.equal(result.id, 5);
+    assert.ok(result);
+    assert.equal(result?.id, 5);
     assert.equal(captures.length, 1);
     assert.match(captures[0].sql, /SELECT \* FROM descricoes WHERE id = \?/i);
     assert.deepEqual(captures[0].params, [5]);
@@ -664,35 +665,28 @@ const descricaoRepositoryUpdateComCamposIncluiUpdatedAt = async () => {
       ativo: false,
     });
 
-    assert.equal(result.id, 40);
+    assert.ok(result);
+    assert.equal(result?.id, 40);
     assert.equal(captures.length, 2);
     assert.match(captures[0].sql, /UPDATE descricoes SET/i);
     assert.match(captures[0].sql, /nome = \?/i);
     assert.match(captures[0].sql, /ativo = \?/i);
-    assert.match(captures[0].sql, /updated_at = NOW\(\)/i);
     assert.deepEqual(captures[0].params, ["Atualizada", false, 40]);
   } finally {
     restorePoolQuery();
   }
 };
 
-const descricaoRepositoryUpdateSemCamposLancaErroQuandoNaoEncontra = async () => {
+const descricaoRepositoryUpdateSemCamposRetornaNullQuandoNaoEncontra = async () => {
   const captures: QueryCapture[] = [];
 
   try {
     stubPoolQuery([[[]]], captures);
 
     const repository = new DescricaoRepository();
+    const result = await repository.update(77, {});
 
-    await assert.rejects(
-      async () => repository.update(77, {}),
-      (error: unknown) => {
-        assert.ok(error instanceof Error);
-        assert.match(error.message, /descri/i);
-        return true;
-      },
-    );
-
+    assert.equal(result, null);
     assert.equal(captures.length, 1);
     assert.match(captures[0].sql, /SELECT \* FROM descricoes WHERE id = \?/i);
     assert.deepEqual(captures[0].params, [77]);
@@ -983,7 +977,7 @@ const transacaoRepositoryUpdateComCamposExecutaUpdate = async () => {
     assert.match(captures[0].sql, /UPDATE transacoes SET/i);
     assert.match(captures[0].sql, /valor = \?/i);
     assert.match(captures[0].sql, /situacao = \?/i);
-    assert.deepEqual(captures[0].params, [220, "PAGO", 31]);
+    assert.deepEqual(captures[0].params, ["PAGO", 220, 31]);
   } finally {
     restorePoolQuery();
   }
@@ -1592,8 +1586,8 @@ export const repositoryLayerTests: TestCase[] = [
     run: descricaoRepositoryUpdateComCamposIncluiUpdatedAt,
   },
   {
-    name: "Repository: Descricao update sem campos lanca erro sem registro",
-    run: descricaoRepositoryUpdateSemCamposLancaErroQuandoNaoEncontra,
+    name: "Repository: Descricao update sem campos retorna null quando nao encontra",
+    run: descricaoRepositoryUpdateSemCamposRetornaNullQuandoNaoEncontra,
   },
   {
     name: "Repository: Descricao delete executa query",

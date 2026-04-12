@@ -1,20 +1,16 @@
 import { Router } from "express";
-import { transacaoController } from "../controllers/transacaoController";
+import transacaoController from "../controllers/transacaoController";
 import { validate } from "../middlewares/validator";
-import { TransacaoService } from "../services/transacaoService";
-import { successResponse } from "../utils/response";
 import {
   transacaoCreateSchema,
   transacaoCreateBatchSchema,
   transacaoUpdateSchema,
-  transacaoFiltersSchema,
   transacaoCopyMonthSchema,
   transacaoDeleteMonthsSchema,
   transacaoDeleteTransactionMonthsSchema,
 } from "../schemas/transacaoSchema";
 
 const router = Router();
-const transacaoService = new TransacaoService();
 
 /**
  * @swagger
@@ -278,21 +274,7 @@ router.delete(
 router.delete(
   "/delete-transaction-months",
   validate(transacaoDeleteTransactionMonthsSchema),
-  async (req, res, next) => {
-    try {
-      const { transacao_id, meses } = req.body;
-      const result = await transacaoService.deleteTransacaoByMeses(
-        Number(transacao_id),
-        meses,
-      );
-
-      res.json(
-        successResponse("Transação excluída nos meses selecionados", result),
-      );
-    } catch (error) {
-      next(error);
-    }
-  },
+  transacaoController.deleteTransactionByMeses,
 );
 
 /**

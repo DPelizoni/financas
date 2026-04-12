@@ -7,15 +7,13 @@ import {
   X,
   ArrowDownWideNarrow,
   ArrowUpNarrowWide,
+  Filter,
 } from "lucide-react";
 import Icon from "@mdi/react";
 import { mdiPlusBoxOutline } from "@mdi/js";
-import {
-  descricaoService,
-  DescricaoFilters,
-} from "@/services/descricaoService";
+import { descricaoService } from "@/services/descricaoService";
 import { categoryService } from "@/services/categoryService";
-import { Descricao } from "@/types/descricao";
+import { Descricao, DescricaoFilters } from "@/types/descricao";
 import { Category } from "@/types/category";
 import DescricaoModal from "@/components/DescricaoModal";
 import Pagination from "@/components/Pagination";
@@ -26,8 +24,10 @@ import AppButton from "@/components/AppButton";
 import TableActionButton from "@/components/TableActionButton";
 import ViewDataModal from "@/components/ViewDataModal";
 import { IconButton, InputAdornment, MenuItem, TextField } from "@mui/material";
+import { TableSkeleton, CardSkeleton } from "@/components/skeletons/DataSkeletons";
+import EmptyState from "@/components/EmptyState";
 
-export default function DescricoesPage() {
+export default function DescricoesPage() {
   const [descricoes, setDescricoes] = useState<Descricao[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
@@ -56,6 +56,15 @@ export default function DescricoesPage() {
   );
   const [sortBy, setSortBy] = useState<"nome" | "categoria" | "status">("nome");
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
+  const [showFilters, setShowFilters] = useState(false);
+
+  const activeFiltersCount = useMemo(() => {
+    let count = 0;
+    if (searchTerm) count++;
+    if (filterCategoria !== "TODOS") count++;
+    if (filterAtivo !== undefined) count++;
+    return count;
+  }, [searchTerm, filterCategoria, filterAtivo]);
 
   const handleSort = (column: "nome" | "categoria" | "status") => {
     if (sortBy === column) {
@@ -217,18 +226,48 @@ export default function DescricoesPage() {
                 Gerencie descrições vinculadas às categorias
               </p>
             </div>
-            <AppButton
-              onClick={handleCreate}
-              tone="primary"
-              startIcon={<Icon path={mdiPlusBoxOutline} size={0.8} />}
-              className="w-full sm:w-auto"
-            >
-              Nova Descrição
-            </AppButton>
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+              <AppButton
+                tone={showFilters ? "outline-primary" : "outline"}
+                onClick={() => setShowFilters(!showFilters)}
+                className="relative"
+                startIcon={<Filter size={18} className={showFilters ? "fill-blue-100 dark:fill-blue-900/50" : ""} />}
+              >
+                Filtros
+                {activeFiltersCount > 0 && (
+                  <span className="absolute -right-2 -top-2 flex h-5 w-5 items-center justify-center rounded-full bg-blue-600 text-[10px] font-bold text-white shadow-md ring-2 ring-white dark:ring-slate-900">
+                    {activeFiltersCount}
+                  </span>
+                )}
+              </AppButton>
+              <AppButton
+                onClick={handleCreate}
+                tone="primary"
+                startIcon={<Icon path={mdiPlusBoxOutline} size={0.8} />}
+                className="w-full sm:w-auto"
+              >
+                Nova Descrição
+              </AppButton>
+            </div>
           </div>
         </PageContainer>
 
-        <div className="filter-panel-surface">
+        <div className={`filter-panel-surface ${!showFilters ? "hidden" : "block animate-in fade-in slide-in-from-top-2 duration-300"}`}>
+          <div className="mb-4 flex items-center justify-between border-b border-gray-100 pb-3 dark:border-slate-800">
+            <h3 className="text-sm font-semibold text-gray-700 dark:text-slate-300">Filtros de Descrições</h3>
+            <button
+              type="button"
+              onClick={() => {
+                setSearchTerm("");
+                setFilterAtivo(undefined);
+                setFilterCategoria("TODOS");
+                setCurrentPage(1);
+              }}
+              className="text-xs font-medium text-blue-600 hover:text-blue-800 transition dark:text-blue-400 dark:hover:text-blue-300"
+            >
+              Limpar tudo
+            </button>
+          </div>
           <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
             <div className="md:col-span-2">
               <TextField
@@ -323,23 +362,34 @@ export default function DescricoesPage() {
 
         <div className="app-surface p-4">
           {loading ? (
-            <div className="py-12 text-center">
-              <div className="inline-block h-8 w-8 animate-spin rounded-full border-b-2 border-blue-600"></div>
-              <p className="mt-2 text-gray-600">Carregando dados...</p>
-            </div>
+            <>
+              <div className="md:hidden">
+                <CardSkeleton count={3} />
+              </div>
+              <div className="hidden md:block">
+                <TableSkeleton rows={5} columns={4} />
+              </div>
+            </>
           ) : descricoes.length === 0 ? (
-            <div className="py-12 text-center">
-              <FileText size={48} className="mx-auto mb-4 text-gray-400" />
-              <p className="text-gray-600">Nenhum registro encontrado</p>
-              <AppButton
-                onClick={handleCreate}
-                tone="ghost"
-                size="sm"
-                className="mt-4 text-blue-600 hover:text-blue-700"
-              >
-                Criar novo registro
-              </AppButton>
-            </div>
+            <EmptyState
+              icon={FileText}
+              title="Nenhuma descrição encontrada"
+              description={
+                searchTerm || filterAtivo !== undefined || filterCategoria !== "TODOS"
+                  ? "Tente ajustar seus filtros para encontrar o que procura."
+                  : "Comece cadastrando suas descrições de itens para facilitar seus lançamentos."
+              }
+              actionLabel={searchTerm || filterAtivo !== undefined || filterCategoria !== "TODOS" ? "Limpar Filtros" : "Nova Descrição"}
+              onAction={
+                searchTerm || filterAtivo !== undefined || filterCategoria !== "TODOS"
+                  ? () => {
+                      setSearchTerm("");
+                      setFilterAtivo(undefined);
+                      setFilterCategoria("TODOS");
+                    }
+                  : handleCreate
+              }
+            />
           ) : (
             <>
               <div className="space-y-2 px-2 sm:px-0 md:hidden">
@@ -529,13 +579,13 @@ export default function DescricoesPage() {
         onClose={() => setViewingDescricao(null)}
       />
 
-      {showModal && (
-        <DescricaoModal
-          descricao={editingDescricao}
-          onClose={handleCloseModal}
-          onSave={handleSaveSuccess}
-        />
-      )}
+      {/* Modal */}
+      <DescricaoModal
+        isOpen={showModal}
+        descricao={editingDescricao}
+        onClose={handleCloseModal}
+        onSave={handleSaveSuccess}
+      />
 
       <ConfirmDeleteModal
         isOpen={!!deleteTarget}

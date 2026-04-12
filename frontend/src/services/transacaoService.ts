@@ -3,7 +3,6 @@ import {
   Transacao,
   TransacaoInput,
   TransacaoFilters,
-  TransacaoResponse,
   TransacaoSummary,
   CopyMonthPayload,
   CopyMonthResult,
@@ -14,129 +13,118 @@ import {
   CreateBatchPayload,
   CreateBatchResult,
 } from "@/types/transacao";
+import { ApiResponse, PaginatedResponse } from "@/types/api";
 
 export const transacaoService = {
-  async getAll(filters: TransacaoFilters): Promise<TransacaoResponse> {
-    const params = new URLSearchParams();
-
-    if (filters.page) params.append("page", filters.page.toString());
-    if (filters.limit) params.append("limit", filters.limit.toString());
-    if (filters.search) params.append("search", filters.search);
-    if (filters.tipo) params.append("tipo", filters.tipo);
-    if (filters.categoria_id)
-      params.append("categoria_id", filters.categoria_id.toString());
-    if (filters.banco_id)
-      params.append("banco_id", filters.banco_id.toString());
-    if (filters.situacao) params.append("situacao", filters.situacao);
-    if (filters.mes) params.append("mes", filters.mes);
-    if (filters.ano) params.append("ano", filters.ano);
-
-    const response = await apiClient.get<TransacaoResponse>(
-      `/api/transacoes?${params}`,
+  /**
+   * Lista todas as transações com filtros e paginação
+   */
+  async getAll(filters: TransacaoFilters): Promise<PaginatedResponse<Transacao[]>> {
+    const response = await apiClient.get<PaginatedResponse<Transacao[]>>(
+      "/api/transacoes",
+      { params: filters },
     );
     return response.data;
   },
 
+  /**
+   * Busca uma transação por ID
+   */
   async getById(id: number): Promise<Transacao> {
-    const response = await apiClient.get<{ success: boolean; data: Transacao }>(
+    const response = await apiClient.get<ApiResponse<Transacao>>(
       `/api/transacoes/${id}`,
     );
     return response.data.data;
   },
 
+  /**
+   * Cria uma nova transação
+   */
   async create(data: TransacaoInput): Promise<Transacao> {
-    const response = await apiClient.post<{
-      success: boolean;
-      data: Transacao;
-    }>(`/api/transacoes`, data);
+    const response = await apiClient.post<ApiResponse<Transacao>>(`/api/transacoes`, data);
     return response.data.data;
   },
 
+  /**
+   * Cria múltiplas transações em lote
+   */
   async createBatch(payload: CreateBatchPayload): Promise<CreateBatchResult> {
-    const response = await apiClient.post<{
-      success: boolean;
-      data: CreateBatchResult;
-    }>(`/api/transacoes/batch`, payload);
+    const response = await apiClient.post<ApiResponse<CreateBatchResult>>(
+      `/api/transacoes/batch`,
+      payload,
+    );
 
     return response.data.data;
   },
 
+  /**
+   * Atualiza uma transação existente
+   */
   async update(id: number, data: Partial<TransacaoInput>): Promise<Transacao> {
-    const response = await apiClient.put<{ success: boolean; data: Transacao }>(
+    const response = await apiClient.put<ApiResponse<Transacao>>(
       `/api/transacoes/${id}`,
       data,
     );
     return response.data.data;
   },
 
+  /**
+   * Exclui uma transação
+   */
   async delete(id: number): Promise<void> {
     await apiClient.delete(`/api/transacoes/${id}`);
   },
 
+  /**
+   * Obtém resumo financeiro baseado em filtros
+   */
   async getSummary(
     filters: Omit<TransacaoFilters, "page" | "limit"> = {},
   ): Promise<TransacaoSummary> {
-    const params = new URLSearchParams();
-
-    if (filters.search) params.append("search", filters.search);
-    if (filters.tipo) params.append("tipo", filters.tipo);
-    if (filters.categoria_id)
-      params.append("categoria_id", filters.categoria_id.toString());
-    if (filters.banco_id)
-      params.append("banco_id", filters.banco_id.toString());
-    if (filters.situacao) params.append("situacao", filters.situacao);
-    if (filters.mes) params.append("mes", filters.mes);
-    if (filters.ano) params.append("ano", filters.ano);
-
-    const response = await apiClient.get<{
-      success: boolean;
-      data: TransacaoSummary;
-    }>(`/api/transacoes/summary?${params}`);
-
-    const raw = response.data.data as any;
-    return {
-      total_pago: Number(raw.total_pago || 0),
-      total_pendente: Number(raw.total_pendente || 0),
-      total_registros: Number(raw.total_registros || 0),
-      total_receita: Number(raw.total_receita || 0),
-      total_despesa: Number(raw.total_despesa || 0),
-      total_liquido: Number(raw.total_liquido || 0),
-      pago_receita: Number(raw.pago_receita || 0),
-      pago_despesa: Number(raw.pago_despesa || 0),
-      pago_liquido: Number(raw.pago_liquido || 0),
-      provisao_receita: Number(raw.provisao_receita || 0),
-      provisao_despesa: Number(raw.provisao_despesa || 0),
-      provisao_liquido: Number(raw.provisao_liquido || 0),
-    };
-  },
-
-  async copyByMonth(payload: CopyMonthPayload): Promise<CopyMonthResult> {
-    const response = await apiClient.post<{
-      success: boolean;
-      data: CopyMonthResult;
-    }>(`/api/transacoes/copy-month`, payload);
+    const response = await apiClient.get<ApiResponse<TransacaoSummary>>(
+      `/api/transacoes/summary`,
+      { params: filters },
+    );
 
     return response.data.data;
   },
 
+  /**
+   * Copia transações de um mês para outros
+   */
+  async copyByMonth(payload: CopyMonthPayload): Promise<CopyMonthResult> {
+    const response = await apiClient.post<ApiResponse<CopyMonthResult>>(
+      `/api/transacoes/copy-month`,
+      payload,
+    );
+
+    return response.data.data;
+  },
+
+  /**
+   * Exclui todas as transações de múltiplos meses
+   */
   async deleteByMonths(
     payload: DeleteMonthsPayload,
   ): Promise<DeleteMonthsResult> {
-    const response = await apiClient.delete<{
-      success: boolean;
-      data: DeleteMonthsResult;
-    }>(`/api/transacoes/delete-months`, { data: payload });
+    const response = await apiClient.delete<ApiResponse<DeleteMonthsResult>>(
+      `/api/transacoes/delete-months`,
+      { data: payload },
+    );
 
     return response.data.data;
   },
 
+  /**
+   * Exclui uma transação específica em múltiplos meses
+   */
   async deleteByTransactionMonths(
     payload: DeleteTransactionMonthsPayload,
   ): Promise<DeleteTransactionMonthsResult> {
-    const response = await apiClient.delete<{
-      success: boolean;
-      data: DeleteTransactionMonthsResult;
-    }>(`/api/transacoes/delete-transaction-months`, { data: payload });
+    const response = await apiClient.delete<ApiResponse<DeleteTransactionMonthsResult>>(
+      `/api/transacoes/delete-transaction-months`,
+      { data: payload },
+    );
 
     return response.data.data;
   },

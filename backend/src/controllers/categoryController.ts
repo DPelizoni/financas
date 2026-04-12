@@ -4,6 +4,10 @@ import { successResponse, paginatedResponse } from "../utils/response";
 import { CategoryFilters } from "../models/Category";
 
 export class CategoryController {
+  /**
+   * @route GET /api/categories
+   * @desc Lista todas as categorias com paginação e filtros
+   */
   async list(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const filters: CategoryFilters = {
@@ -39,6 +43,10 @@ export class CategoryController {
     }
   }
 
+  /**
+   * @route GET /api/categories/:id
+   * @desc Busca categoria por ID
+   */
   async getById(
     req: Request,
     res: Response,
@@ -53,6 +61,10 @@ export class CategoryController {
     }
   }
 
+  /**
+   * @route POST /api/categories
+   * @desc Cria uma nova categoria
+   */
   async create(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const category = await categoryService.createCategory(req.body);
@@ -64,6 +76,10 @@ export class CategoryController {
     }
   }
 
+  /**
+   * @route PUT /api/categories/:id
+   * @desc Atualiza uma categoria
+   */
   async update(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const id = parseInt(req.params.id);
@@ -74,6 +90,10 @@ export class CategoryController {
     }
   }
 
+  /**
+   * @route DELETE /api/categories/:id
+   * @desc Exclui uma categoria
+   */
   async delete(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const id = parseInt(req.params.id);

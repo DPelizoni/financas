@@ -19,6 +19,7 @@ import { Descricao, DescricaoInput } from "@/types/descricao";
 import { useAccessibleModal } from "@/utils/useAccessibleModal";
 
 interface DescricaoModalProps {
+  isOpen: boolean;
   descricao: Descricao | null;
   onClose: () => void;
   onSave: (message: string) => Promise<void> | void;
@@ -49,6 +50,7 @@ const validateDescricaoForm = (
 };
 
 export default function DescricaoModal({
+  isOpen,
   descricao,
   onClose,
   onSave,
@@ -90,6 +92,8 @@ export default function DescricaoModal({
   );
 
   useEffect(() => {
+    if (!isOpen) return;
+
     const loadCategories = async () => {
       try {
         setCategoriesLoading(true);
@@ -103,9 +107,11 @@ export default function DescricaoModal({
     };
 
     loadCategories();
-  }, [setGeneralError]);
+  }, [isOpen, setGeneralError]);
 
   useEffect(() => {
+    if (!isOpen) return;
+
     if (descricao) {
       setFormData({
         nome: descricao.nome,
@@ -124,13 +130,15 @@ export default function DescricaoModal({
 
     clearAllErrors();
     resetTouched();
-  }, [descricao, categories, clearAllErrors, resetTouched]);
+  }, [isOpen, descricao, categories, clearAllErrors, resetTouched]);
 
   useAccessibleModal({
-    isOpen: true,
+    isOpen,
     modalRef,
     onClose,
   });
+
+  if (!isOpen) return null;
 
   const updateField = <K extends keyof DescricaoInput>(
     field: K,

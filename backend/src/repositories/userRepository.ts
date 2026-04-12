@@ -11,6 +11,9 @@ import {
 } from "../models/User";
 
 export class UserRepository {
+  /**
+   * Lista todos os usuários com filtros e paginação
+   */
   async findAll(
     filters: UserFilters,
   ): Promise<{ users: User[]; total: number }> {
@@ -48,6 +51,9 @@ export class UserRepository {
     return { users: rows as User[], total };
   }
 
+  /**
+   * Busca usuário por e-mail
+   */
   async findByEmail(email: string): Promise<User | null> {
     const [rows] = await pool.query<RowDataPacket[]>(
       "SELECT * FROM users WHERE email = ? LIMIT 1",
@@ -57,6 +63,9 @@ export class UserRepository {
     return rows.length > 0 ? (rows[0] as User) : null;
   }
 
+  /**
+   * Busca usuário por ID
+   */
   async findById(id: number): Promise<User | null> {
     const [rows] = await pool.query<RowDataPacket[]>(
       "SELECT * FROM users WHERE id = ? LIMIT 1",
@@ -66,6 +75,9 @@ export class UserRepository {
     return rows.length > 0 ? (rows[0] as User) : null;
   }
 
+  /**
+   * Cria um novo usuário
+   */
   async create(input: UserCreateInput): Promise<User> {
     const [result] = await pool.query<ResultSetHeader>(
       `INSERT INTO users (nome, email, senha, status, role)
@@ -87,6 +99,9 @@ export class UserRepository {
     return created;
   }
 
+  /**
+   * Atualiza o status de um usuário
+   */
   async updateStatus(
     id: number,
     input: UserStatusUpdateInput,
@@ -99,6 +114,9 @@ export class UserRepository {
     return this.findById(id);
   }
 
+  /**
+   * Atualiza o papel (role) de um usuário
+   */
   async updateRole(
     id: number,
     input: UserRoleUpdateInput,
@@ -111,29 +129,47 @@ export class UserRepository {
     return this.findById(id);
   }
 
+  /**
+   * Atualiza dados de um usuário de forma dinâmica
+   */
   async updateUser(
     id: number,
-    input: UserManagementInput,
+    input: Partial<UserManagementInput>,
   ): Promise<User | null> {
-    if (input.senha) {
-      await pool.query<ResultSetHeader>(
-        `UPDATE users
-         SET nome = ?, email = ?, senha = ?, status = ?, role = ?
-         WHERE id = ?`,
-        [input.nome, input.email, input.senha, input.status, input.role, id],
-      );
-    } else {
-      await pool.query<ResultSetHeader>(
-        `UPDATE users
-         SET nome = ?, email = ?, status = ?, role = ?
-         WHERE id = ?`,
-        [input.nome, input.email, input.status, input.role, id],
-      );
+    const fields: string[] = [];
+    const values: any[] = [];
+
+    const allowedFields: (keyof UserManagementInput)[] = [
+      "nome",
+      "email",
+      "senha",
+      "status",
+      "role",
+    ];
+
+    allowedFields.forEach((field) => {
+      if (input[field] !== undefined) {
+        fields.push(`${field} = ?`);
+        values.push(input[field]);
+      }
+    });
+
+    if (fields.length === 0) {
+      return this.findById(id);
     }
+
+    values.push(id);
+    await pool.query(
+      `UPDATE users SET ${fields.join(", ")} WHERE id = ?`,
+      values,
+    );
 
     return this.findById(id);
   }
 
+  /**
+   * Exclui um usuário
+   */
   async delete(id: number): Promise<boolean> {
     const [result] = await pool.query<ResultSetHeader>(
       "DELETE FROM users WHERE id = ?",
@@ -143,6 +179,9 @@ export class UserRepository {
     return result.affectedRows > 0;
   }
 
+  /**
+   * Conta usuários por papel
+   */
   async countByRole(role: UserRole): Promise<number> {
     const [rows] = await pool.query<RowDataPacket[]>(
       "SELECT COUNT(*) as total FROM users WHERE role = ?",
@@ -152,6 +191,9 @@ export class UserRepository {
     return Number(rows[0]?.total || 0);
   }
 
+  /**
+   * Conta usuários ativos por papel
+   */
   async countActiveByRole(role: UserRole): Promise<number> {
     const [rows] = await pool.query<RowDataPacket[]>(
       "SELECT COUNT(*) as total FROM users WHERE role = ? AND status = 'ATIVO'",
@@ -161,6 +203,9 @@ export class UserRepository {
     return Number(rows[0]?.total || 0);
   }
 
+  /**
+   * Verifica se um usuário existe por ID
+   */
   async exists(id: number): Promise<boolean> {
     const user = await this.findById(id);
     return user !== null;

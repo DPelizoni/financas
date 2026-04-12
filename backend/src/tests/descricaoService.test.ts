@@ -355,6 +355,7 @@ const deleteConcluiQuandoRepositorioExecuta = async () => {
     descricaoRepository.exists = async () => true;
     descricaoRepository.delete = async (id: number) => {
       deletedId = id;
+      return true;
     };
 
     await descricaoService.deleteDescricao(3);

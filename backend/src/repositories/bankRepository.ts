@@ -78,36 +78,27 @@ export class BankRepository {
   }
 
   /**
-   * Atualiza banco
+   * Atualiza banco de forma dinâmica
    */
   async update(id: number, bank: Partial<BankInput>): Promise<Bank | null> {
     const fields: string[] = [];
     const values: any[] = [];
 
-    if (bank.nome !== undefined) {
-      fields.push("nome = ?");
-      values.push(bank.nome);
-    }
-    if (bank.codigo !== undefined) {
-      fields.push("codigo = ?");
-      values.push(bank.codigo);
-    }
-    if (bank.cor !== undefined) {
-      fields.push("cor = ?");
-      values.push(bank.cor);
-    }
-    if (bank.icone !== undefined) {
-      fields.push("icone = ?");
-      values.push(bank.icone);
-    }
-    if (bank.saldo_inicial !== undefined) {
-      fields.push("saldo_inicial = ?");
-      values.push(bank.saldo_inicial);
-    }
-    if (bank.ativo !== undefined) {
-      fields.push("ativo = ?");
-      values.push(bank.ativo);
-    }
+    const allowedFields: (keyof BankInput)[] = [
+      "nome",
+      "codigo",
+      "cor",
+      "icone",
+      "saldo_inicial",
+      "ativo",
+    ];
+
+    allowedFields.forEach((field) => {
+      if (bank[field] !== undefined) {
+        fields.push(`${field} = ?`);
+        values.push(bank[field]);
+      }
+    });
 
     if (fields.length === 0) {
       return this.findById(id);
@@ -134,7 +125,7 @@ export class BankRepository {
   }
 
   /**
-   * Verifica se banco existe
+   * Verifica se banco existe por ID
    */
   async exists(id: number): Promise<boolean> {
     const bank = await this.findById(id);

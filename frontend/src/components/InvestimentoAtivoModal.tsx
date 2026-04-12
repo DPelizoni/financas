@@ -18,6 +18,7 @@ import { InvestimentoAtivo, InvestimentoAtivoInput } from "@/types/investimento"
 import { useAccessibleModal } from "@/utils/useAccessibleModal";
 
 interface InvestimentoAtivoModalProps {
+  isOpen: boolean;
   ativo: InvestimentoAtivo | null;
   banks: Bank[];
   onClose: () => void;
@@ -64,6 +65,7 @@ const validateAtivoForm = (
 };
 
 export default function InvestimentoAtivoModal({
+  isOpen,
   ativo,
   banks,
   onClose,
@@ -100,6 +102,8 @@ export default function InvestimentoAtivoModal({
   } = useFormFeedback<InvestimentoAtivoField>(ativoFields);
 
   useEffect(() => {
+    if (!isOpen) return;
+
     if (ativo) {
       setFormData({
         nome: ativo.nome,
@@ -122,13 +126,15 @@ export default function InvestimentoAtivoModal({
 
     clearAllErrors();
     resetTouched();
-  }, [ativo, banks, clearAllErrors, resetTouched]);
+  }, [isOpen, ativo, banks, clearAllErrors, resetTouched]);
 
   useAccessibleModal({
-    isOpen: true,
+    isOpen,
     modalRef,
     onClose,
   });
+
+  if (!isOpen) return null;
 
   const updateField = <K extends keyof InvestimentoAtivoInput>(
     field: K,

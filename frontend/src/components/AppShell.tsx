@@ -101,12 +101,11 @@ export default function AppShell({ children }: AppShellProps) {
     useState(false);
   const [userName, setUserName] = useState("Usuário");
   const [isManager, setIsManager] = useState(false);
-  const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({
-    investimentos: true,
-  });
+  const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({});
 
   const pageTitle = useMemo(() => getPageTitle(pathname), [pathname]);
 
+  // Carrega a preferência de colapso do sidebar
   useEffect(() => {
     const storedState = window.localStorage.getItem(
       DESKTOP_SIDEBAR_STORAGE_KEY,
@@ -115,6 +114,7 @@ export default function AppShell({ children }: AppShellProps) {
     setHasLoadedSidebarPreference(true);
   }, []);
 
+  // Salva a preferência de colapso do sidebar
   useEffect(() => {
     if (!hasLoadedSidebarPreference) return;
     window.localStorage.setItem(
@@ -123,6 +123,7 @@ export default function AppShell({ children }: AppShellProps) {
     );
   }, [hasLoadedSidebarPreference, isDesktopSidebarCollapsed]);
 
+  // Carrega dados do usuário
   useEffect(() => {
     const user = authService.getStoredUser();
     if (!user) return;
@@ -134,13 +135,21 @@ export default function AppShell({ children }: AppShellProps) {
     setIsManager(user.role === "GESTOR" || user.role === "ADMIN");
   }, []);
 
+  // Inteligência de Navegação: Abre o grupo automaticamente se uma sub-rota estiver ativa
   useEffect(() => {
-    if (pathname.startsWith("/investimentos")) {
-      setOpenGroups((prev) => ({
-        ...prev,
-        investimentos: true,
-      }));
-    }
+    navItems.forEach((item) => {
+      if (item.type === "group") {
+        const isChildActive = item.children.some((child) =>
+          pathname.startsWith(child.href),
+        );
+        if (isChildActive) {
+          setOpenGroups((prev) => ({
+            ...prev,
+            [item.id]: true,
+          }));
+        }
+      }
+    });
   }, [pathname]);
 
   const visibleNavItems = useMemo(() => {

@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { transacaoController } from "../controllers/transacaoController";
+import transacaoController from "../controllers/transacaoController";
 import { TransacaoService } from "../services/transacaoService";
 import { createMockRequest, createMockResponse, createNextSpy } from "./helpers/httpMocks";
 import { TestCase } from "./types";

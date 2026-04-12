@@ -1,3 +1,5 @@
+import { BaseFilters } from "./api";
+
 export interface Descricao {
   id: number;
   nome: string;
@@ -13,20 +15,7 @@ export interface DescricaoInput {
   ativo?: boolean;
 }
 
-export interface DescricaoFilters {
-  page?: number;
-  limit?: number;
-  search?: string;
+export interface DescricaoFilters extends BaseFilters {
   ativo?: boolean;
   categoria_id?: number;
-}
-
-export interface DescricaoResponse {
-  data: Descricao[];
-  pagination: {
-    total: number;
-    totalPages: number;
-    page: number;
-    limit: number;
-  };
 }

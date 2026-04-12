@@ -430,15 +430,7 @@ const updateUserBloqueiaEmailJaUsadoPorOutroUsuario = async () => {
 };
 
 const updateUserAdminComSenhaAtualizaComNormalizacao = async () => {
-  let updatePayload:
-    | {
-        nome: string;
-        email: string;
-        senha?: string;
-        status: "ATIVO" | "INATIVO";
-        role: "USUARIO" | "GESTOR" | "ADMIN";
-      }
-    | undefined;
+  let updatePayload: any;
 
   try {
     userRepository.findById = async () =>
@@ -453,11 +445,11 @@ const updateUserAdminComSenhaAtualizaComNormalizacao = async () => {
       updatePayload = input;
       return createUserRecord({
         id,
-        nome: input.nome,
-        email: input.email,
+        nome: input.nome ?? "Nome",
+        email: input.email ?? "email@teste.com",
         senha: input.senha || "sem-senha",
-        status: input.status,
-        role: input.role,
+        status: input.status ?? "ATIVO",
+        role: input.role ?? "USUARIO",
       });
     };
 

@@ -1,3 +1,5 @@
+import { BaseFilters, PaginatedResponse } from "./api";
+
 export interface Transacao {
   id: number;
   mes: string;
@@ -26,28 +28,13 @@ export interface TransacaoInput {
   valor: number;
 }
 
-export interface TransacaoFilters {
-  page?: number;
-  limit?: number;
-  search?: string;
+export interface TransacaoFilters extends BaseFilters {
   tipo?: "DESPESA" | "RECEITA";
   categoria_id?: number;
   banco_id?: number;
   situacao?: "PENDENTE" | "PAGO";
   mes?: string;
   ano?: string;
-}
-
-export interface TransacaoResponse {
-  success: boolean;
-  message: string;
-  data: Transacao[];
-  pagination: {
-    page: number;
-    limit: number;
-    total: number;
-    totalPages: number;
-  };
 }
 
 export interface TransacaoSummary {

@@ -1,3 +1,5 @@
+import { BaseFilters } from "./api";
+
 export type CategoryType = "RECEITA" | "DESPESA";
 
 export interface Category {
@@ -17,18 +19,7 @@ export interface CategoryInput {
   ativo?: boolean;
 }
 
-export interface ApiResponse<T = any> {
-  success: boolean;
-  message: string;
-  data?: T;
-  errors?: any[];
-}
-
-export interface PaginatedResponse<T> extends ApiResponse<T> {
-  pagination?: {
-    page: number;
-    limit: number;
-    total: number;
-    totalPages: number;
-  };
+export interface CategoryFilters extends BaseFilters {
+  ativo?: boolean;
+  tipo?: CategoryType;
 }

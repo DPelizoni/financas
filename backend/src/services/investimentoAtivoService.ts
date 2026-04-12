@@ -1,6 +1,6 @@
 import { AppError } from "../middlewares/errorHandler";
-import { BankRepository } from "../repositories/bankRepository";
-import { InvestimentoAtivoRepository } from "../repositories/investimentoAtivoRepository";
+import bankRepository from "../repositories/bankRepository";
+import ativoRepository from "../repositories/investimentoAtivoRepository";
 import {
   InvestimentoAtivo,
   InvestimentoAtivoFilters,
@@ -21,47 +21,59 @@ const normalizeDate = (value: string): string => {
 };
 
 export class InvestimentoAtivoService {
-  private ativoRepository = new InvestimentoAtivoRepository();
-  private bankRepository = new BankRepository();
-
+  /**
+   * Lista todos os ativos de investimento com filtros
+   */
   async getAllAtivos(
     filters: InvestimentoAtivoFilters,
   ): Promise<{ ativos: InvestimentoAtivo[]; total: number }> {
-    return this.ativoRepository.findAll({
+    return ativoRepository.findAll({
       ...filters,
       data_de: filters.data_de ? normalizeDate(filters.data_de) : undefined,
       data_ate: filters.data_ate ? normalizeDate(filters.data_ate) : undefined,
     });
   }
 
+  /**
+   * Obtém os anos disponíveis para os ativos
+   */
   async getAvailableYears(filters: {
     banco_id?: number;
     ativo?: boolean;
   }): Promise<string[]> {
-    return this.ativoRepository.getAvailableYears(filters);
+    return ativoRepository.getAvailableYears(filters);
   }
 
+  /**
+   * Busca um ativo por ID
+   */
   async getAtivoById(id: number): Promise<InvestimentoAtivo> {
-    const ativo = await this.ativoRepository.findById(id);
+    const ativo = await ativoRepository.findById(id);
     if (!ativo) {
       throw new AppError(404, "Ativo de investimento nao encontrado");
     }
     return ativo;
   }
 
+  /**
+   * Cria um novo ativo de investimento
+   */
   async createAtivo(input: InvestimentoAtivoInput): Promise<InvestimentoAtivo> {
     await this.validateBank(input.banco_id);
-    return this.ativoRepository.create({
+    return ativoRepository.create({
       ...input,
       data_saldo_inicial: normalizeDate(input.data_saldo_inicial),
     });
   }
 
+  /**
+   * Atualiza um ativo de investimento
+   */
   async updateAtivo(
     id: number,
     input: Partial<InvestimentoAtivoInput>,
   ): Promise<InvestimentoAtivo> {
-    const exists = await this.ativoRepository.exists(id);
+    const exists = await ativoRepository.exists(id);
     if (!exists) {
       throw new AppError(404, "Ativo de investimento nao encontrado");
     }
@@ -70,7 +82,7 @@ export class InvestimentoAtivoService {
       await this.validateBank(input.banco_id);
     }
 
-    const updated = await this.ativoRepository.update(id, {
+    const updated = await ativoRepository.update(id, {
       ...input,
       data_saldo_inicial: input.data_saldo_inicial
         ? normalizeDate(input.data_saldo_inicial)
@@ -84,14 +96,17 @@ export class InvestimentoAtivoService {
     return updated;
   }
 
+  /**
+   * Exclui um ativo de investimento
+   */
   async deleteAtivo(id: number): Promise<void> {
-    const exists = await this.ativoRepository.exists(id);
+    const exists = await ativoRepository.exists(id);
     if (!exists) {
       throw new AppError(404, "Ativo de investimento nao encontrado");
     }
 
     try {
-      const deleted = await this.ativoRepository.delete(id);
+      const deleted = await ativoRepository.delete(id);
       if (!deleted) {
         throw new AppError(500, "Erro ao excluir ativo de investimento");
       }
@@ -114,10 +129,15 @@ export class InvestimentoAtivoService {
     }
   }
 
+  /**
+   * Valida se o banco existe
+   */
   private async validateBank(bancoId: number): Promise<void> {
-    const bank = await this.bankRepository.findById(bancoId);
+    const bank = await bankRepository.findById(bancoId);
     if (!bank) {
       throw new AppError(404, "Banco nao encontrado");
     }
   }
 }
+
+export default new InvestimentoAtivoService();

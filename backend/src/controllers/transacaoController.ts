@@ -1,11 +1,13 @@
 import { NextFunction, Request, Response } from "express";
-import { TransacaoService } from "../services/transacaoService";
+import transacaoService from "../services/transacaoService";
 import { paginatedResponse, successResponse } from "../utils/response";
 
-const transacaoService = new TransacaoService();
-
-export const transacaoController = {
-  getAll: async (req: Request, res: Response, next: NextFunction) => {
+export class TransacaoController {
+  /**
+   * @route GET /api/transacoes
+   * @desc Lista todas as transações com paginação e filtros
+   */
+  async getAll(req: Request, res: Response, next: NextFunction) {
     try {
       const page = Number(req.query.page) || 1;
       const limit = Number(req.query.limit) || 10;
@@ -48,9 +50,13 @@ export const transacaoController = {
     } catch (error) {
       next(error);
     }
-  },
+  }
 
-  getById: async (req: Request, res: Response, next: NextFunction) => {
+  /**
+   * @route GET /api/transacoes/:id
+   * @desc Busca transação por ID
+   */
+  async getById(req: Request, res: Response, next: NextFunction) {
     try {
       const id = Number(req.params.id);
       const transacao = await transacaoService.getById(id);
@@ -58,9 +64,13 @@ export const transacaoController = {
     } catch (error) {
       next(error);
     }
-  },
+  }
 
-  create: async (req: Request, res: Response, next: NextFunction) => {
+  /**
+   * @route POST /api/transacoes
+   * @desc Cria uma nova transação
+   */
+  async create(req: Request, res: Response, next: NextFunction) {
     try {
       const data = req.body;
       const transacao = await transacaoService.createTransacao(data);
@@ -68,9 +78,13 @@ export const transacaoController = {
     } catch (error) {
       next(error);
     }
-  },
+  }
 
-  createBatch: async (req: Request, res: Response, next: NextFunction) => {
+  /**
+   * @route POST /api/transacoes/batch
+   * @desc Cria múltiplas transações em lote
+   */
+  async createBatch(req: Request, res: Response, next: NextFunction) {
     try {
       const { transacoes } = req.body;
       const result = await transacaoService.createTransacoesBatch(transacoes);
@@ -81,9 +95,13 @@ export const transacaoController = {
     } catch (error) {
       next(error);
     }
-  },
+  }
 
-  update: async (req: Request, res: Response, next: NextFunction) => {
+  /**
+   * @route PUT /api/transacoes/:id
+   * @desc Atualiza uma transação
+   */
+  async update(req: Request, res: Response, next: NextFunction) {
     try {
       const id = Number(req.params.id);
       const data = req.body;
@@ -92,9 +110,13 @@ export const transacaoController = {
     } catch (error) {
       next(error);
     }
-  },
+  }
 
-  delete: async (req: Request, res: Response, next: NextFunction) => {
+  /**
+   * @route DELETE /api/transacoes/:id
+   * @desc Exclui uma transação
+   */
+  async delete(req: Request, res: Response, next: NextFunction) {
     try {
       const id = Number(req.params.id);
       await transacaoService.deleteTransacao(id);
@@ -102,9 +124,13 @@ export const transacaoController = {
     } catch (error) {
       next(error);
     }
-  },
+  }
 
-  getSummary: async (req: Request, res: Response, next: NextFunction) => {
+  /**
+   * @route GET /api/transacoes/summary
+   * @desc Obtém resumo financeiro
+   */
+  async getSummary(req: Request, res: Response, next: NextFunction) {
     try {
       const search = req.query.search as string | undefined;
       const tipo = req.query.tipo as "DESPESA" | "RECEITA" | undefined;
@@ -131,9 +157,13 @@ export const transacaoController = {
     } catch (error) {
       next(error);
     }
-  },
+  }
 
-  copyByMonth: async (req: Request, res: Response, next: NextFunction) => {
+  /**
+   * @route POST /api/transacoes/copy-month
+   * @desc Copia transações de um mês para outros
+   */
+  async copyByMonth(req: Request, res: Response, next: NextFunction) {
     try {
       const { mes_origem, meses_destino } = req.body;
       const result = await transacaoService.copyTransacoesByMes(
@@ -147,9 +177,13 @@ export const transacaoController = {
     } catch (error) {
       next(error);
     }
-  },
+  }
 
-  deleteByMonths: async (req: Request, res: Response, next: NextFunction) => {
+  /**
+   * @route POST /api/transacoes/delete-months
+   * @desc Exclui transações de múltiplos meses
+   */
+  async deleteByMonths(req: Request, res: Response, next: NextFunction) {
     try {
       const { meses } = req.body;
       const result = await transacaoService.deleteTransacoesByMeses(meses);
@@ -158,5 +192,27 @@ export const transacaoController = {
     } catch (error) {
       next(error);
     }
-  },
-};
+  }
+
+  /**
+   * @route DELETE /api/transacoes/delete-transaction-months
+   * @desc Exclui uma transação específica em múltiplos meses
+   */
+  async deleteTransactionByMeses(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { transacao_id, meses } = req.body;
+      const result = await transacaoService.deleteTransacaoByMeses(
+        Number(transacao_id),
+        meses,
+      );
+
+      res.json(
+        successResponse("Transação excluída nos meses selecionados", result),
+      );
+    } catch (error) {
+      next(error);
+    }
+  }
+}
+
+export default new TransacaoController();

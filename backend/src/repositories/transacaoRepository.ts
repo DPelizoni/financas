@@ -1,7 +1,6 @@
 import pool from "../config/database";
 import { RowDataPacket } from "mysql2";
 import { Transacao, TransacaoComDetalhes } from "../models/Transacao";
-import { transacaoFiltersSchema } from "../schemas/transacaoSchema";
 
 interface TransacaoFilters {
   page?: number;
@@ -16,6 +15,9 @@ interface TransacaoFilters {
 }
 
 export class TransacaoRepository {
+  /**
+   * Busca transações por mês
+   */
   async findByMes(
     mes: string,
   ): Promise<Omit<Transacao, "created_at" | "updated_at">[]> {
@@ -32,6 +34,9 @@ export class TransacaoRepository {
     return rows as Omit<Transacao, "created_at" | "updated_at">[];
   }
 
+  /**
+   * Cria múltiplas transações de uma vez
+   */
   async createMany(
     records: Omit<Transacao, "id" | "created_at" | "updated_at">[],
   ): Promise<number> {
@@ -59,6 +64,9 @@ export class TransacaoRepository {
     return insertResult.affectedRows || 0;
   }
 
+  /**
+   * Lista todas as transações com filtros e paginação
+   */
   async findAll(
     filters: TransacaoFilters,
   ): Promise<{ transacoes: TransacaoComDetalhes[]; total: number }> {
@@ -138,6 +146,9 @@ export class TransacaoRepository {
     return { transacoes: rows as TransacaoComDetalhes[], total };
   }
 
+  /**
+   * Busca transação por ID com detalhes (nomes de categoria, banco, etc)
+   */
   async findById(id: number): Promise<TransacaoComDetalhes | null> {
     const query = `
       SELECT 
@@ -157,6 +168,9 @@ export class TransacaoRepository {
     return (rows as TransacaoComDetalhes[])[0] || null;
   }
 
+  /**
+   * Cria uma nova transação
+   */
   async create(data: Omit<Transacao, "id" | "created_at" | "updated_at">) {
     const {
       mes,
@@ -190,6 +204,9 @@ export class TransacaoRepository {
     return this.findById(insertResult.insertId);
   }
 
+  /**
+   * Atualiza uma transação de forma dinâmica
+   */
   async update(id: number, data: Partial<Omit<Transacao, "id">>) {
     const allowedFields = [
       "mes",
@@ -205,9 +222,10 @@ export class TransacaoRepository {
     const updates: string[] = [];
     const values: any[] = [];
 
-    Object.entries(data).forEach(([key, value]) => {
-      if (allowedFields.includes(key) && value !== undefined) {
-        updates.push(`${key} = ?`);
+    allowedFields.forEach((field) => {
+      const value = (data as any)[field];
+      if (value !== undefined) {
+        updates.push(`${field} = ?`);
         values.push(value);
       }
     });
@@ -224,6 +242,9 @@ export class TransacaoRepository {
     return this.findById(id);
   }
 
+  /**
+   * Exclui uma transação
+   */
   async delete(id: number): Promise<boolean> {
     const [result] = await pool.query("DELETE FROM transacoes WHERE id = ?", [
       id,
@@ -232,6 +253,9 @@ export class TransacaoRepository {
     return deleteResult.affectedRows > 0;
   }
 
+  /**
+   * Exclui múltiplas transações por IDs
+   */
   async deleteByIds(ids: number[]): Promise<number> {
     if (ids.length === 0) return 0;
 
@@ -242,6 +266,9 @@ export class TransacaoRepository {
     return deleteResult.affectedRows || 0;
   }
 
+  /**
+   * Exclui todas as transações de determinados meses
+   */
   async deleteByMeses(meses: string[]): Promise<number> {
     if (meses.length === 0) return 0;
 
@@ -252,6 +279,9 @@ export class TransacaoRepository {
     return deleteResult.affectedRows || 0;
   }
 
+  /**
+   * Verifica se uma transação existe por ID
+   */
   async exists(id: number): Promise<boolean> {
     const [rows] = await pool.query("SELECT 1 FROM transacoes WHERE id = ?", [
       id,
@@ -259,6 +289,9 @@ export class TransacaoRepository {
     return (rows as any[]).length > 0;
   }
 
+  /**
+   * Obtém um resumo financeiro com base nos filtros
+   */
   async getSummary(filters: Omit<TransacaoFilters, "page" | "limit"> = {}) {
     let query = `
       SELECT 
@@ -321,3 +354,5 @@ export class TransacaoRepository {
     return (rows as any[])[0];
   }
 }
+
+export default new TransacaoRepository();

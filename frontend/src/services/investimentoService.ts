@@ -8,166 +8,166 @@ import {
   InvestimentoMovimentacao,
   InvestimentoMovimentacaoFilters,
   InvestimentoMovimentacaoInput,
-  PaginatedResponse,
 } from "@/types/investimento";
+import { ApiResponse, PaginatedResponse } from "@/types/api";
 
 export const investimentoAtivoService = {
+  /**
+   * Obtém os anos disponíveis para os ativos
+   */
   async getAvailableYears(filters: {
     banco_id?: number;
     ativo?: boolean;
   } = {}): Promise<string[]> {
-    const params = new URLSearchParams();
-    if (filters.banco_id) params.append("banco_id", String(filters.banco_id));
-    if (filters.ativo !== undefined) params.append("ativo", String(filters.ativo));
-
-    const response = await apiClient.get<{
-      success: boolean;
-      data: string[];
-    }>(`/api/investimentos/ativos/anos?${params}`);
+    const response = await apiClient.get<ApiResponse<string[]>>(
+      "/api/investimentos/ativos/anos",
+      { params: filters },
+    );
 
     return response.data.data || [];
   },
 
+  /**
+   * Lista todos os ativos de investimento com filtros e paginação
+   */
   async getAll(
     filters: InvestimentoAtivoFilters = {},
   ): Promise<PaginatedResponse<InvestimentoAtivo[]>> {
-    const params = new URLSearchParams();
-    if (filters.page) params.append("page", String(filters.page));
-    if (filters.limit) params.append("limit", String(filters.limit));
-    if (filters.search) params.append("search", filters.search);
-    if (filters.banco_id) params.append("banco_id", String(filters.banco_id));
-    if (filters.ativo !== undefined) params.append("ativo", String(filters.ativo));
-    if (filters.data_de) params.append("data_de", filters.data_de);
-    if (filters.data_ate) params.append("data_ate", filters.data_ate);
-
     const response = await apiClient.get<PaginatedResponse<InvestimentoAtivo[]>>(
-      `/api/investimentos/ativos?${params}`,
+      "/api/investimentos/ativos",
+      { params: filters },
     );
     return response.data;
   },
 
+  /**
+   * Busca um ativo de investimento por ID
+   */
   async getById(id: number): Promise<InvestimentoAtivo> {
-    const response = await apiClient.get<{
-      success: boolean;
-      data: InvestimentoAtivo;
-    }>(`/api/investimentos/ativos/${id}`);
+    const response = await apiClient.get<ApiResponse<InvestimentoAtivo>>(
+      `/api/investimentos/ativos/${id}`,
+    );
     return response.data.data;
   },
 
+  /**
+   * Cria um novo ativo de investimento
+   */
   async create(input: InvestimentoAtivoInput): Promise<InvestimentoAtivo> {
-    const response = await apiClient.post<{
-      success: boolean;
-      data: InvestimentoAtivo;
-    }>("/api/investimentos/ativos", input);
+    const response = await apiClient.post<ApiResponse<InvestimentoAtivo>>(
+      "/api/investimentos/ativos",
+      input,
+    );
     return response.data.data;
   },
 
+  /**
+   * Atualiza um ativo de investimento existente
+   */
   async update(
     id: number,
     input: Partial<InvestimentoAtivoInput>,
   ): Promise<InvestimentoAtivo> {
-    const response = await apiClient.put<{
-      success: boolean;
-      data: InvestimentoAtivo;
-    }>(`/api/investimentos/ativos/${id}`, input);
+    const response = await apiClient.put<ApiResponse<InvestimentoAtivo>>(
+      `/api/investimentos/ativos/${id}`,
+      input,
+    );
     return response.data.data;
   },
 
+  /**
+   * Exclui um ativo de investimento
+   */
   async delete(id: number): Promise<void> {
     await apiClient.delete(`/api/investimentos/ativos/${id}`);
   },
 };
 
 export const investimentoMovimentacaoService = {
+  /**
+   * Lista todas as movimentações de investimento com filtros e paginação
+   */
   async getAll(
     filters: InvestimentoMovimentacaoFilters = {},
   ): Promise<PaginatedResponse<InvestimentoMovimentacao[]>> {
-    const params = new URLSearchParams();
-    if (filters.page) params.append("page", String(filters.page));
-    if (filters.limit) params.append("limit", String(filters.limit));
-    if (filters.search) params.append("search", filters.search);
-    if (filters.investimento_ativo_id) {
-      params.append(
-        "investimento_ativo_id",
-        String(filters.investimento_ativo_id),
-      );
-    }
-    if (filters.banco_id) params.append("banco_id", String(filters.banco_id));
-    if (filters.ativo !== undefined) params.append("ativo", String(filters.ativo));
-    if (filters.tipo) params.append("tipo", filters.tipo);
-    if (filters.data_de) params.append("data_de", filters.data_de);
-    if (filters.data_ate) params.append("data_ate", filters.data_ate);
-
-    const response = await apiClient.get<
-      PaginatedResponse<InvestimentoMovimentacao[]>
-    >(`/api/investimentos/movimentacoes?${params}`);
+    const response = await apiClient.get<PaginatedResponse<InvestimentoMovimentacao[]>>(
+      "/api/investimentos/movimentacoes",
+      { params: filters },
+    );
     return response.data;
   },
 
+  /**
+   * Busca uma movimentação de investimento por ID
+   */
   async getById(id: number): Promise<InvestimentoMovimentacao> {
-    const response = await apiClient.get<{
-      success: boolean;
-      data: InvestimentoMovimentacao;
-    }>(`/api/investimentos/movimentacoes/${id}`);
+    const response = await apiClient.get<ApiResponse<InvestimentoMovimentacao>>(
+      `/api/investimentos/movimentacoes/${id}`,
+    );
     return response.data.data;
   },
 
+  /**
+   * Cria uma nova movimentação de investimento
+   */
   async create(
     input: InvestimentoMovimentacaoInput,
   ): Promise<InvestimentoMovimentacao> {
-    const response = await apiClient.post<{
-      success: boolean;
-      data: InvestimentoMovimentacao;
-    }>("/api/investimentos/movimentacoes", input);
+    const response = await apiClient.post<ApiResponse<InvestimentoMovimentacao>>(
+      "/api/investimentos/movimentacoes",
+      input,
+    );
     return response.data.data;
   },
 
+  /**
+   * Atualiza uma movimentação de investimento existente
+   */
   async update(
     id: number,
     input: Partial<InvestimentoMovimentacaoInput>,
   ): Promise<InvestimentoMovimentacao> {
-    const response = await apiClient.put<{
-      success: boolean;
-      data: InvestimentoMovimentacao;
-    }>(`/api/investimentos/movimentacoes/${id}`, input);
+    const response = await apiClient.put<ApiResponse<InvestimentoMovimentacao>>(
+      `/api/investimentos/movimentacoes/${id}`,
+      input,
+    );
     return response.data.data;
   },
 
+  /**
+   * Exclui uma movimentação de investimento
+   */
   async delete(id: number): Promise<void> {
     await apiClient.delete(`/api/investimentos/movimentacoes/${id}`);
   },
 };
 
 export const investimentoDashboardService = {
+  /**
+   * Obtém os anos disponíveis para o dashboard
+   */
   async getAvailableYears(filters: {
     banco_id?: number;
     ativo?: boolean;
   } = {}): Promise<string[]> {
-    const params = new URLSearchParams();
-    if (filters.banco_id) params.append("banco_id", String(filters.banco_id));
-    if (filters.ativo !== undefined) params.append("ativo", String(filters.ativo));
-
-    const response = await apiClient.get<{
-      success: boolean;
-      data: string[];
-    }>(`/api/investimentos/dashboard/anos?${params}`);
+    const response = await apiClient.get<ApiResponse<string[]>>(
+      "/api/investimentos/dashboard/anos",
+      { params: filters },
+    );
 
     return response.data.data || [];
   },
 
+  /**
+   * Obtém os dados consolidados do dashboard de investimentos
+   */
   async get(
     filters: InvestimentoDashboardFilters = {},
   ): Promise<InvestimentoDashboardResponse> {
-    const params = new URLSearchParams();
-    if (filters.banco_id) params.append("banco_id", String(filters.banco_id));
-    if (filters.ativo !== undefined) params.append("ativo", String(filters.ativo));
-    if (filters.data_de) params.append("data_de", filters.data_de);
-    if (filters.data_ate) params.append("data_ate", filters.data_ate);
-
-    const response = await apiClient.get<{
-      success: boolean;
-      data: InvestimentoDashboardResponse;
-    }>(`/api/investimentos/dashboard?${params}`);
+    const response = await apiClient.get<ApiResponse<InvestimentoDashboardResponse>>(
+      "/api/investimentos/dashboard",
+      { params: filters },
+    );
 
     const raw = response.data.data;
     return {

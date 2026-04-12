@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { Response } from "express";
-import { descricaoController } from "../controllers/descricaoController";
+import descricaoController from "../controllers/descricaoController";
 import descricaoService from "../services/descricaoService";
 import { createMockRequest, createMockResponse } from "./helpers/httpMocks";
 import { TestCase } from "./types";
@@ -53,7 +53,7 @@ const getAllParseiaFiltros = async () => {
     });
     const { res, getJsonBody } = createMockResponse();
 
-    await descricaoController.getAll(req, res);
+    await descricaoController.getAll(req, res, () => {});
 
     assert.deepEqual(getJsonBody(), {
       success: true,
@@ -99,23 +99,26 @@ const getByIdRetornaPayloadDoService = async () => {
     });
     const { res, getJsonBody } = createMockResponse();
 
-    await descricaoController.getById(req, res);
+    await descricaoController.getById(req, res, () => {});
 
     assert.deepEqual(getJsonBody(), {
-      id: 18,
-      nome: "Internet",
-      categoria_id: 3,
-      ativo: true,
-      created_at: new Date("2026-01-01T00:00:00.000Z"),
-      updated_at: new Date("2026-01-01T00:00:00.000Z"),
+      success: true,
+      message: "Descrição encontrada",
+      data: {
+        id: 18,
+        nome: "Internet",
+        categoria_id: 3,
+        ativo: true,
+        created_at: new Date("2026-01-01T00:00:00.000Z"),
+        updated_at: new Date("2026-01-01T00:00:00.000Z"),
+      },
     });
   } finally {
     restoreDescricaoService();
   }
 };
 
-const deleteRetornaStatus200 = async () => {
-  let statusCode = 0;
+const deleteRetornaSucesso = async () => {
   let calledId = 0;
 
   try {
@@ -126,17 +129,16 @@ const deleteRetornaStatus200 = async () => {
     const req = createMockRequest({
       params: { id: "14" },
     });
-    const res = {
-      sendStatus(code: number) {
-        statusCode = code;
-        return this;
-      },
-    } as unknown as Response;
+    const { res, getJsonBody } = createMockResponse();
 
-    await descricaoController.delete(req, res);
+    await descricaoController.delete(req, res, () => {});
 
     assert.equal(calledId, 14);
-    assert.equal(statusCode, 200);
+    assert.deepEqual(getJsonBody(), {
+      success: true,
+      message: "Descrição excluída com sucesso",
+      data: undefined,
+    });
   } finally {
     restoreDescricaoService();
   }
@@ -152,7 +154,7 @@ export const descricaoControllerTests: TestCase[] = [
     run: getByIdRetornaPayloadDoService,
   },
   {
-    name: "DescricaoController: delete retorna status 200",
-    run: deleteRetornaStatus200,
+    name: "DescricaoController: delete retorna sucesso",
+    run: deleteRetornaSucesso,
   },
 ];

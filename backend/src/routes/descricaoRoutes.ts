@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { descricaoController } from "../controllers/descricaoController";
+import descricaoController from "../controllers/descricaoController";
 import { validate } from "../middlewares/validator";
 import {
   descricaoCreateSchema,

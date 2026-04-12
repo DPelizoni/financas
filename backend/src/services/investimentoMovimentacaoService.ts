@@ -1,6 +1,6 @@
 import { AppError } from "../middlewares/errorHandler";
-import { InvestimentoAtivoRepository } from "../repositories/investimentoAtivoRepository";
-import { InvestimentoMovimentacaoRepository } from "../repositories/investimentoMovimentacaoRepository";
+import ativoRepository from "../repositories/investimentoAtivoRepository";
+import movimentacaoRepository from "../repositories/investimentoMovimentacaoRepository";
 import {
   InvestimentoMovimentacao,
   InvestimentoMovimentacaoFilters,
@@ -21,42 +21,51 @@ const normalizeDate = (value: string): string => {
 };
 
 export class InvestimentoMovimentacaoService {
-  private movimentacaoRepository = new InvestimentoMovimentacaoRepository();
-  private ativoRepository = new InvestimentoAtivoRepository();
-
+  /**
+   * Lista todas as movimentações de investimento com filtros
+   */
   async getAllMovimentacoes(
     filters: InvestimentoMovimentacaoFilters,
   ): Promise<{ movimentacoes: InvestimentoMovimentacao[]; total: number }> {
-    return this.movimentacaoRepository.findAll({
+    return movimentacaoRepository.findAll({
       ...filters,
       data_de: filters.data_de ? normalizeDate(filters.data_de) : undefined,
       data_ate: filters.data_ate ? normalizeDate(filters.data_ate) : undefined,
     });
   }
 
+  /**
+   * Busca uma movimentação de investimento por ID
+   */
   async getMovimentacaoById(id: number): Promise<InvestimentoMovimentacao> {
-    const movimentacao = await this.movimentacaoRepository.findById(id);
+    const movimentacao = await movimentacaoRepository.findById(id);
     if (!movimentacao) {
       throw new AppError(404, "Movimentacao de investimento nao encontrada");
     }
     return movimentacao;
   }
 
+  /**
+   * Cria uma nova movimentação de investimento
+   */
   async createMovimentacao(
     input: InvestimentoMovimentacaoInput,
   ): Promise<InvestimentoMovimentacao> {
     await this.validateAtivo(input.investimento_ativo_id);
-    return this.movimentacaoRepository.create({
+    return movimentacaoRepository.create({
       ...input,
       data: normalizeDate(input.data),
     });
   }
 
+  /**
+   * Atualiza uma movimentação de investimento
+   */
   async updateMovimentacao(
     id: number,
     input: Partial<InvestimentoMovimentacaoInput>,
   ): Promise<InvestimentoMovimentacao> {
-    const exists = await this.movimentacaoRepository.exists(id);
+    const exists = await movimentacaoRepository.exists(id);
     if (!exists) {
       throw new AppError(404, "Movimentacao de investimento nao encontrada");
     }
@@ -65,7 +74,7 @@ export class InvestimentoMovimentacaoService {
       await this.validateAtivo(input.investimento_ativo_id);
     }
 
-    const updated = await this.movimentacaoRepository.update(id, {
+    const updated = await movimentacaoRepository.update(id, {
       ...input,
       data: input.data ? normalizeDate(input.data) : undefined,
     });
@@ -77,22 +86,30 @@ export class InvestimentoMovimentacaoService {
     return updated;
   }
 
+  /**
+   * Exclui uma movimentação de investimento
+   */
   async deleteMovimentacao(id: number): Promise<void> {
-    const exists = await this.movimentacaoRepository.exists(id);
+    const exists = await movimentacaoRepository.exists(id);
     if (!exists) {
       throw new AppError(404, "Movimentacao de investimento nao encontrada");
     }
 
-    const deleted = await this.movimentacaoRepository.delete(id);
+    const deleted = await movimentacaoRepository.delete(id);
     if (!deleted) {
       throw new AppError(500, "Erro ao excluir movimentacao de investimento");
     }
   }
 
+  /**
+   * Valida se o ativo de investimento existe
+   */
   private async validateAtivo(ativoId: number): Promise<void> {
-    const ativo = await this.ativoRepository.findById(ativoId);
+    const ativo = await ativoRepository.findById(ativoId);
     if (!ativo) {
       throw new AppError(404, "Ativo de investimento nao encontrado");
     }
   }
 }
+
+export default new InvestimentoMovimentacaoService();

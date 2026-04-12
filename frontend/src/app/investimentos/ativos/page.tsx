@@ -1,7 +1,7 @@
-﻿"use client";
+"use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { ArrowDownWideNarrow, ArrowUpNarrowWide, Search, Wallet, X } from "lucide-react";
+import { ArrowDownWideNarrow, ArrowUpNarrowWide, Filter, Search, Wallet, X } from "lucide-react";
 import { InputAdornment, MenuItem, TextField } from "@mui/material";
 import Icon from "@mdi/react";
 import { mdiPlusBoxOutline } from "@mdi/js";
@@ -17,6 +17,8 @@ import { bankService } from "@/services/bankService";
 import { investimentoAtivoService } from "@/services/investimentoService";
 import { Bank } from "@/types/bank";
 import { InvestimentoAtivo, InvestimentoAtivoFilters } from "@/types/investimento";
+import { TableSkeleton, CardSkeleton } from "@/components/skeletons/DataSkeletons";
+import EmptyState from "@/components/EmptyState";
 
 type AtivoFilter = "TODOS" | "ATIVOS" | "INATIVOS";
 
@@ -97,6 +99,16 @@ export default function InvestimentosAtivosPage() {
   const [showModal, setShowModal] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<InvestimentoAtivo | null>(null);
   const [viewingAtivo, setViewingAtivo] = useState<InvestimentoAtivo | null>(null);
+  const [showFilters, setShowFilters] = useState(false);
+
+  const activeFiltersCount = useMemo(() => {
+    let count = 0;
+    if (searchTerm) count++;
+    if (filterAno !== "TODOS") count++;
+    if (filterAtivo !== "TODOS") count++;
+    if (filterBanco !== "TODOS") count++;
+    return count;
+  }, [searchTerm, filterAno, filterAtivo, filterBanco]);
 
   const sortedBanks = useMemo(
     () => [...banks].sort((a, b) => a.nome.localeCompare(b.nome, "pt-BR")),
@@ -288,19 +300,44 @@ export default function InvestimentosAtivosPage() {
                 Cadastre e mantenha os ativos da carteira de investimentos.
               </p>
             </div>
-            <AppButton
-              onClick={handleCreate}
-              tone="primary"
-              startIcon={<Icon path={mdiPlusBoxOutline} size={0.8} />}
-              className="w-full sm:w-auto"
-            >
-              Novo Ativo
-            </AppButton>
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+              <AppButton
+                tone={showFilters ? "outline-primary" : "outline"}
+                onClick={() => setShowFilters(!showFilters)}
+                className="relative"
+                startIcon={<Filter size={18} className={showFilters ? "fill-blue-100 dark:fill-blue-900/50" : ""} />}
+              >
+                Filtros
+                {activeFiltersCount > 0 && (
+                  <span className="absolute -right-2 -top-2 flex h-5 w-5 items-center justify-center rounded-full bg-blue-600 text-[10px] font-bold text-white shadow-md ring-2 ring-white dark:ring-slate-900">
+                    {activeFiltersCount}
+                  </span>
+                )}
+              </AppButton>
+              <AppButton
+                onClick={handleCreate}
+                tone="primary"
+                startIcon={<Icon path={mdiPlusBoxOutline} size={0.8} />}
+                className="w-full sm:w-auto"
+              >
+                Novo Ativo
+              </AppButton>
+            </div>
           </div>
         </PageContainer>
 
-        <div className="filter-panel-surface">
-          <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-5">
+        <div className={`filter-panel-surface ${!showFilters ? "hidden" : "block animate-in fade-in slide-in-from-top-2 duration-300"}`}>
+          <div className="mb-4 flex items-center justify-between border-b border-gray-100 pb-3">
+            <h3 className="text-sm font-semibold text-gray-700">Filtros de Ativos</h3>
+            <button
+              type="button"
+              onClick={handleClearFilters}
+              className="text-xs font-medium text-blue-600 hover:text-blue-800 transition"
+            >
+              Limpar tudo
+            </button>
+          </div>
+          <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-4">
             <TextField
               type="text"
               label="Buscar ativo"
@@ -398,29 +435,31 @@ export default function InvestimentosAtivosPage() {
                 </MenuItem>
               ))}
             </TextField>
-
-            <div className="flex items-end">
-              <button
-                type="button"
-                onClick={handleClearFilters}
-                className="app-button-outline-danger inline-flex w-full items-center justify-center rounded-lg px-3 py-2 text-sm font-medium whitespace-nowrap transition md:w-auto md:justify-start"
-              >
-                Limpar Filtros
-              </button>
-            </div>
           </div>
         </div>
 
         <div className="app-surface p-4">
           {loading ? (
-            <div className="py-12 text-center">
-              <div className="inline-block h-8 w-8 animate-spin rounded-full border-b-2 border-blue-600"></div>
-              <p className="mt-2 text-gray-600">Carregando dados...</p>
-            </div>
+            <>
+              <div className="md:hidden">
+                <CardSkeleton count={3} />
+              </div>
+              <div className="hidden md:block">
+                <TableSkeleton rows={5} columns={6} />
+              </div>
+            </>
           ) : sortedAtivos.length === 0 ? (
-            <div className="py-12 text-center text-sm text-gray-600">
-              Nenhum ativo encontrado com os filtros atuais.
-            </div>
+            <EmptyState
+              icon={Wallet}
+              title="Nenhum ativo encontrado"
+              description={
+                activeFiltersCount > 0
+                  ? "Tente ajustar seus filtros para encontrar o que procura."
+                  : "Comece cadastrando seus primeiros ativos para gerenciar sua carteira de investimentos."
+              }
+              actionLabel={activeFiltersCount > 0 ? "Limpar Filtros" : "Novo Ativo"}
+              onAction={activeFiltersCount > 0 ? handleClearFilters : handleCreate}
+            />
           ) : (
             <>
               <div className="space-y-2 px-2 sm:px-0 md:hidden">
@@ -489,7 +528,7 @@ export default function InvestimentosAtivosPage() {
                 <table className="w-full table-fixed divide-y divide-gray-200 text-xs">
                   <thead className="app-table-head">
                     <tr>
-                      <th className="app-table-head-cell hidden xl:table-cell">
+                      <th className="app-table-head-cell hidden w-[12%] xl:table-cell">
                         <button
                           type="button"
                           onClick={() => handleSort("data_saldo_inicial")}
@@ -503,7 +542,7 @@ export default function InvestimentosAtivosPage() {
                           ) : null}
                         </button>
                       </th>
-                      <th className="app-table-head-cell">
+                      <th className="app-table-head-cell w-[25%]">
                         <button
                           type="button"
                           onClick={() => handleSort("nome")}
@@ -517,7 +556,7 @@ export default function InvestimentosAtivosPage() {
                           ) : null}
                         </button>
                       </th>
-                      <th className="app-table-head-cell">
+                      <th className="app-table-head-cell w-[18%]">
                         <button
                           type="button"
                           onClick={() => handleSort("banco")}
@@ -531,7 +570,7 @@ export default function InvestimentosAtivosPage() {
                           ) : null}
                         </button>
                       </th>
-                      <th className="app-table-head-cell-right hidden xl:table-cell">
+                      <th className="app-table-head-cell-right hidden w-[12%] xl:table-cell">
                         <button
                           type="button"
                           onClick={() => handleSort("saldo_inicial")}
@@ -545,7 +584,7 @@ export default function InvestimentosAtivosPage() {
                           ) : null}
                         </button>
                       </th>
-                      <th className="app-table-head-cell-right">
+                      <th className="app-table-head-cell-right w-[12%]">
                         <button
                           type="button"
                           onClick={() => handleSort("saldo_atual")}
@@ -559,7 +598,7 @@ export default function InvestimentosAtivosPage() {
                           ) : null}
                         </button>
                       </th>
-                      <th className="app-table-head-cell-center">
+                      <th className="app-table-head-cell-center w-[10%]">
                         <button
                           type="button"
                           onClick={() => handleSort("status")}
@@ -573,7 +612,7 @@ export default function InvestimentosAtivosPage() {
                           ) : null}
                         </button>
                       </th>
-                      <th className="app-table-head-cell-center">Ações</th>
+                      <th className="app-table-head-cell-center w-[11%]">Ações</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-100 bg-white">
@@ -654,26 +693,25 @@ export default function InvestimentosAtivosPage() {
         )}
       </div>
 
-      {showModal && (
-        <InvestimentoAtivoModal
-          ativo={editingAtivo}
-          banks={sortedBanks}
-          onClose={() => {
-            setShowModal(false);
-            setEditingAtivo(null);
-          }}
-          onSave={async (message) => {
-            showFeedback("success", message);
-            setShowModal(false);
-            setEditingAtivo(null);
-            if (currentPage !== 1) {
-              setCurrentPage(1);
-            } else {
-              await loadAtivos();
-            }
-          }}
-        />
-      )}
+      <InvestimentoAtivoModal
+        isOpen={showModal}
+        ativo={editingAtivo}
+        banks={sortedBanks}
+        onClose={() => {
+          setShowModal(false);
+          setEditingAtivo(null);
+        }}
+        onSave={async (message) => {
+          showFeedback("success", message);
+          setShowModal(false);
+          setEditingAtivo(null);
+          if (currentPage !== 1) {
+            setCurrentPage(1);
+          } else {
+            await loadAtivos();
+          }
+        }}
+      />
 
       <ConfirmDeleteModal
         isOpen={!!deleteTarget}

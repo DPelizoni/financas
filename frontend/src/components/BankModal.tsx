@@ -17,6 +17,7 @@ import { Bank, BankInput } from "@/types/bank";
 import { useAccessibleModal } from "@/utils/useAccessibleModal";
 
 interface BankModalProps {
+  isOpen: boolean;
   bank: Bank | null;
   onClose: () => void;
   onSave: (message: string) => Promise<void> | void;
@@ -93,7 +94,12 @@ const validateBankForm = (values: BankInput): FormFieldErrors<BankField> => {
   return errors;
 };
 
-export default function BankModal({ bank, onClose, onSave }: BankModalProps) {
+export default function BankModal({
+  isOpen,
+  bank,
+  onClose,
+  onSave,
+}: BankModalProps) {
   const modalRef = useRef<HTMLDivElement>(null);
   const formRef = useRef<HTMLFormElement>(null);
   const titleId = useId();
@@ -124,6 +130,8 @@ export default function BankModal({ bank, onClose, onSave }: BankModalProps) {
   } = useFormFeedback<BankField>(bankFields);
 
   useEffect(() => {
+    if (!isOpen) return;
+
     if (bank) {
       const currentSaldo = valueToNumber(bank.saldo_inicial);
       setFormData({
@@ -149,13 +157,15 @@ export default function BankModal({ bank, onClose, onSave }: BankModalProps) {
 
     clearAllErrors();
     resetTouched();
-  }, [bank, clearAllErrors, resetTouched]);
+  }, [isOpen, bank, clearAllErrors, resetTouched]);
 
   useAccessibleModal({
-    isOpen: true,
+    isOpen,
     modalRef,
     onClose,
   });
+
+  if (!isOpen) return null;
 
   const updateField = <K extends keyof BankInput>(
     field: K,

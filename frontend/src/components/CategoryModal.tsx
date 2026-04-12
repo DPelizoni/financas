@@ -17,6 +17,7 @@ import { Category, CategoryInput } from "@/types/category";
 import { useAccessibleModal } from "@/utils/useAccessibleModal";
 
 interface CategoryModalProps {
+  isOpen: boolean;
   category: Category | null;
   onClose: () => void;
   onSave: (message: string) => Promise<void> | void;
@@ -42,6 +43,7 @@ const validateCategoryForm = (
 };
 
 export default function CategoryModal({
+  isOpen,
   category,
   onClose,
   onSave,
@@ -76,6 +78,8 @@ export default function CategoryModal({
   } = useFormFeedback<CategoryField>(categoryFields);
 
   useEffect(() => {
+    if (!isOpen) return;
+
     if (category) {
       setFormData({
         nome: category.nome,
@@ -96,13 +100,15 @@ export default function CategoryModal({
 
     clearAllErrors();
     resetTouched();
-  }, [category, clearAllErrors, resetTouched]);
+  }, [isOpen, category, clearAllErrors, resetTouched]);
 
   useAccessibleModal({
-    isOpen: true,
+    isOpen,
     modalRef,
     onClose,
   });
+
+  if (!isOpen) return null;
 
   const updateField = <K extends keyof CategoryInput>(
     field: K,

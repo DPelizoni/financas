@@ -6,9 +6,9 @@ import {
   updateInvestimentoAtivoSchema,
   updateInvestimentoMovimentacaoSchema,
 } from "../schemas/investimentoSchema";
-import { investimentoAtivoController } from "../controllers/investimentoAtivoController";
-import { investimentoMovimentacaoController } from "../controllers/investimentoMovimentacaoController";
-import { investimentoDashboardController } from "../controllers/investimentoDashboardController";
+import investimentoAtivoController from "../controllers/investimentoAtivoController";
+import investimentoMovimentacaoController from "../controllers/investimentoMovimentacaoController";
+import investimentoDashboardController from "../controllers/investimentoDashboardController";
 
 const router = Router();
 

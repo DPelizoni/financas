@@ -1,3 +1,5 @@
+import { BaseFilters } from "./api";
+
 export interface Bank {
   id: number;
   nome: string;
@@ -19,18 +21,6 @@ export interface BankInput {
   ativo?: boolean;
 }
 
-export interface ApiResponse<T = any> {
-  success: boolean;
-  message: string;
-  data?: T;
-  errors?: any[];
-}
-
-export interface PaginatedResponse<T> extends ApiResponse<T> {
-  pagination?: {
-    page: number;
-    limit: number;
-    total: number;
-    totalPages: number;
-  };
+export interface BankFilters extends BaseFilters {
+  ativo?: boolean;
 }

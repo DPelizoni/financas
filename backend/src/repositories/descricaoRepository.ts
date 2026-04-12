@@ -1,4 +1,5 @@
 import pool from "../config/database";
+import { ResultSetHeader, RowDataPacket } from "mysql2";
 import {
   DescricaoInput,
   Descricao,
@@ -6,6 +7,9 @@ import {
 } from "../models/Descricao";
 
 export class DescricaoRepository {
+  /**
+   * Lista todas as descrições com filtros e paginação
+   */
   async findAll(
     filters: DescricaoFilters,
   ): Promise<{ descricoes: Descricao[]; total: number }> {
@@ -30,93 +34,100 @@ export class DescricaoRepository {
       params.push(categoria_id);
     }
 
-    query += " ORDER BY nome ASC, id ASC";
-
-    const countQuery = query.replace(
-      /SELECT \* FROM/,
-      "SELECT COUNT(*) as total FROM",
+    const [countResult] = await pool.query<RowDataPacket[]>(
+      query.replace("SELECT *", "SELECT COUNT(*) as total"),
+      params,
     );
-    const [countResult] = await pool.query<any>(countQuery, params);
-    const total = countResult[0].total;
+    const total = Number(countResult[0]?.total || 0);
 
-    query += ` LIMIT ? OFFSET ?`;
+    query += " ORDER BY nome ASC, id ASC LIMIT ? OFFSET ?";
     params.push(limit, offset);
 
-    const [rows] = await pool.query<any>(query, params);
+    const [rows] = await pool.query<RowDataPacket[]>(query, params);
     return {
-      descricoes: rows,
+      descricoes: rows as Descricao[],
       total,
     };
   }
 
+  /**
+   * Busca descrição por ID
+   */
   async findById(id: number): Promise<Descricao | null> {
-    const [rows] = await pool.query<any>(
+    const [rows] = await pool.query<RowDataPacket[]>(
       "SELECT * FROM descricoes WHERE id = ?",
       [id],
     );
-    return rows.length > 0 ? rows[0] : null;
+    return rows.length > 0 ? (rows[0] as Descricao) : null;
   }
 
+  /**
+   * Cria uma nova descrição
+   */
   async create(input: DescricaoInput): Promise<Descricao> {
     const { nome, categoria_id, ativo = true } = input;
-    const [result] = await pool.query<any>(
+    const [result] = await pool.query<ResultSetHeader>(
       "INSERT INTO descricoes (nome, categoria_id, ativo) VALUES (?, ?, ?)",
       [nome, categoria_id, ativo],
     );
 
-    const descricao = await this.findById((result as any).insertId);
+    const descricao = await this.findById(result.insertId);
     if (!descricao) {
       throw new Error("Falha ao criar descrição");
     }
     return descricao;
   }
 
-  async update(id: number, input: Partial<DescricaoInput>): Promise<Descricao> {
-    const updates: string[] = [];
-    const values: (string | number | boolean)[] = [];
+  /**
+   * Atualiza uma descrição de forma dinâmica
+   */
+  async update(id: number, input: Partial<DescricaoInput>): Promise<Descricao | null> {
+    const fields: string[] = [];
+    const values: any[] = [];
 
-    if (input.nome !== undefined) {
-      updates.push("nome = ?");
-      values.push(input.nome);
-    }
-    if (input.categoria_id !== undefined) {
-      updates.push("categoria_id = ?");
-      values.push(input.categoria_id);
-    }
-    if (input.ativo !== undefined) {
-      updates.push("ativo = ?");
-      values.push(input.ativo);
-    }
+    const allowedFields: (keyof DescricaoInput)[] = [
+      "nome",
+      "categoria_id",
+      "ativo",
+    ];
 
-    if (updates.length === 0) {
-      const descricao = await this.findById(id);
-      if (!descricao) {
-        throw new Error("Descrição não encontrada");
+    allowedFields.forEach((field) => {
+      if (input[field] !== undefined) {
+        fields.push(`${field} = ?`);
+        values.push(input[field]);
       }
-      return descricao;
+    });
+
+    if (fields.length === 0) {
+      return this.findById(id);
     }
 
-    updates.push("updated_at = NOW()");
     values.push(id);
 
     await pool.query(
-      `UPDATE descricoes SET ${updates.join(", ")} WHERE id = ?`,
+      `UPDATE descricoes SET ${fields.join(", ")} WHERE id = ?`,
       values,
     );
 
-    const descricao = await this.findById(id);
-    if (!descricao) {
-      throw new Error("Descrição não encontrada após atualização");
-    }
-    return descricao;
+    return this.findById(id);
   }
 
-  async delete(id: number): Promise<void> {
-    await pool.query("DELETE FROM descricoes WHERE id = ?", [id]);
+  /**
+   * Exclui uma descrição
+   */
+  async delete(id: number): Promise<boolean> {
+    const [result] = await pool.query<ResultSetHeader>(
+      "DELETE FROM descricoes WHERE id = ?",
+      [id],
+    );
+    return result.affectedRows > 0;
   }
 
+  /**
+   * Verifica se uma descrição existe por ID
+   */
   async exists(id: number): Promise<boolean> {
-    const [rows] = await pool.query<any>(
+    const [rows] = await pool.query<RowDataPacket[]>(
       "SELECT id FROM descricoes WHERE id = ? LIMIT 1",
       [id],
     );

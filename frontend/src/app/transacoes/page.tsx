@@ -1,14 +1,13 @@
 "use client";
 
 import React, { useEffect, useId, useMemo, useRef, useState } from "react";
-import { createPortal } from "react-dom";
 import {
   Transacao,
   TransacaoFilters,
-  TransacaoSummary,
   CopyMonthResult,
   DeleteMonthsResult,
   DeleteTransactionMonthsResult,
+  TransacaoSummary,
 } from "@/types/transacao";
 import { Category } from "@/types/category";
 import { Bank } from "@/types/bank";
@@ -18,31 +17,28 @@ import { bankService } from "@/services/bankService";
 import { TransacaoModal } from "@/components/TransacaoModal";
 import Pagination from "@/components/Pagination";
 import {
-  getTransactionSectionClasses,
-  TransactionSectionLabel,
-} from "@/components/TransactionSection";
-import {
+  ArrowLeftRight,
+  Filter,
+  MoreVertical,
+  ChevronDown,
   Copy,
   Trash,
-  Search,
-  DollarSign,
-  ArrowLeftRight,
-  ArrowDownWideNarrow,
-  ArrowUpNarrowWide,
-  ChevronDown,
-  Plus,
-  XCircle,
 } from "lucide-react";
 import Icon from "@mdi/react";
-import { mdiBroom, mdiPlusBoxOutline } from "@mdi/js";
-import { InputAdornment, MenuItem, TextField } from "@mui/material";
+import { mdiPlusBoxOutline } from "@mdi/js";
 import FeedbackAlert from "@/components/FeedbackAlert";
 import ConfirmDeleteModal from "@/components/ConfirmDeleteModal";
 import PageContainer from "@/components/PageContainer";
 import AppButton from "@/components/AppButton";
-import TableActionButton from "@/components/TableActionButton";
 import ViewDataModal from "@/components/ViewDataModal";
 import { useAccessibleModal } from "@/utils/useAccessibleModal";
+import { createPortal } from "react-dom";
+
+// New Components
+import { TransactionSummaryCards } from "./components/TransactionSummaryCards";
+import { TransactionFilters } from "./components/TransactionFilters";
+import { TransactionList } from "./components/TransactionList";
+import { AdvancedActionModals } from "./components/AdvancedActionModals";
 
 interface DeleteConfirmation {
   isOpen: boolean;
@@ -59,11 +55,6 @@ interface FeedbackMessage {
   type: "success" | "error";
   message: string;
 }
-
-const tipoLabel: Record<"DESPESA" | "RECEITA", string> = {
-  DESPESA: "Despesa",
-  RECEITA: "Receita",
-};
 
 const situacaoLabel: Record<"PENDENTE" | "PAGO", string> = {
   PENDENTE: "Pendente",
@@ -124,9 +115,6 @@ export default function TransacoesPage() {
   const deleteTransactionMonthsModalRef = useRef<HTMLDivElement>(null);
   const deleteTransactionMonthsModalTitleId = useId();
 
-  const copySectionClasses = getTransactionSectionClasses("blue");
-  const deleteSectionClasses = getTransactionSectionClasses("red");
-  const modalFooterClass = "app-modal-actions mt-5";
   const [transacoes, setTransacoes] = useState<Transacao[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [banks, setBanks] = useState<Bank[]>([]);
@@ -198,7 +186,24 @@ export default function TransacoesPage() {
   const [advancedActionsOpen, setAdvancedActionsOpen] = useState(false);
   const [copyModalOpen, setCopyModalOpen] = useState(false);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [showFilters, setShowFilters] = useState(false);
   const [isPortalReady, setIsPortalReady] = useState(false);
+
+  const activeFiltersCount = useMemo(() => {
+    let count = 0;
+    if (searchTerm) count++;
+    if (filterTipo !== "TODOS") count++;
+    if (filterCategoria !== "TODOS") count++;
+    if (filterBanco !== "TODOS") count++;
+    if (filterSituacao !== "TODOS") count++;
+    return count;
+  }, [
+    searchTerm,
+    filterTipo,
+    filterCategoria,
+    filterBanco,
+    filterSituacao,
+  ]);
 
   const handleSort = (
     column:
@@ -224,7 +229,6 @@ export default function TransacoesPage() {
     window.setTimeout(() => setFeedback(null), 4000);
   };
 
-  // Load initial data
   useEffect(() => {
     loadData();
   }, []);
@@ -233,7 +237,6 @@ export default function TransacoesPage() {
     setIsPortalReady(true);
   }, []);
 
-  // Load transacoes when filters change
   useEffect(() => {
     loadTransacoes();
   }, [
@@ -251,7 +254,7 @@ export default function TransacoesPage() {
     try {
       setLoading(true);
       await Promise.all([loadCategories(), loadBanks()]);
-      loadTransacoes();
+      await loadTransacoes();
     } finally {
       setLoading(false);
     }
@@ -278,7 +281,6 @@ export default function TransacoesPage() {
       setTotalPages(response.pagination.totalPages);
       setTotal(response.pagination.total);
 
-      // Load summary
       const summaryResponse = await transacaoService.getSummary({
         search: searchTerm || undefined,
         tipo: filterTipo === "TODOS" ? undefined : filterTipo,
@@ -358,7 +360,7 @@ export default function TransacoesPage() {
           transacaoMes: null,
         });
         showFeedback("success", "Transação excluída com sucesso.");
-        loadTransacoes();
+        await loadTransacoes();
       } catch (error) {
         console.error("Erro ao deletar transação:", error);
         const apiMessage = (error as any)?.response?.data?.message;
@@ -396,36 +398,12 @@ export default function TransacoesPage() {
       const novaSituacao = transacao.situacao === "PAGO" ? "PENDENTE" : "PAGO";
       await transacaoService.update(transacao.id, { situacao: novaSituacao });
       showFeedback("success", `Transação marcada como ${situacaoLabel[novaSituacao]}.`);
-      loadTransacoes();
+      await loadTransacoes();
     } catch (error) {
       console.error("Erro ao atualizar situação:", error);
       showFeedback("error", "Não foi possível atualizar a situação.");
     }
   };
-
-  const getCategoryNameById = (id: number) => {
-    return categories.find((c) => c.id === id)?.nome || "-";
-  };
-
-  const getBankNameById = (id: number) => {
-    return banks.find((b) => b.id === id)?.nome || "-";
-  };
-
-  const sortedCategories = useMemo(() => {
-    const categoriesByType =
-      filterTipo === "TODOS"
-        ? categories
-        : categories.filter((category) => category.tipo === filterTipo);
-
-    return [...categoriesByType].sort((a, b) =>
-      a.nome.localeCompare(b.nome, "pt-BR"),
-    );
-  }, [categories, filterTipo]);
-
-  const sortedBanks = useMemo(
-    () => [...banks].sort((a, b) => a.nome.localeCompare(b.nome, "pt-BR")),
-    [banks],
-  );
 
   const sortedTransacoes = useMemo(() => {
     const direction = sortDirection === "asc" ? 1 : -1;
@@ -467,10 +445,6 @@ export default function TransacoesPage() {
 
   const handleSearch = (value: string) => {
     setSearchTerm(value);
-    setCurrentPage(1);
-  };
-
-  const handleFilterChange = () => {
     setCurrentPage(1);
   };
 
@@ -763,15 +737,8 @@ export default function TransacoesPage() {
     setFilterCategoria("TODOS");
     setFilterBanco("TODOS");
     setFilterSituacao("TODOS");
-    setFilterMes("");
+    setFilterMes(currentMonthInputValue());
     setCurrentPage(1);
-  };
-
-  const formatCurrency = (valor: number) => {
-    return new Intl.NumberFormat("pt-BR", {
-      style: "currency",
-      currency: "BRL",
-    }).format(valor);
   };
 
   const viewingTransacaoData = viewingTransacao
@@ -791,15 +758,6 @@ export default function TransacoesPage() {
       })()
     : null;
 
-  if (loading) {
-    return (
-      <div className="flex h-screen flex-col items-center justify-center gap-2">
-        <div className="h-12 w-12 animate-spin rounded-full border-b-2 border-blue-600"></div>
-        <p className="text-sm text-gray-600">Carregando dados...</p>
-      </div>
-    );
-  }
-
   return (
     <div className="app-page py-4 sm:py-8">
       <div className="mx-auto max-w-7xl space-y-6 px-4 sm:px-6 lg:px-8">
@@ -815,42 +773,127 @@ export default function TransacoesPage() {
               </p>
             </div>
             <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center">
-              <div className="relative w-full sm:w-auto">
+              <div className="flex w-full items-center gap-2 sm:w-auto">
                 <AppButton
-                  tone="outline"
-                  onClick={() => setAdvancedActionsOpen((prev) => !prev)}
-                  endIcon={<ChevronDown size={18} />}
-                  className="w-full sm:w-auto"
+                  tone={showFilters ? "outline-primary" : "outline"}
+                  onClick={() => setShowFilters(!showFilters)}
+                  className="relative"
+                  startIcon={<Filter size={18} className={showFilters ? "fill-blue-100 dark:fill-blue-900/50" : ""} />}
                 >
-                  Ações Avançadas
+                  Filtros
+                  {activeFiltersCount > 0 && (
+                    <span className="absolute -right-2 -top-2 flex h-5 w-5 items-center justify-center rounded-full bg-blue-600 text-[10px] font-bold text-white shadow-md ring-2 ring-white dark:ring-slate-900">
+                      {activeFiltersCount}
+                    </span>
+                  )}
                 </AppButton>
 
-                {advancedActionsOpen && (
-                  <div className="absolute right-0 z-20 mt-2 w-full rounded-lg border border-gray-200 bg-white p-2 shadow-lg sm:w-72">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setAdvancedActionsOpen(false);
-                        setCopyModalOpen(true);
-                      }}
-                      className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-left text-sm font-medium text-blue-700 transition hover:bg-blue-50"
+                <div className="relative flex-1 sm:w-auto">
+                  {/* Desktop Dropdown Button */}
+                  <div className="hidden sm:block">
+                    <AppButton
+                      tone="outline"
+                      onClick={() => setAdvancedActionsOpen((prev) => !prev)}
+                      endIcon={<ChevronDown size={18} />}
+                      className="w-full sm:w-auto"
                     >
-                      <Copy size={16} />
-                      Copiar transações por mês
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setAdvancedActionsOpen(false);
-                        setDeleteModalOpen(true);
-                      }}
-                      className="mt-1 flex w-full items-center gap-2 rounded-md px-3 py-2 text-left text-sm font-medium text-red-700 transition hover:bg-red-50"
-                    >
-                      <Trash size={16} />
-                      Excluir transações por mês
-                    </button>
+                      Ações Avançadas
+                    </AppButton>
+                    
+                    {advancedActionsOpen && (
+                      <div className="absolute right-0 z-20 mt-2 w-full rounded-lg border border-gray-200 bg-white p-2 shadow-lg sm:w-72 dark:bg-slate-800 dark:border-slate-700">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setAdvancedActionsOpen(false);
+                            setCopyModalOpen(true);
+                          }}
+                          className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-left text-sm font-medium text-blue-700 transition hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-900/30"
+                        >
+                          <Copy size={16} />
+                          Copiar transações por mês
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setAdvancedActionsOpen(false);
+                            setDeleteModalOpen(true);
+                          }}
+                          className="mt-1 flex w-full items-center gap-2 rounded-md px-3 py-2 text-left text-sm font-medium text-red-700 transition hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/30"
+                        >
+                          <Trash size={16} />
+                          Excluir transações por mês
+                        </button>
+                      </div>
+                    )}
                   </div>
-                )}
+
+                  {/* Mobile Bottom Sheet Trigger */}
+                  <div className="sm:hidden">
+                    <AppButton
+                      tone="outline"
+                      onClick={() => setAdvancedActionsOpen(true)}
+                      startIcon={<MoreVertical size={18} />}
+                      className="w-full"
+                    >
+                      Ações
+                    </AppButton>
+
+                    {advancedActionsOpen && isPortalReady && createPortal(
+                      <div className="fixed inset-0 z-[100] md:hidden">
+                        <div 
+                          className="absolute inset-0 bg-black/40 backdrop-blur-[2px]" 
+                          onClick={() => setAdvancedActionsOpen(false)}
+                        />
+                        <div className="absolute inset-x-0 bottom-0 animate-in slide-in-from-bottom duration-300 rounded-t-2xl bg-white p-4 pb-8 shadow-2xl dark:bg-slate-900">
+                          <div className="mx-auto mb-4 h-1.5 w-12 rounded-full bg-gray-200 dark:bg-slate-700" />
+                          <h3 className="mb-4 text-center text-xs font-bold text-gray-400 uppercase tracking-widest">
+                            Menu de Ações
+                          </h3>
+                          <div className="grid grid-cols-1 gap-3">
+                            <button
+                              onClick={() => {
+                                setAdvancedActionsOpen(false);
+                                setCopyModalOpen(true);
+                              }}
+                              className="flex w-full items-center gap-4 rounded-xl border border-blue-100 bg-blue-50/50 p-4 text-left text-blue-700 transition active:bg-blue-100 dark:border-blue-900/30 dark:bg-blue-900/20 dark:text-blue-400"
+                            >
+                              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-100 text-blue-600 dark:bg-blue-900 dark:text-blue-400">
+                                <Copy size={20} />
+                              </div>
+                              <div>
+                                <p className="font-bold">Copiar por Mês</p>
+                                <p className="text-xs opacity-70">Replicar dados para outros períodos</p>
+                              </div>
+                            </button>
+                            <button
+                              onClick={() => {
+                                setAdvancedActionsOpen(false);
+                                setDeleteModalOpen(true);
+                              }}
+                              className="flex w-full items-center gap-4 rounded-xl border border-red-100 bg-red-50/50 p-4 text-left text-red-700 transition active:bg-red-100 dark:border-red-900/30 dark:bg-red-900/20 dark:text-red-400"
+                            >
+                              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-red-100 text-red-600 dark:bg-red-900 dark:text-red-400">
+                                <Trash size={20} />
+                              </div>
+                              <div>
+                                <p className="font-bold text-red-700 dark:text-red-400">Excluir por Mês</p>
+                                <p className="text-xs text-red-600 opacity-70 dark:text-red-400">Limpeza de dados em lote</p>
+                              </div>
+                            </button>
+                          </div>
+                          <button
+                            onClick={() => setAdvancedActionsOpen(false)}
+                            className="mt-4 w-full rounded-xl bg-gray-100 p-4 text-sm font-bold text-gray-700 transition active:bg-gray-200 dark:bg-slate-800 dark:text-slate-300"
+                          >
+                            Cancelar
+                          </button>
+                        </div>
+                      </div>,
+                      document.body
+                    )}
+                  </div>
+                </div>
               </div>
 
               <AppButton
@@ -863,1052 +906,73 @@ export default function TransacoesPage() {
               >
                 Nova Transação
               </AppButton>
+
             </div>
           </div>
         </PageContainer>
 
         <FeedbackAlert feedback={feedback} onClose={() => setFeedback(null)} />
 
-        {/* Summary Cards */}
-        {summary && (
-          <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-            <div className="rounded-lg border border-blue-200 bg-blue-50 p-4">
-              <h3 className="mb-3 text-sm font-semibold text-blue-900">
-                Totais
-              </h3>
-              <div className="space-y-3">
-                <div className="app-surface p-4">
-                  <p className="text-xs font-medium text-gray-600">Receita</p>
-                  <p className="mt-1 text-xl font-bold text-green-600">
-                    {formatCurrency(summary.total_receita)}
-                  </p>
-                </div>
+        <TransactionFilters
+          searchTerm={searchTerm}
+          filterTipo={filterTipo}
+          filterCategoria={filterCategoria}
+          filterBanco={filterBanco}
+          filterSituacao={filterSituacao}
+          filterMes={filterMes}
+          showFilters={showFilters}
+          categories={categories}
+          banks={banks}
+          onSearch={handleSearch}
+          onFilterTipoChange={(val) => {
+            setFilterTipo(val);
+            setFilterCategoria((currentCategoria) => {
+              if (currentCategoria === "TODOS") return currentCategoria;
+              const selectedCategory = categories.find((cat) => cat.id === currentCategoria);
+              if (!selectedCategory) return "TODOS";
+              if (val !== "TODOS" && selectedCategory.tipo !== val) return "TODOS";
+              return currentCategoria;
+            });
+            setCurrentPage(1);
+          }}
+          onFilterCategoriaChange={(val) => {
+            setFilterCategoria(val);
+            setCurrentPage(1);
+          }}
+          onFilterBancoChange={(val) => {
+            setFilterBanco(val);
+            setCurrentPage(1);
+          }}
+          onFilterSituacaoChange={(val) => {
+            setFilterSituacao(val);
+            setCurrentPage(1);
+          }}
+          onFilterMesChange={(val) => {
+            setFilterMes(val);
+            setCurrentPage(1);
+          }}
+          onClearFilters={handleClearFilters}
+        />
 
-                <div className="app-surface p-4">
-                  <p className="text-xs font-medium text-gray-600">Despesa</p>
-                  <p className="mt-1 text-xl font-bold text-red-600">
-                    {formatCurrency(summary.total_despesa)}
-                  </p>
-                </div>
+        <TransactionSummaryCards summary={summary} />
 
-                <div className="app-surface p-4">
-                  <p className="text-xs font-medium text-gray-600">Líquido</p>
-                  <p
-                    className={`mt-1 text-xl font-bold ${
-                      summary.total_liquido >= 0
-                        ? "text-blue-600"
-                        : "text-red-600"
-                    }`}
-                  >
-                    {formatCurrency(summary.total_liquido)}
-                  </p>
-                </div>
-              </div>
-            </div>
+        <TransactionList
+          transacoes={sortedTransacoes}
+          loading={loading}
+          sortBy={sortBy}
+          sortDirection={sortDirection}
+          onSort={handleSort}
+          onView={handleView}
+          onEdit={handleEdit}
+          onDelete={handleDelete}
+          onToggleSituacao={handleToggleSituacao}
+          onAddTransaction={() => {
+            setEditingTransacao(undefined);
+            setIsModalOpen(true);
+          }}
+          onClearFilters={handleClearFilters}
+        />
 
-            <div className="rounded-lg border border-green-200 bg-green-50 p-4">
-              <h3 className="mb-3 text-sm font-semibold text-green-900">
-                Pagos
-              </h3>
-              <div className="space-y-3">
-                <div className="app-surface p-4">
-                  <p className="text-xs font-medium text-gray-600">Receita</p>
-                  <p className="mt-1 text-xl font-bold text-green-600">
-                    {formatCurrency(summary.pago_receita)}
-                  </p>
-                </div>
-
-                <div className="app-surface p-4">
-                  <p className="text-xs font-medium text-gray-600">Despesa</p>
-                  <p className="mt-1 text-xl font-bold text-red-600">
-                    {formatCurrency(summary.pago_despesa)}
-                  </p>
-                </div>
-
-                <div className="app-surface p-4">
-                  <p className="text-xs font-medium text-gray-600">Líquido</p>
-                  <p
-                    className={`mt-1 text-xl font-bold ${
-                      summary.pago_liquido >= 0
-                        ? "text-blue-600"
-                        : "text-red-600"
-                    }`}
-                  >
-                    {formatCurrency(summary.pago_liquido)}
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <div className="rounded-lg border border-yellow-300 bg-yellow-50 p-4">
-              <h3 className="mb-3 text-sm font-semibold text-yellow-900">
-                Provisões
-              </h3>
-              <div className="space-y-3">
-                <div className="app-surface p-4">
-                  <p className="text-xs font-medium text-gray-600">Receita</p>
-                  <p className="mt-1 text-xl font-bold text-green-600">
-                    {formatCurrency(summary.provisao_receita)}
-                  </p>
-                </div>
-
-                <div className="app-surface p-4">
-                  <p className="text-xs font-medium text-gray-600">Despesa</p>
-                  <p className="mt-1 text-xl font-bold text-red-600">
-                    {formatCurrency(summary.provisao_despesa)}
-                  </p>
-                </div>
-
-                <div className="app-surface p-4">
-                  <p className="text-xs font-medium text-gray-600">Líquido</p>
-                  <p
-                    className={`mt-1 text-xl font-bold ${
-                      summary.provisao_liquido >= 0
-                        ? "text-blue-600"
-                        : "text-red-600"
-                    }`}
-                  >
-                    {formatCurrency(summary.provisao_liquido)}
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Filters */}
-        <div className="filter-panel-surface">
-          <div className="space-y-3">
-            <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-5">
-                <div>
-                  <TextField
-                    type="month"
-                    label="Mês/Ano"
-                    variant="outlined"
-                    size="small"
-                    fullWidth
-                    value={filterMes}
-                    onChange={(e) => {
-                      setFilterMes(e.target.value);
-                      handleFilterChange();
-                    }}
-                    InputLabelProps={{ shrink: true }}
-                  />
-                </div>
-
-                {/* Tipo */}
-                <div>
-                  <TextField
-                    select
-                    label="Tipo"
-                    variant="outlined"
-                    size="small"
-                    fullWidth
-                    InputLabelProps={{ shrink: true }}
-                    value={filterTipo}
-                    onChange={(e) => {
-                      const nextTipo = e.target.value as
-                        | "DESPESA"
-                        | "RECEITA"
-                        | "TODOS";
-
-                      setFilterTipo(nextTipo);
-                      setFilterCategoria((currentCategoria) => {
-                        if (currentCategoria === "TODOS") return currentCategoria;
-
-                        const selectedCategory = categories.find(
-                          (cat) => cat.id === currentCategoria,
-                        );
-
-                        if (!selectedCategory) return "TODOS";
-                        if (
-                          nextTipo !== "TODOS" &&
-                          selectedCategory.tipo !== nextTipo
-                        ) {
-                          return "TODOS";
-                        }
-
-                        return currentCategoria;
-                      });
-                      handleFilterChange();
-                    }}
-                    SelectProps={{
-                      displayEmpty: true,
-                      renderValue: (selected) => {
-                        if (selected === "TODOS") return "Todos";
-                        return selected === "DESPESA" ? "Despesa" : "Receita";
-                      },
-                    }}
-                  >
-                    <MenuItem value="TODOS">Todos</MenuItem>
-                    <MenuItem value="DESPESA">Despesa</MenuItem>
-                    <MenuItem value="RECEITA">Receita</MenuItem>
-                  </TextField>
-                </div>
-
-                {/* Categoria */}
-                <div>
-                  <TextField
-                    select
-                    label="Categoria"
-                    variant="outlined"
-                    size="small"
-                    fullWidth
-                    InputLabelProps={{ shrink: true }}
-                    value={
-                      filterCategoria === "TODOS"
-                        ? "TODOS"
-                        : String(filterCategoria)
-                    }
-                    onChange={(e) => {
-                      setFilterCategoria(
-                        e.target.value === "TODOS"
-                          ? "TODOS"
-                          : Number(e.target.value),
-                      );
-                      handleFilterChange();
-                    }}
-                    SelectProps={{
-                      displayEmpty: true,
-                      renderValue: (selected) => {
-                        if (selected === "TODOS") return "Todos";
-                        const category = sortedCategories.find(
-                          (cat) => String(cat.id) === selected,
-                        );
-                        return category?.nome ?? "Todos";
-                      },
-                    }}
-                  >
-                    <MenuItem value="TODOS">Todos</MenuItem>
-                    {sortedCategories.map((cat) => (
-                      <MenuItem key={cat.id} value={cat.id}>
-                        {cat.nome}
-                      </MenuItem>
-                    ))}
-                  </TextField>
-                </div>
-
-                {/* Banco */}
-                <div>
-                  <TextField
-                    select
-                    label="Banco"
-                    variant="outlined"
-                    size="small"
-                    fullWidth
-                    InputLabelProps={{ shrink: true }}
-                    value={
-                      filterBanco === "TODOS" ? "TODOS" : String(filterBanco)
-                    }
-                    onChange={(e) => {
-                      setFilterBanco(
-                        e.target.value === "TODOS"
-                          ? "TODOS"
-                          : Number(e.target.value),
-                      );
-                      handleFilterChange();
-                    }}
-                    SelectProps={{
-                      displayEmpty: true,
-                      renderValue: (selected) => {
-                        if (selected === "TODOS") return "Todos";
-                        const bank = sortedBanks.find(
-                          (item) => String(item.id) === selected,
-                        );
-                        return bank?.nome ?? "Todos";
-                      },
-                    }}
-                  >
-                    <MenuItem value="TODOS">Todos</MenuItem>
-                    {sortedBanks.map((bank) => (
-                      <MenuItem key={bank.id} value={bank.id}>
-                        {bank.nome}
-                      </MenuItem>
-                    ))}
-                  </TextField>
-                </div>
-
-                {/* Situação */}
-                <div>
-                  <TextField
-                    select
-                    label="Situação"
-                    variant="outlined"
-                    size="small"
-                    fullWidth
-                    InputLabelProps={{ shrink: true }}
-                    value={filterSituacao}
-                    onChange={(e) => {
-                      setFilterSituacao(
-                        e.target.value as "PENDENTE" | "PAGO" | "TODOS",
-                      );
-                      handleFilterChange();
-                    }}
-                    SelectProps={{
-                      displayEmpty: true,
-                      renderValue: (selected) => {
-                        if (selected === "TODOS") return "Todos";
-                        return selected === "PAGO" ? "Pago" : "Pendente";
-                      },
-                    }}
-                  >
-                    <MenuItem value="TODOS">Todos</MenuItem>
-                    <MenuItem value="PAGO">Pago</MenuItem>
-                    <MenuItem value="PENDENTE">Pendente</MenuItem>
-                  </TextField>
-                </div>
-              </div>
-
-            <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-5">
-                <div className="md:col-span-2 xl:col-span-4">
-                  <TextField
-                    type="search"
-                    label="Buscar"
-                    variant="outlined"
-                    size="small"
-                    fullWidth
-                    value={searchTerm}
-                    onChange={(e) => handleSearch(e.target.value)}
-                    InputProps={{
-                      startAdornment: (
-                        <InputAdornment position="start">
-                          <Search size={18} className="text-gray-400" />
-                        </InputAdornment>
-                      ),
-                    }}
-                  />
-                </div>
-
-                <div className="flex items-end">
-                  <button
-                    type="button"
-                    onClick={handleClearFilters}
-                    className="app-button-outline-danger inline-flex w-full items-center justify-center gap-2 rounded-lg px-3 py-2 text-sm font-medium whitespace-nowrap transition md:w-auto md:justify-start"
-                  >
-                    <Icon path={mdiBroom} size={0.75} />
-                    Limpar Filtros
-                  </button>
-                </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Table */}
-        <div className="app-surface p-4">
-          <div className="px-2 sm:px-0 md:hidden">
-            {transacoes.length === 0 ? (
-              <div className="rounded-lg border border-dashed border-gray-300 p-6 text-center text-gray-500">
-                <div className="flex flex-col items-center gap-3">
-                  <span>Nenhum registro encontrado</span>
-                  <button
-                    onClick={() => {
-                      setEditingTransacao(undefined);
-                      setIsModalOpen(true);
-                    }}
-                    className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-700 dark:text-blue-100"
-                  >
-                    Criar novo registro
-                  </button>
-                </div>
-              </div>
-            ) : (
-              <div className="space-y-2">
-                {sortedTransacoes.map((transacao) => (
-                  <div
-                    key={transacao.id}
-                    className="rounded-xl border border-gray-200/80 bg-gradient-to-b from-white to-gray-50 p-4 shadow-[0_1px_2px_rgba(0,0,0,0.06)]"
-                  >
-                    <div className="flex items-start justify-between gap-3">
-                      <div>
-                        <p className="text-sm font-semibold text-gray-900">
-                          {transacao.descricao_nome || "Sem descrição"}
-                        </p>
-                        <p className="mt-1 text-xs text-gray-600">
-                          {transacao.mes} • Vencimento {transacao.vencimento}
-                        </p>
-                      </div>
-
-                      <span
-                        className={`inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-semibold leading-none ${
-                          transacao.tipo === "DESPESA"
-                            ? "bg-red-100 text-red-800"
-                            : "bg-green-100 text-green-800"
-                        }`}
-                      >
-                        {tipoLabel[transacao.tipo]}
-                      </span>
-                    </div>
-
-                    <div className="mt-3 space-y-1 text-sm text-gray-700">
-                      <p>
-                        <span className="font-medium">Categoria: </span>
-                        {transacao.categoria_nome || "-"}
-                      </p>
-                      <p>
-                        <span className="font-medium">Banco: </span>
-                        {transacao.banco_nome || "-"}
-                      </p>
-                    </div>
-
-                    <div className="mt-3 flex items-center justify-between">
-                      <button
-                        onClick={() => handleToggleSituacao(transacao)}
-                        className={`inline-flex min-h-8 items-center rounded-full px-2.5 py-1 text-[11px] font-medium leading-none transition ${
-                          transacao.situacao === "PAGO"
-                            ? "app-status-toggle-success"
-                            : "app-status-toggle-warning"
-                        }`}
-                      >
-                        {situacaoLabel[transacao.situacao]}
-                      </button>
-                      <p className="text-sm font-bold text-gray-900">
-                        {formatCurrency(transacao.valor)}
-                      </p>
-                    </div>
-
-                    <div className="mt-3 flex items-center justify-end gap-2 border-t border-gray-100 pt-3">
-                      <TableActionButton
-                        action="view"
-                        title="Visualizar"
-                        onClick={() => handleView(transacao)}
-                      />
-                      <TableActionButton
-                        action="edit"
-                        title="Editar"
-                        onClick={() => handleEdit(transacao)}
-                      />
-                      <TableActionButton
-                        action="delete"
-                        title="Excluir"
-                        onClick={() => handleDelete(transacao.id, transacao.mes)}
-                      />
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-
-          <div className="hidden overflow-x-auto md:block">
-            <table className="w-full table-fixed divide-y divide-gray-200 text-xs">
-              <thead className="app-table-head">
-                <tr>
-                  <th className="app-table-head-cell w-[7%]">
-                    <button
-                      type="button"
-                      onClick={() => handleSort("mes")}
-                      className="inline-flex items-center gap-1"
-                    >
-                      Mês
-                      {sortBy === "mes" && sortDirection === "asc" ? (
-                        <ArrowUpNarrowWide size={14} />
-                      ) : sortBy === "mes" ? (
-                        <ArrowDownWideNarrow size={14} />
-                      ) : null}
-                    </button>
-                  </th>
-                  <th className="app-table-head-cell hidden w-[9%] lg:table-cell">
-                    <button
-                      type="button"
-                      onClick={() => handleSort("vencimento")}
-                      className="inline-flex items-center gap-1"
-                    >
-                      Vencimento
-                      {sortBy === "vencimento" && sortDirection === "asc" ? (
-                        <ArrowUpNarrowWide size={14} />
-                      ) : sortBy === "vencimento" ? (
-                        <ArrowDownWideNarrow size={14} />
-                      ) : null}
-                    </button>
-                  </th>
-                  <th className="app-table-head-cell w-[7%]">
-                    <button
-                      type="button"
-                      onClick={() => handleSort("tipo")}
-                      className="inline-flex items-center gap-1"
-                    >
-                      Tipo
-                      {sortBy === "tipo" && sortDirection === "asc" ? (
-                        <ArrowUpNarrowWide size={14} />
-                      ) : sortBy === "tipo" ? (
-                        <ArrowDownWideNarrow size={14} />
-                      ) : null}
-                    </button>
-                  </th>
-                  <th className="app-table-head-cell w-[12%]">
-                    <button
-                      type="button"
-                      onClick={() => handleSort("categoria")}
-                      className="inline-flex items-center gap-1"
-                    >
-                      Categoria
-                      {sortBy === "categoria" && sortDirection === "asc" ? (
-                        <ArrowUpNarrowWide size={14} />
-                      ) : sortBy === "categoria" ? (
-                        <ArrowDownWideNarrow size={14} />
-                      ) : null}
-                    </button>
-                  </th>
-                  <th className="app-table-head-cell w-[16%]">
-                    <button
-                      type="button"
-                      onClick={() => handleSort("descricao")}
-                      className="inline-flex items-center gap-1"
-                    >
-                      Descrição
-                      {sortBy === "descricao" && sortDirection === "asc" ? (
-                        <ArrowUpNarrowWide size={14} />
-                      ) : sortBy === "descricao" ? (
-                        <ArrowDownWideNarrow size={14} />
-                      ) : null}
-                    </button>
-                  </th>
-                  <th className="app-table-head-cell w-[11%]">
-                    <button
-                      type="button"
-                      onClick={() => handleSort("banco")}
-                      className="inline-flex items-center gap-1"
-                    >
-                      Banco
-                      {sortBy === "banco" && sortDirection === "asc" ? (
-                        <ArrowUpNarrowWide size={14} />
-                      ) : sortBy === "banco" ? (
-                        <ArrowDownWideNarrow size={14} />
-                      ) : null}
-                    </button>
-                  </th>
-                  <th className="app-table-head-cell-right w-[10%]">
-                    <button
-                      type="button"
-                      onClick={() => handleSort("valor")}
-                      className="inline-flex items-center gap-1"
-                    >
-                      Valor
-                      {sortBy === "valor" && sortDirection === "asc" ? (
-                        <ArrowUpNarrowWide size={14} />
-                      ) : sortBy === "valor" ? (
-                        <ArrowDownWideNarrow size={14} />
-                      ) : null}
-                    </button>
-                  </th>
-                  <th className="app-table-head-cell-center w-[11%]">
-                    <button
-                      type="button"
-                      onClick={() => handleSort("situacao")}
-                      className="inline-flex items-center gap-1"
-                    >
-                      Situação
-                      {sortBy === "situacao" && sortDirection === "asc" ? (
-                        <ArrowUpNarrowWide size={14} />
-                      ) : sortBy === "situacao" ? (
-                        <ArrowDownWideNarrow size={14} />
-                      ) : null}
-                    </button>
-                  </th>
-                  <th className="app-table-head-cell-center w-[17%]">
-                    Ações
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y">
-                {transacoes.length === 0 ? (
-                  <tr>
-                    <td
-                      colSpan={9}
-                      className="px-3 py-8 text-center text-gray-500"
-                    >
-                      <div className="flex flex-col items-center gap-3">
-                        <span>Nenhum registro encontrado</span>
-                        <button
-                          onClick={() => {
-                            setEditingTransacao(undefined);
-                            setIsModalOpen(true);
-                          }}
-                          className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-700 dark:text-blue-100"
-                        >
-                          Criar novo registro
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ) : (
-                  sortedTransacoes.map((transacao) => (
-                    <tr key={transacao.id} className="app-table-row">
-                      <td className="px-3 py-2 text-xs font-medium text-gray-900">
-                        {transacao.mes}
-                      </td>
-                      <td className="hidden px-3 py-2 text-xs text-gray-900 lg:table-cell">
-                        {transacao.vencimento}
-                      </td>
-                      <td className="px-3 py-2 text-xs">
-                        <span
-                          className={`inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-semibold leading-none ${
-                            transacao.tipo === "DESPESA"
-                              ? "bg-red-100 text-red-800"
-                              : "bg-green-100 text-green-800"
-                          }`}
-                        >
-                          {tipoLabel[transacao.tipo]}
-                        </span>
-                      </td>
-                      <td className="px-3 py-2 text-xs text-gray-900">
-                        <span
-                          className="block truncate"
-                          title={transacao.categoria_nome || "-"}
-                        >
-                          {transacao.categoria_nome || "-"}
-                        </span>
-                      </td>
-                      <td className="px-3 py-2 text-xs text-gray-900">
-                        <span
-                          className="block truncate"
-                          title={transacao.descricao_nome || "-"}
-                        >
-                          {transacao.descricao_nome || "-"}
-                        </span>
-                      </td>
-                      <td className="px-3 py-2 text-xs text-gray-900">
-                        <span
-                          className="block truncate"
-                          title={transacao.banco_nome || "-"}
-                        >
-                          {transacao.banco_nome || "-"}
-                        </span>
-                      </td>
-                      <td className="px-3 py-2 text-right text-xs font-semibold">
-                        {formatCurrency(transacao.valor)}
-                      </td>
-                      <td className="px-3 py-2 text-center">
-                        <button
-                          onClick={() => handleToggleSituacao(transacao)}
-                          className={`inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-medium leading-none transition ${
-                            transacao.situacao === "PAGO"
-                              ? "app-status-toggle-success"
-                              : "app-status-toggle-warning"
-                          }`}
-                        >
-                          {situacaoLabel[transacao.situacao]}
-                        </button>
-                      </td>
-                      <td className="px-3 py-2 text-center">
-                        <div className="flex justify-center gap-2">
-                          <TableActionButton
-                            action="view"
-                            title="Visualizar"
-                            onClick={() => handleView(transacao)}
-                            compact
-                          />
-                          <TableActionButton
-                            action="edit"
-                            title="Editar"
-                            onClick={() => handleEdit(transacao)}
-                            compact
-                          />
-                          <TableActionButton
-                            action="delete"
-                            title="Excluir"
-                            onClick={() =>
-                              handleDelete(transacao.id, transacao.mes)
-                            }
-                            compact
-                          />
-                        </div>
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        {copyModalOpen &&
-          isPortalReady &&
-          createPortal(
-          <div className="app-modal-overlay">
-            <div
-              ref={copyModalRef}
-              className="app-modal-content w-full max-w-3xl"
-              role="dialog"
-              aria-modal="true"
-              aria-labelledby={copyModalTitleId}
-              tabIndex={-1}
-            >
-              <div className="app-modal-header">
-                <h3 id={copyModalTitleId} className="text-base font-semibold text-blue-700">
-                  Copiar Transações Por Mês
-                </h3>
-              </div>
-
-              <div className="p-6">
-                <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
-                  <div>
-                    <TransactionSectionLabel tone="blue">
-                      Mês origem
-                    </TransactionSectionLabel>
-                    <input
-                      type="month"
-                      value={copyMesOrigem}
-                      onChange={(e) => setCopyMesOrigem(e.target.value)}
-                      className={`${copySectionClasses.input} md:w-full`}
-                    />
-                  </div>
-
-                  <div>
-                    <TransactionSectionLabel tone="blue">
-                      Mês destino
-                    </TransactionSectionLabel>
-                    <input
-                      type="month"
-                      value={copyMesDestinoInput}
-                      onChange={(e) => setCopyMesDestinoInput(e.target.value)}
-                      className={`${copySectionClasses.input} md:w-full`}
-                    />
-                  </div>
-
-                  <div className="flex items-end">
-                    <button
-                      type="button"
-                      onClick={handleAddDestinoMes}
-                      className={`${copySectionClasses.secondaryButton} inline-flex items-center justify-center gap-2`}
-                    >
-                      <Plus size={16} />
-                      Adicionar destino
-                    </button>
-                  </div>
-                </div>
-
-                <div className="mt-3 flex flex-wrap gap-2">
-                  <button
-                    type="button"
-                    onClick={() => handleAddNextMonths(3)}
-                    className={`${copySectionClasses.shortcutButton} inline-flex items-center gap-1`}
-                  >
-                    <Plus size={14} />
-                    3 meses
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => handleAddNextMonths(6)}
-                    className={`${copySectionClasses.shortcutButton} inline-flex items-center gap-1`}
-                  >
-                    <Plus size={14} />
-                    6 meses
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => handleAddNextMonths(12)}
-                    className={`${copySectionClasses.shortcutButton} inline-flex items-center gap-1`}
-                  >
-                    <Plus size={14} />
-                    12 meses
-                  </button>
-                </div>
-
-                <div className="mt-2 flex flex-wrap gap-2">
-                  {copyMesesDestino.length === 0 ? (
-                    <span className="text-xs text-blue-800">
-                      Nenhum mês de destino selecionado.
-                    </span>
-                  ) : (
-                    copyMesesDestino.map((mes) => (
-                      <button
-                        key={mes}
-                        type="button"
-                        onClick={() => handleRemoveDestinoMes(mes)}
-                        className={copySectionClasses.chip}
-                        title="Remover mês destino"
-                      >
-                        {monthApiToInput(mes)} ×
-                      </button>
-                    ))
-                  )}
-                </div>
-
-                <div className={modalFooterClass}>
-                  <AppButton
-                    type="button"
-                    onClick={() => setCopyModalOpen(false)}
-                    tone="outline-danger"
-                    className="w-full sm:w-auto"
-                    startIcon={<XCircle size={16} />}
-                    data-modal-initial-focus
-                  >
-                    Cancelar
-                  </AppButton>
-                  <AppButton
-                    type="button"
-                    onClick={handleCopyByMonth}
-                    disabled={copyLoading}
-                    tone="primary"
-                    className="w-full sm:w-auto"
-                    startIcon={copyLoading ? undefined : <Copy size={16} />}
-                  >
-                    {copyLoading ? "Copiando..." : "Copiar para meses selecionados"}
-                  </AppButton>
-                </div>
-              </div>
-            </div>
-          </div>,
-          document.body,
-        )}
-
-        {deleteModalOpen &&
-          isPortalReady &&
-          createPortal(
-          <div className="app-modal-overlay">
-            <div
-              ref={deleteModalRef}
-              className="app-modal-content w-full max-w-3xl"
-              role="dialog"
-              aria-modal="true"
-              aria-labelledby={deleteModalTitleId}
-              tabIndex={-1}
-            >
-              <div className="app-modal-header">
-                <h3 id={deleteModalTitleId} className="text-base font-semibold text-red-700">
-                  Excluir Transações Por Mês
-                </h3>
-              </div>
-
-              <div className="p-6">
-                <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-                  <div>
-                    <TransactionSectionLabel tone="red">
-                      Mês para excluir
-                    </TransactionSectionLabel>
-                    <input
-                      type="month"
-                      value={deleteMesInput}
-                      onChange={(e) => setDeleteMesInput(e.target.value)}
-                      className={`${deleteSectionClasses.input} md:w-full`}
-                    />
-                  </div>
-
-                  <div className="flex items-end">
-                    <button
-                      type="button"
-                      onClick={handleAddDeleteMes}
-                      className={`${deleteSectionClasses.secondaryButton} inline-flex items-center justify-center gap-2`}
-                    >
-                      <Plus size={16} />
-                      Adicionar mês
-                    </button>
-                  </div>
-                </div>
-
-                <div className="mt-3 flex flex-wrap gap-2">
-                  <button
-                    type="button"
-                    onClick={() => handleAddDeleteNextMonths(3)}
-                    className={`${deleteSectionClasses.shortcutButton} inline-flex items-center gap-1`}
-                  >
-                    <Plus size={14} />
-                    3 meses
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => handleAddDeleteNextMonths(6)}
-                    className={`${deleteSectionClasses.shortcutButton} inline-flex items-center gap-1`}
-                  >
-                    <Plus size={14} />
-                    6 meses
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => handleAddDeleteNextMonths(12)}
-                    className={`${deleteSectionClasses.shortcutButton} inline-flex items-center gap-1`}
-                  >
-                    <Plus size={14} />
-                    12 meses
-                  </button>
-                </div>
-
-                <div className="mt-2 flex flex-wrap gap-2">
-                  {deleteMeses.length === 0 ? (
-                    <span className="text-xs text-red-800">
-                      Nenhum mês selecionado para exclusão.
-                    </span>
-                  ) : (
-                    deleteMeses.map((mes) => (
-                      <button
-                        key={`delete-${mes}`}
-                        type="button"
-                        onClick={() => handleRemoveDeleteMes(mes)}
-                        className={deleteSectionClasses.chip}
-                        title="Remover mês"
-                      >
-                        {monthApiToInput(mes)} ×
-                      </button>
-                    ))
-                  )}
-                </div>
-
-                <div className={modalFooterClass}>
-                  <AppButton
-                    type="button"
-                    onClick={() => setDeleteModalOpen(false)}
-                    tone="outline-danger"
-                    className="w-full sm:w-auto"
-                    startIcon={<XCircle size={16} />}
-                    data-modal-initial-focus
-                  >
-                    Cancelar
-                  </AppButton>
-                  <AppButton
-                    type="button"
-                    onClick={requestDeleteByMonths}
-                    disabled={deleteMonthsLoading}
-                    tone="danger"
-                    className="w-full sm:w-auto"
-                    startIcon={deleteMonthsLoading ? undefined : <Trash size={16} />}
-                  >
-                    {deleteMonthsLoading
-                      ? "Excluindo..."
-                      : "Excluir meses selecionados"}
-                  </AppButton>
-                </div>
-              </div>
-            </div>
-          </div>,
-          document.body,
-        )}
-
-        {deleteTransactionMonthsModalOpen &&
-          isPortalReady &&
-          createPortal(
-          <div className="app-modal-overlay">
-            <div
-              ref={deleteTransactionMonthsModalRef}
-              className="app-modal-content w-full max-w-3xl"
-              role="dialog"
-              aria-modal="true"
-              aria-labelledby={deleteTransactionMonthsModalTitleId}
-              tabIndex={-1}
-            >
-              <div className="app-modal-header">
-                <h3
-                  id={deleteTransactionMonthsModalTitleId}
-                  className="text-base font-semibold text-red-700"
-                >
-                  Excluir Esta Transação em Vários Meses
-                </h3>
-              </div>
-
-              <div className="p-6">
-                <p className="mb-4 text-sm text-red-900">
-                  Transação base do mês{" "}
-                  <strong>{deleteTransactionMonthsTarget?.transacaoMes}</strong>.
-                </p>
-
-                <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-                  <div>
-                    <TransactionSectionLabel tone="red">
-                      Mês para excluir
-                    </TransactionSectionLabel>
-                    <input
-                      type="month"
-                      value={deleteTransactionMesInput}
-                      onChange={(e) => setDeleteTransactionMesInput(e.target.value)}
-                      className={`${deleteSectionClasses.input} md:w-full`}
-                    />
-                  </div>
-
-                  <div className="flex items-end">
-                    <button
-                      type="button"
-                      onClick={handleAddDeleteTransactionMes}
-                      className={`${deleteSectionClasses.secondaryButton} inline-flex items-center justify-center gap-2`}
-                    >
-                      <Plus size={16} />
-                      Adicionar mês
-                    </button>
-                  </div>
-                </div>
-
-                <div className="mt-3 flex flex-wrap gap-2">
-                  <button
-                    type="button"
-                    onClick={() => handleAddDeleteTransactionNextMonths(3)}
-                    className={`${deleteSectionClasses.shortcutButton} inline-flex items-center gap-1`}
-                  >
-                    <Plus size={14} />
-                    3 meses
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => handleAddDeleteTransactionNextMonths(6)}
-                    className={`${deleteSectionClasses.shortcutButton} inline-flex items-center gap-1`}
-                  >
-                    <Plus size={14} />
-                    6 meses
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => handleAddDeleteTransactionNextMonths(12)}
-                    className={`${deleteSectionClasses.shortcutButton} inline-flex items-center gap-1`}
-                  >
-                    <Plus size={14} />
-                    12 meses
-                  </button>
-                </div>
-
-                <div className="mt-2 flex flex-wrap gap-2">
-                  {deleteTransactionMeses.length === 0 ? (
-                    <span className="text-xs text-red-800">
-                      Nenhum mês selecionado para exclusão.
-                    </span>
-                  ) : (
-                    deleteTransactionMeses.map((mes) => (
-                      <button
-                        key={`delete-transaction-${mes}`}
-                        type="button"
-                        onClick={() => handleRemoveDeleteTransactionMes(mes)}
-                        className={deleteSectionClasses.chip}
-                        title="Remover mês"
-                      >
-                        {monthApiToInput(mes)} ×
-                      </button>
-                    ))
-                  )}
-                </div>
-
-                <div className={modalFooterClass}>
-                  <AppButton
-                    type="button"
-                    onClick={() => {
-                      setDeleteTransactionMonthsModalOpen(false);
-                      setDeleteTransactionMonthsTarget(null);
-                      setDeleteTransactionMeses([]);
-                      setDeleteTransactionMesInput("");
-                    }}
-                    tone="outline-danger"
-                    className="w-full sm:w-auto"
-                    startIcon={<XCircle size={16} />}
-                    data-modal-initial-focus
-                  >
-                    Cancelar
-                  </AppButton>
-                  <AppButton
-                    type="button"
-                    onClick={requestDeleteTransactionByMonths}
-                    disabled={deleteTransactionMonthsLoading}
-                    tone="danger"
-                    className="w-full sm:w-auto"
-                    startIcon={
-                      deleteTransactionMonthsLoading ? undefined : <Trash size={16} />
-                    }
-                  >
-                    {deleteTransactionMonthsLoading ? "Excluindo..." : "Excluir transação nos meses"}
-                  </AppButton>
-                </div>
-              </div>
-            </div>
-          </div>,
-          document.body,
-        )}
-
-        {/* Pagination */}
         <Pagination
           currentPage={currentPage}
           totalPages={totalPages}
@@ -1927,16 +991,15 @@ export default function TransacoesPage() {
           onClose={() => setViewingTransacao(null)}
         />
 
-        {/* Modal */}
         <TransacaoModal
           isOpen={isModalOpen}
           onClose={() => {
             setIsModalOpen(false);
             setEditingTransacao(undefined);
           }}
-          onSuccess={(message) => {
+          onSuccess={async (message) => {
             showFeedback("success", message);
-            loadTransacoes();
+            await loadTransacoes();
           }}
           transacao={editingTransacao}
           isEditing={!!editingTransacao}
@@ -1954,7 +1017,7 @@ export default function TransacoesPage() {
                 <button
                   type="button"
                   onClick={handleOpenDeleteTransactionMonths}
-                  className="font-semibold text-red-700 underline-offset-2 hover:underline"
+                  className="font-semibold text-red-700 underline-offset-2 hover:underline dark:text-red-400"
                 >
                   Selecionar meses
                 </button>
@@ -2018,6 +1081,55 @@ export default function TransacoesPage() {
             setDeleteTransactionMonthsConfirmOpen(false);
             await handleDeleteTransactionByMonths();
           }}
+        />
+
+        <AdvancedActionModals
+          isPortalReady={isPortalReady}
+          copyModalOpen={copyModalOpen}
+          onCopyModalClose={() => setCopyModalOpen(false)}
+          copyMesOrigem={copyMesOrigem}
+          setCopyMesOrigem={setCopyMesOrigem}
+          copyMesDestinoInput={copyMesDestinoInput}
+          setCopyMesDestinoInput={setCopyMesDestinoInput}
+          copyMesesDestino={copyMesesDestino}
+          onAddDestinoMes={handleAddDestinoMes}
+          onRemoveDestinoMes={handleRemoveDestinoMes}
+          onAddNextMonths={handleAddNextMonths}
+          onCopyByMonth={handleCopyByMonth}
+          copyLoading={copyLoading}
+          deleteModalOpen={deleteModalOpen}
+          onDeleteModalClose={() => setDeleteModalOpen(false)}
+          deleteMesInput={deleteMesInput}
+          setDeleteMesInput={setDeleteMesInput}
+          deleteMeses={deleteMeses}
+          onAddDeleteMes={handleAddDeleteMes}
+          onRemoveDeleteMes={handleRemoveDeleteMes}
+          onAddDeleteNextMonths={handleAddDeleteNextMonths}
+          onRequestDeleteByMonths={requestDeleteByMonths}
+          deleteMonthsLoading={deleteMonthsLoading}
+          deleteTransactionMonthsModalOpen={deleteTransactionMonthsModalOpen}
+          onDeleteTransactionMonthsModalClose={() => {
+            setDeleteTransactionMonthsModalOpen(false);
+            setDeleteTransactionMonthsTarget(null);
+            setDeleteTransactionMeses([]);
+            setDeleteTransactionMesInput("");
+          }}
+          deleteTransactionMonthsTarget={deleteTransactionMonthsTarget}
+          deleteTransactionMesInput={deleteTransactionMesInput}
+          setDeleteTransactionMesInput={setDeleteTransactionMesInput}
+          deleteTransactionMeses={deleteTransactionMeses}
+          onAddDeleteTransactionMes={handleAddDeleteTransactionMes}
+          onRemoveDeleteTransactionMes={handleRemoveDeleteTransactionMes}
+          onAddDeleteTransactionNextMonths={handleAddDeleteTransactionNextMonths}
+          onRequestDeleteTransactionByMonths={requestDeleteTransactionByMonths}
+          deleteTransactionMonthsLoading={deleteTransactionMonthsLoading}
+          copyModalRef={copyModalRef}
+          copyModalTitleId={copyModalTitleId}
+          deleteModalRef={deleteModalRef}
+          deleteModalTitleId={deleteModalTitleId}
+          deleteTransactionMonthsModalRef={deleteTransactionMonthsModalRef}
+          deleteTransactionMonthsModalTitleId={deleteTransactionMonthsModalTitleId}
+          monthApiToInput={monthApiToInput}
         />
       </div>
     </div>

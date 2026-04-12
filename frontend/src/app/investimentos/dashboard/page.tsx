@@ -1,7 +1,7 @@
 ﻿"use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { ArrowLeftRight, BarChart3, DollarSign, TrendingUp } from "lucide-react";
+import { ArrowLeftRight, BarChart3, DollarSign, TrendingUp, Filter } from "lucide-react";
 import { MenuItem, TextField } from "@mui/material";
 import {
   Cell,
@@ -18,6 +18,7 @@ import {
 } from "recharts";
 import FeedbackAlert from "@/components/FeedbackAlert";
 import PageContainer from "@/components/PageContainer";
+import AppButton from "@/components/AppButton";
 import { bankService } from "@/services/bankService";
 import { investimentoDashboardService } from "@/services/investimentoService";
 import { Bank } from "@/types/bank";
@@ -93,6 +94,16 @@ export default function InvestimentosDashboardPage() {
   const [filterMesAno, setFilterMesAno] = useState("");
   const [filterAno, setFilterAno] = useState<string>("TODOS");
   const [filterBanco, setFilterBanco] = useState<number | "TODOS">("TODOS");
+  const [showFilters, setShowFilters] = useState(false);
+
+  const activeFiltersCount = useMemo(() => {
+    let count = 0;
+    if (filterMesAno) count++;
+    if (filterAno !== "TODOS") count++;
+    if (filterAtivo !== "TODOS") count++;
+    if (filterBanco !== "TODOS") count++;
+    return count;
+  }, [filterMesAno, filterAno, filterAtivo, filterBanco]);
   const [feedback, setFeedback] = useState<{
     type: "success" | "error";
     message: string;
@@ -317,9 +328,38 @@ export default function InvestimentosDashboardPage() {
 
   if (loading) {
     return (
-      <div className="flex h-screen flex-col items-center justify-center gap-2">
-        <div className="h-12 w-12 animate-spin rounded-full border-b-2 border-blue-600"></div>
-        <p className="text-sm text-gray-600">Carregando dados...</p>
+      <div className="app-page py-4 sm:py-8">
+        <div className="mx-auto max-w-7xl space-y-6 px-4 sm:px-6 lg:px-8">
+          <PageContainer>
+            <div className="h-10 w-64 animate-pulse rounded-md bg-gray-200" />
+            <div className="mt-2 h-4 w-96 animate-pulse rounded-md bg-gray-100" />
+          </PageContainer>
+
+          <div className="filter-panel-surface">
+            <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-4">
+              {[1, 2, 3, 4].map((i) => (
+                <div key={i} className="h-10 w-full animate-pulse rounded-md bg-gray-100" />
+              ))}
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+            {[1, 2, 3, 4].map((i) => (
+              <div key={i} className="h-32 w-full animate-pulse rounded-xl bg-gray-200" />
+            ))}
+          </div>
+
+          <div className="h-[400px] w-full animate-pulse rounded-xl bg-gray-100" />
+
+          <div className="app-surface p-4">
+            <div className="mb-4 h-6 w-48 animate-pulse rounded bg-gray-200" />
+            <div className="space-y-3">
+              {[1, 2, 3, 4, 5].map((i) => (
+                <div key={i} className="h-12 w-full animate-pulse rounded-md bg-gray-50" />
+              ))}
+            </div>
+          </div>
+        </div>
       </div>
     );
   }
@@ -330,17 +370,45 @@ export default function InvestimentosDashboardPage() {
         <FeedbackAlert feedback={feedback} onClose={() => setFeedback(null)} />
 
         <PageContainer>
-          <h1 className="flex items-center gap-3 text-2xl font-bold text-gray-900 sm:text-3xl">
-            <BarChart3 size={32} className="text-blue-600" />
-            Dashboard de Investimentos
-          </h1>
-          <p className="mt-2 text-sm text-gray-600">
-            Visão consolidada de aportes, resgates, rendimentos e carteira atual.
-          </p>
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h1 className="flex items-center gap-3 text-2xl font-bold text-gray-900 sm:text-3xl">
+                <BarChart3 size={32} className="text-blue-600" />
+                Dashboard de Investimentos
+              </h1>
+              <p className="mt-2 text-sm text-gray-600">
+                Visão consolidada de aportes, resgates, rendimentos e carteira atual.
+              </p>
+            </div>
+
+            <AppButton
+              tone={showFilters ? "outline-primary" : "outline"}
+              onClick={() => setShowFilters(!showFilters)}
+              className="relative"
+              startIcon={<Filter size={18} className={showFilters ? "fill-blue-100" : ""} />}
+            >
+              {showFilters ? "Ocultar Filtros" : "Mostrar Filtros"}
+              {activeFiltersCount > 0 && (
+                <span className="absolute -right-2 -top-2 flex h-5 w-5 items-center justify-center rounded-full bg-blue-600 text-[10px] font-bold text-white shadow-md ring-2 ring-white">
+                  {activeFiltersCount}
+                </span>
+              )}
+            </AppButton>
+          </div>
         </PageContainer>
 
-        <div className="filter-panel-surface">
-          <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-5">
+        <div className={`filter-panel-surface ${!showFilters ? "hidden" : "block animate-in fade-in slide-in-from-top-2 duration-300"}`}>
+          <div className="mb-4 flex items-center justify-between border-b border-gray-100 pb-3">
+            <h3 className="text-sm font-semibold text-gray-700">Filtros de Rentabilidade</h3>
+            <button
+              type="button"
+              onClick={handleClearFilters}
+              className="text-xs font-medium text-blue-600 hover:text-blue-800 transition"
+            >
+              Limpar tudo
+            </button>
+          </div>
+          <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-4">
             <TextField
               type="month"
               label="Mês/Ano"
@@ -408,16 +476,6 @@ export default function InvestimentosDashboardPage() {
                 </MenuItem>
               ))}
             </TextField>
-
-            <div className="flex items-end">
-              <button
-                type="button"
-                onClick={handleClearFilters}
-                className="app-button-outline-danger inline-flex w-full items-center justify-center rounded-lg px-3 py-2 text-sm font-medium whitespace-nowrap transition md:w-auto md:justify-start"
-              >
-                Limpar Filtros
-              </button>
-            </div>
           </div>
         </div>
 

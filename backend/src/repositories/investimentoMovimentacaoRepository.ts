@@ -8,6 +8,9 @@ import {
 } from "../models/Investimento";
 
 export class InvestimentoMovimentacaoRepository {
+  /**
+   * Constrói a cláusula WHERE baseada nos filtros fornecidos
+   */
   private buildBaseFilters(
     filters: {
       search?: string;
@@ -61,6 +64,9 @@ export class InvestimentoMovimentacaoRepository {
     return whereClause;
   }
 
+  /**
+   * Lista todas as movimentações de investimento com filtros e paginação
+   */
   async findAll(
     filters: InvestimentoMovimentacaoFilters,
   ): Promise<{ movimentacoes: InvestimentoMovimentacao[]; total: number }> {
@@ -107,6 +113,9 @@ export class InvestimentoMovimentacaoRepository {
     return { movimentacoes: rows as InvestimentoMovimentacao[], total };
   }
 
+  /**
+   * Busca uma movimentação de investimento por ID
+   */
   async findById(id: number): Promise<InvestimentoMovimentacao | null> {
     const [rows] = await pool.query<RowDataPacket[]>(
       `
@@ -133,6 +142,9 @@ export class InvestimentoMovimentacaoRepository {
     return rows.length > 0 ? (rows[0] as InvestimentoMovimentacao) : null;
   }
 
+  /**
+   * Cria uma nova movimentação de investimento
+   */
   async create(
     input: InvestimentoMovimentacaoInput,
   ): Promise<InvestimentoMovimentacao> {
@@ -153,6 +165,9 @@ export class InvestimentoMovimentacaoRepository {
     return created;
   }
 
+  /**
+   * Atualiza uma movimentação de investimento de forma dinâmica
+   */
   async update(
     id: number,
     input: Partial<InvestimentoMovimentacaoInput>,
@@ -160,22 +175,19 @@ export class InvestimentoMovimentacaoRepository {
     const fields: string[] = [];
     const values: Array<string | number> = [];
 
-    if (input.investimento_ativo_id !== undefined) {
-      fields.push("investimento_ativo_id = ?");
-      values.push(input.investimento_ativo_id);
-    }
-    if (input.tipo !== undefined) {
-      fields.push("tipo = ?");
-      values.push(input.tipo);
-    }
-    if (input.data !== undefined) {
-      fields.push("data = ?");
-      values.push(input.data);
-    }
-    if (input.valor !== undefined) {
-      fields.push("valor = ?");
-      values.push(input.valor);
-    }
+    const allowedFields: (keyof InvestimentoMovimentacaoInput)[] = [
+      "investimento_ativo_id",
+      "tipo",
+      "data",
+      "valor",
+    ];
+
+    allowedFields.forEach((field) => {
+      if (input[field] !== undefined) {
+        fields.push(`${field} = ?`);
+        values.push(input[field] as any);
+      }
+    });
 
     if (fields.length === 0) {
       return this.findById(id);
@@ -191,6 +203,9 @@ export class InvestimentoMovimentacaoRepository {
     return this.findById(id);
   }
 
+  /**
+   * Exclui uma movimentação de investimento
+   */
   async delete(id: number): Promise<boolean> {
     const [result] = await pool.query<ResultSetHeader>(
       "DELETE FROM investimento_movimentacoes WHERE id = ?",
@@ -199,6 +214,9 @@ export class InvestimentoMovimentacaoRepository {
     return result.affectedRows > 0;
   }
 
+  /**
+   * Verifica se uma movimentação de investimento existe por ID
+   */
   async exists(id: number): Promise<boolean> {
     const [rows] = await pool.query<RowDataPacket[]>(
       "SELECT 1 FROM investimento_movimentacoes WHERE id = ?",
@@ -207,6 +225,9 @@ export class InvestimentoMovimentacaoRepository {
     return rows.length > 0;
   }
 
+  /**
+   * Obtém resumo das movimentações para o dashboard
+   */
   async getSummary(
     filters: InvestimentoDashboardFilters,
   ): Promise<{
@@ -256,6 +277,9 @@ export class InvestimentoMovimentacaoRepository {
     };
   }
 
+  /**
+   * Obtém a linha do tempo das movimentações
+   */
   async getTimeline(
     filters: InvestimentoDashboardFilters,
   ): Promise<
@@ -306,6 +330,9 @@ export class InvestimentoMovimentacaoRepository {
     }));
   }
 
+  /**
+   * Obtém os anos disponíveis com base nas movimentações
+   */
   async getAvailableYears(filters: {
     banco_id?: number;
     ativo?: boolean;
@@ -340,3 +367,5 @@ export class InvestimentoMovimentacaoRepository {
       .filter((year) => /^\d{4}$/.test(year));
   }
 }
+
+export default new InvestimentoMovimentacaoRepository();

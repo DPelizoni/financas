@@ -416,11 +416,14 @@ body {
 
   .app-modal-footer {
     border-top: 1px solid rgb(var(--app-border-default));
+    background-color: rgb(var(--app-bg-muted));
     @apply flex flex-col-reverse gap-3 px-6 py-4 sm:flex-row sm:justify-end;
   }
 
   .app-modal-actions {
-    @apply flex flex-col-reverse gap-3 sm:flex-row sm:justify-end;
+    border-top: 1px solid rgb(var(--app-border-default));
+    background-color: rgb(var(--app-bg-muted));
+    @apply flex flex-col-reverse gap-3 px-6 py-4 sm:flex-row sm:justify-end;
   }
 
   .app-inline-error {
@@ -462,6 +465,26 @@ body {
     accent-color: rgb(var(--app-brand-primary));
     border-color: rgb(var(--app-border-default));
     @apply h-4 w-4 rounded;
+  }
+
+  .app-table-row {
+    @apply hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors border-b border-gray-100 dark:border-slate-800;
+  }
+
+  .app-row-pago {
+    background-color: rgb(var(--app-status-success-bg) / 0.25);
+  }
+
+  .app-row-pendente {
+    background-color: rgb(var(--app-status-warning-bg) / 0.25);
+  }
+
+  html.dark .app-row-pago {
+    background-color: rgb(var(--app-status-success-bg) / 0.15);
+  }
+
+  html.dark .app-row-pendente {
+    background-color: rgb(var(--app-status-warning-bg) / 0.15);
   }
 
   .filter-panel-surface {
@@ -866,11 +889,3 @@ body {
   color: rgb(var(--app-text-primary));
 }
 
-.rounded,
-.rounded-sm,
-.rounded-md,
-.rounded-lg,
-.rounded-xl,
-.rounded-2xl {
-  border-radius: 0.25rem;
-}

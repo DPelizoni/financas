@@ -1,23 +1,9 @@
+import { BaseFilters } from "./api";
+
 export type InvestimentoMovimentacaoTipo =
   | "APORTE"
   | "RESGATE"
   | "RENDIMENTO";
-
-export interface ApiResponse<T = any> {
-  success: boolean;
-  message: string;
-  data?: T;
-  errors?: any[];
-}
-
-export interface PaginatedResponse<T> extends ApiResponse<T> {
-  pagination?: {
-    page: number;
-    limit: number;
-    total: number;
-    totalPages: number;
-  };
-}
 
 export interface InvestimentoAtivo {
   id: number;
@@ -43,10 +29,7 @@ export interface InvestimentoAtivoInput {
   ativo?: boolean;
 }
 
-export interface InvestimentoAtivoFilters {
-  page?: number;
-  limit?: number;
-  search?: string;
+export interface InvestimentoAtivoFilters extends BaseFilters {
   banco_id?: number;
   ativo?: boolean;
   data_de?: string;
@@ -74,10 +57,7 @@ export interface InvestimentoMovimentacaoInput {
   valor: number;
 }
 
-export interface InvestimentoMovimentacaoFilters {
-  page?: number;
-  limit?: number;
-  search?: string;
+export interface InvestimentoMovimentacaoFilters extends BaseFilters {
   investimento_ativo_id?: number;
   banco_id?: number;
   ativo?: boolean;

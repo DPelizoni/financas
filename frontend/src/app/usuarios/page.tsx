@@ -8,6 +8,7 @@ import {
   X,
   ArrowDownWideNarrow,
   ArrowUpNarrowWide,
+  Filter,
 } from "lucide-react";
 import Icon from "@mdi/react";
 import { mdiPlusBoxOutline } from "@mdi/js";
@@ -23,6 +24,8 @@ import { userService } from "@/services/userService";
 import { User, UserRole, UserStatus } from "@/types/user";
 import { authService } from "@/services/authService";
 import { IconButton, InputAdornment, MenuItem, TextField } from "@mui/material";
+import { TableSkeleton, CardSkeleton } from "@/components/skeletons/DataSkeletons";
+import EmptyState from "@/components/EmptyState";
 
 const roleBadgeClass: Record<UserRole, string> = {
   ADMIN: "bg-violet-100 text-violet-700",
@@ -68,6 +71,15 @@ export default function UsuariosPage() {
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const [showUserModal, setShowUserModal] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<User | null>(null);
+  const [showFilters, setShowFilters] = useState(false);
+
+  const activeFiltersCount = useMemo(() => {
+    let count = 0;
+    if (searchTerm) count++;
+    if (statusFilter !== "TODOS") count++;
+    if (roleFilter !== "TODOS") count++;
+    return count;
+  }, [searchTerm, statusFilter, roleFilter]);
 
   const showFeedback = (type: "success" | "error", message: string) => {
     setFeedback({ type, message });
@@ -263,18 +275,48 @@ export default function UsuariosPage() {
                 Gerencie o status de acesso dos usuários do sistema.
               </p>
             </div>
-            <AppButton
-              onClick={handleOpenCreate}
-              tone="primary"
-              startIcon={<Icon path={mdiPlusBoxOutline} size={0.8} />}
-              className="w-full sm:w-auto"
-            >
-              Novo Usuário
-            </AppButton>
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+              <AppButton
+                tone={showFilters ? "outline-primary" : "outline"}
+                onClick={() => setShowFilters(!showFilters)}
+                className="relative"
+                startIcon={<Filter size={18} className={showFilters ? "fill-blue-100" : ""} />}
+              >
+                Filtros
+                {activeFiltersCount > 0 && (
+                  <span className="absolute -right-2 -top-2 flex h-5 w-5 items-center justify-center rounded-full bg-blue-600 text-[10px] font-bold text-white shadow-md ring-2 ring-white">
+                    {activeFiltersCount}
+                  </span>
+                )}
+              </AppButton>
+              <AppButton
+                onClick={handleOpenCreate}
+                tone="primary"
+                startIcon={<Icon path={mdiPlusBoxOutline} size={0.8} />}
+                className="w-full sm:w-auto"
+              >
+                Novo Usuário
+              </AppButton>
+            </div>
           </div>
         </PageContainer>
 
-        <div className="filter-panel-surface">
+        <div className={`filter-panel-surface ${!showFilters ? "hidden" : "block animate-in fade-in slide-in-from-top-2 duration-300"}`}>
+          <div className="mb-4 flex items-center justify-between border-b border-gray-100 pb-3 dark:border-slate-800">
+            <h3 className="text-sm font-semibold text-gray-700 dark:text-slate-300">Filtros de Usuários</h3>
+            <button
+              type="button"
+              onClick={() => {
+                setSearchTerm("");
+                setStatusFilter("TODOS");
+                setRoleFilter("TODOS");
+                setCurrentPage(1);
+              }}
+              className="text-xs font-medium text-blue-600 hover:text-blue-800 transition dark:text-blue-400 dark:hover:text-blue-300"
+            >
+              Limpar tudo
+            </button>
+          </div>
           <div className="grid grid-cols-1 gap-3 md:grid-cols-4">
             <div className="md:col-span-2">
               <TextField
@@ -358,13 +400,35 @@ export default function UsuariosPage() {
 
         <div className="app-surface p-4">
           {loading ? (
-            <div className="py-12 text-center text-gray-500">
-              Carregando usuários...
-            </div>
+            <>
+              <div className="md:hidden">
+                <CardSkeleton count={3} />
+              </div>
+              <div className="hidden md:block">
+                <TableSkeleton rows={5} columns={5} />
+              </div>
+            </>
           ) : sortedUsers.length === 0 ? (
-            <div className="py-12 text-center text-gray-500">
-              Nenhum usuário encontrado com os filtros atuais.
-            </div>
+            <EmptyState
+              icon={ShieldCheck}
+              title="Nenhum usuário encontrado"
+              description={
+                activeFiltersCount > 0
+                  ? "Tente ajustar seus filtros para encontrar o que procura."
+                  : "Nenhum usuário cadastrado no sistema além de você."
+              }
+              actionLabel={activeFiltersCount > 0 ? "Limpar Filtros" : "Novo Usuário"}
+              onAction={
+                activeFiltersCount > 0
+                  ? () => {
+                      setSearchTerm("");
+                      setStatusFilter("TODOS");
+                      setRoleFilter("TODOS");
+                      setCurrentPage(1);
+                    }
+                  : handleOpenCreate
+              }
+            />
           ) : (
             <>
               <div className="space-y-2 px-2 sm:px-0 md:hidden">

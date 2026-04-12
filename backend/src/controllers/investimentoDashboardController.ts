@@ -1,11 +1,13 @@
 import { NextFunction, Request, Response } from "express";
 import { successResponse } from "../utils/response";
-import { InvestimentoDashboardService } from "../services/investimentoDashboardService";
+import investimentoDashboardService from "../services/investimentoDashboardService";
 
-const investimentoDashboardService = new InvestimentoDashboardService();
-
-export const investimentoDashboardController = {
-  getAvailableYears: async (req: Request, res: Response, next: NextFunction) => {
+export class InvestimentoDashboardController {
+  /**
+   * @route GET /api/investimentos/dashboard/years
+   * @desc Obtém os anos disponíveis para o dashboard
+   */
+  async getAvailableYears(req: Request, res: Response, next: NextFunction) {
     try {
       const banco_id = req.query.banco_id
         ? Number(req.query.banco_id)
@@ -26,9 +28,13 @@ export const investimentoDashboardController = {
     } catch (error) {
       next(error);
     }
-  },
+  }
 
-  getDashboard: async (req: Request, res: Response, next: NextFunction) => {
+  /**
+   * @route GET /api/investimentos/dashboard
+   * @desc Obtém os dados consolidados do dashboard de investimentos
+   */
+  async getDashboard(req: Request, res: Response, next: NextFunction) {
     try {
       const banco_id = req.query.banco_id
         ? Number(req.query.banco_id)
@@ -53,5 +59,7 @@ export const investimentoDashboardController = {
     } catch (error) {
       next(error);
     }
-  },
-};
+  }
+}
+
+export default new InvestimentoDashboardController();

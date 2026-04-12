@@ -71,7 +71,11 @@ export class DescricaoService {
         }
       }
 
-      return await descricaoRepository.update(id, descricaoData);
+      const updated = await descricaoRepository.update(id, descricaoData);
+      if (!updated) {
+        throw new AppError(500, "Erro ao atualizar descrição");
+      }
+      return updated;
     } catch (error) {
       if (error instanceof AppError) throw error;
       console.error("Erro ao atualizar descrição:", error);

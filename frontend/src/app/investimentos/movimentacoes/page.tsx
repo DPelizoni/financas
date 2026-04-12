@@ -1,9 +1,10 @@
-﻿"use client";
+"use client";
 
 import { useEffect, useMemo, useState } from "react";
 import {
   ArrowDownWideNarrow,
   ArrowUpNarrowWide,
+  Filter,
   Search,
   X,
 } from "lucide-react";
@@ -31,6 +32,8 @@ import {
   InvestimentoMovimentacaoFilters,
   InvestimentoMovimentacaoTipo,
 } from "@/types/investimento";
+import { TableSkeleton, CardSkeleton } from "@/components/skeletons/DataSkeletons";
+import EmptyState from "@/components/EmptyState";
 
 const tipoLabel: Record<InvestimentoMovimentacaoTipo, string> = {
   APORTE: "Aporte",
@@ -129,6 +132,16 @@ export default function InvestimentosMovimentacoesPage() {
   );
   const [viewingMovimentacao, setViewingMovimentacao] =
     useState<InvestimentoMovimentacao | null>(null);
+  const [showFilters, setShowFilters] = useState(false);
+
+  const activeFiltersCount = useMemo(() => {
+    let count = 0;
+    if (searchTerm) count++;
+    if (filterMesAno) count++;
+    if (filterAno !== "TODOS" && !filterMesAno) count++;
+    if (filterBanco !== "TODOS") count++;
+    return count;
+  }, [searchTerm, filterMesAno, filterAno, filterBanco]);
 
   const sortedBanks = useMemo(
     () => [...banks].sort((a, b) => a.nome.localeCompare(b.nome, "pt-BR")),
@@ -295,19 +308,44 @@ export default function InvestimentosMovimentacoesPage() {
                 Registre e acompanhe lançamentos de aportes, resgates e rendimentos.
               </p>
             </div>
-            <AppButton
-              onClick={handleCreate}
-              tone="primary"
-              startIcon={<Icon path={mdiPlusBoxOutline} size={0.8} />}
-              className="w-full sm:w-auto"
-            >
-              Nova Movimentação
-            </AppButton>
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+              <AppButton
+                tone={showFilters ? "outline-primary" : "outline"}
+                onClick={() => setShowFilters(!showFilters)}
+                className="relative"
+                startIcon={<Filter size={18} className={showFilters ? "fill-blue-100 dark:fill-blue-900/50" : ""} />}
+              >
+                Filtros
+                {activeFiltersCount > 0 && (
+                  <span className="absolute -right-2 -top-2 flex h-5 w-5 items-center justify-center rounded-full bg-blue-600 text-[10px] font-bold text-white shadow-md ring-2 ring-white dark:ring-slate-900">
+                    {activeFiltersCount}
+                  </span>
+                )}
+              </AppButton>
+              <AppButton
+                onClick={handleCreate}
+                tone="primary"
+                startIcon={<Icon path={mdiPlusBoxOutline} size={0.8} />}
+                className="w-full sm:w-auto"
+              >
+                Nova Movimentação
+              </AppButton>
+            </div>
           </div>
         </PageContainer>
 
-        <div className="filter-panel-surface">
-          <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-5">
+        <div className={`filter-panel-surface ${!showFilters ? "hidden" : "block animate-in fade-in slide-in-from-top-2 duration-300"}`}>
+          <div className="mb-4 flex items-center justify-between border-b border-gray-100 pb-3">
+            <h3 className="text-sm font-semibold text-gray-700">Filtros de Movimentação</h3>
+            <button
+              type="button"
+              onClick={handleClearFilters}
+              className="text-xs font-medium text-blue-600 hover:text-blue-800 transition"
+            >
+              Limpar tudo
+            </button>
+          </div>
+          <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-4">
             <TextField
               type="text"
               label="Buscar"
@@ -403,29 +441,31 @@ export default function InvestimentosMovimentacoesPage() {
                 </MenuItem>
               ))}
             </TextField>
-
-            <div className="flex items-end">
-              <button
-                type="button"
-                onClick={handleClearFilters}
-                className="app-button-outline-danger inline-flex w-full items-center justify-center rounded-lg px-3 py-2 text-sm font-medium whitespace-nowrap transition md:w-auto md:justify-start"
-              >
-                Limpar Filtros
-              </button>
-            </div>
           </div>
         </div>
 
         <div className="app-surface p-4">
           {loading ? (
-            <div className="py-12 text-center">
-              <div className="inline-block h-8 w-8 animate-spin rounded-full border-b-2 border-blue-600"></div>
-              <p className="mt-2 text-gray-600">Carregando dados...</p>
-            </div>
+            <>
+              <div className="md:hidden">
+                <CardSkeleton count={3} />
+              </div>
+              <div className="hidden md:block">
+                <TableSkeleton rows={5} columns={5} />
+              </div>
+            </>
           ) : sortedMovimentacoes.length === 0 ? (
-            <div className="py-12 text-center text-sm text-gray-600">
-              Nenhuma movimentação encontrada com os filtros atuais.
-            </div>
+            <EmptyState
+              icon={Search}
+              title="Nenhuma movimentação encontrada"
+              description={
+                activeFiltersCount > 0
+                  ? "Tente ajustar seus filtros para encontrar o que procura."
+                  : "Comece registrando seus aportes e rendimentos para acompanhar seu patrimônio."
+              }
+              actionLabel={activeFiltersCount > 0 ? "Limpar Filtros" : "Nova Movimentação"}
+              onAction={activeFiltersCount > 0 ? handleClearFilters : handleCreate}
+            />
           ) : (
             <>
               <div className="space-y-2 px-2 sm:px-0 md:hidden">
@@ -490,7 +530,7 @@ export default function InvestimentosMovimentacoesPage() {
                 <table className="w-full table-fixed divide-y divide-gray-200 text-xs">
                   <thead className="app-table-head">
                     <tr>
-                      <th className="app-table-head-cell">
+                      <th className="app-table-head-cell w-[12%]">
                         <button
                           type="button"
                           onClick={() => handleSort("data")}
@@ -504,7 +544,7 @@ export default function InvestimentosMovimentacoesPage() {
                           ) : null}
                         </button>
                       </th>
-                      <th className="app-table-head-cell">
+                      <th className="app-table-head-cell w-[25%]">
                         <button
                           type="button"
                           onClick={() => handleSort("ativo")}
@@ -518,7 +558,7 @@ export default function InvestimentosMovimentacoesPage() {
                           ) : null}
                         </button>
                       </th>
-                      <th className="app-table-head-cell hidden xl:table-cell">
+                      <th className="app-table-head-cell hidden w-[20%] xl:table-cell">
                         <button
                           type="button"
                           onClick={() => handleSort("banco")}
@@ -532,7 +572,7 @@ export default function InvestimentosMovimentacoesPage() {
                           ) : null}
                         </button>
                       </th>
-                      <th className="app-table-head-cell-center">
+                      <th className="app-table-head-cell-center w-[12%]">
                         <button
                           type="button"
                           onClick={() => handleSort("tipo")}
@@ -546,7 +586,7 @@ export default function InvestimentosMovimentacoesPage() {
                           ) : null}
                         </button>
                       </th>
-                      <th className="app-table-head-cell-right">
+                      <th className="app-table-head-cell-right w-[15%]">
                         <button
                           type="button"
                           onClick={() => handleSort("valor")}
@@ -560,7 +600,7 @@ export default function InvestimentosMovimentacoesPage() {
                           ) : null}
                         </button>
                       </th>
-                      <th className="app-table-head-cell-center">Ações</th>
+                      <th className="app-table-head-cell-center w-[16%]">Ações</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-100 bg-white">
@@ -642,27 +682,26 @@ export default function InvestimentosMovimentacoesPage() {
         )}
       </div>
 
-      {showModal && (
-        <InvestimentoMovimentacaoModal
-          movimentacao={editingMovimentacao}
-          ativos={ativos}
-          onClose={() => {
-            setShowModal(false);
-            setEditingMovimentacao(null);
-          }}
-          onSave={async (message) => {
-            showFeedback("success", message);
-            setShowModal(false);
-            setEditingMovimentacao(null);
-            await loadReferenceData();
-            if (currentPage !== 1) {
-              setCurrentPage(1);
-            } else {
-              await loadMovimentacoes();
-            }
-          }}
-        />
-      )}
+      <InvestimentoMovimentacaoModal
+        isOpen={showModal}
+        movimentacao={editingMovimentacao}
+        ativos={ativos}
+        onClose={() => {
+          setShowModal(false);
+          setEditingMovimentacao(null);
+        }}
+        onSave={async (message) => {
+          showFeedback("success", message);
+          setShowModal(false);
+          setEditingMovimentacao(null);
+          await loadReferenceData();
+          if (currentPage !== 1) {
+            setCurrentPage(1);
+          } else {
+            await loadMovimentacoes();
+          }
+        }}
+      />
 
       <ConfirmDeleteModal
         isOpen={!!deleteTarget}
@@ -693,4 +732,3 @@ export default function InvestimentosMovimentacoesPage() {
     </div>
   );
 }
-

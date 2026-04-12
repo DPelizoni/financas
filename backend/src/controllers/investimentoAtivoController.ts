@@ -1,12 +1,14 @@
 import { NextFunction, Request, Response } from "express";
 import { paginatedResponse, successResponse } from "../utils/response";
-import { InvestimentoAtivoService } from "../services/investimentoAtivoService";
+import investimentoAtivoService from "../services/investimentoAtivoService";
 import { InvestimentoAtivoFilters } from "../models/Investimento";
 
-const investimentoAtivoService = new InvestimentoAtivoService();
-
-export const investimentoAtivoController = {
-  getAvailableYears: async (req: Request, res: Response, next: NextFunction) => {
+export class InvestimentoAtivoController {
+  /**
+   * @route GET /api/investimentos/ativos/years
+   * @desc Obtém os anos disponíveis para os ativos
+   */
+  async getAvailableYears(req: Request, res: Response, next: NextFunction) {
     try {
       const banco_id = req.query.banco_id
         ? Number(req.query.banco_id)
@@ -27,9 +29,13 @@ export const investimentoAtivoController = {
     } catch (error) {
       next(error);
     }
-  },
+  }
 
-  getAll: async (req: Request, res: Response, next: NextFunction) => {
+  /**
+   * @route GET /api/investimentos/ativos
+   * @desc Lista todos os ativos de investimento com paginação e filtros
+   */
+  async getAll(req: Request, res: Response, next: NextFunction) {
     try {
       const filters: InvestimentoAtivoFilters = {
         page: Number(req.query.page) || 1,
@@ -63,9 +69,13 @@ export const investimentoAtivoController = {
     } catch (error) {
       next(error);
     }
-  },
+  }
 
-  getById: async (req: Request, res: Response, next: NextFunction) => {
+  /**
+   * @route GET /api/investimentos/ativos/:id
+   * @desc Busca ativo de investimento por ID
+   */
+  async getById(req: Request, res: Response, next: NextFunction) {
     try {
       const id = Number(req.params.id);
       const ativo = await investimentoAtivoService.getAtivoById(id);
@@ -73,9 +83,13 @@ export const investimentoAtivoController = {
     } catch (error) {
       next(error);
     }
-  },
+  }
 
-  create: async (req: Request, res: Response, next: NextFunction) => {
+  /**
+   * @route POST /api/investimentos/ativos
+   * @desc Cria um novo ativo de investimento
+   */
+  async create(req: Request, res: Response, next: NextFunction) {
     try {
       const ativo = await investimentoAtivoService.createAtivo(req.body);
       res
@@ -84,9 +98,13 @@ export const investimentoAtivoController = {
     } catch (error) {
       next(error);
     }
-  },
+  }
 
-  update: async (req: Request, res: Response, next: NextFunction) => {
+  /**
+   * @route PUT /api/investimentos/ativos/:id
+   * @desc Atualiza um ativo de investimento
+   */
+  async update(req: Request, res: Response, next: NextFunction) {
     try {
       const id = Number(req.params.id);
       const ativo = await investimentoAtivoService.updateAtivo(id, req.body);
@@ -94,9 +112,13 @@ export const investimentoAtivoController = {
     } catch (error) {
       next(error);
     }
-  },
+  }
 
-  delete: async (req: Request, res: Response, next: NextFunction) => {
+  /**
+   * @route DELETE /api/investimentos/ativos/:id
+   * @desc Exclui um ativo de investimento
+   */
+  async delete(req: Request, res: Response, next: NextFunction) {
     try {
       const id = Number(req.params.id);
       await investimentoAtivoService.deleteAtivo(id);
@@ -104,5 +126,7 @@ export const investimentoAtivoController = {
     } catch (error) {
       next(error);
     }
-  },
-};
+  }
+}
+
+export default new InvestimentoAtivoController();

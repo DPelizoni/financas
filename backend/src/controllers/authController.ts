@@ -3,6 +3,10 @@ import authService from "../services/authService";
 import { errorResponse, successResponse } from "../utils/response";
 
 class AuthController {
+  /**
+   * @route POST /api/auth/register
+   * @desc Registra um novo usuário
+   */
   async register(
     req: Request,
     res: Response,
@@ -18,6 +22,10 @@ class AuthController {
     }
   }
 
+  /**
+   * @route POST /api/auth/login
+   * @desc Autentica um usuário e retorna o token JWT
+   */
   async login(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const result = await authService.login(req.body);
@@ -27,6 +35,10 @@ class AuthController {
     }
   }
 
+  /**
+   * @route GET /api/auth/me
+   * @desc Retorna os dados do usuário autenticado
+   */
   async me(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const userId = req.user?.id;
@@ -42,6 +54,10 @@ class AuthController {
     }
   }
 
+  /**
+   * @route POST /api/auth/logout
+   * @desc Realiza logout (limpeza no client-side)
+   */
   async logout(_req: Request, res: Response): Promise<void> {
     res.json(successResponse("Logout realizado com sucesso"));
   }

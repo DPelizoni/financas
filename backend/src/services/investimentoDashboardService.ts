@@ -2,8 +2,8 @@ import {
   InvestimentoDashboardFilters,
   InvestimentoDashboardResponse,
 } from "../models/Investimento";
-import { InvestimentoAtivoRepository } from "../repositories/investimentoAtivoRepository";
-import { InvestimentoMovimentacaoRepository } from "../repositories/investimentoMovimentacaoRepository";
+import ativoRepository from "../repositories/investimentoAtivoRepository";
+import movimentacaoRepository from "../repositories/investimentoMovimentacaoRepository";
 
 const normalizeDate = (value: string): string => {
   if (/^\d{4}-\d{2}-\d{2}$/.test(value)) {
@@ -19,16 +19,19 @@ const normalizeDate = (value: string): string => {
 };
 
 export class InvestimentoDashboardService {
-  private ativoRepository = new InvestimentoAtivoRepository();
-  private movimentacaoRepository = new InvestimentoMovimentacaoRepository();
-
+  /**
+   * Obtém os anos disponíveis para o dashboard
+   */
   async getAvailableYears(filters: {
     banco_id?: number;
     ativo?: boolean;
   }): Promise<string[]> {
-    return this.movimentacaoRepository.getAvailableYears(filters);
+    return movimentacaoRepository.getAvailableYears(filters);
   }
 
+  /**
+   * Obtém os dados consolidados do dashboard de investimentos
+   */
   async getDashboard(
     filters: InvestimentoDashboardFilters,
   ): Promise<InvestimentoDashboardResponse> {
@@ -39,12 +42,12 @@ export class InvestimentoDashboardService {
     };
 
     const [cards, carteiraAtivos, timelineRows] = await Promise.all([
-      this.movimentacaoRepository.getSummary(normalizedFilters),
-      this.ativoRepository.findCarteira({
+      movimentacaoRepository.getSummary(normalizedFilters),
+      ativoRepository.findCarteira({
         banco_id: normalizedFilters.banco_id,
         ativo: normalizedFilters.ativo,
       }),
-      this.movimentacaoRepository.getTimeline(normalizedFilters),
+      movimentacaoRepository.getTimeline(normalizedFilters),
     ]);
 
     const saldoTotal = carteiraAtivos.reduce(
@@ -80,3 +83,5 @@ export class InvestimentoDashboardService {
     };
   }
 }
+
+export default new InvestimentoDashboardService();
