@@ -347,16 +347,34 @@ export default function InvestimentoMovimentacaoModal({
             <TextField
               id="valor"
               name="valor"
-              type="number"
+              type="text"
               label="Valor *"
               variant="outlined"
               size="small"
               fullWidth
-              inputProps={{ min: 0, step: "0.01" }}
-              value={formData.valor}
-              onChange={(e) => updateField("valor", Number(e.target.value || 0))}
+              placeholder="0,00"
+              value={
+                formData.valor !== undefined
+                  ? new Intl.NumberFormat("pt-BR", {
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2,
+                    }).format(formData.valor)
+                  : "0,00"
+              }
+              onChange={(e) => {
+                const rawValue = e.target.value.replace(/[^\d]/g, "");
+                const numberValue = Number(rawValue) / 100;
+                updateField("valor", numberValue);
+              }}
               onBlur={() => handleFieldBlur("valor")}
               InputLabelProps={{ shrink: true }}
+              InputProps={{
+                startAdornment: (
+                  <span className="mr-2 font-semibold text-blue-600">
+                    R$
+                  </span>
+                ),
+              }}
               error={shouldShowError("valor")}
               helperText={shouldShowError("valor") ? fieldErrors.valor : ""}
             />
