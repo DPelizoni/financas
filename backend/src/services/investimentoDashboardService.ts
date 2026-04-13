@@ -54,10 +54,65 @@ export class InvestimentoDashboardService {
       (acc, item) => acc + Number(item.saldo_atual || 0),
       0,
     );
-    const timeline = timelineRows.map((row) => {
+
+    const saldoInicialTotal = carteiraAtivos.reduce(
+      (acc, item) => acc + Number(item.saldo_inicial || 0),
+      0,
+    );
+
+    // Se não houver filtro de data, garantimos os últimos 12 meses
+    let finalTimelineRows = timelineRows;
+    if (!normalizedFilters.data_de && !normalizedFilters.data_ate) {
+      const last12Months: string[] = [];
+      const now = new Date();
+      for (let i = 11; i >= 0; i--) {
+        const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+        const monthKey = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+        last12Months.push(monthKey);
+      }
+
+      const timelineMap = new Map(timelineRows.map((r) => [r.month_key, r]));
+      finalTimelineRows = last12Months.map((monthKey) => {
+        return (
+          timelineMap.get(monthKey) || {
+            month_key: monthKey,
+            aporte: 0,
+            resgate: 0,
+            rendimentos: 0,
+          }
+        );
+      });
+    }
+
+    // Para calcular o saldo acumulado em cada ponto da timeline, 
+    // precisamos saber o saldo antes do primeiro ponto da timeline exibida.
+    // Mas uma forma mais robusta é calcular o saldo acumulado total ate cada mes.
+    
+    // 1. Buscar todas as movimentações agrupadas por mês desde o início dos tempos (sem filtros de data)
+    const allTimelineRows = await movimentacaoRepository.getTimeline({
+        banco_id: normalizedFilters.banco_id,
+        ativo: normalizedFilters.ativo
+    });
+
+    const cumulativeMap = new Map<string, number>();
+    let runningSaldo = saldoInicialTotal;
+
+    // Ordenar todas as linhas por data para calcular o acumulado
+    const sortedAllRows = [...allTimelineRows].sort((a, b) => a.month_key.localeCompare(b.month_key));
+    
+    sortedAllRows.forEach(row => {
+        runningSaldo += (row.aporte + row.rendimentos - row.resgate);
+        cumulativeMap.set(row.month_key, runningSaldo);
+    });
+
+    const timeline = finalTimelineRows.map((row) => {
       const [year, month] = row.month_key.split("-");
       const monthLabel = year && month ? `${month}/${year.slice(2)}` : row.month_key;
-      const saldo = row.aporte + row.rendimentos - row.resgate;
+      
+      // O saldo exibido no gráfico agora será o acumulado até aquele mês
+      // Se não houver registro no cumulativeMap para meses futuros sem movimentação, 
+      // usamos o último runningSaldo calculado.
+      const currentCumulativeSaldo = cumulativeMap.get(row.month_key) ?? runningSaldo;
 
       return {
         month_key: row.month_key,
@@ -65,7 +120,7 @@ export class InvestimentoDashboardService {
         aporte: row.aporte,
         resgate: row.resgate,
         rendimentos: row.rendimentos,
-        saldo,
+        saldo: currentCumulativeSaldo,
       };
     });
 
