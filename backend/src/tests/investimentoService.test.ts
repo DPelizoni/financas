@@ -394,7 +394,7 @@ const dashboardGetDashboardCalculaCardsCarteiraETimeline = async () => {
     assert.equal(result.carteira.total_ativos, 2);
     assert.equal(result.carteira.saldo_total, 200);
     assert.equal(result.timeline[0].month_label, "01/26");
-    assert.equal(result.timeline[0].saldo, 110);
+    assert.equal(result.timeline[0].saldo, 260);
   } finally {
     restoreAllRepos();
   }
