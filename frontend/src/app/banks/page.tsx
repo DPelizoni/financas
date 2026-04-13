@@ -21,7 +21,7 @@ import PageContainer from "@/components/PageContainer";
 import AppButton from "@/components/AppButton";
 import TableActionButton from "@/components/TableActionButton";
 import ViewDataModal from "@/components/ViewDataModal";
-import { IconButton, InputAdornment, TextField } from "@mui/material";
+import { IconButton, InputAdornment, MenuItem, TextField } from "@mui/material";
 import { TableSkeleton, CardSkeleton } from "@/components/skeletons/DataSkeletons";
 import EmptyState from "@/components/EmptyState";
 
@@ -279,28 +279,25 @@ export default function BanksPage() {
                 }}
               />
             </div>
-            <div className="flex flex-wrap gap-2">
-              <AppButton
-                onClick={() => setFilterAtivo(undefined)}
-                tone={filterAtivo === undefined ? "primary" : "outline-primary"}
-                size="sm"
+            <div className="w-full md:w-48">
+              <TextField
+                select
+                label="Status"
+                variant="outlined"
+                size="small"
+                fullWidth
+                InputLabelProps={{ shrink: true }}
+                value={filterAtivo === undefined ? "TODOS" : filterAtivo.toString()}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  setFilterAtivo(val === "TODOS" ? undefined : val === "true");
+                  setCurrentPage(1);
+                }}
               >
-                Todos
-              </AppButton>
-              <AppButton
-                onClick={() => setFilterAtivo(true)}
-                tone={filterAtivo === true ? "success" : "outline-success"}
-                size="sm"
-              >
-                Ativos
-              </AppButton>
-              <AppButton
-                onClick={() => setFilterAtivo(false)}
-                tone={filterAtivo === false ? "danger" : "outline-danger"}
-                size="sm"
-              >
-                Inativos
-              </AppButton>
+                <MenuItem value="TODOS">Todos</MenuItem>
+                <MenuItem value="true">Ativos</MenuItem>
+                <MenuItem value="false">Inativos</MenuItem>
+              </TextField>
             </div>
           </div>
         </div>
@@ -341,7 +338,7 @@ export default function BanksPage() {
                 {sortedBanks.map((bank) => (
                   <div
                     key={bank.id}
-                    className="rounded-xl border border-gray-200/80 bg-gradient-to-b from-white to-gray-50 p-4 shadow-[0_1px_2px_rgba(0,0,0,0.06)]"
+                    className="rounded-xl border border-gray-200/80 bg-gradient-to-b from-white to-gray-50 p-4 shadow-[0_1px_2px_rgba(0,0,0,0.06)] dark:border-slate-800 dark:from-slate-900 dark:to-slate-900/50 dark:shadow-none"
                   >
                     <div className="flex items-start justify-between gap-3">
                       <div className="flex items-center gap-3">
@@ -352,31 +349,31 @@ export default function BanksPage() {
                           {bank.nome.substring(0, 2).toUpperCase()}
                         </div>
                         <div>
-                          <p className="text-sm font-semibold text-gray-900">
+                          <p className="text-sm font-semibold text-gray-900 dark:text-white">
                             {bank.nome}
                           </p>
-                          <p className="text-xs text-gray-600">
+                          <p className="text-xs text-gray-600 dark:text-slate-400">
                             Código: {bank.codigo || "-"}
                           </p>
                         </div>
                       </div>
                       {bank.ativo ? (
-                        <span className="inline-flex items-center rounded-full bg-green-100 px-2.5 py-1 text-[11px] font-semibold leading-none text-green-800">
+                        <span className="inline-flex items-center rounded-full bg-green-100 px-2.5 py-1 text-[11px] font-semibold leading-none text-green-800 dark:bg-green-900/30 dark:text-green-400">
                           Ativo
                         </span>
                       ) : (
-                        <span className="inline-flex items-center rounded-full bg-red-100 px-2.5 py-1 text-[11px] font-semibold leading-none text-red-800">
+                        <span className="inline-flex items-center rounded-full bg-red-100 px-2.5 py-1 text-[11px] font-semibold leading-none text-red-800 dark:bg-red-900/30 dark:text-red-400">
                           Inativo
                         </span>
                       )}
                     </div>
 
-                    <div className="mt-3 text-sm text-gray-700">
+                    <div className="mt-3 text-sm text-gray-700 dark:text-slate-300">
                       <span className="font-medium">Saldo Inicial: </span>
                       {formatCurrencyBRL(bank.saldo_inicial)}
                     </div>
 
-                    <div className="mt-3 flex items-center justify-end gap-2 border-t border-gray-100 pt-3">
+                    <div className="mt-3 flex items-center justify-end gap-2 border-t border-gray-100 pt-3 dark:border-slate-800">
                       <TableActionButton
                         action="view"
                         title="Visualizar"
@@ -398,7 +395,7 @@ export default function BanksPage() {
               </div>
 
               <div className="hidden overflow-x-auto md:block">
-                <table className="min-w-[640px] w-full table-fixed divide-y divide-gray-200 text-xs">
+                <table className="min-w-[640px] w-full table-fixed divide-y divide-gray-200 dark:divide-slate-800 text-xs">
                   <thead className="app-table-head">
                     <tr>
                       <th className="app-table-head-cell w-[40%]">
@@ -462,7 +459,7 @@ export default function BanksPage() {
                       </th>
                     </tr>
                   </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
+                  <tbody className="bg-white divide-y divide-gray-200 dark:bg-slate-900 dark:divide-slate-800">
                     {sortedBanks.map((bank) => (
                       <tr
                         key={bank.id}
@@ -476,28 +473,28 @@ export default function BanksPage() {
                             >
                               {bank.nome.substring(0, 2).toUpperCase()}
                             </div>
-                            <div className="text-xs font-medium text-gray-900">
+                            <div className="text-xs font-medium text-gray-900 dark:text-slate-200">
                               {bank.nome}
                             </div>
                           </div>
                         </td>
                         <td className="px-3 py-2 whitespace-nowrap">
-                          <div className="text-xs text-gray-900">
+                          <div className="text-xs text-gray-900 dark:text-slate-300">
                             {bank.codigo || "-"}
                           </div>
                         </td>
                         <td className="px-3 py-2 whitespace-nowrap">
-                          <div className="text-xs text-gray-900">
+                          <div className="text-xs text-gray-900 dark:text-slate-300">
                             {formatCurrencyBRL(bank.saldo_inicial)}
                           </div>
                         </td>
                         <td className="px-3 py-2 whitespace-nowrap">
                           {bank.ativo ? (
-                            <span className="inline-flex items-center rounded-full bg-green-100 px-2.5 py-1 text-[11px] font-semibold leading-none text-green-800">
+                            <span className="inline-flex items-center rounded-full bg-green-100 px-2.5 py-1 text-[11px] font-semibold leading-none text-green-800 dark:bg-green-900/30 dark:text-green-400">
                               Ativo
                             </span>
                           ) : (
-                            <span className="inline-flex items-center rounded-full bg-red-100 px-2.5 py-1 text-[11px] font-semibold leading-none text-red-800">
+                            <span className="inline-flex items-center rounded-full bg-red-100 px-2.5 py-1 text-[11px] font-semibold leading-none text-red-800 dark:bg-red-900/30 dark:text-red-400">
                               Inativo
                             </span>
                           )}

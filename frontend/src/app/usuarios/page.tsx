@@ -28,9 +28,9 @@ import { TableSkeleton, CardSkeleton } from "@/components/skeletons/DataSkeleton
 import EmptyState from "@/components/EmptyState";
 
 const roleBadgeClass: Record<UserRole, string> = {
-  ADMIN: "bg-violet-100 text-violet-700",
-  GESTOR: "bg-blue-100 text-blue-700",
-  USUARIO: "bg-slate-100 text-slate-700",
+  ADMIN: "bg-violet-100 text-violet-700 dark:bg-violet-900/30 dark:text-violet-400",
+  GESTOR: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400",
+  USUARIO: "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300",
 };
 
 const roleLabel: Record<UserRole, string> = {
@@ -280,11 +280,11 @@ export default function UsuariosPage() {
                 tone={showFilters ? "outline-primary" : "outline"}
                 onClick={() => setShowFilters(!showFilters)}
                 className="relative"
-                startIcon={<Filter size={18} className={showFilters ? "fill-blue-100" : ""} />}
+                startIcon={<Filter size={18} className={showFilters ? "fill-blue-100 dark:fill-blue-900/50" : ""} />}
               >
                 Filtros
                 {activeFiltersCount > 0 && (
-                  <span className="absolute -right-2 -top-2 flex h-5 w-5 items-center justify-center rounded-full bg-blue-600 text-[10px] font-bold text-white shadow-md ring-2 ring-white">
+                  <span className="absolute -right-2 -top-2 flex h-5 w-5 items-center justify-center rounded-full bg-blue-600 text-[10px] font-bold text-white shadow-md ring-2 ring-white dark:ring-slate-900">
                     {activeFiltersCount}
                   </span>
                 )}
@@ -435,14 +435,14 @@ export default function UsuariosPage() {
                 {sortedUsers.map((user) => (
                   <div
                     key={user.id}
-                    className="rounded-xl border border-gray-200/80 bg-gradient-to-b from-white to-gray-50 p-4 shadow-[0_1px_2px_rgba(0,0,0,0.06)]"
+                    className="rounded-xl border border-gray-200/80 bg-gradient-to-b from-white to-gray-50 p-4 shadow-[0_1px_2px_rgba(0,0,0,0.06)] dark:border-slate-800 dark:from-slate-900 dark:to-slate-900/50 dark:shadow-none"
                   >
                     <div className="flex items-start justify-between gap-3">
                       <div>
-                        <p className="text-sm font-semibold text-gray-900">
+                        <p className="text-sm font-semibold text-gray-900 dark:text-white">
                           {user.nome}
                         </p>
-                        <p className="mt-1 text-xs text-gray-600">{user.email}</p>
+                        <p className="mt-1 text-xs text-gray-600 dark:text-slate-400">{user.email}</p>
                       </div>
                       <button
                         type="button"
@@ -462,7 +462,7 @@ export default function UsuariosPage() {
                     </div>
 
                     <div className="mt-3">
-                      <p className="mb-1 text-xs font-medium uppercase tracking-wide text-gray-500">
+                      <p className="mb-1 text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-slate-400">
                         Papel
                       </p>
                       <span
@@ -472,7 +472,7 @@ export default function UsuariosPage() {
                       </span>
                     </div>
 
-                    <div className="mt-3 flex items-center justify-end gap-2 border-t border-gray-100 pt-3">
+                    <div className="mt-3 flex items-center justify-end gap-2 border-t border-gray-100 pt-3 dark:border-slate-800">
                       <TableActionButton
                         action="view"
                         title="Visualizar"
@@ -497,7 +497,7 @@ export default function UsuariosPage() {
               </div>
 
               <div className="hidden overflow-x-auto md:block">
-                <table className="min-w-[640px] w-full divide-y divide-gray-200 text-xs">
+                <table className="min-w-[640px] w-full divide-y divide-gray-200 dark:divide-slate-800 text-xs">
                   <thead className="app-table-head">
                     <tr>
                       <th className="app-table-head-cell">
@@ -550,13 +550,13 @@ export default function UsuariosPage() {
                       </th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-gray-100 bg-white">
+                  <tbody className="divide-y divide-gray-100 dark:divide-slate-800 bg-white dark:bg-slate-900">
                     {sortedUsers.map((user) => (
                       <tr key={user.id} className="app-table-row">
-                        <td className="px-3 py-2 text-xs text-gray-700">
+                        <td className="px-3 py-2 text-xs text-gray-700 dark:text-slate-300">
                           {user.nome}
                         </td>
-                        <td className="px-3 py-2 text-xs text-gray-700">
+                        <td className="px-3 py-2 text-xs text-gray-700 dark:text-slate-300">
                           {user.email}
                         </td>
                         <td className="px-3 py-2 text-xs">

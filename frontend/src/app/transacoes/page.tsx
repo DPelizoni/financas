@@ -759,22 +759,22 @@ export default function TransacoesPage() {
       <div className="mx-auto max-w-7xl space-y-6 px-4 sm:px-6 lg:px-8">
         <FeedbackAlert feedback={feedback} onClose={() => setFeedback(null)} />
 
-        <PageContainer>
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <h1 className="flex items-center gap-3 text-2xl font-bold text-gray-900 sm:text-3xl dark:text-white">
-                <ArrowLeftRight size={32} className="text-blue-600 dark:text-blue-400" />
-                Gerenciamento de Transações
+        <PageContainer className="w-full">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+            <div className="min-w-0">
+              <h1 className="flex items-center gap-3 text-xl font-bold text-gray-900 sm:text-2xl lg:text-3xl dark:text-white">
+                <ArrowLeftRight size={32} className="shrink-0 text-blue-600 dark:text-blue-400" />
+                <span>Gerenciamento de Transações</span>
               </h1>
               <p className="mt-2 text-sm text-gray-600 dark:text-slate-400">
                 Controle suas receitas e despesas mensais
               </p>
             </div>
-            <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+            <div className="flex flex-col gap-2 md:flex-row md:items-center shrink-0">
               <AppButton
                 tone={showFilters ? "outline-primary" : "outline"}
                 onClick={() => setShowFilters(!showFilters)}
-                className="relative"
+                className="relative w-full md:w-auto"
                 startIcon={<Filter size={18} className={showFilters ? "fill-blue-100 dark:fill-blue-900/50" : ""} />}
               >
                 Filtros
@@ -907,44 +907,48 @@ export default function TransacoesPage() {
           </div>
         </PageContainer>
 
-        <TransactionFilters
-          searchTerm={searchTerm}
-          filterTipo={filterTipo}
-          filterCategoria={filterCategoria}
-          filterBanco={filterBanco}
-          filterSituacao={filterSituacao}
-          filterMes={filterMes}
-          showFilters={showFilters}
-          categories={categories}
-          banks={banks}
-          onSearch={handleSearch}
-          onFilterTipoChange={(val) => {
-            setFilterTipo(val);
-            setFilterCategoria("TODOS");
-            setCurrentPage(1);
-          }}
-          onFilterCategoriaChange={(val) => {
-            setFilterCategoria(val);
-            setCurrentPage(1);
-          }}
-          onFilterBancoChange={(val) => {
-            setFilterBanco(val);
-            setCurrentPage(1);
-          }}
-          onFilterSituacaoChange={(val) => {
-            setFilterSituacao(val);
-            setCurrentPage(1);
-          }}
-          onFilterMesChange={(val) => {
-            setFilterMes(val);
-            setCurrentPage(1);
-          }}
-          onClearFilters={handleClearFilters}
-        />
+        <div className="w-full overflow-x-auto">
+          <TransactionFilters
+            searchTerm={searchTerm}
+            filterTipo={filterTipo}
+            filterCategoria={filterCategoria}
+            filterBanco={filterBanco}
+            filterSituacao={filterSituacao}
+            filterMes={filterMes}
+            showFilters={showFilters}
+            categories={categories}
+            banks={banks}
+            onSearch={handleSearch}
+            onFilterTipoChange={(val) => {
+              setFilterTipo(val);
+              setFilterCategoria("TODOS");
+              setCurrentPage(1);
+            }}
+            onFilterCategoriaChange={(val) => {
+              setFilterCategoria(val);
+              setCurrentPage(1);
+            }}
+            onFilterBancoChange={(val) => {
+              setFilterBanco(val);
+              setCurrentPage(1);
+            }}
+            onFilterSituacaoChange={(val) => {
+              setFilterSituacao(val);
+              setCurrentPage(1);
+            }}
+            onFilterMesChange={(val) => {
+              setFilterMes(val);
+              setCurrentPage(1);
+            }}
+            onClearFilters={handleClearFilters}
+          />
+        </div>
 
-        <TransactionSummaryCards summary={summary} />
+        <div className="w-full overflow-hidden">
+          <TransactionSummaryCards summary={summary} />
+        </div>
 
-        <div className="app-surface p-4">
+        <div className="app-surface p-4 w-full overflow-hidden">
           <TransactionList
             transacoes={sortedTransacoes}
             loading={loading}

@@ -269,7 +269,7 @@ export default function DescricoesPage() {
             </button>
           </div>
           <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
-            <div className="md:col-span-2">
+            <div>
               <TextField
                 type="text"
                 label="Buscar"
@@ -317,7 +317,7 @@ export default function DescricoesPage() {
                 setCurrentPage(1);
               }}
             >
-              <MenuItem value="TODOS">Todos</MenuItem>
+              <MenuItem value="TODOS">Todas</MenuItem>
               {sortedCategories.map((cat) => (
                 <MenuItem key={cat.id} value={cat.id}>
                   {cat.nome}
@@ -325,38 +325,24 @@ export default function DescricoesPage() {
               ))}
             </TextField>
 
-            <div className="flex flex-wrap gap-2 md:col-span-4">
-              <AppButton
-                onClick={() => {
-                  setFilterAtivo(undefined);
-                  setCurrentPage(1);
-                }}
-                tone={filterAtivo === undefined ? "primary" : "outline-primary"}
-                size="sm"
-              >
-                Todos
-              </AppButton>
-              <AppButton
-                onClick={() => {
-                  setFilterAtivo(true);
-                  setCurrentPage(1);
-                }}
-                tone={filterAtivo === true ? "success" : "outline-success"}
-                size="sm"
-              >
-                Ativos
-              </AppButton>
-              <AppButton
-                onClick={() => {
-                  setFilterAtivo(false);
-                  setCurrentPage(1);
-                }}
-                tone={filterAtivo === false ? "danger" : "outline-danger"}
-                size="sm"
-              >
-                Inativos
-              </AppButton>
-            </div>
+            <TextField
+              select
+              label="Status"
+              variant="outlined"
+              size="small"
+              fullWidth
+              InputLabelProps={{ shrink: true }}
+              value={filterAtivo === undefined ? "TODOS" : filterAtivo.toString()}
+              onChange={(e) => {
+                const val = e.target.value;
+                setFilterAtivo(val === "TODOS" ? undefined : val === "true");
+                setCurrentPage(1);
+              }}
+            >
+              <MenuItem value="TODOS">Todos</MenuItem>
+              <MenuItem value="true">Ativos</MenuItem>
+              <MenuItem value="false">Inativos</MenuItem>
+            </TextField>
           </div>
         </div>
 
@@ -396,31 +382,31 @@ export default function DescricoesPage() {
                 {sortedDescricoes.map((descricao) => (
                   <div
                     key={descricao.id}
-                    className="rounded-xl border border-gray-200/80 bg-gradient-to-b from-white to-gray-50 p-4 shadow-[0_1px_2px_rgba(0,0,0,0.06)]"
+                    className="rounded-xl border border-gray-200/80 bg-gradient-to-b from-white to-gray-50 p-4 shadow-[0_1px_2px_rgba(0,0,0,0.06)] dark:border-slate-800 dark:from-slate-900 dark:to-slate-900/50 dark:shadow-none"
                   >
                     <div className="flex items-start justify-between gap-3">
                       <div>
-                        <p className="text-sm font-semibold text-gray-900">
+                        <p className="text-sm font-semibold text-gray-900 dark:text-white">
                           {descricao.nome}
                         </p>
-                        <p className="mt-1 text-xs text-gray-600">
+                        <p className="mt-1 text-xs text-gray-600 dark:text-slate-400">
                           Categoria:{" "}
                           {getCategoryNameById(descricao.categoria_id)}
                         </p>
                       </div>
 
                       {descricao.ativo ? (
-                        <span className="inline-flex items-center rounded-full bg-green-100 px-2.5 py-1 text-[11px] font-semibold leading-none text-green-800">
+                        <span className="inline-flex items-center rounded-full bg-green-100 px-2.5 py-1 text-[11px] font-semibold leading-none text-green-800 dark:bg-green-900/30 dark:text-green-400">
                           Ativo
                         </span>
                       ) : (
-                        <span className="inline-flex items-center rounded-full bg-red-100 px-2.5 py-1 text-[11px] font-semibold leading-none text-red-800">
+                        <span className="inline-flex items-center rounded-full bg-red-100 px-2.5 py-1 text-[11px] font-semibold leading-none text-red-800 dark:bg-red-900/30 dark:text-red-400">
                           Inativo
                         </span>
                       )}
                     </div>
 
-                    <div className="mt-3 flex items-center justify-end gap-2 border-t border-gray-100 pt-3">
+                    <div className="mt-3 flex items-center justify-end gap-2 border-t border-gray-100 pt-3 dark:border-slate-800">
                       <TableActionButton
                         action="view"
                         title="Visualizar"
@@ -442,7 +428,7 @@ export default function DescricoesPage() {
               </div>
 
               <div className="hidden overflow-x-auto md:block">
-                <table className="min-w-[640px] w-full divide-y divide-gray-200 text-xs">
+                <table className="min-w-[640px] w-full divide-y divide-gray-200 dark:divide-slate-800 text-xs">
                   <thead className="app-table-head">
                     <tr>
                       <th className="app-table-head-cell">
@@ -492,29 +478,29 @@ export default function DescricoesPage() {
                       </th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-gray-200 bg-white">
+                  <tbody className="divide-y divide-gray-200 dark:divide-slate-800 bg-white dark:bg-slate-900">
                     {sortedDescricoes.map((descricao) => (
                       <tr
                         key={descricao.id}
                         className="app-table-row"
                       >
                         <td className="whitespace-nowrap px-3 py-2">
-                          <div className="text-xs font-medium text-gray-900">
+                          <div className="text-xs font-medium text-gray-900 dark:text-slate-200">
                             {descricao.nome}
                           </div>
                         </td>
                         <td className="whitespace-nowrap px-3 py-2">
-                          <div className="text-xs text-gray-600">
+                          <div className="text-xs text-gray-600 dark:text-slate-400">
                             {getCategoryNameById(descricao.categoria_id)}
                           </div>
                         </td>
                         <td className="whitespace-nowrap px-3 py-2">
                           {descricao.ativo ? (
-                            <span className="inline-flex items-center rounded-full bg-green-100 px-2.5 py-1 text-[11px] font-semibold leading-none text-green-800">
+                            <span className="inline-flex items-center rounded-full bg-green-100 px-2.5 py-1 text-[11px] font-semibold leading-none text-green-800 dark:bg-green-900/30 dark:text-green-400">
                               Ativo
                             </span>
                           ) : (
-                            <span className="inline-flex items-center rounded-full bg-red-100 px-2.5 py-1 text-[11px] font-semibold leading-none text-red-800">
+                            <span className="inline-flex items-center rounded-full bg-red-100 px-2.5 py-1 text-[11px] font-semibold leading-none text-red-800 dark:bg-red-900/30 dark:text-red-400">
                               Inativo
                             </span>
                           )}

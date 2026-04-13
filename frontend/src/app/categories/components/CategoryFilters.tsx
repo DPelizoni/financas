@@ -63,7 +63,7 @@ export function CategoryFilters({
       </div>
       
       <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-        <div className="md:col-span-2">
+        <div>
           <TextField
             type="text"
             label="Buscar por nome"
@@ -109,37 +109,28 @@ export function CategoryFilters({
             onFilterTipoChange(e.target.value as CategoryType | "TODOS");
           }}
         >
-          <MenuItem value="TODOS">Todos os tipos</MenuItem>
-          <MenuItem value="DESPESA">Somente Despesas</MenuItem>
-          <MenuItem value="RECEITA">Somente Receitas</MenuItem>
+          <MenuItem value="TODOS">Todos</MenuItem>
+          <MenuItem value="DESPESA">Despesas</MenuItem>
+          <MenuItem value="RECEITA">Receitas</MenuItem>
         </TextField>
 
-        <div className="flex flex-wrap gap-2 md:col-span-3">
-          <span className="mr-2 flex items-center text-xs font-medium text-gray-500 dark:text-slate-400">
-            Status:
-          </span>
-          <AppButton
-            onClick={() => onFilterAtivoChange(undefined)}
-            tone={filterAtivo === undefined ? "primary" : "outline-primary"}
-            size="sm"
-          >
-            Todos
-          </AppButton>
-          <AppButton
-            onClick={() => onFilterAtivoChange(true)}
-            tone={filterAtivo === true ? "success" : "outline-success"}
-            size="sm"
-          >
-            Ativos
-          </AppButton>
-          <AppButton
-            onClick={() => onFilterAtivoChange(false)}
-            tone={filterAtivo === false ? "danger" : "outline-danger"}
-            size="sm"
-          >
-            Inativos
-          </AppButton>
-        </div>
+        <TextField
+          select
+          label="Status"
+          variant="outlined"
+          size="small"
+          fullWidth
+          InputLabelProps={{ shrink: true }}
+          value={filterAtivo === undefined ? "TODOS" : filterAtivo.toString()}
+          onChange={(e) => {
+            const val = e.target.value;
+            onFilterAtivoChange(val === "TODOS" ? undefined : val === "true");
+          }}
+        >
+          <MenuItem value="TODOS">Todos</MenuItem>
+          <MenuItem value="true">Ativos</MenuItem>
+          <MenuItem value="false">Inativos</MenuItem>
+        </TextField>
       </div>
     </div>
   );

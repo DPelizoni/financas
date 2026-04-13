@@ -350,7 +350,7 @@ export default function AppShell({ children }: AppShellProps) {
         </aside>
 
         <div
-          className={`flex min-h-screen flex-1 flex-col transition-all duration-300 ${
+          className={`flex min-h-screen flex-1 flex-col min-w-0 transition-all duration-300 ${
             isDesktopSidebarCollapsed ? "lg:pl-20" : "lg:pl-60"
           }`}
         >
@@ -415,7 +415,7 @@ export default function AppShell({ children }: AppShellProps) {
             </div>
           </header>
 
-          <main className="flex-1">{children}</main>
+          <main className="flex-1 min-w-0">{children}</main>
         </div>
       </div>
     </div>

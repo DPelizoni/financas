@@ -147,7 +147,7 @@ export function TransactionList({
       </div>
 
       {/* Visão Desktop/Tablet - Tabela (Para larguras >= 640px, incluindo tela dividida) */}
-      <div className="hidden overflow-x-auto sm:block">
+      <div className="hidden overflow-x-auto sm:block w-full">
         <table className="min-w-[1000px] w-full table-fixed divide-y divide-gray-200 text-xs dark:divide-slate-800">
           <thead className="app-table-head">
             <tr>
