@@ -480,69 +480,79 @@ export default function InvestimentosDashboardPage() {
         </div>
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-          <div className="dashboard-summary-card-warning p-6">
+          <div className="dashboard-summary-card-warning group cursor-default p-6 transition-all hover:bg-amber-50/50 dark:hover:bg-amber-900/10 hover:shadow-md">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-amber-700">Aporte</p>
-                <p className="text-2xl font-bold text-amber-600">
+                <p className="text-sm font-medium text-amber-700 dark:text-amber-400">Aporte</p>
+                <p className="text-2xl font-bold text-amber-600 dark:text-amber-300">
                   {formatCurrencyBRL(dashboard.cards.aporte)}
                 </p>
               </div>
-              <ArrowLeftRight size={30} className="text-amber-500" />
+              <div className="rounded-full bg-amber-100 dark:bg-amber-900/40 p-2 text-amber-600 dark:text-amber-400 transition-colors group-hover:bg-amber-200 dark:group-hover:bg-amber-800/60">
+                <ArrowLeftRight size={24} />
+              </div>
             </div>
           </div>
-          <div className="dashboard-summary-card-error p-6">
+
+          <div className="dashboard-summary-card-error group cursor-default p-6 transition-all hover:bg-red-50/50 dark:hover:bg-red-900/10 hover:shadow-md">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-red-700">Resgate</p>
-                <p className="text-2xl font-bold text-red-600">
+                <p className="text-sm font-medium text-red-700 dark:text-red-400">Resgate</p>
+                <p className="text-2xl font-bold text-red-600 dark:text-red-300">
                   {formatCurrencyBRL(dashboard.cards.resgate)}
                 </p>
               </div>
-              <ArrowLeftRight size={30} className="text-red-500" />
+              <div className="rounded-full bg-red-100 dark:bg-red-900/40 p-2 text-red-600 dark:text-red-400 transition-colors group-hover:bg-red-200 dark:group-hover:bg-red-800/60">
+                <ArrowLeftRight size={24} />
+              </div>
             </div>
           </div>
-          <div className="dashboard-summary-card-success p-6">
+
+          <div className="dashboard-summary-card-success group cursor-default p-6 transition-all hover:bg-green-50/50 dark:hover:bg-green-900/10 hover:shadow-md">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-green-700">Rendimentos</p>
-                <p className="text-2xl font-bold text-green-600">
+                <p className="text-sm font-medium text-green-700 dark:text-green-400">Rendimentos</p>
+                <p className="text-2xl font-bold text-green-600 dark:text-green-300">
                   {formatCurrencyBRL(dashboard.cards.rendimentos)}
                 </p>
               </div>
-              <TrendingUp size={30} className="text-green-500" />
+              <div className="rounded-full bg-green-100 dark:bg-green-900/40 p-2 text-green-600 dark:text-green-400 transition-colors group-hover:bg-green-200 dark:group-hover:bg-green-800/60">
+                <TrendingUp size={24} />
+              </div>
             </div>
           </div>
+
           <div
-            className={`p-6 ${
+            className={`group cursor-default p-6 transition-all hover:shadow-md ${
               dashboard.cards.liquido >= 0
-                ? "dashboard-summary-card-info"
-                : "dashboard-summary-card-error"
+                ? "dashboard-summary-card-info hover:bg-blue-50/50 dark:hover:bg-blue-900/10"
+                : "dashboard-summary-card-error hover:bg-red-50/50 dark:hover:bg-red-900/10"
             }`}
           >
             <div className="flex items-center justify-between">
               <div>
                 <p
                   className={`text-sm font-medium ${
-                    dashboard.cards.liquido >= 0 ? "text-blue-700" : "text-red-700"
+                    dashboard.cards.liquido >= 0 ? "text-blue-700 dark:text-blue-400" : "text-red-700 dark:text-red-400"
                   }`}
                 >
                   Saldo atual
                 </p>
                 <p
                   className={`text-2xl font-bold ${
-                    dashboard.cards.liquido >= 0 ? "text-blue-600" : "text-red-600"
+                    dashboard.cards.liquido >= 0 ? "text-blue-600 dark:text-blue-300" : "text-red-600 dark:text-red-300"
                   }`}
                 >
                   {formatCurrencyBRL(dashboard.cards.liquido)}
                 </p>
               </div>
-              <DollarSign
-                size={30}
-                className={
-                  dashboard.cards.liquido >= 0 ? "text-blue-500" : "text-red-500"
-                }
-              />
+              <div className={`rounded-full p-2 transition-colors ${
+                dashboard.cards.liquido >= 0 
+                  ? "bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 group-hover:bg-blue-200 dark:group-hover:bg-blue-800/60" 
+                  : "bg-red-100 dark:bg-red-900/40 text-red-600 dark:text-red-400 group-hover:bg-red-200 dark:group-hover:bg-red-800/60"
+              }`}>
+                <DollarSign size={24} />
+              </div>
             </div>
           </div>
         </div>

@@ -32,31 +32,31 @@ export function TransactionSummaryCards({
           Totais
         </h3>
         <div className="space-y-3">
-          <div className="app-surface p-4 flex items-center justify-between">
+          <div className="app-surface group cursor-default p-4 flex items-center justify-between transition-all hover:bg-gray-50/50 dark:hover:bg-slate-800/50 hover:shadow-sm">
             <div>
               <p className="text-xs font-medium text-gray-600 dark:text-slate-400">Receita</p>
               <p className="mt-1 text-xl font-bold text-green-600 dark:text-green-400">
                 {formatCurrency(summary.total_receita)}
               </p>
             </div>
-            <div className="text-green-500 opacity-80">
+            <div className="text-green-500 dark:text-green-400 opacity-80 transition-transform group-hover:scale-110">
               <ArrowUpNarrowWide size={24} />
             </div>
           </div>
 
-          <div className="app-surface p-4 flex items-center justify-between">
+          <div className="app-surface group cursor-default p-4 flex items-center justify-between transition-all hover:bg-gray-50/50 dark:hover:bg-slate-800/50 hover:shadow-sm">
             <div>
               <p className="text-xs font-medium text-gray-600 dark:text-slate-400">Despesa</p>
               <p className="mt-1 text-xl font-bold text-red-600 dark:text-red-400">
                 {formatCurrency(summary.total_despesa)}
               </p>
             </div>
-            <div className="text-red-500 opacity-80">
+            <div className="text-red-500 dark:text-red-400 opacity-80 transition-transform group-hover:scale-110">
               <ArrowDownWideNarrow size={24} />
             </div>
           </div>
 
-          <div className="app-surface p-4 flex items-center justify-between">
+          <div className="app-surface group cursor-default p-4 flex items-center justify-between transition-all hover:bg-gray-50/50 dark:hover:bg-slate-800/50 hover:shadow-sm">
             <div>
               <p className="text-xs font-medium text-gray-600 dark:text-slate-400">Líquido</p>
               <p
@@ -69,7 +69,7 @@ export function TransactionSummaryCards({
                 {formatCurrency(summary.total_liquido)}
               </p>
             </div>
-            <div className={`${summary.total_liquido >= 0 ? "text-blue-500" : "text-red-500"} opacity-80`}>
+            <div className={`${summary.total_liquido >= 0 ? "text-blue-500 dark:text-blue-400" : "text-red-500 dark:text-red-400"} opacity-80 transition-transform group-hover:scale-110`}>
               <DollarSign size={24} />
             </div>
           </div>
@@ -82,31 +82,31 @@ export function TransactionSummaryCards({
           Pagos
         </h3>
         <div className="space-y-3">
-          <div className="app-surface p-4 flex items-center justify-between">
+          <div className="app-surface group cursor-default p-4 flex items-center justify-between transition-all hover:bg-gray-50/50 dark:hover:bg-slate-800/50 hover:shadow-sm">
             <div>
               <p className="text-xs font-medium text-gray-600 dark:text-slate-400">Receita</p>
               <p className="mt-1 text-xl font-bold text-green-600 dark:text-green-400">
                 {formatCurrency(summary.pago_receita)}
               </p>
             </div>
-            <div className="text-green-500 opacity-80">
+            <div className="text-green-500 dark:text-green-400 opacity-80 transition-transform group-hover:scale-110">
               <ArrowUpNarrowWide size={24} />
             </div>
           </div>
 
-          <div className="app-surface p-4 flex items-center justify-between">
+          <div className="app-surface group cursor-default p-4 flex items-center justify-between transition-all hover:bg-gray-50/50 dark:hover:bg-slate-800/50 hover:shadow-sm">
             <div>
               <p className="text-xs font-medium text-gray-600 dark:text-slate-400">Despesa</p>
               <p className="mt-1 text-xl font-bold text-red-600 dark:text-red-400">
                 {formatCurrency(summary.pago_despesa)}
               </p>
             </div>
-            <div className="text-red-500 opacity-80">
+            <div className="text-red-500 dark:text-red-400 opacity-80 transition-transform group-hover:scale-110">
               <ArrowDownWideNarrow size={24} />
             </div>
           </div>
 
-          <div className="app-surface p-4 flex items-center justify-between">
+          <div className="app-surface group cursor-default p-4 flex items-center justify-between transition-all hover:bg-gray-50/50 dark:hover:bg-slate-800/50 hover:shadow-sm">
             <div>
               <p className="text-xs font-medium text-gray-600 dark:text-slate-400">Líquido</p>
               <p
@@ -119,7 +119,7 @@ export function TransactionSummaryCards({
                 {formatCurrency(summary.pago_liquido)}
               </p>
             </div>
-            <div className={`${summary.pago_liquido >= 0 ? "text-blue-500" : "text-red-500"} opacity-80`}>
+            <div className={`${summary.pago_liquido >= 0 ? "text-blue-500 dark:text-blue-400" : "text-red-500 dark:text-red-400"} opacity-80 transition-transform group-hover:scale-110`}>
               <DollarSign size={24} />
             </div>
           </div>
@@ -132,31 +132,31 @@ export function TransactionSummaryCards({
           Provisões
         </h3>
         <div className="space-y-3">
-          <div className="app-surface p-4 flex items-center justify-between">
+          <div className="app-surface group cursor-default p-4 flex items-center justify-between transition-all hover:bg-gray-50/50 dark:hover:bg-slate-800/50 hover:shadow-sm">
             <div>
               <p className="text-xs font-medium text-gray-600 dark:text-slate-400">Receita</p>
               <p className="mt-1 text-xl font-bold text-green-600 dark:text-green-400">
                 {formatCurrency(summary.provisao_receita)}
               </p>
             </div>
-            <div className="text-green-500 opacity-80">
+            <div className="text-green-500 dark:text-green-400 opacity-80 transition-transform group-hover:scale-110">
               <ArrowUpNarrowWide size={24} />
             </div>
           </div>
 
-          <div className="app-surface p-4 flex items-center justify-between">
+          <div className="app-surface group cursor-default p-4 flex items-center justify-between transition-all hover:bg-gray-50/50 dark:hover:bg-slate-800/50 hover:shadow-sm">
             <div>
               <p className="text-xs font-medium text-gray-600 dark:text-slate-400">Despesa</p>
               <p className="mt-1 text-xl font-bold text-red-600 dark:text-red-400">
                 {formatCurrency(summary.provisao_despesa)}
               </p>
             </div>
-            <div className="text-red-500 opacity-80">
+            <div className="text-red-500 dark:text-red-400 opacity-80 transition-transform group-hover:scale-110">
               <ArrowDownWideNarrow size={24} />
             </div>
           </div>
 
-          <div className="app-surface p-4 flex items-center justify-between">
+          <div className="app-surface group cursor-default p-4 flex items-center justify-between transition-all hover:bg-gray-50/50 dark:hover:bg-slate-800/50 hover:shadow-sm">
             <div>
               <p className="text-xs font-medium text-gray-600 dark:text-slate-400">Líquido</p>
               <p
@@ -169,7 +169,7 @@ export function TransactionSummaryCards({
                 {formatCurrency(summary.provisao_liquido)}
               </p>
             </div>
-            <div className={`${summary.provisao_liquido >= 0 ? "text-blue-500" : "text-red-500"} opacity-80`}>
+            <div className={`${summary.provisao_liquido >= 0 ? "text-blue-500 dark:text-blue-400" : "text-red-500 dark:text-red-400"} opacity-80 transition-transform group-hover:scale-110`}>
               <DollarSign size={24} />
             </div>
           </div>
