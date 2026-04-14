@@ -468,7 +468,7 @@ body {
   }
 
   .app-table-row {
-    @apply hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors border-b border-gray-100 dark:border-slate-800;
+    @apply transition-colors border-b border-gray-100 dark:border-slate-800;
   }
 
   .app-row-pago {
@@ -564,12 +564,12 @@ body {
 
   .app-table-row:hover,
   .dashboard-table-row:hover {
-    background-color: rgb(var(--app-bg-muted) / 0.8);
+    background-color: rgb(var(--app-bg-muted) / 0.6);
   }
 
   html.dark .app-table-row:hover,
   html.dark .dashboard-table-row:hover {
-    background-color: rgb(var(--app-neutral-800) / 0.6);
+    background-color: rgb(var(--app-neutral-200) / 0.2);
   }
 
   .app-table-head {
