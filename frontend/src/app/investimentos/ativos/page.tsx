@@ -570,7 +570,7 @@ export default function InvestimentosAtivosPage() {
                           ) : null}
                         </button>
                       </th>
-                      <th className="app-table-head-cell-right hidden w-[12%] xl:table-cell">
+                      <th className="app-table-head-cell-right hidden w-[12%] lg:table-cell">
                         <button
                           type="button"
                           onClick={() => handleSort("saldo_inicial")}
@@ -631,7 +631,7 @@ export default function InvestimentosAtivosPage() {
                             {item.banco_nome || "-"}
                           </span>
                         </td>
-                        <td className="hidden px-3 py-2 text-right text-xs text-gray-700 xl:table-cell">
+                        <td className="hidden px-3 py-2 text-right text-xs text-gray-700 lg:table-cell">
                           {formatCurrencyBRL(Number(item.saldo_inicial))}
                         </td>
                         <td className="px-3 py-2 text-right text-xs font-semibold text-gray-900">

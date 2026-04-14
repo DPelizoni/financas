@@ -564,7 +564,12 @@ body {
 
   .app-table-row:hover,
   .dashboard-table-row:hover {
-    background-color: rgb(var(--app-bg-muted));
+    background-color: rgb(var(--app-bg-muted) / 0.8);
+  }
+
+  html.dark .app-table-row:hover,
+  html.dark .dashboard-table-row:hover {
+    background-color: rgb(var(--app-neutral-800) / 0.6);
   }
 
   .app-table-head {
@@ -723,6 +728,16 @@ body {
 .text-gray-400,
 .text-slate-400 {
   color: rgb(var(--app-neutral-400));
+}
+
+.text-gray-300,
+.text-slate-300 {
+  color: rgb(var(--app-neutral-300));
+}
+
+.text-gray-200,
+.text-slate-200 {
+  color: rgb(var(--app-neutral-200));
 }
 
 .border-gray-100,
