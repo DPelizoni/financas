@@ -307,7 +307,7 @@ export default function InvestimentosDashboardPage() {
             </div>
             <div className="flex-1 w-full">
               <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={dashboard.timeline} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                <AreaChart data={dashboard.timeline} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
                   <defs>
                     {['aporte', 'resgate', 'rendimento'].map(key => (
                       <linearGradient key={key} id={`color-inv-${key}`} x1="0" y1="0" x2="0" y2="1">
@@ -317,7 +317,16 @@ export default function InvestimentosDashboardPage() {
                     ))}
                   </defs>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(var(--app-border-default), 0.1)" />
-                  <XAxis dataKey="month_label" axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: "rgb(var(--app-text-secondary))", fontWeight: 700 }} />
+                  <XAxis 
+                    dataKey="month_label" 
+                    axisLine={false} 
+                    tickLine={false} 
+                    tick={{ fontSize: 10, fill: "rgb(var(--app-text-secondary))", fontWeight: 700 }} 
+                    interval={0} 
+                    minTickGap={0}
+                    padding={{ left: 10, right: 10 }}
+                    tickFormatter={(value) => value.split('/')[0]} 
+                  />
                   <YAxis hide />
                   <Tooltip content={<CustomTooltip />} />
                   <Legend verticalAlign="top" align="right" iconType="circle" iconSize={6} wrapperStyle={{ fontSize: '9px', fontWeight: '900', textTransform: 'uppercase', letterSpacing: '0.1em', paddingBottom: '30px' }} />
@@ -340,7 +349,7 @@ export default function InvestimentosDashboardPage() {
             </div>
             <div className="flex-1 w-full">
               <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={dashboard.timeline} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                <AreaChart data={dashboard.timeline} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
                   <defs>
                     <linearGradient id="color-inv-saldo" x1="0" y1="0" x2="0" y2="1">
                       <stop offset="5%" stopColor={chartColors.resultado} stopOpacity={0.2}/>
@@ -348,7 +357,16 @@ export default function InvestimentosDashboardPage() {
                     </linearGradient>
                   </defs>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(var(--app-border-default), 0.1)" />
-                  <XAxis dataKey="month_label" axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: "rgb(var(--app-text-secondary))", fontWeight: 700 }} />
+                  <XAxis 
+                    dataKey="month_label" 
+                    axisLine={false} 
+                    tickLine={false} 
+                    tick={{ fontSize: 10, fill: "rgb(var(--app-text-secondary))", fontWeight: 700 }} 
+                    interval={0} 
+                    minTickGap={0}
+                    padding={{ left: 10, right: 10 }}
+                    tickFormatter={(value) => value.split('/')[0]} 
+                  />
                   <YAxis hide />
                   <Tooltip content={<CustomTooltip />} />
                   <Area type="monotone" dataKey="saldo" name="Saldo" stroke={chartColors.resultado} strokeWidth={4} fillOpacity={1} fill="url(#color-inv-saldo)" animationDuration={1500} />

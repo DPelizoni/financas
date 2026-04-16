@@ -80,8 +80,8 @@ const getTooltipSeriesColor = (
 };
 
 const monthLabel = (monthKey: string): string => {
-  const [year, month] = monthKey.split("-");
-  return `${month}/${year.slice(2)}`;
+  const [, month] = monthKey.split("-");
+  return month;
 };
 
 const parseMesToKey = (mes: string): string | null => {
@@ -375,6 +375,7 @@ export default function DashboardPage() {
           comparisonData={comparisonData} timeline={timeline} currentMonthData={currentMonthData} 
           byCategory={byCategory} isMobile={isMobile} chartColors={chartColors} 
           getTooltipSeriesColor={getTooltipSeriesColor} currency={currency} hasData={periodFilteredTransacoes.length > 0}
+          filterAno={filterAno}
         />
 
         <DashboardTransactionsTable 

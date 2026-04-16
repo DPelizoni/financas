@@ -39,6 +39,7 @@ interface DashboardChartsProps {
   getTooltipSeriesColor: (seriesName: string) => string;
   currency: (value: number) => string;
   hasData: boolean;
+  filterAno: string;
 }
 
 const categoryPalette = [
@@ -56,6 +57,7 @@ export function DashboardCharts({
   getTooltipSeriesColor,
   currency,
   hasData,
+  filterAno,
 }: DashboardChartsProps) {
   
   const compositionData = currentMonthData
@@ -110,13 +112,15 @@ export function DashboardCharts({
         <div className="mb-8 flex items-center justify-between">
           <div>
             <h3 className="text-sm font-black uppercase tracking-[0.1em] text-gray-800 dark:text-slate-200">Evolução Financeira</h3>
-            <p className="text-[10px] font-bold text-gray-400 uppercase mt-1">Histórico de desempenho</p>
+            <p className="text-[10px] font-bold text-gray-400 uppercase mt-1">
+              Ano {filterAno === "TODOS" ? "Histórico Completo" : filterAno}
+            </p>
           </div>
           <div className="rounded-xl bg-blue-50 p-2.5 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400"><TrendingUp size={20} /></div>
         </div>
         <div className="flex-1 w-full">
           <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={timeline} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+            <AreaChart data={timeline} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
               <defs>
                 {['receitas', 'despesas', 'saldo'].map(key => (
                   <linearGradient key={key} id={`color-${key}`} x1="0" y1="0" x2="0" y2="1">
@@ -126,7 +130,15 @@ export function DashboardCharts({
                 ))}
               </defs>
               <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(var(--app-border-default), 0.1)" />
-              <XAxis dataKey="monthLabel" axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: "rgb(var(--app-text-secondary))", fontWeight: 700 }} />
+              <XAxis 
+                dataKey="monthLabel" 
+                axisLine={false} 
+                tickLine={false} 
+                tick={{ fontSize: 10, fill: "rgb(var(--app-text-secondary))", fontWeight: 700 }} 
+                interval={0} 
+                minTickGap={0}
+                padding={{ left: 10, right: 10 }}
+              />
               <YAxis hide />
               <Tooltip content={<CustomTooltip />} />
               <Legend verticalAlign="top" align="right" iconType="circle" iconSize={6} wrapperStyle={{ fontSize: '9px', fontWeight: '900', textTransform: 'uppercase', letterSpacing: '0.1em', paddingBottom: '30px' }} />
@@ -154,7 +166,6 @@ export function DashboardCharts({
                 <Pie data={compositionData} cx="50%" cy="50%" innerRadius={donutInnerRadius} outerRadius={donutOuterRadius} paddingAngle={8} cornerRadius={10} dataKey="value" stroke="none" animationDuration={1200}>
                   {compositionData.map((entry, index) => <Cell key={`cell-${index}`} fill={entry.fill} />)}
                 </Pie>
-                <Tooltip content={<CustomTooltip />} />
               </PieChart>
             </ResponsiveContainer>
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center pointer-events-none">
