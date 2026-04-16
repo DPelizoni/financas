@@ -1,4 +1,7 @@
-import { BarChart3 } from "lucide-react";
+"use client";
+
+import React from "react";
+import { BarChart3, TrendingUp, PieChart as PieChartIcon, Activity, ArrowUpRight, ArrowDownRight } from "lucide-react";
 import {
   Bar,
   BarChart,
@@ -8,6 +11,8 @@ import {
   Legend,
   Line,
   LineChart,
+  Area,
+  AreaChart,
   Pie,
   PieChart,
   ResponsiveContainer,
@@ -27,6 +32,7 @@ interface MonthlyPoint {
 interface DashboardChartsProps {
   comparisonData: any[];
   timeline: MonthlyPoint[];
+  currentMonthData: MonthlyPoint | null;
   byCategory: any[];
   isMobile: boolean;
   chartColors: any;
@@ -35,9 +41,15 @@ interface DashboardChartsProps {
   hasData: boolean;
 }
 
+const categoryPalette = [
+  "#3b82f6", "#10b981", "#f59e0b", "#ef4444", "#8b5cf6", 
+  "#ec4899", "#06b6d4", "#f97316", "#14b8a6", "#6366f1"
+];
+
 export function DashboardCharts({
   comparisonData,
   timeline,
+  currentMonthData,
   byCategory,
   isMobile,
   chartColors,
@@ -45,467 +57,189 @@ export function DashboardCharts({
   currency,
   hasData,
 }: DashboardChartsProps) {
-  const hasSingleTimelineMonth = timeline.length === 1;
-  const singleMonthDonutData = hasSingleTimelineMonth
+  
+  const compositionData = currentMonthData
     ? [
-        {
-          indicador: "Receita",
-          valor: timeline[0].receitas,
-          fill: chartColors.receitas,
-        },
-        {
-          indicador: "Despesa",
-          valor: timeline[0].despesas,
-          fill: chartColors.despesas,
-        },
+        { name: "Receitas", value: currentMonthData.receitas, fill: chartColors.receitas },
+        { name: "Despesas", value: currentMonthData.despesas, fill: chartColors.despesas },
       ]
     : [];
 
-  const singleMonthSaldo = hasSingleTimelineMonth ? timeline[0].saldo : 0;
-  const singleMonthTotal = hasSingleTimelineMonth
-    ? timeline[0].receitas + timeline[0].despesas
-    : 0;
-  
-  const donutInnerRadius = isMobile ? 44 : 55;
-  const donutOuterRadius = isMobile ? 70 : 88;
+  const donutInnerRadius = isMobile ? "70%" : "75%";
+  const donutOuterRadius = isMobile ? "90%" : "95%";
 
-  const tooltipContentStyle = {
-    backgroundColor: "rgb(var(--app-bg-surface))",
-    border: "1px solid rgb(var(--app-border-default))",
-    borderRadius: 8,
-    color: "rgb(var(--app-text-primary))",
-  };
-  const tooltipLabelStyle = {
-    color: "rgb(var(--app-text-secondary))",
-  };
-  const tooltipItemStyle = {
-    color: "rgb(var(--app-text-primary))",
-  };
-  const tooltipCursor = {
-    fill: "rgb(var(--app-neutral-300) / 0.24)",
-  };
-
-  const receitaPercent =
-    singleMonthTotal > 0
-      ? Math.round((timeline[0].receitas / singleMonthTotal) * 100)
-      : 0;
-  const despesaPercent =
-    singleMonthTotal > 0
-      ? Math.round((timeline[0].despesas / singleMonthTotal) * 100)
-      : 0;
-
-  const renderDonutPercentLabel = ({
-    cx,
-    cy,
-    midAngle,
-    outerRadius,
-    percent,
-    name,
-  }: any) => {
-    const safePercent = Number(percent || 0);
-    if (safePercent <= 0) return null;
-
-    const centerX = Number(cx);
-    const centerY = Number(cy);
-    const radius = Number(outerRadius) + 16;
-    const angle = (-Number(midAngle) * Math.PI) / 180;
-    const x = centerX + radius * Math.cos(angle);
-    const y = centerY + radius * Math.sin(angle);
-    const labelColor =
-      name === "Receita" ? chartColors.receitas : chartColors.despesas;
-
-    return (
-      <text
-        x={x}
-        y={y}
-        fill={labelColor}
-        textAnchor={x >= centerX ? "start" : "end"}
-        dominantBaseline="central"
-        fontSize={13}
-        fontWeight={700}
-      >
-        {`${Math.round(safePercent * 100)}%`}
-      </text>
-    );
+  const CustomTooltip = ({ active, payload, label }: any) => {
+    if (active && payload && payload.length) {
+      return (
+        <div className="rounded-xl border border-white/20 bg-white/95 p-3 shadow-2xl backdrop-blur-md dark:border-slate-700/50 dark:bg-slate-900/95">
+          {label && <p className="mb-2 text-[10px] font-black uppercase tracking-widest text-gray-400">{label}</p>}
+          <div className="space-y-2">
+            {payload.map((item: any, index: number) => (
+              <div key={index} className="flex items-center justify-between gap-6">
+                <div className="flex items-center gap-2">
+                  <div className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: item.payload?.fill || item.color || getTooltipSeriesColor(item.name || "") }} />
+                  <span className="text-xs font-bold text-gray-600 dark:text-slate-300">{item.name}</span>
+                </div>
+                <span className="text-xs font-black tabular-nums" style={{ color: item.payload?.fill || item.color || getTooltipSeriesColor(item.name || "") }}>
+                  {currency(item.value || 0)}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      );
+    }
+    return null;
   };
 
   if (!hasData) {
     return (
-      <div className="space-y-6">
-        <div className="app-surface p-4">
-          <h3 className="mb-4 text-sm font-semibold text-gray-700">
-            Comparativo: Pago vs Provisão
-          </h3>
-          <div className="flex h-80 flex-col items-center justify-center text-center">
-            <BarChart3 size={48} className="mb-2 text-gray-200" />
-            <p className="text-sm text-gray-500">Sem dados para o comparativo de pagamentos.</p>
-          </div>
-        </div>
-        <div className="app-surface p-4">
-            <h3 className="mb-4 text-sm font-semibold text-gray-700">Evolução Temporal e Saldo</h3>
-            <div className="flex h-96 flex-col items-center justify-center text-center">
-                <BarChart3 size={48} className="mb-2 text-gray-200" />
-                <p className="text-sm text-gray-500">Sem movimentações no período selecionado.</p>
-            </div>
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+        <div className="app-surface flex h-80 flex-col items-center justify-center p-6 text-center">
+          <BarChart3 size={48} className="mb-4 text-gray-200 dark:text-slate-800" />
+          <p className="text-sm font-medium text-gray-500">Sem dados para análise visual.</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
-      <div className="app-surface p-4">
-        <h3 className="mb-4 text-sm font-semibold text-gray-700">
-          Comparativo: Pago vs Provisão
-        </h3>
-        <div className="h-80">
+    <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+      {/* 1. Evolução Financeira */}
+      <div className="app-surface p-6 overflow-hidden flex flex-col h-[480px]">
+        <div className="mb-8 flex items-center justify-between">
+          <div>
+            <h3 className="text-sm font-black uppercase tracking-[0.1em] text-gray-800 dark:text-slate-200">Evolução Financeira</h3>
+            <p className="text-[10px] font-bold text-gray-400 uppercase mt-1">Histórico de desempenho</p>
+          </div>
+          <div className="rounded-xl bg-blue-50 p-2.5 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400"><TrendingUp size={20} /></div>
+        </div>
+        <div className="flex-1 w-full">
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={comparisonData} barGap={4} barCategoryGap="20%">
-              <CartesianGrid strokeDasharray="3 3" vertical={false} />
-              <XAxis dataKey="name" tick={{ fontSize: 10 }} />
-              <YAxis
-                hide
-                domain={[
-                  (dataMin: number) =>
-                    dataMin >= 0 ? 0 : Math.floor(dataMin * 1.2),
-                  (dataMax: number) =>
-                    dataMax <= 0 ? 0 : Math.ceil(dataMax * 1.2),
-                ]}
-              />
-              <Tooltip
-                formatter={(v, name) => (
-                  <span
-                    style={{
-                      color: getTooltipSeriesColor(String(name)),
-                      fontWeight: 700,
-                    }}
-                  >
-                    {currency(Number(v || 0))}
-                  </span>
-                )}
-                contentStyle={tooltipContentStyle}
-                labelStyle={tooltipLabelStyle}
-                itemStyle={tooltipItemStyle}
-                cursor={tooltipCursor}
-              />
-              <Legend iconSize={10} wrapperStyle={{ fontSize: "12px" }} />
-              <Bar
-                dataKey="Pago"
-                fill={chartColors.pago}
-                radius={[6, 6, 0, 0]}
-              >
-                {!isMobile && (
-                  <LabelList
-                    dataKey="Pago"
-                    position="top"
-                    formatter={(value: any) => currency(Number(value))}
-                    style={{
-                      fontSize: 10,
-                      fontWeight: 600,
-                      fill: chartColors.pago,
-                    }}
-                  />
-                )}
+            <AreaChart data={timeline} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+              <defs>
+                {['receitas', 'despesas', 'saldo'].map(key => (
+                  <linearGradient key={key} id={`color-${key}`} x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor={chartColors[key as keyof typeof chartColors]} stopOpacity={0.2}/>
+                    <stop offset="95%" stopColor={chartColors[key as keyof typeof chartColors]} stopOpacity={0}/>
+                  </linearGradient>
+                ))}
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(var(--app-border-default), 0.1)" />
+              <XAxis dataKey="monthLabel" axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: "rgb(var(--app-text-secondary))", fontWeight: 700 }} />
+              <YAxis hide />
+              <Tooltip content={<CustomTooltip />} />
+              <Legend verticalAlign="top" align="right" iconType="circle" iconSize={6} wrapperStyle={{ fontSize: '9px', fontWeight: '900', textTransform: 'uppercase', letterSpacing: '0.1em', paddingBottom: '30px' }} />
+              <Area type="monotone" dataKey="receitas" name="Receitas" stroke={chartColors.receitas} strokeWidth={4} fillOpacity={1} fill="url(#color-receitas)" animationDuration={1500} />
+              <Area type="monotone" dataKey="despesas" name="Despesas" stroke={chartColors.despesas} strokeWidth={4} fillOpacity={1} fill="url(#color-despesas)" animationDuration={1500} />
+              <Area type="monotone" dataKey="saldo" name="Saldo" stroke={chartColors.saldo} strokeWidth={4} fillOpacity={1} fill="url(#color-saldo)" animationDuration={1500} />
+            </AreaChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
+
+      {/* 2. Composição do Mês (Vigente) */}
+      <div className="app-surface p-6 overflow-hidden flex flex-col h-[480px]">
+        <div className="mb-8 flex items-center justify-between">
+          <div>
+            <h3 className="text-sm font-black uppercase tracking-[0.1em] text-gray-800 dark:text-slate-200">Composição do Mês</h3>
+            <p className="text-[10px] font-bold text-gray-400 uppercase mt-1">{currentMonthData?.monthLabel || 'Mês atual'}</p>
+          </div>
+          <div className="rounded-xl bg-indigo-50 p-2.5 text-indigo-600 dark:bg-indigo-900/20 dark:text-indigo-400"><PieChartIcon size={20} /></div>
+        </div>
+        <div className="flex-1 w-full relative flex flex-col justify-center">
+          <div className="h-64 w-full relative">
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie data={compositionData} cx="50%" cy="50%" innerRadius={donutInnerRadius} outerRadius={donutOuterRadius} paddingAngle={8} cornerRadius={10} dataKey="value" stroke="none" animationDuration={1200}>
+                  {compositionData.map((entry, index) => <Cell key={`cell-${index}`} fill={entry.fill} />)}
+                </Pie>
+                <Tooltip content={<CustomTooltip />} />
+              </PieChart>
+            </ResponsiveContainer>
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center pointer-events-none">
+              <span className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 block mb-1">Resultado</span>
+              <span className="text-2xl font-black tabular-nums tracking-tighter text-blue-600 dark:text-blue-400">
+                {currency(currentMonthData?.saldo || 0)}
+              </span>
+            </div>
+          </div>
+          <div className="mt-8 grid grid-cols-2 gap-4 max-w-sm mx-auto w-full">
+            <div className="bg-gray-50 dark:bg-slate-800/40 rounded-2xl p-3 border border-gray-100 dark:border-slate-700/30 flex flex-col items-center">
+              <span className="text-[9px] font-black text-emerald-600 dark:text-emerald-400 uppercase mb-1">Receitas</span>
+              <span className="text-sm font-black text-emerald-600 dark:text-emerald-400">{currency(currentMonthData?.receitas || 0)}</span>
+            </div>
+            <div className="bg-gray-50 dark:bg-slate-800/40 rounded-2xl p-3 border border-gray-100 dark:border-slate-700/30 flex flex-col items-center">
+              <span className="text-[9px] font-black text-rose-600 dark:text-rose-400 uppercase mb-1">Despesas</span>
+              <span className="text-sm font-black text-rose-600 dark:text-rose-400">{currency(currentMonthData?.despesas || 0)}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* 3. Realizado vs Projetado */}
+      <div className="app-surface p-6 overflow-hidden flex flex-col h-[480px]">
+        <div className="mb-8 flex items-center justify-between">
+          <div>
+            <h3 className="text-sm font-black uppercase tracking-[0.1em] text-gray-800 dark:text-slate-200">Realizado vs Projetado</h3>
+            <p className="text-[10px] font-bold text-gray-400 uppercase mt-1">Saúde das liquidações</p>
+          </div>
+          <div className="rounded-xl bg-emerald-50 p-2.5 text-emerald-600 dark:bg-emerald-900/20 dark:text-emerald-400"><BarChart3 size={20} /></div>
+        </div>
+        <div className="flex-1 w-full">
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart data={comparisonData} barGap={12} margin={{ top: 40, bottom: 10 }}>
+              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(var(--app-border-default), 0.1)" />
+              <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 11, fontWeight: 900, fill: "rgb(var(--app-text-primary))" }} />
+              <YAxis hide />
+              <Tooltip content={<CustomTooltip />} cursor={{ fill: 'currentColor', opacity: 0.04 }} />
+              <Legend verticalAlign="top" align="right" iconType="circle" iconSize={6} wrapperStyle={{ fontSize: '9px', fontWeight: '900', textTransform: 'uppercase', letterSpacing: '0.1em', paddingBottom: '30px' }} />
+              <Bar dataKey="Pago" fill={chartColors.pago} radius={[8, 8, 0, 0]} barSize={isMobile ? 32 : 56} animationDuration={1500}>
+                <LabelList dataKey="Pago" position="top" offset={15} formatter={(v: any) => currency(Number(v))} style={{ fontSize: 10, fontWeight: 900, fill: chartColors.pago }} />
               </Bar>
-              <Bar
-                dataKey="Provisao"
-                name="Provisão"
-                fill={chartColors.pendente}
-                radius={[6, 6, 0, 0]}
-              >
-                {!isMobile && (
-                  <LabelList
-                    dataKey="Provisao"
-                    position="top"
-                    formatter={(value: any) => currency(Number(value))}
-                    style={{
-                      fontSize: 10,
-                      fontWeight: 600,
-                      fill: chartColors.pendente,
-                    }}
-                  />
-                )}
+              <Bar dataKey="Provisao" name="Provisão" fill={chartColors.pendente} radius={[8, 8, 0, 0]} barSize={isMobile ? 32 : 56} animationDuration={1500}>
+                <LabelList dataKey="Provisao" position="top" offset={15} formatter={(v: any) => currency(Number(v))} style={{ fontSize: 10, fontWeight: 900, fill: chartColors.pendente }} />
               </Bar>
             </BarChart>
           </ResponsiveContainer>
         </div>
       </div>
 
-      <div className="space-y-4">
-        <div className="app-surface p-4">
-          <h3 className="mb-4 text-sm font-semibold text-gray-700">
-            {hasSingleTimelineMonth
-              ? "Resumo Mensal Detalhado"
-              : "Evolução Temporal e Saldo"}
-          </h3>
-          <div className="h-[520px] sm:h-96">
-            {hasSingleTimelineMonth ? (
-              <div className="grid h-full grid-cols-1 gap-4 lg:auto-rows-fr lg:grid-cols-2">
-                <div className="h-full">
-                  <div className="dashboard-summary-card-neutral flex h-full flex-col p-3">
-                    <div className="h-[70%]">
-                      <ResponsiveContainer width="100%" height="100%">
-                        <PieChart>
-                          <Pie
-                            data={singleMonthDonutData}
-                            dataKey="valor"
-                            nameKey="indicador"
-                            cx="50%"
-                            cy="50%"
-                            innerRadius={donutInnerRadius}
-                            outerRadius={donutOuterRadius}
-                            paddingAngle={3}
-                            labelLine={false}
-                            label={
-                              isMobile ? false : renderDonutPercentLabel
-                            }
-                          >
-                            {singleMonthDonutData.map((entry) => (
-                              <Cell key={entry.indicador} fill={entry.fill} />
-                            ))}
-                          </Pie>
-                          <Tooltip
-                            formatter={(v, name) => {
-                              const total =
-                                (timeline[0]?.receitas || 0) +
-                                (timeline[0]?.despesas || 0);
-                              const value = Number(v || 0);
-                              const percent =
-                                total > 0 ? (value / total) * 100 : 0;
-                              return (
-                                <span
-                                  style={{
-                                    color: getTooltipSeriesColor(String(name)),
-                                    fontWeight: 700,
-                                  }}
-                                >
-                                  {`${currency(value)} (${Math.round(percent)}%)`}
-                                </span>
-                              );
-                            }}
-                            contentStyle={tooltipContentStyle}
-                            labelStyle={tooltipLabelStyle}
-                            itemStyle={tooltipItemStyle}
-                          />
-                        </PieChart>
-                      </ResponsiveContainer>
-                    </div>
-
-                    <div className="mt-3 space-y-2 text-sm">
-                      <div className="flex items-center justify-between">
-                        <span className="flex items-center gap-2 font-medium text-gray-700">
-                          <span
-                            className="inline-block h-2.5 w-2.5 rounded-full"
-                            style={{ backgroundColor: chartColors.receitas }}
-                          />
-                          Receita
-                        </span>
-                        <span className="inline-block min-w-[145px] text-right tabular-nums sm:min-w-[170px]">
-                          <span style={{ color: chartColors.receitas }}>
-                            {currency(timeline[0].receitas)}
-                          </span>{" "}
-                          <span
-                            className="font-bold"
-                            style={{ color: chartColors.receitas }}
-                          >
-                            ({receitaPercent}%)
-                          </span>
-                        </span>
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <span className="flex items-center gap-2 font-medium text-gray-700">
-                          <span
-                            className="inline-block h-2.5 w-2.5 rounded-full"
-                            style={{ backgroundColor: chartColors.despesas }}
-                          />
-                          Despesa
-                        </span>
-                        <span className="inline-block min-w-[145px] text-right tabular-nums sm:min-w-[170px]">
-                          <span style={{ color: chartColors.despesas }}>
-                            {currency(timeline[0].despesas)}
-                          </span>{" "}
-                          <span
-                            className="font-bold"
-                            style={{ color: chartColors.despesas }}
-                          >
-                            ({despesaPercent}%)
-                          </span>
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="h-full">
-                  <div
-                    className={`flex h-full items-center justify-center p-3 ${
-                      singleMonthSaldo >= 0
-                        ? "dashboard-summary-card-info"
-                        : "dashboard-summary-card-error"
-                    }`}
-                  >
-                    <div className="text-center">
-                      <p className="text-sm font-semibold text-gray-700">
-                        Líquido
-                      </p>
-                      <p
-                        className={`mt-2 text-3xl font-bold ${
-                          singleMonthSaldo >= 0
-                            ? "text-blue-600"
-                            : "text-red-600"
-                        }`}
-                      >
-                        {currency(singleMonthSaldo)}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ) : (
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart
-                  data={timeline}
-                  margin={{ top: 30, right: 28, left: 20, bottom: 12 }}
-                >
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                  <XAxis
-                    dataKey="monthLabel"
-                    tick={{ fontSize: 10 }}
-                    padding={{ left: 10, right: 10 }}
-                  />
-                  <YAxis hide />
-                  <Tooltip
-                    formatter={(v, name) => (
-                      <span
-                        style={{
-                          color: getTooltipSeriesColor(String(name)),
-                          fontWeight: 700,
-                        }}
-                      >
-                        {currency(Number(v || 0))}
-                      </span>
-                    )}
-                    contentStyle={tooltipContentStyle}
-                    labelStyle={tooltipLabelStyle}
-                    itemStyle={tooltipItemStyle}
-                    cursor={tooltipCursor}
-                  />
-                  <Legend iconSize={10} wrapperStyle={{ fontSize: "12px" }} />
-                  <Line
-                    type="monotone"
-                    dataKey="receitas"
-                    name="Receitas"
-                    stroke={chartColors.receitas}
-                    strokeWidth={2}
-                    dot={{ r: 3 }}
-                  />
-                  <Line
-                    type="monotone"
-                    dataKey="despesas"
-                    name="Despesas"
-                    stroke={chartColors.despesas}
-                    strokeWidth={2}
-                    dot={{ r: 3 }}
-                  />
-                  <Line
-                    type="monotone"
-                    dataKey="saldo"
-                    name="Saldo"
-                    stroke={chartColors.saldo}
-                    strokeWidth={2}
-                    dot={{ r: 3 }}
-                  >
-                    {!isMobile && (
-                      <LabelList
-                        dataKey="saldo"
-                        position="top"
-                        formatter={(value: any) => currency(Number(value))}
-                        style={{
-                          fontSize: 8,
-                          fill: chartColors.saldo,
-                          fontWeight: 600,
-                        }}
-                      />
-                    )}
-                  </Line>
-                </LineChart>
-              </ResponsiveContainer>
-            )}
+      {/* 4. Gastos por Categoria */}
+      <div className="app-surface p-6 overflow-hidden flex flex-col h-[480px]">
+        <div className="mb-8 flex items-center justify-between">
+          <div>
+            <h3 className="text-sm font-black uppercase tracking-[0.1em] text-gray-800 dark:text-slate-200">Gastos por Categoria</h3>
+            <p className="text-[10px] font-bold text-gray-400 uppercase mt-1">Distribuição das despesas</p>
           </div>
+          <div className="rounded-xl bg-purple-50 p-2.5 text-purple-600 dark:bg-purple-900/20 dark:text-purple-400"><PieChartIcon size={20} /></div>
         </div>
-
-        <div className="app-surface p-4">
-          <h3 className="mb-4 text-sm font-semibold text-gray-700">
-            Gastos por Categoria
-          </h3>
-          <div className="h-72">
-            {byCategory.length === 0 ? (
-              <div className="flex h-full flex-col items-center justify-center text-center">
-                <BarChart3 size={48} className="mb-2 text-gray-200" />
-                <p className="text-sm text-gray-500">Nenhuma categoria registrada nestas transações.</p>
-              </div>
-            ) : (
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={byCategory}>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                  <XAxis dataKey="name" tick={{ fontSize: 10 }} />
-                  <YAxis
-                    hide
-                    domain={[0, (dataMax: number) => Math.ceil(dataMax * 1.2)]}
-                  />
-                  <Tooltip
-                    formatter={(v, _name, item) => {
-                      const itemColor =
-                        typeof (item as { color?: unknown })?.color === "string"
-                          ? ((item as { color?: string }).color as string)
-                          : chartColors.saldo;
-
-                      return [
-                        <span
-                          style={{
-                            color: itemColor,
-                            fontWeight: 700,
-                          }}
-                        >
-                          {currency(Number(v || 0))}
-                        </span>,
-                        "Total",
-                      ];
-                    }}
-                    labelFormatter={(label) => `Categoria: ${label}`}
-                    contentStyle={tooltipContentStyle}
-                    labelStyle={tooltipLabelStyle}
-                    itemStyle={tooltipItemStyle}
-                    cursor={tooltipCursor}
-                  />
-                  <Bar dataKey="value" radius={[6, 6, 0, 0]}>
-                    {byCategory.map((_, index) => {
-                      const colors = [
-                        chartColors.pieA,
-                        chartColors.pieB,
-                        chartColors.pieC,
-                        chartColors.pieD,
-                        chartColors.pieE,
-                      ];
-                      return (
-                        <Cell
-                          key={`cell-${index}`}
-                          fill={colors[index % colors.length]}
-                        />
-                      );
-                    })}
-                    {!isMobile && (
-                      <LabelList
-                        dataKey="value"
-                        position="top"
-                        formatter={(value: any) => currency(Number(value))}
-                        style={{ fontSize: 10, fontWeight: 600 }}
-                      />
-                    )}
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
-            )}
+        <div className="flex-1 w-full relative flex flex-col sm:flex-row items-center">
+          <div className="h-64 w-full sm:w-1/2 relative">
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie data={byCategory} cx="50%" cy="50%" innerRadius="75%" outerRadius="95%" paddingAngle={4} cornerRadius={6} dataKey="value" nameKey="name" stroke="none" animationDuration={1500}>
+                  {byCategory.map((entry, index) => <Cell key={`cell-${index}`} fill={categoryPalette[index % categoryPalette.length]} />)}
+                </Pie>
+                <Tooltip content={<CustomTooltip />} />
+              </PieChart>
+            </ResponsiveContainer>
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center pointer-events-none">
+              <PieChartIcon size={24} className="text-gray-200 dark:text-slate-700 mx-auto" />
+            </div>
+          </div>
+          <div className="w-full sm:w-1/2 mt-6 sm:mt-0 sm:pl-8 overflow-y-auto max-h-64 scrollbar-hide">
+            <div className="space-y-3">
+              {byCategory.slice(0, 6).map((item, index) => (
+                <div key={index} className="flex items-center justify-between group">
+                  <div className="flex items-center gap-3">
+                    <div className="h-2 w-2 rounded-full" style={{ backgroundColor: categoryPalette[index % categoryPalette.length] }} />
+                    <span className="text-[11px] font-bold text-gray-600 dark:text-slate-400 truncate max-w-[100px]">{item.name}</span>
+                  </div>
+                  <span className="text-[11px] font-black text-gray-800 dark:text-slate-200 tabular-nums">{currency(item.value)}</span>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </div>

@@ -759,10 +759,10 @@ export default function TransacoesPage() {
       <div className="mx-auto max-w-7xl space-y-6 px-4 sm:px-6 lg:px-8">
         <FeedbackAlert feedback={feedback} onClose={() => setFeedback(null)} />
 
-        <PageContainer className="w-full">
+        <PageContainer>
           <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
             <div className="min-w-0">
-              <h1 className="flex items-center gap-3 text-xl font-bold text-gray-900 sm:text-2xl lg:text-3xl dark:text-white">
+              <h1 className="flex items-center gap-3 text-2xl font-bold text-gray-900 sm:text-3xl dark:text-white">
                 <ArrowLeftRight size={32} className="shrink-0 text-blue-600 dark:text-blue-400" />
                 <span>Gerenciamento de Transações</span>
               </h1>
@@ -777,7 +777,7 @@ export default function TransacoesPage() {
                 className="relative w-full md:w-auto"
                 startIcon={<Filter size={18} className={showFilters ? "fill-blue-100 dark:fill-blue-900/50" : ""} />}
               >
-                Filtros
+                {showFilters ? "Ocultar Filtros" : "Mostrar Filtros"}
                 {activeFiltersCount > 0 && (
                   <span className="absolute -right-2 -top-2 flex h-5 w-5 items-center justify-center rounded-full bg-blue-600 text-[10px] font-bold text-white shadow-md ring-2 ring-white dark:ring-slate-900">
                     {activeFiltersCount}
@@ -906,47 +906,45 @@ export default function TransacoesPage() {
             </div>
           </div>
         </PageContainer>
+        
+        <TransactionFilters
+          searchTerm={searchTerm}
+          filterTipo={filterTipo}
+          filterCategoria={filterCategoria}
+          filterBanco={filterBanco}
+          filterSituacao={filterSituacao}
+          filterMes={filterMes}
+          showFilters={showFilters}
+          categories={categories}
+          banks={banks}
+          onSearch={handleSearch}
+          onFilterTipoChange={(val) => {
+            setFilterTipo(val);
+            setFilterCategoria("TODOS");
+            setCurrentPage(1);
+          }}
+          onFilterCategoriaChange={(val) => {
+            setFilterCategoria(val);
+            setCurrentPage(1);
+          }}
+          onFilterBancoChange={(val) => {
+            setFilterBanco(val);
+            setCurrentPage(1);
+          }}
+          onFilterSituacaoChange={(val) => {
+            setFilterSituacao(val);
+            setCurrentPage(1);
+          }}
+          onFilterMesChange={(val) => {
+            setFilterMes(val);
+            setCurrentPage(1);
+          }}
+          onClearFilters={handleClearFilters}
+        />
 
-        <div className="w-full overflow-x-auto">
-          <TransactionFilters
-            searchTerm={searchTerm}
-            filterTipo={filterTipo}
-            filterCategoria={filterCategoria}
-            filterBanco={filterBanco}
-            filterSituacao={filterSituacao}
-            filterMes={filterMes}
-            showFilters={showFilters}
-            categories={categories}
-            banks={banks}
-            onSearch={handleSearch}
-            onFilterTipoChange={(val) => {
-              setFilterTipo(val);
-              setFilterCategoria("TODOS");
-              setCurrentPage(1);
-            }}
-            onFilterCategoriaChange={(val) => {
-              setFilterCategoria(val);
-              setCurrentPage(1);
-            }}
-            onFilterBancoChange={(val) => {
-              setFilterBanco(val);
-              setCurrentPage(1);
-            }}
-            onFilterSituacaoChange={(val) => {
-              setFilterSituacao(val);
-              setCurrentPage(1);
-            }}
-            onFilterMesChange={(val) => {
-              setFilterMes(val);
-              setCurrentPage(1);
-            }}
-            onClearFilters={handleClearFilters}
-          />
-        </div>
-
-        <div className="w-full overflow-hidden">
+        {summary && (
           <TransactionSummaryCards summary={summary} />
-        </div>
+        )}
 
         <div className="app-surface p-4 w-full overflow-hidden">
           <TransactionList

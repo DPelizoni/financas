@@ -1,4 +1,11 @@
-import { ArrowDownWideNarrow, ArrowUpNarrowWide, DollarSign } from "lucide-react";
+"use client";
+
+import React from "react";
+import {
+  ArrowDownWideNarrow,
+  ArrowUpNarrowWide,
+  DollarSign,
+} from "lucide-react";
 
 interface SummaryCardsProps {
   summary: {
@@ -10,73 +17,80 @@ interface SummaryCardsProps {
 }
 
 export function SummaryCards({ summary, currency }: SummaryCardsProps) {
+  const Card = ({ 
+    title, 
+    value, 
+    icon: Icon,
+    color 
+  }: { 
+    title: string;
+    value: number;
+    icon: any;
+    color: "green" | "red" | "blue";
+  }) => {
+    const themes = {
+      green: {
+        border: "border-green-200 dark:border-green-800/50",
+        bg: "bg-green-50/50 dark:bg-green-900/10",
+        text: "text-green-600 dark:text-green-400",
+        glow: "hover:shadow-[0_0_25px_rgba(34,197,94,0.25)]",
+      },
+      red: {
+        border: "border-red-200 dark:border-red-800/50",
+        bg: "bg-red-50/50 dark:bg-red-900/10",
+        text: "text-red-600 dark:text-red-400",
+        glow: "hover:shadow-[0_0_25px_rgba(239,68,68,0.25)]",
+      },
+      blue: {
+        border: "border-blue-200 dark:border-blue-800/50",
+        bg: "bg-blue-50/50 dark:bg-blue-900/10",
+        text: "text-blue-600 dark:text-blue-400",
+        glow: "hover:shadow-[0_0_25px_rgba(59,130,246,0.25)]",
+      }
+    };
+
+    const theme = themes[color];
+
+    return (
+      <div className={`group relative overflow-hidden rounded-2xl border ${theme.border} ${theme.bg} p-6 backdrop-blur-sm transition-all duration-500 hover:-translate-y-2 ${theme.glow}`}>
+        <div className="flex items-center justify-between">
+          <div className="min-w-0">
+            <p className={`text-xs font-black uppercase tracking-[0.15em] opacity-80 ${theme.text}`}>
+              {title}
+            </p>
+            <p className={`mt-2 text-2xl font-black tabular-nums tracking-tight ${theme.text}`}>
+              {currency(value)}
+            </p>
+          </div>
+          <div className={`rounded-xl ${theme.bg} p-3 ${theme.text} transition-transform duration-500 group-hover:rotate-12 group-hover:scale-110`}>
+            <Icon size={28} />
+          </div>
+        </div>
+        <div className={`absolute -right-8 -top-8 h-24 w-24 rounded-full ${theme.bg} opacity-0 blur-3xl transition-opacity duration-700 group-hover:opacity-100`} />
+      </div>
+    );
+  };
+
   return (
-    <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
-      <div className="dashboard-summary-card-success group cursor-default p-6 transition-all hover:bg-green-50/50 dark:hover:bg-green-900/10 hover:shadow-md">
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-sm font-medium text-green-700 dark:text-green-400">Total Receita</p>
-            <p className="text-2xl font-bold text-green-600 dark:text-green-300">
-              {currency(summary.total_receita)}
-            </p>
-          </div>
-          <div className="rounded-full bg-green-100 dark:bg-green-900/40 p-2 text-green-600 dark:text-green-400 transition-colors group-hover:bg-green-200 dark:group-hover:bg-green-800/60">
-            <ArrowUpNarrowWide size={24} />
-          </div>
-        </div>
-      </div>
-
-      <div className="dashboard-summary-card-error group cursor-default p-6 transition-all hover:bg-red-50/50 dark:hover:bg-red-900/10 hover:shadow-md">
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-sm font-medium text-red-700 dark:text-red-400">Total Despesa</p>
-            <p className="text-2xl font-bold text-red-600 dark:text-red-300">
-              {currency(summary.total_despesa)}
-            </p>
-          </div>
-          <div className="rounded-full bg-red-100 dark:bg-red-900/40 p-2 text-red-600 dark:text-red-400 transition-colors group-hover:bg-red-200 dark:group-hover:bg-red-800/60">
-            <ArrowDownWideNarrow size={24} />
-          </div>
-        </div>
-      </div>
-
-      <div
-        className={`group cursor-default p-6 transition-all hover:shadow-md ${
-          summary.total_liquido >= 0
-            ? "dashboard-summary-card-info hover:bg-blue-50/50 dark:hover:bg-blue-900/10"
-            : "dashboard-summary-card-error hover:bg-red-50/50 dark:hover:bg-red-900/10"
-        }`}
-      >
-        <div className="flex items-center justify-between">
-          <div>
-            <p
-              className={`text-sm font-medium ${
-                summary.total_liquido >= 0
-                  ? "text-blue-700 dark:text-blue-400"
-                  : "text-red-700 dark:text-red-400"
-              }`}
-            >
-              Total Líquido
-            </p>
-            <p
-              className={`text-2xl font-bold ${
-                summary.total_liquido >= 0
-                  ? "text-blue-600 dark:text-blue-300"
-                  : "text-red-600 dark:text-red-300"
-              }`}
-            >
-              {currency(summary.total_liquido)}
-            </p>
-          </div>
-          <div className={`rounded-full p-2 transition-colors ${
-            summary.total_liquido >= 0 
-              ? "bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 group-hover:bg-blue-200 dark:group-hover:bg-blue-800/60" 
-              : "bg-red-100 dark:bg-red-900/40 text-red-600 dark:text-red-400 group-hover:bg-red-200 dark:group-hover:bg-red-800/60"
-          }`}>
-            <DollarSign size={24} />
-          </div>
-        </div>
-      </div>
+    <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+      <Card 
+        title="Receitas" 
+        value={summary.total_receita} 
+        icon={ArrowUpNarrowWide} 
+        color="green" 
+      />
+      <Card 
+        title="Despesas" 
+        value={summary.total_despesa} 
+        icon={ArrowDownWideNarrow} 
+        color="red" 
+      />
+      <Card 
+        title="Saldo Líquido" 
+        value={summary.total_liquido} 
+        icon={DollarSign} 
+        color={summary.total_liquido >= 0 ? "blue" : "red"} 
+      />
     </div>
   );
 }

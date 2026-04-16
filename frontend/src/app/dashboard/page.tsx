@@ -175,7 +175,7 @@ export default function DashboardPage() {
         console.error("Erro ao carregar dashboard:", error);
         setFeedback({
           type: "error",
-          message: "Não foi possível carregar os dados do dashboard. Verifique a conexão com a API.",
+          message: "Não foi possível carregar os dados do dashboard.",
         });
       } finally {
         setLoading(false);
@@ -208,17 +208,35 @@ export default function DashboardPage() {
     return Array.from(years).sort((a, b) => b.localeCompare(a));
   }, [transacoes, currentYear]);
 
+  // Timeline SEMPRE completa (12 meses ou ano selecionado), ignorando o filtro de mês específico
   const timeline = useMemo(() => {
     const allMonthsSet = new Set<string>();
-    filteredTransacoes.forEach((t) => {
+    transacoes.forEach((t) => {
       const month = parseMesToKey(t.mes);
-      if (month) allMonthsSet.add(month);
+      if (month) {
+        // Se houver ano selecionado, filtra por ele, caso contrário, pega tudo para o slice posterior
+        if (filterAno === "TODOS" || month.startsWith(`${filterAno}-`)) {
+          allMonthsSet.add(month);
+        }
+      }
     });
     const sortedMonths = Array.from(allMonthsSet).sort();
+    
+    // Se estiver filtrando um mês específico, mostramos os meses que levam a ele (12 meses)
     const selectedMonths = sortedMonths.slice(-periodMonths);
 
     return selectedMonths.map((monthKey) => {
-      const monthItems = filteredTransacoes.filter((t) => parseMesToKey(t.mes) === monthKey);
+      // Aqui filtramos as transações apenas pelos outros critérios, mas no mês da timeline
+      const monthItems = transacoes.filter((t) => {
+        const tMesKey = parseMesToKey(t.mes);
+        if (tMesKey !== monthKey) return false;
+        if (filterTipo !== "TODOS" && t.tipo !== filterTipo) return false;
+        if (filterSituacao !== "TODOS" && t.situacao !== filterSituacao) return false;
+        if (filterCategoria !== "TODOS" && t.categoria_id !== filterCategoria) return false;
+        if (filterBanco !== "TODOS" && t.banco_id !== filterBanco) return false;
+        return true;
+      });
+
       const receitas = monthItems.filter((t) => t.tipo === "RECEITA").reduce((acc, t) => acc + Number(t.valor), 0);
       const despesas = monthItems.filter((t) => t.tipo === "DESPESA").reduce((acc, t) => acc + Number(t.valor), 0);
       return {
@@ -229,7 +247,7 @@ export default function DashboardPage() {
         saldo: receitas - despesas,
       };
     });
-  }, [filteredTransacoes, periodMonths]);
+  }, [transacoes, periodMonths, filterAno, filterTipo, filterSituacao, filterCategoria, filterBanco]);
 
   const periodFilteredTransacoes = useMemo(() => {
     if (filterMesAno) return filteredTransacoes;
@@ -246,27 +264,32 @@ export default function DashboardPage() {
   const summaryCardsData = useMemo(() => {
     const totalReceita = periodFilteredTransacoes.filter((t) => t.tipo === "RECEITA").reduce((acc, t) => acc + Number(t.valor), 0);
     const totalDespesa = periodFilteredTransacoes.filter((t) => t.tipo === "DESPESA").reduce((acc, t) => acc + Number(t.valor), 0);
-    const pagoReceita = periodFilteredTransacoes.filter((t) => t.tipo === "RECEITA" && t.situacao === "PAGO").reduce((acc, t) => acc + Number(t.valor), 0);
-    const pagoDespesa = periodFilteredTransacoes.filter((t) => t.tipo === "DESPESA" && t.situacao === "PAGO").reduce((acc, t) => acc + Number(t.valor), 0);
-    const provisaoReceita = periodFilteredTransacoes.filter((t) => t.tipo === "RECEITA" && t.situacao === "PENDENTE").reduce((acc, t) => acc + Number(t.valor), 0);
-    const provisaoDespesa = periodFilteredTransacoes.filter((t) => t.tipo === "DESPESA" && t.situacao === "PENDENTE").reduce((acc, t) => acc + Number(t.valor), 0);
-
+    
     return {
       total_receita: totalReceita,
       total_despesa: totalDespesa,
       total_liquido: totalReceita - totalDespesa,
-      pago_receita: pagoReceita,
-      pago_despesa: pagoDespesa,
-      pago_liquido: pagoReceita - pagoDespesa,
-      provisao_receita: provisaoReceita,
-      provisao_despesa: provisaoDespesa,
-      provisao_liquido: provisaoReceita - provisaoDespesa,
+      pago_receita: periodFilteredTransacoes.filter((t) => t.tipo === "RECEITA" && t.situacao === "PAGO").reduce((acc, t) => acc + Number(t.valor), 0),
+      pago_despesa: periodFilteredTransacoes.filter((t) => t.tipo === "DESPESA" && t.situacao === "PAGO").reduce((acc, t) => acc + Number(t.valor), 0),
+      pago_liquido: 0,
+      provisao_receita: periodFilteredTransacoes.filter((t) => t.tipo === "RECEITA" && t.situacao === "PENDENTE").reduce((acc, t) => acc + Number(t.valor), 0),
+      provisao_despesa: periodFilteredTransacoes.filter((t) => t.tipo === "DESPESA" && t.situacao === "PENDENTE").reduce((acc, t) => acc + Number(t.valor), 0),
+      provisao_liquido: 0,
     };
   }, [periodFilteredTransacoes]);
 
+  const currentMonthData = useMemo(() => {
+    if (filterMesAno) {
+      return timeline.find(p => p.monthKey === filterMesAno) || null;
+    }
+    const now = new Date();
+    const currentKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+    return timeline.find(p => p.monthKey === currentKey) || (timeline.length > 0 ? timeline[timeline.length - 1] : null);
+  }, [timeline, filterMesAno]);
+
   const byCategory = useMemo(() => {
     const map = new Map<string, number>();
-    filteredTransacoes.forEach((t) => {
+    periodFilteredTransacoes.filter(t => t.tipo === "DESPESA").forEach((t) => {
       const key = t.categoria_nome || `Categoria #${t.categoria_id}`;
       map.set(key, (map.get(key) || 0) + Number(t.valor));
     });
@@ -274,12 +297,12 @@ export default function DashboardPage() {
       .map(([name, value]) => ({ name, value }))
       .sort((a, b) => b.value - a.value)
       .slice(0, 6);
-  }, [filteredTransacoes]);
+  }, [periodFilteredTransacoes]);
 
   const comparisonData = useMemo(() => [
     { name: "Receita", Pago: summaryCardsData.pago_receita, Provisao: summaryCardsData.provisao_receita },
     { name: "Despesa", Pago: summaryCardsData.pago_despesa, Provisao: summaryCardsData.provisao_despesa },
-    { name: "Líquido", Pago: summaryCardsData.pago_liquido, Provisao: summaryCardsData.provisao_liquido },
+    { name: "Líquido", Pago: summaryCardsData.pago_receita - summaryCardsData.pago_despesa, Provisao: summaryCardsData.provisao_receita - summaryCardsData.provisao_despesa },
   ], [summaryCardsData]);
 
   const sortedCategories = useMemo(() => [...categories].sort((a, b) => a.nome.localeCompare(b.nome, "pt-BR")), [categories]);
@@ -303,33 +326,9 @@ export default function DashboardPage() {
     return (
       <div className="app-page py-4 sm:py-8">
         <div className="mx-auto max-w-7xl space-y-6 px-4 sm:px-6 lg:px-8">
-          <PageContainer>
-            <div className="h-10 w-64 animate-pulse rounded-md bg-gray-200" />
-            <div className="mt-2 h-4 w-96 animate-pulse rounded-md bg-gray-100" />
-          </PageContainer>
-          <div className="filter-panel-surface">
-            <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-4">
-              {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
-                <div key={i} className="h-10 w-full animate-pulse rounded-md bg-gray-100" />
-              ))}
-            </div>
-          </div>
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
-            {[1, 2, 3].map((i) => (
-              <div key={i} className="h-32 w-full animate-pulse rounded-xl bg-gray-200" />
-            ))}
-          </div>
-          <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-            <div className="h-[400px] w-full animate-pulse rounded-xl bg-gray-100" />
-            <div className="h-[400px] w-full animate-pulse rounded-xl bg-gray-100" />
-          </div>
-          <div className="app-surface p-4">
-            <div className="mb-4 h-6 w-48 animate-pulse rounded bg-gray-200" />
-            <div className="space-y-3">
-              {[1, 2, 3, 4, 5].map((i) => (
-                <div key={i} className="h-12 w-full animate-pulse rounded-md bg-gray-50" />
-              ))}
-            </div>
+          <PageContainer><div className="h-10 w-64 animate-pulse rounded-md bg-gray-200" /></PageContainer>
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+            {[1, 2, 3].map((i) => <div key={i} className="h-32 w-full animate-pulse rounded-xl bg-gray-200" />)}
           </div>
         </div>
       </div>
@@ -344,77 +343,43 @@ export default function DashboardPage() {
         <PageContainer>
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <h1 className="flex items-center gap-3 text-2xl font-bold text-gray-900 sm:text-3xl">
-                <BarChart3 size={32} className="text-blue-600" />
+              <h1 className="flex items-center gap-3 text-2xl font-bold text-gray-900 sm:text-3xl dark:text-white">
+                <BarChart3 size={32} className="text-blue-600 dark:text-blue-400" />
                 Dashboard Executivo
               </h1>
-              <p className="mt-2 text-sm text-gray-600">
-                Visão consolidada de desempenho financeiro com indicadores e análises.
-              </p>
+              <p className="mt-2 text-sm text-gray-600 dark:text-slate-400">Visão consolidada de desempenho financeiro.</p>
             </div>
-            
             <AppButton
               tone={showFilters ? "outline-primary" : "outline"}
               onClick={() => setShowFilters(!showFilters)}
               className="relative"
-              startIcon={<Filter size={18} className={showFilters ? "fill-blue-100 dark:fill-blue-900/50" : ""} />}
+              startIcon={<Filter size={18} />}
             >
               {showFilters ? "Ocultar Filtros" : "Mostrar Filtros"}
-              {activeFiltersCount > 0 && (
-                <span className="absolute -right-2 -top-2 flex h-5 w-5 items-center justify-center rounded-full bg-blue-600 text-[10px] font-bold text-white shadow-md ring-2 ring-white dark:ring-slate-900">
-                  {activeFiltersCount}
-                </span>
-              )}
+              {activeFiltersCount > 0 && <span className="absolute -right-2 -top-2 flex h-5 w-5 items-center justify-center rounded-full bg-blue-600 text-[10px] font-bold text-white shadow-md ring-2 ring-white dark:ring-slate-900">{activeFiltersCount}</span>}
             </AppButton>
           </div>
         </PageContainer>
 
         <DashboardFilters 
-          showFilters={showFilters}
-          periodMonths={periodMonths}
-          setPeriodMonths={setPeriodMonths}
-          filterMesAno={filterMesAno}
-          setFilterMesAno={setFilterMesAno}
-          filterAno={filterAno}
-          setFilterAno={setFilterAno}
-          filterTipo={filterTipo}
-          setFilterTipo={setFilterTipo}
-          filterSituacao={filterSituacao}
-          setFilterSituacao={setFilterSituacao}
-          filterBanco={filterBanco}
-          setFilterBanco={setFilterBanco}
-          filterCategoria={filterCategoria}
-          setFilterCategoria={setFilterCategoria}
-          availableYears={availableYears}
-          sortedBanks={sortedBanks}
-          sortedCategories={sortedCategories}
-          currentYear={currentYear}
+          showFilters={showFilters} periodMonths={periodMonths} setPeriodMonths={setPeriodMonths} 
+          filterMesAno={filterMesAno} setFilterMesAno={setFilterMesAno} filterAno={filterAno} setFilterAno={setFilterAno} 
+          filterTipo={filterTipo} setFilterTipo={setFilterTipo} filterSituacao={filterSituacao} setFilterSituacao={setFilterSituacao} 
+          filterBanco={filterBanco} setFilterBanco={setFilterBanco} filterCategoria={filterCategoria} setFilterCategoria={setFilterCategoria} 
+          availableYears={availableYears} sortedBanks={sortedBanks} sortedCategories={sortedCategories} currentYear={currentYear}
         />
 
-        <SummaryCards 
-          summary={summaryCardsData}
-          currency={currency}
-        />
+        <SummaryCards summary={summaryCardsData} currency={currency} />
 
         <DashboardCharts 
-          comparisonData={comparisonData}
-          timeline={timeline}
-          byCategory={byCategory}
-          isMobile={isMobile}
-          chartColors={chartColors}
-          getTooltipSeriesColor={getTooltipSeriesColor}
-          currency={currency}
-          hasData={periodFilteredTransacoes.length > 0}
+          comparisonData={comparisonData} timeline={timeline} currentMonthData={currentMonthData} 
+          byCategory={byCategory} isMobile={isMobile} chartColors={chartColors} 
+          getTooltipSeriesColor={getTooltipSeriesColor} currency={currency} hasData={periodFilteredTransacoes.length > 0}
         />
 
         <DashboardTransactionsTable 
-          detailedRows={detailedRows}
-          tableSortBy={tableSortBy}
-          tableSortDirection={tableSortDirection}
-          handleTableSort={handleTableSort}
-          tipoLabel={tipoLabel}
-          situacaoLabel={situacaoLabel}
-          currency={currency}
+          detailedRows={detailedRows} tableSortBy={tableSortBy} tableSortDirection={tableSortDirection} 
+          handleTableSort={handleTableSort} tipoLabel={tipoLabel} situacaoLabel={situacaoLabel} currency={currency}
         />
       </div>
     </div>

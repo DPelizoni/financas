@@ -60,19 +60,35 @@ export class InvestimentoDashboardService {
       0,
     );
 
-    // Se não houver filtro de data, garantimos os últimos 12 meses
+    // Garantir que a timeline tenha todos os meses no período solicitado
     let finalTimelineRows = timelineRows;
-    if (!normalizedFilters.data_de && !normalizedFilters.data_ate) {
-      const last12Months: string[] = [];
+    const monthsToFill: string[] = [];
+
+    if (normalizedFilters.data_de && normalizedFilters.data_ate) {
+      const start = new Date(normalizedFilters.data_de + "T00:00:00");
+      const end = new Date(normalizedFilters.data_ate + "T00:00:00");
+      
+      let current = new Date(start.getFullYear(), start.getMonth(), 1);
+      const last = new Date(end.getFullYear(), end.getMonth(), 1);
+
+      // Limitar a um máximo razoável de meses para evitar loops infinitos ou memória excessiva
+      let safetyCounter = 0;
+      while (current <= last && safetyCounter < 120) { // Máximo 10 anos
+        monthsToFill.push(`${current.getFullYear()}-${String(current.getMonth() + 1).padStart(2, "0")}`);
+        current.setMonth(current.getMonth() + 1);
+        safetyCounter++;
+      }
+    } else if (!normalizedFilters.data_de && !normalizedFilters.data_ate) {
       const now = new Date();
       for (let i = 11; i >= 0; i--) {
         const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-        const monthKey = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
-        last12Months.push(monthKey);
+        monthsToFill.push(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`);
       }
+    }
 
+    if (monthsToFill.length > 0) {
       const timelineMap = new Map(timelineRows.map((r) => [r.month_key, r]));
-      finalTimelineRows = last12Months.map((monthKey) => {
+      finalTimelineRows = monthsToFill.map((monthKey) => {
         return (
           timelineMap.get(monthKey) || {
             month_key: monthKey,
