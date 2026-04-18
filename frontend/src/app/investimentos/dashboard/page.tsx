@@ -343,7 +343,7 @@ export default function InvestimentosDashboardPage() {
             <div className="mb-8 flex items-center justify-between">
               <div>
                 <h3 className="text-sm font-black uppercase tracking-[0.1em] text-gray-800 dark:text-slate-200">Evolução do Patrimônio</h3>
-                <p className="text-[10px] font-bold text-gray-400 uppercase mt-1">Saldo acumulado</p>
+                <p className="text-[10px] font-bold text-gray-400 uppercase mt-1">Ano {filterAno === "TODOS" ? currentYearStr : filterAno}</p>
               </div>
               <div className="rounded-xl bg-emerald-50 p-2.5 text-emerald-600 dark:bg-emerald-900/20 dark:text-emerald-400"><TrendingUp size={20} /></div>
             </div>
