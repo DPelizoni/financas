@@ -104,6 +104,13 @@ const currency = (value: number): string =>
     maximumFractionDigits: 2,
   }).format(value);
 
+const currentMonthValue = (): string => {
+  const now = new Date();
+  const month = String(now.getMonth() + 1).padStart(2, "0");
+  const year = String(now.getFullYear());
+  return `${year}-${month}`;
+};
+
 export default function DashboardPage() {
   const currentYear = String(new Date().getFullYear());
   const [isMobile, setIsMobile] = useState(false);
@@ -123,12 +130,12 @@ export default function DashboardPage() {
   const [filterSituacao, setFilterSituacao] = useState<"TODOS" | "PENDENTE" | "PAGO">("TODOS");
   const [filterCategoria, setFilterCategoria] = useState<number | "TODOS">("TODOS");
   const [filterBanco, setFilterBanco] = useState<number | "TODOS">("TODOS");
-  const [filterMesAno, setFilterMesAno] = useState("");
+  const [filterMesAno, setFilterMesAno] = useState(currentMonthValue);
   const [filterAno, setFilterAno] = useState<string>(currentYear);
 
   const activeFiltersCount = useMemo(() => {
     let count = 0;
-    if (filterMesAno) count++;
+    if (filterMesAno !== currentMonthValue()) count++;
     if (filterAno !== currentYear && filterAno !== "TODOS") count++;
     if (filterTipo !== "TODOS") count++;
     if (filterSituacao !== "TODOS") count++;
