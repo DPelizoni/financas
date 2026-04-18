@@ -106,29 +106,84 @@ export class InvestimentoDashboardService {
     
     // 1. Buscar todas as movimentações agrupadas por mês desde o início dos tempos (sem filtros de data)
     const allTimelineRows = await movimentacaoRepository.getTimeline({
-        banco_id: normalizedFilters.banco_id,
-        ativo: normalizedFilters.ativo
+      banco_id: normalizedFilters.banco_id,
+      ativo: normalizedFilters.ativo,
     });
 
+    // 2. Mapear saldos iniciais por mês de início
+    const initialBalancesByMonth = new Map<string, number>();
+    carteiraAtivos.forEach((ativo) => {
+      if (ativo.data_saldo_inicial) {
+        const monthKey = ativo.data_saldo_inicial.substring(0, 7); // YYYY-MM
+        const current = initialBalancesByMonth.get(monthKey) || 0;
+        initialBalancesByMonth.set(
+          monthKey,
+          current + Number(ativo.saldo_inicial || 0),
+        );
+      }
+    });
+
+    // 3. Identificar todos os meses que possuem alguma atividade (movimentação ou início de ativo)
+    const activityMonths = new Set([
+      ...allTimelineRows.map((r) => r.month_key),
+      ...initialBalancesByMonth.keys(),
+    ]);
+
+    const sortedActivityMonths = Array.from(activityMonths).sort();
+
+    // 4. Calcular o saldo acumulado cronologicamente
     const cumulativeMap = new Map<string, number>();
-    let runningSaldo = saldoInicialTotal;
+    let runningCumulativeSaldo = 0;
 
-    // Ordenar todas as linhas por data para calcular o acumulado
-    const sortedAllRows = [...allTimelineRows].sort((a, b) => a.month_key.localeCompare(b.month_key));
-    
-    sortedAllRows.forEach(row => {
-        runningSaldo += (row.aporte + row.rendimentos - row.resgate);
-        cumulativeMap.set(row.month_key, runningSaldo);
-    });
+    // Precisamos iterar por todos os meses desde o primeiro mês de atividade até o último mês da timeline solicitada
+    if (sortedActivityMonths.length > 0) {
+      const firstMonthStr = sortedActivityMonths[0];
+      const lastMonthStr =
+        monthsToFill.length > 0
+          ? monthsToFill[monthsToFill.length - 1]
+          : sortedActivityMonths[sortedActivityMonths.length - 1];
+
+      const [fYear, fMonth] = firstMonthStr.split("-").map(Number);
+      const [lYear, lMonth] = lastMonthStr.split("-").map(Number);
+
+      const startDate = new Date(fYear, fMonth - 1, 1);
+      const endDate = new Date(lYear, lMonth - 1, 1);
+
+      const movementsMap = new Map(allTimelineRows.map((r) => [r.month_key, r]));
+
+      let current = new Date(startDate);
+      while (current <= endDate) {
+        const mKey = `${current.getFullYear()}-${String(
+          current.getMonth() + 1,
+        ).padStart(2, "0")}`;
+
+        // Soma saldo inicial se algum ativo começou neste mês
+        runningCumulativeSaldo += initialBalancesByMonth.get(mKey) || 0;
+
+        // Soma movimentações do mês
+        const mov = movementsMap.get(mKey);
+        if (mov) {
+          runningCumulativeSaldo += mov.aporte + mov.rendimentos - mov.resgate;
+        }
+
+        cumulativeMap.set(mKey, runningCumulativeSaldo);
+        current.setMonth(current.getMonth() + 1);
+      }
+    }
 
     const timeline = finalTimelineRows.map((row) => {
       const [year, month] = row.month_key.split("-");
-      const monthLabel = year && month ? `${month}/${year.slice(2)}` : row.month_key;
-      
-      // O saldo exibido no gráfico agora será o acumulado até aquele mês
-      // Se não houver registro no cumulativeMap para meses futuros sem movimentação, 
-      // usamos o último runningSaldo calculado.
-      const currentCumulativeSaldo = cumulativeMap.get(row.month_key) ?? runningSaldo;
+      const monthLabel =
+        year && month ? `${month}/${year.slice(2)}` : row.month_key;
+
+      // O saldo exibido no gráfico agora será o acumulado até aquele mês.
+      // Se o mês for anterior à primeira atividade, será 0.
+      // Se for posterior, herda o último saldo calculado (runningCumulativeSaldo).
+      const currentCumulativeSaldo =
+        cumulativeMap.get(row.month_key) ??
+        (row.month_key < (sortedActivityMonths[0] || "")
+          ? 0
+          : runningCumulativeSaldo);
 
       return {
         month_key: row.month_key,
