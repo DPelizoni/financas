@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useRef } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import {
   LayoutDashboard,
@@ -102,8 +102,24 @@ export default function AppShell({ children }: AppShellProps) {
   const [userName, setUserName] = useState("Usuário");
   const [isManager, setIsManager] = useState(false);
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({});
+  const [hoveredGroupId, setHoveredGroupId] = useState<string | null>(null);
+  const closeTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const pageTitle = useMemo(() => getPageTitle(pathname), [pathname]);
+
+  const handleMouseEnter = (id: string) => {
+    if (closeTimeoutRef.current) {
+      clearTimeout(closeTimeoutRef.current);
+      closeTimeoutRef.current = null;
+    }
+    setHoveredGroupId(id);
+  };
+
+  const handleMouseLeave = () => {
+    closeTimeoutRef.current = setTimeout(() => {
+      setHoveredGroupId(null);
+    }, 150); // Pequeno delay para facilitar a transição do mouse para o menu
+  };
 
   // Carrega a preferência de colapso do sidebar
   useEffect(() => {
@@ -249,19 +265,63 @@ export default function AppShell({ children }: AppShellProps) {
               if (!showFullNavigation) {
                 const firstChild = item.children[0];
                 return (
-                  <Link
-                    key={item.id}
-                    href={firstChild.href}
-                    onClick={() => setSidebarOpen(false)}
-                    title={item.label}
-                    className={`flex items-center justify-center rounded-md px-2 py-2.5 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400 ${
-                      groupIsActive
-                        ? "bg-[rgb(var(--app-brand-primary))] text-[rgb(var(--app-text-inverse))] shadow-sm"
-                        : "text-[rgb(var(--app-text-secondary))] hover:bg-[rgb(var(--app-bg-muted))] hover:text-[rgb(var(--app-text-primary))]"
-                    }`}
+                  <div 
+                    key={item.id} 
+                    className="relative group/nav"
+                    onMouseEnter={() => handleMouseEnter(item.id)}
+                    onMouseLeave={handleMouseLeave}
                   >
-                    <GroupIcon size={18} />
-                  </Link>
+                    <Link
+                      href={firstChild.href}
+                      onClick={() => setSidebarOpen(false)}
+                      className={`flex items-center justify-center rounded-md px-2 py-2.5 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400 ${
+                        groupIsActive
+                          ? "bg-[rgb(var(--app-brand-primary))] text-[rgb(var(--app-text-inverse))] shadow-sm"
+                          : "text-[rgb(var(--app-text-secondary))] hover:bg-[rgb(var(--app-bg-muted))] hover:text-[rgb(var(--app-text-primary))]"
+                      }`}
+                    >
+                      <GroupIcon size={18} />
+                    </Link>
+
+                    {/* Menu Flutuante para Sidebar Recolhido */}
+                    {hoveredGroupId === item.id && (
+                      <div 
+                        className="absolute left-full top-0 z-50 pl-2 w-52 animate-in fade-in slide-in-from-left-2 duration-200"
+                        onMouseEnter={() => handleMouseEnter(item.id)}
+                        onMouseLeave={handleMouseLeave}
+                      >
+                        <div className="rounded-lg border border-[rgb(var(--app-border-default))] bg-[rgb(var(--app-bg-surface))] p-1 shadow-xl ring-1 ring-black/5">
+                          <div className="border-b border-[rgb(var(--app-border-default))] px-3 py-2">
+                            <p className="text-[10px] font-black uppercase tracking-widest text-[rgb(var(--app-text-muted))]">
+                              {item.label}
+                            </p>
+                          </div>
+                          <div className="py-1">
+                            {item.children.map((child) => {
+                              const childIsActive = pathname.startsWith(child.href);
+                              return (
+                                <Link
+                                  key={child.href}
+                                  href={child.href}
+                                  onClick={() => {
+                                    setSidebarOpen(false);
+                                    setHoveredGroupId(null);
+                                  }}
+                                  className={`block px-3 py-2 text-sm transition-colors hover:bg-[rgb(var(--app-bg-muted))] ${
+                                    childIsActive
+                                      ? "font-bold text-[rgb(var(--app-brand-primary))]"
+                                      : "text-[rgb(var(--app-text-secondary))] hover:text-[rgb(var(--app-text-primary))]"
+                                  }`}
+                                >
+                                  {child.label}
+                                </Link>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 );
               }
 
