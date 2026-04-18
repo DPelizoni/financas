@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useMemo, useState } from "react";
 import {
   Search,
   Building2,
@@ -15,7 +15,7 @@ import { bankService } from "@/services/bankService";
 import { Bank, BankFilters } from "@/types/bank";
 import BankModal from "@/components/BankModal";
 import Pagination from "@/components/Pagination";
-import FeedbackAlert from "@/components/FeedbackAlert";
+import { toast } from "sonner";
 import ConfirmDeleteModal from "@/components/ConfirmDeleteModal";
 import PageContainer from "@/components/PageContainer";
 import AppButton from "@/components/AppButton";
@@ -24,31 +24,55 @@ import ViewDataModal from "@/components/ViewDataModal";
 import { IconButton, InputAdornment, MenuItem, TextField } from "@mui/material";
 import { TableSkeleton, CardSkeleton } from "@/components/skeletons/DataSkeletons";
 import EmptyState from "@/components/EmptyState";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 export default function BanksPage() {
-  const [banks, setBanks] = useState<Bank[]>([]);
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
-  const [total, setTotal] = useState(0);
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const [showModal, setShowModal] = useState(false);
   const [editingBank, setEditingBank] = useState<Bank | null>(null);
-  const [filterAtivo, setFilterAtivo] = useState<boolean | undefined>(
-    undefined,
-  );
-  const [feedback, setFeedback] = useState<{
-    type: "success" | "error";
-    message: string;
-  } | null>(null);
+  const [filterAtivo, setFilterAtivo] = useState<boolean | undefined>(undefined);
   const [deleteTarget, setDeleteTarget] = useState<Bank | null>(null);
   const [viewingBank, setViewingBank] = useState<Bank | null>(null);
-  const [sortBy, setSortBy] = useState<"nome" | "codigo" | "saldo" | "status">(
-    "nome",
-  );
+  const [sortBy, setSortBy] = useState<"nome" | "codigo" | "saldo" | "status">("nome");
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
   const [showFilters, setShowFilters] = useState(false);
+
+  // TanStack Query
+  const queryFilters = useMemo(() => {
+    const filters: BankFilters = {
+      page: currentPage,
+      limit: itemsPerPage,
+      search: searchTerm || undefined,
+      ativo: filterAtivo,
+    };
+    return filters;
+  }, [currentPage, itemsPerPage, searchTerm, filterAtivo]);
+
+  const { data: banksData, isLoading: loading, isFetching } = useQuery({
+    queryKey: ["banks", queryFilters],
+    queryFn: () => bankService.getAll(queryFilters),
+    placeholderData: (prev) => prev,
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: (id: number) => bankService.delete(id),
+    onSuccess: () => {
+      toast.success("Banco excluído com sucesso.");
+      queryClient.invalidateQueries({ queryKey: ["banks"] });
+      setDeleteTarget(null);
+    },
+    onError: (error: any) => {
+      const apiMessage = error?.response?.data?.message;
+      toast.error(apiMessage || "Não foi possível excluir o banco.");
+    }
+  });
+
+  const banks = banksData?.data || [];
+  const total = banksData?.pagination?.total || 0;
+  const totalPages = banksData?.pagination?.totalPages || 1;
 
   const activeFiltersCount = useMemo(() => {
     let count = 0;
@@ -73,16 +97,12 @@ export default function BanksPage() {
         return a.nome.localeCompare(b.nome, "pt-BR") * direction;
       }
       if (sortBy === "codigo") {
-        return (
-          (a.codigo || "").localeCompare(b.codigo || "", "pt-BR") * direction
-        );
+        return ((a.codigo || "").localeCompare(b.codigo || "", "pt-BR") * direction);
       }
       if (sortBy === "saldo") {
         return (Number(a.saldo_inicial) - Number(b.saldo_inicial)) * direction;
       }
-      return Number(a.ativo === true) === Number(b.ativo === true)
-        ? 0
-        : (a.ativo ? 1 : -1) * direction;
+      return Number(a.ativo === true) === Number(b.ativo === true) ? 0 : (a.ativo ? 1 : -1) * direction;
     });
   }, [banks, sortBy, sortDirection]);
 
@@ -92,79 +112,20 @@ export default function BanksPage() {
       currency: "BRL",
     }).format(value);
 
-  const showFeedback = (type: "success" | "error", message: string) => {
-    setFeedback({ type, message });
-    window.setTimeout(() => setFeedback(null), 4000);
-  };
-
-  const loadBanks = async () => {
-    try {
-      setLoading(true);
-      const filters: BankFilters = {
-        page: currentPage,
-        limit: itemsPerPage,
-        search: searchTerm || undefined,
-        ativo: filterAtivo,
-      };
-
-      const response = await bankService.getAll(filters);
-      setBanks(response.data || []);
-      setTotal(response.pagination?.total || 0);
-      setTotalPages(response.pagination?.totalPages || 1);
-    } catch (error) {
-      console.error("Erro ao carregar bancos:", error);
-      showFeedback(
-        "error",
-        "Não foi possível carregar os bancos. Verifique a conexão com a API.",
-      );
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    loadBanks();
-  }, [currentPage, searchTerm, filterAtivo, itemsPerPage]);
-
   const handleSearch = (value: string) => {
     setSearchTerm(value);
     setCurrentPage(1);
   };
 
-  const handleDelete = (bank: Bank) => {
-    setDeleteTarget(bank);
-  };
-
   const handleConfirmDelete = async () => {
-    if (!deleteTarget) {
-      return;
-    }
-
-    try {
-      await bankService.delete(deleteTarget.id);
-      showFeedback(
-        "success",
-        "Banco excluído com sucesso. A ação foi concluída.",
-      );
-      setDeleteTarget(null);
-      await loadBanks();
-    } catch (error) {
-      console.error("Erro ao excluir banco:", error);
-      const apiMessage = (error as any)?.response?.data?.message;
-      showFeedback(
-        "error",
-        apiMessage || "Não foi possível excluir o banco. Tente novamente.",
-      );
+    if (deleteTarget) {
+      deleteMutation.mutate(deleteTarget.id);
     }
   };
 
   const handleEdit = (bank: Bank) => {
     setEditingBank(bank);
     setShowModal(true);
-  };
-
-  const handleView = (bank: Bank) => {
-    setViewingBank(bank);
   };
 
   const handleCreate = () => {
@@ -178,20 +139,14 @@ export default function BanksPage() {
   };
 
   const handleSaveSuccess = async (message: string): Promise<void> => {
-    showFeedback("success", message);
-    await loadBanks();
+    toast.success(message);
+    queryClient.invalidateQueries({ queryKey: ["banks"] });
     handleCloseModal();
   };
-
-  const viewingBankData = viewingBank
-    ? viewingBank
-    : null;
 
   return (
     <div className="app-page py-4 sm:py-8">
       <div className="mx-auto max-w-7xl space-y-6 px-4 sm:px-6 lg:px-8">
-        <FeedbackAlert feedback={feedback} onClose={() => setFeedback(null)} />
-
         <PageContainer>
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
@@ -229,7 +184,6 @@ export default function BanksPage() {
           </div>
         </PageContainer>
 
-        {/* Filters */}
         <div className={`filter-panel-surface ${!showFilters ? "hidden" : "block animate-in fade-in slide-in-from-top-2 duration-300"}`}>
           <div className="mb-4 flex items-center justify-between border-b border-gray-100 pb-3 dark:border-slate-800">
             <h3 className="text-sm font-semibold text-gray-700 dark:text-slate-300">Filtros de Bancos</h3>
@@ -299,8 +253,7 @@ export default function BanksPage() {
           </div>
         </div>
 
-        {/* Table */}
-        <div className="app-surface p-4">
+        <div className={`app-surface p-4 transition-opacity duration-200 ${isFetching && !loading ? "opacity-50" : "opacity-100"}`}>
           {loading ? (
             <>
               <div className="md:hidden">
@@ -335,7 +288,7 @@ export default function BanksPage() {
                 {sortedBanks.map((bank) => (
                   <div
                     key={bank.id}
-                    className="rounded-xl border border-gray-200/80 bg-gradient-to-b from-white to-gray-50 p-4 shadow-[0_1px_2px_rgba(0,0,0,0.06)] dark:border-slate-800 dark:from-slate-900 dark:to-slate-900/50 dark:shadow-none"
+                    className="rounded-xl border border-gray-200/80 bg-gradient-to-b from-white to-gray-50 p-4 shadow-[0_1px_2_rgba(0,0,0,0.06)] dark:border-slate-800 dark:from-slate-900 dark:to-slate-900/50 dark:shadow-none"
                   >
                     <div className="flex items-start justify-between gap-3">
                       <div className="flex items-center gap-3">
@@ -371,21 +324,9 @@ export default function BanksPage() {
                     </div>
 
                     <div className="mt-3 flex items-center justify-end gap-2 border-t border-gray-100 pt-3 dark:border-slate-800">
-                      <TableActionButton
-                        action="view"
-                        title="Visualizar"
-                        onClick={() => handleView(bank)}
-                      />
-                      <TableActionButton
-                        action="edit"
-                        title="Editar"
-                        onClick={() => handleEdit(bank)}
-                      />
-                      <TableActionButton
-                        action="delete"
-                        title="Excluir"
-                        onClick={() => handleDelete(bank)}
-                      />
+                      <TableActionButton action="view" title="Visualizar" onClick={() => setViewingBank(bank)} />
+                      <TableActionButton action="edit" title="Editar" onClick={() => handleEdit(bank)} />
+                      <TableActionButton action="delete" title="Excluir" onClick={() => setDeleteTarget(bank)} />
                     </div>
                   </div>
                 ))}
@@ -396,126 +337,57 @@ export default function BanksPage() {
                   <thead className="app-table-head">
                     <tr>
                       <th className="app-table-head-cell w-[40%]">
-                        <button
-                          type="button"
-                          onClick={() => handleSort("nome")}
-                          className="inline-flex items-center gap-1"
-                        >
+                        <button type="button" onClick={() => handleSort("nome")} className="inline-flex items-center gap-1">
                           Banco
-                          {sortBy === "nome" && sortDirection === "asc" ? (
-                            <ArrowUpNarrowWide size={14} />
-                          ) : sortBy === "nome" ? (
-                            <ArrowDownWideNarrow size={14} />
-                          ) : null}
+                          {sortBy === "nome" && sortDirection === "asc" ? <ArrowUpNarrowWide size={14} /> : sortBy === "nome" ? <ArrowDownWideNarrow size={14} /> : null}
                         </button>
                       </th>
                       <th className="app-table-head-cell w-[15%]">
-                        <button
-                          type="button"
-                          onClick={() => handleSort("codigo")}
-                          className="inline-flex items-center gap-1"
-                        >
+                        <button type="button" onClick={() => handleSort("codigo")} className="inline-flex items-center gap-1">
                           Código
-                          {sortBy === "codigo" && sortDirection === "asc" ? (
-                            <ArrowUpNarrowWide size={14} />
-                          ) : sortBy === "codigo" ? (
-                            <ArrowDownWideNarrow size={14} />
-                          ) : null}
+                          {sortBy === "codigo" && sortDirection === "asc" ? <ArrowUpNarrowWide size={14} /> : sortBy === "codigo" ? <ArrowDownWideNarrow size={14} /> : null}
                         </button>
                       </th>
                       <th className="app-table-head-cell w-[15%]">
-                        <button
-                          type="button"
-                          onClick={() => handleSort("saldo")}
-                          className="inline-flex items-center gap-1"
-                        >
+                        <button type="button" onClick={() => handleSort("saldo")} className="inline-flex items-center gap-1">
                           Saldo Inicial
-                          {sortBy === "saldo" && sortDirection === "asc" ? (
-                            <ArrowUpNarrowWide size={14} />
-                          ) : sortBy === "saldo" ? (
-                            <ArrowDownWideNarrow size={14} />
-                          ) : null}
+                          {sortBy === "saldo" && sortDirection === "asc" ? <ArrowUpNarrowWide size={14} /> : sortBy === "saldo" ? <ArrowDownWideNarrow size={14} /> : null}
                         </button>
                       </th>
                       <th className="app-table-head-cell w-[15%]">
-                        <button
-                          type="button"
-                          onClick={() => handleSort("status")}
-                          className="inline-flex items-center gap-1"
-                        >
+                        <button type="button" onClick={() => handleSort("status")} className="inline-flex items-center gap-1">
                           Status
-                          {sortBy === "status" && sortDirection === "asc" ? (
-                            <ArrowUpNarrowWide size={14} />
-                          ) : sortBy === "status" ? (
-                            <ArrowDownWideNarrow size={14} />
-                          ) : null}
+                          {sortBy === "status" && sortDirection === "asc" ? <ArrowUpNarrowWide size={14} /> : sortBy === "status" ? <ArrowDownWideNarrow size={14} /> : null}
                         </button>
                       </th>
-                      <th className="app-table-head-cell-center w-[15%]">
-                        Ações
-                      </th>
+                      <th className="app-table-head-cell-center w-[15%]">Ações</th>
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200 dark:bg-slate-900 dark:divide-slate-800">
                     {sortedBanks.map((bank) => (
-                      <tr
-                        key={bank.id}
-                        className="app-table-row"
-                      >
+                      <tr key={bank.id} className="app-table-row">
                         <td className="px-3 py-2 whitespace-nowrap">
                           <div className="flex items-center">
-                            <div
-                              className="mr-2 flex h-7 w-7 items-center justify-center rounded-full text-[10px] font-bold text-white"
-                              style={{ backgroundColor: bank.cor }}
-                            >
+                            <div className="mr-2 flex h-7 w-7 items-center justify-center rounded-full text-[10px] font-bold text-white" style={{ backgroundColor: bank.cor }}>
                               {bank.nome.substring(0, 2).toUpperCase()}
                             </div>
-                            <div className="text-xs font-medium text-gray-900 dark:text-slate-200">
-                              {bank.nome}
-                            </div>
+                            <div className="text-xs font-medium text-gray-900 dark:text-slate-200">{bank.nome}</div>
                           </div>
                         </td>
-                        <td className="px-3 py-2 whitespace-nowrap">
-                          <div className="text-xs text-gray-900 dark:text-slate-300">
-                            {bank.codigo || "-"}
-                          </div>
-                        </td>
-                        <td className="px-3 py-2 whitespace-nowrap">
-                          <div className="text-xs text-gray-900 dark:text-slate-300">
-                            {formatCurrencyBRL(bank.saldo_inicial)}
-                          </div>
-                        </td>
+                        <td className="px-3 py-2 whitespace-nowrap text-xs text-gray-900 dark:text-slate-300">{bank.codigo || "-"}</td>
+                        <td className="px-3 py-2 whitespace-nowrap text-xs text-gray-900 dark:text-slate-300">{formatCurrencyBRL(bank.saldo_inicial)}</td>
                         <td className="px-3 py-2 whitespace-nowrap">
                           {bank.ativo ? (
-                            <span className="inline-flex items-center rounded-full bg-green-100 px-2.5 py-1 text-[11px] font-semibold leading-none text-green-800 dark:bg-green-900/30 dark:text-green-400">
-                              Ativo
-                            </span>
+                            <span className="inline-flex items-center rounded-full bg-green-100 px-2.5 py-1 text-[11px] font-semibold leading-none text-green-800 dark:bg-green-900/30 dark:text-green-400">Ativo</span>
                           ) : (
-                            <span className="inline-flex items-center rounded-full bg-red-100 px-2.5 py-1 text-[11px] font-semibold leading-none text-red-800 dark:bg-red-900/30 dark:text-red-400">
-                              Inativo
-                            </span>
+                            <span className="inline-flex items-center rounded-full bg-red-100 px-2.5 py-1 text-[11px] font-semibold leading-none text-red-800 dark:bg-red-900/30 dark:text-red-400">Inativo</span>
                           )}
                         </td>
                         <td className="px-3 py-2 whitespace-nowrap text-center text-xs font-medium">
                           <div className="flex justify-center gap-1">
-                            <TableActionButton
-                              action="view"
-                              title="Visualizar"
-                              onClick={() => handleView(bank)}
-                              compact
-                            />
-                            <TableActionButton
-                              action="edit"
-                              title="Editar"
-                              onClick={() => handleEdit(bank)}
-                              compact
-                            />
-                            <TableActionButton
-                              action="delete"
-                              title="Excluir"
-                              onClick={() => handleDelete(bank)}
-                              compact
-                            />
+                            <TableActionButton action="view" title="Visualizar" onClick={() => setViewingBank(bank)} compact />
+                            <TableActionButton action="edit" title="Editar" onClick={() => handleEdit(bank)} compact />
+                            <TableActionButton action="delete" title="Excluir" onClick={() => setDeleteTarget(bank)} compact />
                           </div>
                         </td>
                       </tr>
@@ -523,7 +395,6 @@ export default function BanksPage() {
                   </tbody>
                 </table>
               </div>
-
             </>
           )}
         </div>
@@ -545,11 +416,10 @@ export default function BanksPage() {
       <ViewDataModal
         isOpen={!!viewingBank}
         title="Visualizar Banco"
-        data={viewingBankData}
+        data={viewingBank}
         onClose={() => setViewingBank(null)}
       />
 
-      {/* Modal */}
       <BankModal
         isOpen={showModal}
         bank={editingBank}
@@ -560,11 +430,7 @@ export default function BanksPage() {
       <ConfirmDeleteModal
         isOpen={!!deleteTarget}
         title="Confirmar exclusão"
-        description={
-          <>
-            Esta ação removerá o banco <strong>{deleteTarget?.nome}</strong>.
-          </>
-        }
+        description={<>Esta ação removerá o banco <strong>{deleteTarget?.nome}</strong>.</>}
         confirmLabel="Excluir banco"
         onCancel={() => setDeleteTarget(null)}
         onConfirm={handleConfirmDelete}
@@ -572,5 +438,3 @@ export default function BanksPage() {
     </div>
   );
 }
-
-

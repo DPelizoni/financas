@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import {
   Tags,
   ArrowDownWideNarrow,
@@ -14,7 +14,7 @@ import { Category, CategoryFilters as ICategoryFilters, CategoryType } from "@/t
 
 import CategoryModal from "@/components/CategoryModal";
 import Pagination from "@/components/Pagination";
-import FeedbackAlert from "@/components/FeedbackAlert";
+import { toast } from "sonner";
 import ConfirmDeleteModal from "@/components/ConfirmDeleteModal";
 import PageContainer from "@/components/PageContainer";
 import AppButton from "@/components/AppButton";
@@ -23,35 +23,59 @@ import ViewDataModal from "@/components/ViewDataModal";
 import { TableSkeleton, CardSkeleton } from "@/components/skeletons/DataSkeletons";
 import EmptyState from "@/components/EmptyState";
 import { CategoryFilters } from "./components/CategoryFilters";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 export default function CategoriesPage() {
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
-  const [total, setTotal] = useState(0);
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const [showModal, setShowModal] = useState(false);
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
-  const [filterAtivo, setFilterAtivo] = useState<boolean | undefined>(
-    undefined,
-  );
-  const [filterTipo, setFilterTipo] = useState<
-    CategoryType | "TODOS"
-  >("TODOS");
-  const [feedback, setFeedback] = useState<{
-    type: "success" | "error";
-    message: string;
-  } | null>(null);
+  const [filterAtivo, setFilterAtivo] = useState<boolean | undefined>(undefined);
+  const [filterTipo, setFilterTipo] = useState<CategoryType | "TODOS">("TODOS");
   const [deleteTarget, setDeleteTarget] = useState<Category | null>(null);
   const [viewingCategory, setViewingCategory] = useState<Category | null>(null);
-  
-  // Estados de ordenação
   const [sortBy, setSortBy] = useState<string>("nome");
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
-  
   const [showFilters, setShowFilters] = useState(false);
+
+  // TanStack Query
+  const queryFilters = useMemo(() => {
+    const filters: ICategoryFilters = {
+      page: currentPage,
+      limit: itemsPerPage,
+      search: searchTerm || undefined,
+      ativo: filterAtivo,
+      tipo: filterTipo === "TODOS" ? undefined : filterTipo,
+      sortBy,
+      sortDirection,
+    };
+    return filters;
+  }, [currentPage, itemsPerPage, searchTerm, filterAtivo, filterTipo, sortBy, sortDirection]);
+
+  const { data: categoriesData, isLoading: loading, isFetching } = useQuery({
+    queryKey: ["categories", queryFilters],
+    queryFn: () => categoryService.getAll(queryFilters),
+    placeholderData: (prev) => prev,
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: (id: number) => categoryService.delete(id),
+    onSuccess: () => {
+      toast.success("Categoria excluída com sucesso.");
+      queryClient.invalidateQueries({ queryKey: ["categories"] });
+      setDeleteTarget(null);
+    },
+    onError: (error: any) => {
+      const apiMessage = error?.response?.data?.message;
+      toast.error(apiMessage || "Não foi possível excluir a categoria.");
+    }
+  });
+
+  const categories = categoriesData?.data || [];
+  const total = categoriesData?.pagination?.total || 0;
+  const totalPages = categoriesData?.pagination?.totalPages || 1;
 
   const activeFiltersCount = useMemo(() => {
     let count = 0;
@@ -70,43 +94,6 @@ export default function CategoriesPage() {
     setSortDirection("asc");
   };
 
-  const showFeedback = (type: "success" | "error", message: string) => {
-    setFeedback({ type, message });
-    window.setTimeout(() => setFeedback(null), 4000);
-  };
-
-  const loadCategories = async () => {
-    try {
-      setLoading(true);
-      const filters: ICategoryFilters = {
-        page: currentPage,
-        limit: itemsPerPage,
-        search: searchTerm || undefined,
-        ativo: filterAtivo,
-        tipo: filterTipo === "TODOS" ? undefined : filterTipo,
-        sortBy,
-        sortDirection,
-      };
-
-      const response = await categoryService.getAll(filters);
-      setCategories(response.data || []);
-      setTotal(response.pagination?.total || 0);
-      setTotalPages(response.pagination?.totalPages || 1);
-    } catch (error) {
-      console.error("Erro ao carregar categorias:", error);
-      showFeedback(
-        "error",
-        "Não foi possível carregar as categorias. Verifique a conexão com a API.",
-      );
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    loadCategories();
-  }, [currentPage, searchTerm, filterAtivo, filterTipo, itemsPerPage, sortBy, sortDirection]);
-
   const handleSearch = (value: string) => {
     setSearchTerm(value);
     setCurrentPage(1);
@@ -119,40 +106,15 @@ export default function CategoriesPage() {
     setCurrentPage(1);
   };
 
-  const handleDelete = (category: Category) => {
-    setDeleteTarget(category);
-  };
-
   const handleConfirmDelete = async () => {
-    if (!deleteTarget) {
-      return;
-    }
-
-    try {
-      await categoryService.delete(deleteTarget.id);
-      showFeedback(
-        "success",
-        "Categoria excluída com sucesso. A ação foi concluída.",
-      );
-      setDeleteTarget(null);
-      await loadCategories();
-    } catch (error) {
-      console.error("Erro ao excluir categoria:", error);
-      const apiMessage = (error as any)?.response?.data?.message;
-      showFeedback(
-        "error",
-        apiMessage || "Não foi possível excluir a categoria. Tente novamente.",
-      );
+    if (deleteTarget) {
+      deleteMutation.mutate(deleteTarget.id);
     }
   };
 
   const handleEdit = (category: Category) => {
     setEditingCategory(category);
     setShowModal(true);
-  };
-
-  const handleView = (category: Category) => {
-    setViewingCategory(category);
   };
 
   const handleCreate = () => {
@@ -166,14 +128,10 @@ export default function CategoriesPage() {
   };
 
   const handleSaveSuccess = async (message: string): Promise<void> => {
-    showFeedback("success", message);
-    await loadCategories();
+    toast.success(message);
+    queryClient.invalidateQueries({ queryKey: ["categories"] });
     handleCloseModal();
   };
-
-  const viewingCategoryData = viewingCategory
-    ? viewingCategory
-    : null;
 
   const tipoBadge = (tipo: CategoryType) => {
     if (tipo === "RECEITA") {
@@ -185,8 +143,6 @@ export default function CategoriesPage() {
   return (
     <div className="app-page py-4 sm:py-8">
       <div className="mx-auto max-w-7xl space-y-6 px-4 sm:px-6 lg:px-8">
-        <FeedbackAlert feedback={feedback} onClose={() => setFeedback(null)} />
-
         <PageContainer>
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
@@ -241,7 +197,7 @@ export default function CategoriesPage() {
           onClearFilters={handleClearFilters}
         />
 
-        <div className="app-surface p-4">
+        <div className={`app-surface p-4 transition-opacity duration-200 ${isFetching && !loading ? "opacity-50" : "opacity-100"}`}>
           {loading ? (
             <>
               <div className="md:hidden">
@@ -269,7 +225,6 @@ export default function CategoriesPage() {
             />
           ) : (
             <>
-              {/* Visão Mobile - Cards */}
               <div className="space-y-2 px-2 sm:px-0 md:hidden">
                 {categories.map((category) => (
                   <div
@@ -312,139 +267,67 @@ export default function CategoriesPage() {
                     </div>
 
                     <div className="mt-3 flex items-center justify-end gap-2 border-t border-gray-100 pt-3 dark:border-slate-800">
-                      <TableActionButton
-                        action="view"
-                        title="Visualizar"
-                        onClick={() => handleView(category)}
-                      />
-                      <TableActionButton
-                        action="edit"
-                        title="Editar"
-                        onClick={() => handleEdit(category)}
-                      />
-                      <TableActionButton
-                        action="delete"
-                        title="Excluir"
-                        onClick={() => handleDelete(category)}
-                      />
+                      <TableActionButton action="view" title="Visualizar" onClick={() => setViewingCategory(category)} />
+                      <TableActionButton action="edit" title="Editar" onClick={() => handleEdit(category)} />
+                      <TableActionButton action="delete" title="Excluir" onClick={() => setDeleteTarget(category)} />
                     </div>
                   </div>
                 ))}
               </div>
 
-              {/* Visão Desktop - Tabela */}
               <div className="hidden overflow-x-auto md:block">
                 <table className="min-w-[640px] w-full table-fixed divide-y divide-gray-200 text-xs dark:divide-slate-800">
                   <thead className="app-table-head">
                     <tr>
                       <th className="app-table-head-cell w-[55%]">
-                        <button
-                          type="button"
-                          onClick={() => handleSort("nome")}
-                          className="inline-flex items-center gap-1 hover:text-blue-600 transition-colors"
-                        >
+                        <button type="button" onClick={() => handleSort("nome")} className="inline-flex items-center gap-1 hover:text-blue-600 transition-colors">
                           Categoria
-                          {sortBy === "nome" && sortDirection === "asc" ? (
-                            <ArrowUpNarrowWide size={14} className="text-blue-600" />
-                          ) : sortBy === "nome" ? (
-                            <ArrowDownWideNarrow size={14} className="text-blue-600" />
-                          ) : null}
+                          {sortBy === "nome" && sortDirection === "asc" ? <ArrowUpNarrowWide size={14} className="text-blue-600" /> : sortBy === "nome" ? <ArrowDownWideNarrow size={14} className="text-blue-600" /> : null}
                         </button>
                       </th>
                       <th className="app-table-head-cell w-[15%]">
-                        <button
-                          type="button"
-                          onClick={() => handleSort("tipo")}
-                          className="inline-flex items-center gap-1 hover:text-blue-600 transition-colors"
-                        >
+                        <button type="button" onClick={() => handleSort("tipo")} className="inline-flex items-center gap-1 hover:text-blue-600 transition-colors">
                           Tipo
-                          {sortBy === "tipo" && sortDirection === "asc" ? (
-                            <ArrowUpNarrowWide size={14} className="text-blue-600" />
-                          ) : sortBy === "tipo" ? (
-                            <ArrowDownWideNarrow size={14} className="text-blue-600" />
-                          ) : null}
+                          {sortBy === "tipo" && sortDirection === "asc" ? <ArrowUpNarrowWide size={14} className="text-blue-600" /> : sortBy === "tipo" ? <ArrowDownWideNarrow size={14} className="text-blue-600" /> : null}
                         </button>
                       </th>
                       <th className="app-table-head-cell w-[15%]">
-                        <button
-                          type="button"
-                          onClick={() => handleSort("ativo")}
-                          className="inline-flex items-center gap-1 hover:text-blue-600 transition-colors"
-                        >
+                        <button type="button" onClick={() => handleSort("ativo")} className="inline-flex items-center gap-1 hover:text-blue-600 transition-colors">
                           Status
-                          {sortBy === "ativo" && sortDirection === "asc" ? (
-                            <ArrowUpNarrowWide size={14} className="text-blue-600" />
-                          ) : sortBy === "ativo" ? (
-                            <ArrowDownWideNarrow size={14} className="text-blue-600" />
-                          ) : null}
+                          {sortBy === "ativo" && sortDirection === "asc" ? <ArrowUpNarrowWide size={14} className="text-blue-600" /> : sortBy === "ativo" ? <ArrowDownWideNarrow size={14} className="text-blue-600" /> : null}
                         </button>
                       </th>
-                      <th className="app-table-head-cell-center w-[15%]">
-                        Ações
-                      </th>
+                      <th className="app-table-head-cell-center w-[15%]">Ações</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-200 bg-white dark:divide-slate-800 dark:bg-slate-900">
                     {categories.map((category) => (
-                      <tr
-                        key={category.id}
-                        className="app-table-row"
-                      >
+                      <tr key={category.id} className="app-table-row">
                         <td className="whitespace-nowrap px-3 py-2">
                           <div className="flex items-center">
-                            <div
-                              className="mr-2 flex h-7 w-7 items-center justify-center rounded-full text-[10px] font-bold text-white shadow-sm"
-                              style={{ backgroundColor: category.cor }}
-                            >
+                            <div className="mr-2 flex h-7 w-7 items-center justify-center rounded-full text-[10px] font-bold text-white shadow-sm" style={{ backgroundColor: category.cor }}>
                               {category.nome.substring(0, 2).toUpperCase()}
                             </div>
-                            <div className="text-xs font-medium text-gray-900 dark:text-slate-200">
-                              {category.nome}
-                            </div>
+                            <div className="text-xs font-medium text-gray-900 dark:text-slate-200">{category.nome}</div>
                           </div>
                         </td>
                         <td className="whitespace-nowrap px-3 py-2">
-                          <span
-                            className={`inline-flex rounded-full px-2.5 py-1 text-[11px] font-semibold leading-none ${tipoBadge(
-                              category.tipo,
-                            )}`}
-                          >
-                            {category.tipo === "RECEITA"
-                              ? "Receita"
-                              : "Despesa"}
+                          <span className={`inline-flex rounded-full px-2.5 py-1 text-[11px] font-semibold leading-none ${tipoBadge(category.tipo)}`}>
+                            {category.tipo === "RECEITA" ? "Receita" : "Despesa"}
                           </span>
                         </td>
                         <td className="whitespace-nowrap px-3 py-2">
                           {category.ativo ? (
-                            <span className="inline-flex items-center rounded-full bg-green-100 px-2.5 py-1 text-[11px] font-semibold leading-none text-green-800 dark:bg-green-900/30 dark:text-green-400">
-                              Ativo
-                            </span>
+                            <span className="inline-flex items-center rounded-full bg-green-100 px-2.5 py-1 text-[11px] font-semibold leading-none text-green-800 dark:bg-green-900/30 dark:text-green-400">Ativo</span>
                           ) : (
-                            <span className="inline-flex items-center rounded-full bg-red-100 px-2.5 py-1 text-[11px] font-semibold leading-none text-red-800 dark:bg-red-900/30 dark:text-red-400">
-                              Inativo
-                            </span>
+                            <span className="inline-flex items-center rounded-full bg-red-100 px-2.5 py-1 text-[11px] font-semibold leading-none text-red-800 dark:bg-red-900/30 dark:text-red-400">Inativo</span>
                           )}
                         </td>
                         <td className="whitespace-nowrap px-3 py-2 text-center text-xs font-medium">
                           <div className="flex justify-center gap-1">
-                            <TableActionButton
-                              action="view"
-                              title="Visualizar"
-                              onClick={() => handleView(category)}
-                              compact
-                            />
-                            <TableActionButton
-                              action="edit"
-                              title="Editar"
-                              onClick={() => handleEdit(category)}
-                              compact
-                            />
-                            <TableActionButton
-                              action="delete"
-                              title="Excluir"
-                              onClick={() => handleDelete(category)}
-                              compact
-                            />
+                            <TableActionButton action="view" title="Visualizar" onClick={() => setViewingCategory(category)} compact />
+                            <TableActionButton action="edit" title="Editar" onClick={() => handleEdit(category)} compact />
+                            <TableActionButton action="delete" title="Excluir" onClick={() => setDeleteTarget(category)} compact />
                           </div>
                         </td>
                       </tr>
@@ -473,11 +356,10 @@ export default function CategoriesPage() {
       <ViewDataModal
         isOpen={!!viewingCategory}
         title="Visualizar Categoria"
-        data={viewingCategoryData}
+        data={viewingCategory}
         onClose={() => setViewingCategory(null)}
       />
 
-      {/* Modal */}
       <CategoryModal
         isOpen={showModal}
         category={editingCategory}
@@ -488,12 +370,7 @@ export default function CategoriesPage() {
       <ConfirmDeleteModal
         isOpen={!!deleteTarget}
         title="Confirmar exclusão"
-        description={
-          <>
-            Esta ação removerá a categoria <strong>{deleteTarget?.nome}</strong>
-            .
-          </>
-        }
+        description={<>Esta ação removerá a categoria <strong>{deleteTarget?.nome}</strong>.</>}
         confirmLabel="Excluir categoria"
         onCancel={() => setDeleteTarget(null)}
         onConfirm={handleConfirmDelete}

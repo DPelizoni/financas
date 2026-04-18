@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import {
   ArrowDownWideNarrow,
   ArrowUpNarrowWide,
@@ -13,7 +13,6 @@ import Icon from "@mdi/react";
 import { mdiPlusBoxOutline } from "@mdi/js";
 import AppButton from "@/components/AppButton";
 import ConfirmDeleteModal from "@/components/ConfirmDeleteModal";
-import FeedbackAlert from "@/components/FeedbackAlert";
 import InvestimentoMovimentacaoModal from "@/components/InvestimentoMovimentacaoModal";
 import PageContainer from "@/components/PageContainer";
 import Pagination from "@/components/Pagination";
@@ -25,15 +24,14 @@ import {
   investimentoDashboardService,
   investimentoMovimentacaoService,
 } from "@/services/investimentoService";
-import { Bank } from "@/types/bank";
 import {
-  InvestimentoAtivo,
   InvestimentoMovimentacao,
-  InvestimentoMovimentacaoFilters,
   InvestimentoMovimentacaoTipo,
 } from "@/types/investimento";
 import { TableSkeleton, CardSkeleton } from "@/components/skeletons/DataSkeletons";
 import EmptyState from "@/components/EmptyState";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 
 const tipoLabel: Record<InvestimentoMovimentacaoTipo, string> = {
   APORTE: "Aporte",
@@ -54,17 +52,9 @@ const formatDateBR = (value: string): string => {
     const [, year, month, day] = isoMatch;
     return `${day}/${month}/${year}`;
   }
-
   const parsed = new Date(value);
-  if (Number.isNaN(parsed.getTime())) {
-    return value;
-  }
-
-  return new Intl.DateTimeFormat("pt-BR", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-  }).format(parsed);
+  if (Number.isNaN(parsed.getTime())) return value;
+  return new Intl.DateTimeFormat("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric" }).format(parsed);
 };
 
 const toIsoDate = (date: Date): string => {
@@ -72,67 +62,83 @@ const toIsoDate = (date: Date): string => {
   return new Date(date.getTime() - timezoneOffsetInMs).toISOString().slice(0, 10);
 };
 
-const getDateRangeByFilters = ({
-  filterMesAno,
-  filterAno,
-}: {
-  filterMesAno: string;
-  filterAno: string;
-}): { data_de?: string; data_ate?: string } => {
+const getDateRangeByFilters = ({ filterMesAno, filterAno }: { filterMesAno: string; filterAno: string; }): { data_de?: string; data_ate?: string } => {
   if (/^\d{4}-\d{2}$/.test(filterMesAno)) {
     const [yearValue, monthValue] = filterMesAno.split("-").map(Number);
-    const startDate = new Date(yearValue, monthValue - 1, 1);
-    const endDate = new Date(yearValue, monthValue, 0);
-    return {
-      data_de: toIsoDate(startDate),
-      data_ate: toIsoDate(endDate),
-    };
+    return { data_de: toIsoDate(new Date(yearValue, monthValue - 1, 1)), data_ate: toIsoDate(new Date(yearValue, monthValue, 0)) };
   }
-
   if (filterAno !== "TODOS") {
     const selectedYear = Number(filterAno);
-    if (!Number.isNaN(selectedYear)) {
-      return {
-        data_de: toIsoDate(new Date(selectedYear, 0, 1)),
-        data_ate: toIsoDate(new Date(selectedYear, 11, 31)),
-      };
-    }
+    if (!Number.isNaN(selectedYear)) return { data_de: toIsoDate(new Date(selectedYear, 0, 1)), data_ate: toIsoDate(new Date(selectedYear, 11, 31)) };
   }
-
   return {};
 };
 
 export default function InvestimentosMovimentacoesPage() {
-  const [loading, setLoading] = useState(true);
-  const [movimentacoes, setMovimentacoes] = useState<InvestimentoMovimentacao[]>([]);
-  const [ativos, setAtivos] = useState<InvestimentoAtivo[]>([]);
-  const [banks, setBanks] = useState<Bank[]>([]);
-  const [availableYears, setAvailableYears] = useState<string[]>([]);
+  const queryClient = useQueryClient();
   const [searchTerm, setSearchTerm] = useState("");
   const [filterMesAno, setFilterMesAno] = useState("");
   const [filterAno, setFilterAno] = useState<string>("TODOS");
   const [filterBanco, setFilterBanco] = useState<number | "TODOS">("TODOS");
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
-  const [totalPages, setTotalPages] = useState(1);
-  const [total, setTotal] = useState(0);
-  const [sortBy, setSortBy] = useState<"data" | "tipo" | "ativo" | "banco" | "valor">(
-    "data",
-  );
+  const [sortBy, setSortBy] = useState<"data" | "tipo" | "ativo" | "banco" | "valor">("data");
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
-  const [feedback, setFeedback] = useState<{
-    type: "success" | "error";
-    message: string;
-  } | null>(null);
-  const [editingMovimentacao, setEditingMovimentacao] =
-    useState<InvestimentoMovimentacao | null>(null);
+  const [editingMovimentacao, setEditingMovimentacao] = useState<InvestimentoMovimentacao | null>(null);
   const [showModal, setShowModal] = useState(false);
-  const [deleteTarget, setDeleteTarget] = useState<InvestimentoMovimentacao | null>(
-    null,
-  );
-  const [viewingMovimentacao, setViewingMovimentacao] =
-    useState<InvestimentoMovimentacao | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<InvestimentoMovimentacao | null>(null);
+  const [viewingMovimentacao, setViewingMovimentacao] = useState<InvestimentoMovimentacao | null>(null);
   const [showFilters, setShowFilters] = useState(false);
+
+  // TanStack Queries
+  const { data: referenceData } = useQuery({
+    queryKey: ["investimentos-reference"],
+    queryFn: async () => {
+      const [banksRes, ativosRes] = await Promise.all([
+        bankService.getAll({ page: 1, limit: 999 }),
+        investimentoAtivoService.getAll({ page: 1, limit: 999 }),
+      ]);
+      return { banks: banksRes.data || [], ativos: ativosRes.data || [] };
+    }
+  });
+  const banks = referenceData?.banks || [];
+  const ativos = referenceData?.ativos || [];
+
+  const { data: availableYears = [] } = useQuery({
+    queryKey: ["invest-available-years", filterBanco],
+    queryFn: () => investimentoDashboardService.getAvailableYears({ banco_id: filterBanco === "TODOS" ? undefined : filterBanco }),
+  });
+
+  const queryFilters = useMemo(() => {
+    const dateRange = getDateRangeByFilters({ filterMesAno, filterAno });
+    return {
+      page: currentPage,
+      limit: itemsPerPage,
+      search: searchTerm || undefined,
+      banco_id: filterBanco === "TODOS" ? undefined : filterBanco,
+      data_de: dateRange.data_de,
+      data_ate: dateRange.data_ate,
+    };
+  }, [currentPage, itemsPerPage, searchTerm, filterMesAno, filterAno, filterBanco]);
+
+  const { data: movsData, isLoading: loading, isFetching } = useQuery({
+    queryKey: ["movimentacoes", queryFilters],
+    queryFn: () => investimentoMovimentacaoService.getAll(queryFilters),
+    placeholderData: (prev) => prev,
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: (id: number) => investimentoMovimentacaoService.delete(id),
+    onSuccess: () => {
+      toast.success("Movimentação excluída com sucesso.");
+      queryClient.invalidateQueries({ queryKey: ["movimentacoes"] });
+      setDeleteTarget(null);
+    }
+  });
+
+  const movimentacoes = movsData?.data || [];
+  const total = movsData?.pagination?.total || 0;
+  const totalPages = movsData?.pagination?.totalPages || 1;
 
   const activeFiltersCount = useMemo(() => {
     let count = 0;
@@ -143,385 +149,65 @@ export default function InvestimentosMovimentacoesPage() {
     return count;
   }, [searchTerm, filterMesAno, filterAno, filterBanco]);
 
-  const sortedBanks = useMemo(
-    () => [...banks].sort((a, b) => a.nome.localeCompare(b.nome, "pt-BR")),
-    [banks],
-  );
+  const sortedBanks = useMemo(() => [...banks].sort((a, b) => a.nome.localeCompare(b.nome, "pt-BR")), [banks]);
 
   const sortedMovimentacoes = useMemo(() => {
     const direction = sortDirection === "asc" ? 1 : -1;
     return [...movimentacoes].sort((a, b) => {
       if (sortBy === "data") return a.data.localeCompare(b.data) * direction;
       if (sortBy === "tipo") return a.tipo.localeCompare(b.tipo, "pt-BR") * direction;
-      if (sortBy === "ativo") {
-        return (a.ativo_nome || "").localeCompare(b.ativo_nome || "", "pt-BR") * direction;
-      }
-      if (sortBy === "banco") {
-        return (a.banco_nome || "").localeCompare(b.banco_nome || "", "pt-BR") * direction;
-      }
+      if (sortBy === "ativo") return (a.ativo_nome || "").localeCompare(b.ativo_nome || "", "pt-BR") * direction;
+      if (sortBy === "banco") return (a.banco_nome || "").localeCompare(b.banco_nome || "", "pt-BR") * direction;
       return (Number(a.valor) - Number(b.valor)) * direction;
     });
   }, [movimentacoes, sortBy, sortDirection]);
 
-  const handleSort = (
-    column: "data" | "tipo" | "ativo" | "banco" | "valor",
-  ) => {
-    if (sortBy === column) {
-      setSortDirection((prev) => (prev === "asc" ? "desc" : "asc"));
-      return;
-    }
-
-    setSortBy(column);
-    setSortDirection(column === "data" ? "desc" : "asc");
+  const handleSort = (column: any) => {
+    if (sortBy === column) { setSortDirection((prev) => (prev === "asc" ? "desc" : "asc")); return; }
+    setSortBy(column); setSortDirection(column === "data" ? "desc" : "asc");
   };
 
-  const showFeedback = (type: "success" | "error", message: string) => {
-    setFeedback({ type, message });
-    window.setTimeout(() => setFeedback(null), 4000);
-  };
-
-  const loadReferenceData = async () => {
-    try {
-      const [banksResponse, ativosResponse] = await Promise.all([
-        bankService.getAll({ page: 1, limit: 999 }),
-        investimentoAtivoService.getAll({ page: 1, limit: 999 }),
-      ]);
-
-      setBanks(banksResponse.data || []);
-      setAtivos(ativosResponse.data || []);
-    } catch (error) {
-      console.error("Erro ao carregar dados auxiliares:", error);
-    }
-  };
-
-  const loadMovimentacoes = async () => {
-    try {
-      setLoading(true);
-      const dateRange = getDateRangeByFilters({
-        filterMesAno,
-        filterAno,
-      });
-
-      const filters: InvestimentoMovimentacaoFilters = {
-        page: currentPage,
-        limit: itemsPerPage,
-        search: searchTerm || undefined,
-        banco_id: filterBanco === "TODOS" ? undefined : filterBanco,
-        data_de: dateRange.data_de,
-        data_ate: dateRange.data_ate,
-      };
-
-      const movimentacoesResponse =
-        await investimentoMovimentacaoService.getAll(filters);
-
-      setMovimentacoes(movimentacoesResponse.data || []);
-      setTotal(movimentacoesResponse.pagination?.total || 0);
-      setTotalPages(movimentacoesResponse.pagination?.totalPages || 1);
-    } catch (error) {
-      console.error("Erro ao carregar movimentacoes:", error);
-      showFeedback("error", "Não foi possível carregar as movimentações.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    loadReferenceData();
-  }, []);
-
-  useEffect(() => {
-    const loadAvailableYears = async () => {
-      try {
-        const years = await investimentoDashboardService.getAvailableYears({
-          banco_id: filterBanco === "TODOS" ? undefined : filterBanco,
-        });
-        setAvailableYears(years);
-
-        if (filterAno !== "TODOS" && !years.includes(filterAno)) {
-          setFilterAno("TODOS");
-        }
-      } catch (error) {
-        console.error("Erro ao carregar anos disponíveis:", error);
-        setAvailableYears([]);
-      }
-    };
-
-    loadAvailableYears();
-  }, [filterBanco, filterAno]);
-
-  useEffect(() => {
-    loadMovimentacoes();
-  }, [
-    currentPage,
-    itemsPerPage,
-    searchTerm,
-    filterMesAno,
-    filterAno,
-    filterBanco,
-  ]);
-
-  const handleClearFilters = () => {
-    setSearchTerm("");
-    setFilterMesAno("");
-    setFilterAno("TODOS");
-    setFilterBanco("TODOS");
-    setCurrentPage(1);
-  };
-
-  const handleCreate = () => {
-    setEditingMovimentacao(null);
-    setShowModal(true);
-  };
-
-  const handleEdit = (movimentacao: InvestimentoMovimentacao) => {
-    setEditingMovimentacao(movimentacao);
-    setShowModal(true);
-  };
-
-  const handleConfirmDelete = async () => {
-    if (!deleteTarget) return;
-
-    try {
-      await investimentoMovimentacaoService.delete(deleteTarget.id);
-      showFeedback("success", "Movimentação excluída com sucesso.");
-      setDeleteTarget(null);
-      await loadMovimentacoes();
-    } catch (error) {
-      console.error("Erro ao excluir movimentacao:", error);
-      const apiMessage = (error as any)?.response?.data?.message;
-      showFeedback("error", apiMessage || "Não foi possível excluir a movimentação.");
-    }
-  };
+  const handleClearFilters = () => { setSearchTerm(""); setFilterMesAno(""); setFilterAno("TODOS"); setFilterBanco("TODOS"); setCurrentPage(1); };
 
   return (
     <div className="app-page py-4 sm:py-8">
       <div className="mx-auto max-w-7xl space-y-6 px-4 sm:px-6 lg:px-8">
-        <FeedbackAlert feedback={feedback} onClose={() => setFeedback(null)} />
-
         <PageContainer>
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900 sm:text-3xl">
-                Movimentações de Investimento
-              </h1>
-              <p className="mt-2 text-sm text-gray-600">
-                Registre e acompanhe lançamentos de aportes, resgates e rendimentos.
-              </p>
-            </div>
+            <div><h1 className="text-2xl font-bold text-gray-900 sm:text-3xl">Movimentações de Investimento</h1><p className="mt-2 text-sm text-gray-600">Lançamentos de aportes, resgates e rendimentos.</p></div>
             <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-              <AppButton
-                tone={showFilters ? "outline-primary" : "outline"}
-                onClick={() => setShowFilters(!showFilters)}
-                className="relative"
-                startIcon={<Filter size={18} className={showFilters ? "fill-blue-100 dark:fill-blue-900/50" : ""} />}
-              >
-                Filtros
-                {activeFiltersCount > 0 && (
-                  <span className="absolute -right-2 -top-2 flex h-5 w-5 items-center justify-center rounded-full bg-blue-600 text-[10px] font-bold text-white shadow-md ring-2 ring-white dark:ring-slate-900">
-                    {activeFiltersCount}
-                  </span>
-                )}
-              </AppButton>
-              <AppButton
-                onClick={handleCreate}
-                tone="primary"
-                startIcon={<Icon path={mdiPlusBoxOutline} size={0.8} />}
-                className="w-full sm:w-auto"
-              >
-                Nova Movimentação
-              </AppButton>
+              <AppButton tone={showFilters ? "outline-primary" : "outline"} onClick={() => setShowFilters(!showFilters)} className="relative" startIcon={<Filter size={18} className={showFilters ? "fill-blue-100 dark:fill-blue-900/50" : ""} />}>Filtros{activeFiltersCount > 0 && <span className="absolute -right-2 -top-2 flex h-5 w-5 items-center justify-center rounded-full bg-blue-600 text-[10px] font-bold text-white shadow-md ring-2 ring-white dark:ring-slate-900">{activeFiltersCount}</span>}</AppButton>
+              <AppButton onClick={() => { setEditingMovimentacao(null); setShowModal(true); }} tone="primary" startIcon={<Icon path={mdiPlusBoxOutline} size={0.8} />} className="w-full sm:w-auto">Nova Movimentação</AppButton>
             </div>
           </div>
         </PageContainer>
 
         <div className={`filter-panel-surface ${!showFilters ? "hidden" : "block animate-in fade-in slide-in-from-top-2 duration-300"}`}>
-          <div className="mb-4 flex items-center justify-between border-b border-gray-100 pb-3">
-            <h3 className="text-sm font-semibold text-gray-700">Filtros de Movimentação</h3>
-            <button
-              type="button"
-              onClick={handleClearFilters}
-              className="text-xs font-medium text-blue-600 hover:text-blue-800 transition"
-            >
-              Limpar tudo
-            </button>
-          </div>
+          <div className="mb-4 flex items-center justify-between border-b border-gray-100 pb-3"><h3 className="text-sm font-semibold text-gray-700">Filtros de Movimentação</h3><button type="button" onClick={handleClearFilters} className="text-xs font-medium text-blue-600 hover:text-blue-800 transition">Limpar tudo</button></div>
           <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-4">
-            <TextField
-              type="text"
-              label="Buscar"
-              variant="outlined"
-              size="small"
-              fullWidth
-              value={searchTerm}
-              onChange={(e) => {
-                setSearchTerm(e.target.value);
-                setCurrentPage(1);
-              }}
-              InputLabelProps={{ shrink: true }}
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <Search size={16} className="text-gray-400" />
-                  </InputAdornment>
-                ),
-                endAdornment: searchTerm ? (
-                  <InputAdornment position="end">
-                    <button
-                      type="button"
-                      aria-label="Limpar busca"
-                      className="rounded p-1 hover:bg-gray-100"
-                      onClick={() => {
-                        setSearchTerm("");
-                        setCurrentPage(1);
-                      }}
-                    >
-                      <X size={14} />
-                    </button>
-                  </InputAdornment>
-                ) : undefined,
-              }}
-            />
-
-            <TextField
-              type="month"
-              label="Mês/Ano"
-              variant="outlined"
-              size="small"
-              fullWidth
-              value={filterMesAno}
-              onChange={(e) => {
-                setFilterMesAno(e.target.value);
-                setCurrentPage(1);
-              }}
-              title="Mês/Ano específico"
-              InputLabelProps={{ shrink: true }}
-            />
-
-            <TextField
-              select
-              label="Ano"
-              variant="outlined"
-              size="small"
-              fullWidth
-              InputLabelProps={{ shrink: true }}
-              value={filterAno}
-              onChange={(e) => {
-                setFilterAno(e.target.value);
-                setCurrentPage(1);
-              }}
-              disabled={Boolean(filterMesAno)}
-            >
-              <MenuItem value="TODOS">Todos</MenuItem>
-              {availableYears.map((year) => (
-                <MenuItem key={year} value={year}>
-                  {year}
-                </MenuItem>
-              ))}
-            </TextField>
-
-            <TextField
-              select
-              label="Bancos"
-              variant="outlined"
-              size="small"
-              fullWidth
-              InputLabelProps={{ shrink: true }}
-              value={filterBanco}
-              onChange={(e) => {
-                setFilterBanco(
-                  e.target.value === "TODOS" ? "TODOS" : Number(e.target.value),
-                );
-                setCurrentPage(1);
-              }}
-            >
-              <MenuItem value="TODOS">Todos</MenuItem>
-              {sortedBanks.map((bank) => (
-                <MenuItem key={bank.id} value={bank.id}>
-                  {bank.nome}
-                </MenuItem>
-              ))}
-            </TextField>
+            <TextField type="text" label="Buscar" variant="outlined" size="small" fullWidth value={searchTerm} onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }} InputLabelProps={{ shrink: true }} InputProps={{ startAdornment: (<InputAdornment position="start"><Search size={16} className="text-gray-400" /></InputAdornment>), endAdornment: searchTerm ? (<InputAdornment position="end"><button type="button" onClick={() => { setSearchTerm(""); setCurrentPage(1); }} className="rounded p-1 hover:bg-gray-100"><X size={14} /></button></InputAdornment>) : undefined }} />
+            <TextField type="month" label="Mês/Ano" variant="outlined" size="small" fullWidth value={filterMesAno} onChange={(e) => { setFilterMesAno(e.target.value); setCurrentPage(1); }} InputLabelProps={{ shrink: true }} />
+            <TextField select label="Ano" variant="outlined" size="small" fullWidth InputLabelProps={{ shrink: true }} value={filterAno} onChange={(e) => { setFilterAno(e.target.value); setCurrentPage(1); }} disabled={Boolean(filterMesAno)}><MenuItem value="TODOS">Todos</MenuItem>{availableYears.map((year) => (<MenuItem key={year} value={year}>{year}</MenuItem>))}</TextField>
+            <TextField select label="Bancos" variant="outlined" size="small" fullWidth InputLabelProps={{ shrink: true }} value={filterBanco} onChange={(e) => { setFilterBanco(e.target.value === "TODOS" ? "TODOS" : Number(e.target.value)); setCurrentPage(1); }}><MenuItem value="TODOS">Todos</MenuItem>{sortedBanks.map((bank) => (<MenuItem key={bank.id} value={bank.id}>{bank.nome}</MenuItem>))}</TextField>
           </div>
         </div>
 
-        <div className="app-surface p-4">
+        <div className={`app-surface p-4 transition-opacity duration-200 ${isFetching && !loading ? "opacity-50" : "opacity-100"}`}>
           {loading ? (
-            <>
-              <div className="md:hidden">
-                <CardSkeleton count={3} />
-              </div>
-              <div className="hidden md:block">
-                <TableSkeleton rows={5} columns={5} />
-              </div>
-            </>
+            <><div className="md:hidden"><CardSkeleton count={3} /></div><div className="hidden md:block"><TableSkeleton rows={5} columns={5} /></div></>
           ) : sortedMovimentacoes.length === 0 ? (
-            <EmptyState
-              icon={Search}
-              title="Nenhuma movimentação encontrada"
-              description={
-                activeFiltersCount > 0
-                  ? "Tente ajustar seus filtros para encontrar o que procura."
-                  : "Comece registrando seus aportes e rendimentos para acompanhar seu patrimônio."
-              }
-              actionLabel={activeFiltersCount > 0 ? "Limpar Filtros" : "Nova Movimentação"}
-              onAction={activeFiltersCount > 0 ? handleClearFilters : handleCreate}
-            />
+            <EmptyState icon={Search} title="Nenhuma movimentação encontrada" description={activeFiltersCount > 0 ? "Tente ajustar seus filtros para encontrar o que procura." : "Comece registrando seus aportes e rendimentos."} actionLabel={activeFiltersCount > 0 ? "Limpar Filtros" : "Nova Movimentação"} onAction={activeFiltersCount > 0 ? handleClearFilters : () => { setEditingMovimentacao(null); setShowModal(true); }} />
           ) : (
             <>
               <div className="space-y-2 px-2 sm:px-0 md:hidden">
                 {sortedMovimentacoes.map((item) => (
-                  <div
-                    key={item.id}
-                    className="rounded-xl border border-gray-200/80 bg-gradient-to-b from-white to-gray-50 p-4 shadow-[0_1px_2px_rgba(0,0,0,0.06)]"
-                  >
+                  <div key={item.id} className="rounded-xl border border-gray-200/80 bg-gradient-to-b from-white to-gray-50 p-4 shadow-[0_1px_2px_rgba(0,0,0,0.06)]">
                     <div className="flex items-start justify-between gap-3">
-                      <div>
-                        <p className="text-sm font-semibold text-gray-900">{item.ativo_nome}</p>
-                        <p className="mt-1 text-xs text-gray-600">
-                          Data: {formatDateBR(item.data)}
-                        </p>
-                        <p className="mt-1 text-xs text-gray-600">
-                          Banco: {item.banco_nome || "-"}
-                        </p>
-                      </div>
-
-                      <span
-                        className={`${
-                          item.tipo === "APORTE"
-                            ? "app-badge-info"
-                            : item.tipo === "RESGATE"
-                              ? "app-badge-error"
-                              : "app-badge-success"
-                        }`}
-                      >
-                        {tipoLabel[item.tipo]}
-                      </span>
+                      <div><p className="text-sm font-semibold text-gray-900">{item.ativo_nome}</p><p className="mt-1 text-xs text-gray-600">Data: {formatDateBR(item.data)}</p><p className="mt-1 text-xs text-gray-600">Banco: {item.banco_nome || "-"}</p></div>
+                      <span className={`${item.tipo === "APORTE" ? "app-badge-info" : item.tipo === "RESGATE" ? "app-badge-error" : "app-badge-success"}`}>{tipoLabel[item.tipo]}</span>
                     </div>
-
-                    <div className="mt-3 text-xs text-gray-700">
-                      <span className="font-medium">Valor: </span>
-                      <span className="font-semibold text-gray-900">
-                        {formatCurrencyBRL(Number(item.valor))}
-                      </span>
-                    </div>
-
-                    <div className="mt-3 flex items-center justify-end gap-2 border-t border-gray-100 pt-3">
-                      <TableActionButton
-                        action="view"
-                        title="Visualizar"
-                        onClick={() => setViewingMovimentacao(item)}
-                      />
-                      <TableActionButton
-                        action="edit"
-                        title="Editar"
-                        onClick={() => handleEdit(item)}
-                      />
-                      <TableActionButton
-                        action="delete"
-                        title="Excluir"
-                        onClick={() => setDeleteTarget(item)}
-                      />
-                    </div>
+                    <div className="mt-3 text-xs text-gray-700"><span className="font-medium">Valor: </span><span className="font-semibold text-gray-900">{formatCurrencyBRL(Number(item.valor))}</span></div>
+                    <div className="mt-3 flex items-center justify-end gap-2 border-t border-gray-100 pt-3"><TableActionButton action="view" title="Visualizar" onClick={() => setViewingMovimentacao(item)} /><TableActionButton action="edit" title="Editar" onClick={() => { setEditingMovimentacao(item); setShowModal(true); }} /><TableActionButton action="delete" title="Excluir" onClick={() => setDeleteTarget(item)} /></div>
                   </div>
                 ))}
               </div>
@@ -530,135 +216,23 @@ export default function InvestimentosMovimentacoesPage() {
                 <table className="w-full table-fixed divide-y divide-gray-200 text-xs">
                   <thead className="app-table-head">
                     <tr>
-                      <th className="app-table-head-cell w-[12%]">
-                        <button
-                          type="button"
-                          onClick={() => handleSort("data")}
-                          className="inline-flex items-center gap-1"
-                        >
-                          Data
-                          {sortBy === "data" && sortDirection === "asc" ? (
-                            <ArrowUpNarrowWide size={14} />
-                          ) : sortBy === "data" ? (
-                            <ArrowDownWideNarrow size={14} />
-                          ) : null}
-                        </button>
-                      </th>
-                      <th className="app-table-head-cell w-[25%]">
-                        <button
-                          type="button"
-                          onClick={() => handleSort("ativo")}
-                          className="inline-flex items-center gap-1"
-                        >
-                          Ativo
-                          {sortBy === "ativo" && sortDirection === "asc" ? (
-                            <ArrowUpNarrowWide size={14} />
-                          ) : sortBy === "ativo" ? (
-                            <ArrowDownWideNarrow size={14} />
-                          ) : null}
-                        </button>
-                      </th>
-                      <th className="app-table-head-cell hidden w-[20%] xl:table-cell">
-                        <button
-                          type="button"
-                          onClick={() => handleSort("banco")}
-                          className="inline-flex items-center gap-1"
-                        >
-                          Banco
-                          {sortBy === "banco" && sortDirection === "asc" ? (
-                            <ArrowUpNarrowWide size={14} />
-                          ) : sortBy === "banco" ? (
-                            <ArrowDownWideNarrow size={14} />
-                          ) : null}
-                        </button>
-                      </th>
-                      <th className="app-table-head-cell-center w-[12%]">
-                        <button
-                          type="button"
-                          onClick={() => handleSort("tipo")}
-                          className="inline-flex items-center justify-center gap-1"
-                        >
-                          Tipo
-                          {sortBy === "tipo" && sortDirection === "asc" ? (
-                            <ArrowUpNarrowWide size={14} />
-                          ) : sortBy === "tipo" ? (
-                            <ArrowDownWideNarrow size={14} />
-                          ) : null}
-                        </button>
-                      </th>
-                      <th className="app-table-head-cell-right w-[15%]">
-                        <button
-                          type="button"
-                          onClick={() => handleSort("valor")}
-                          className="inline-flex items-center gap-1"
-                        >
-                          Valor
-                          {sortBy === "valor" && sortDirection === "asc" ? (
-                            <ArrowUpNarrowWide size={14} />
-                          ) : sortBy === "valor" ? (
-                            <ArrowDownWideNarrow size={14} />
-                          ) : null}
-                        </button>
-                      </th>
+                      <th className="app-table-head-cell w-[12%]"><button type="button" onClick={() => handleSort("data")} className="inline-flex items-center gap-1">Data{sortBy === "data" && sortDirection === "asc" ? <ArrowUpNarrowWide size={14} /> : sortBy === "data" ? <ArrowDownWideNarrow size={14} /> : null}</button></th>
+                      <th className="app-table-head-cell w-[25%]"><button type="button" onClick={() => handleSort("ativo")} className="inline-flex items-center gap-1">Ativo{sortBy === "ativo" && sortDirection === "asc" ? <ArrowUpNarrowWide size={14} /> : sortBy === "ativo" ? <ArrowDownWideNarrow size={14} /> : null}</button></th>
+                      <th className="app-table-head-cell hidden w-[20%] xl:table-cell"><button type="button" onClick={() => handleSort("banco")} className="inline-flex items-center gap-1">Banco{sortBy === "banco" && sortDirection === "asc" ? <ArrowUpNarrowWide size={14} /> : sortBy === "banco" ? <ArrowDownWideNarrow size={14} /> : null}</button></th>
+                      <th className="app-table-head-cell-center w-[12%]"><button type="button" onClick={() => handleSort("tipo")} className="inline-flex items-center justify-center gap-1">Tipo{sortBy === "tipo" && sortDirection === "asc" ? <ArrowUpNarrowWide size={14} /> : sortBy === "tipo" ? <ArrowDownWideNarrow size={14} /> : null}</button></th>
+                      <th className="app-table-head-cell-right w-[15%]"><button type="button" onClick={() => handleSort("valor")} className="inline-flex items-center gap-1">Valor{sortBy === "valor" && sortDirection === "asc" ? <ArrowUpNarrowWide size={14} /> : sortBy === "valor" ? <ArrowDownWideNarrow size={14} /> : null}</button></th>
                       <th className="app-table-head-cell-center w-[16%]">Ações</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-100 bg-white">
                     {sortedMovimentacoes.map((item) => (
                       <tr key={item.id} className="app-table-row">
-                        <td className="px-3 py-2 text-xs text-gray-700">
-                          {formatDateBR(item.data)}
-                        </td>
-                        <td className="px-3 py-2 text-xs text-gray-700">
-                          <span className="block truncate" title={item.ativo_nome || "-"}>
-                            {item.ativo_nome || "-"}
-                          </span>
-                        </td>
-                        <td className="hidden px-3 py-2 text-xs text-gray-700 xl:table-cell">
-                          <span className="block truncate" title={item.banco_nome || "-"}>
-                            {item.banco_nome || "-"}
-                          </span>
-                        </td>
-                        <td className="px-3 py-2 text-center text-xs">
-                          <div className="flex justify-center">
-                            <span
-                              className={`${
-                                item.tipo === "APORTE"
-                                  ? "app-badge-info"
-                                  : item.tipo === "RESGATE"
-                                    ? "app-badge-error"
-                                    : "app-badge-success"
-                              }`}
-                            >
-                              {tipoLabel[item.tipo]}
-                            </span>
-                          </div>
-                        </td>
-                        <td className="px-3 py-2 text-right text-xs font-semibold text-gray-900">
-                          {formatCurrencyBRL(Number(item.valor))}
-                        </td>
-                        <td className="px-3 py-2 text-center text-xs">
-                          <div className="flex justify-center gap-1">
-                            <TableActionButton
-                              action="view"
-                              title="Visualizar"
-                              onClick={() => setViewingMovimentacao(item)}
-                              compact
-                            />
-                            <TableActionButton
-                              action="edit"
-                              title="Editar"
-                              onClick={() => handleEdit(item)}
-                              compact
-                            />
-                            <TableActionButton
-                              action="delete"
-                              title="Excluir"
-                              onClick={() => setDeleteTarget(item)}
-                              compact
-                            />
-                          </div>
-                        </td>
+                        <td className="px-3 py-2 text-xs text-gray-700">{formatDateBR(item.data)}</td>
+                        <td className="px-3 py-2 text-xs text-gray-700"><span className="block truncate" title={item.ativo_nome || "-"}>{item.ativo_nome || "-"}</span></td>
+                        <td className="hidden px-3 py-2 text-xs text-gray-700 xl:table-cell"><span className="block truncate" title={item.banco_nome || "-"}>{item.banco_nome || "-"}</span></td>
+                        <td className="px-3 py-2 text-center text-xs"><div className="flex justify-center"><span className={`${item.tipo === "APORTE" ? "app-badge-info" : item.tipo === "RESGATE" ? "app-badge-error" : "app-badge-success"}`}>{tipoLabel[item.tipo]}</span></div></td>
+                        <td className="px-3 py-2 text-right text-xs font-semibold text-gray-900">{formatCurrencyBRL(Number(item.valor))}</td>
+                        <td className="px-3 py-2 text-center text-xs"><div className="flex justify-center gap-1"><TableActionButton action="view" title="Visualizar" onClick={() => setViewingMovimentacao(item)} compact /><TableActionButton action="edit" title="Editar" onClick={() => { setEditingMovimentacao(item); setShowModal(true); }} compact /><TableActionButton action="delete" title="Excluir" onClick={() => setDeleteTarget(item)} compact /></div></td>
                       </tr>
                     ))}
                   </tbody>
@@ -668,67 +242,14 @@ export default function InvestimentosMovimentacoesPage() {
           )}
         </div>
 
-        {!loading && total > 0 && (
-          <Pagination
-            currentPage={currentPage}
-            totalPages={totalPages}
-            total={total}
-            itemsPerPage={itemsPerPage}
-            onPageChange={setCurrentPage}
-            onItemsPerPageChange={setItemsPerPage}
-            itemsPerPageOptions={[5, 10, 20, 50, 100]}
-            centeredLayout
-          />
-        )}
+        {!loading && total > 0 && <Pagination currentPage={currentPage} totalPages={totalPages} total={total} itemsPerPage={itemsPerPage} onPageChange={setCurrentPage} onItemsPerPageChange={setItemsPerPage} itemsPerPageOptions={[5, 10, 20, 50, 100]} centeredLayout />}
       </div>
 
-      <InvestimentoMovimentacaoModal
-        isOpen={showModal}
-        movimentacao={editingMovimentacao}
-        ativos={ativos}
-        onClose={() => {
-          setShowModal(false);
-          setEditingMovimentacao(null);
-        }}
-        onSave={async (message) => {
-          showFeedback("success", message);
-          setShowModal(false);
-          setEditingMovimentacao(null);
-          await loadReferenceData();
-          if (currentPage !== 1) {
-            setCurrentPage(1);
-          } else {
-            await loadMovimentacoes();
-          }
-        }}
-      />
+      <InvestimentoMovimentacaoModal isOpen={showModal} movimentacao={editingMovimentacao} ativos={ativos} onClose={() => { setShowModal(false); setEditingMovimentacao(null); }} onSave={async (message) => { toast.success(message); queryClient.invalidateQueries({ queryKey: ["movimentacoes"] }); setShowModal(false); setEditingMovimentacao(null); }} />
 
-      <ConfirmDeleteModal
-        isOpen={!!deleteTarget}
-        title="Confirmar exclusão"
-        description={
-          <>
-            Esta ação removerá a movimentação de <strong>{deleteTarget?.ativo_nome}</strong>.
-          </>
-        }
-        confirmLabel="Excluir movimentação"
-        onCancel={() => setDeleteTarget(null)}
-        onConfirm={handleConfirmDelete}
-      />
+      <ConfirmDeleteModal isOpen={!!deleteTarget} title="Confirmar exclusão" description={<>Esta ação removerá a movimentação de <strong>{deleteTarget?.ativo_nome}</strong>.</>} confirmLabel="Excluir movimentação" onCancel={() => setDeleteTarget(null)} onConfirm={() => deleteMutation.mutate(deleteTarget!.id)} />
 
-      <ViewDataModal
-        isOpen={!!viewingMovimentacao}
-        title="Visualizar Movimentação"
-        data={viewingMovimentacao}
-        onClose={() => setViewingMovimentacao(null)}
-        fieldLabels={{
-          id: "ID da movimentação",
-          ativo_nome: "Ativo",
-          ativo_status: "Status do ativo",
-          banco_nome: "Banco",
-          investimento_ativo_id: "ID do ativo",
-        }}
-      />
+      <ViewDataModal isOpen={!!viewingMovimentacao} title="Visualizar Movimentação" data={viewingMovimentacao} onClose={() => setViewingMovimentacao(null)} fieldLabels={{ id: "ID da movimentação", ativo_nome: "Ativo", ativo_status: "Status do ativo", banco_nome: "Banco", investimento_ativo_id: "ID do ativo" }} />
     </div>
   );
 }

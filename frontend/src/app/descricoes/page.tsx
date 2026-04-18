@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import {
   Search,
   FileText,
@@ -17,7 +17,7 @@ import { Descricao, DescricaoFilters } from "@/types/descricao";
 import { Category } from "@/types/category";
 import DescricaoModal from "@/components/DescricaoModal";
 import Pagination from "@/components/Pagination";
-import FeedbackAlert from "@/components/FeedbackAlert";
+import { toast } from "sonner";
 import ConfirmDeleteModal from "@/components/ConfirmDeleteModal";
 import PageContainer from "@/components/PageContainer";
 import AppButton from "@/components/AppButton";
@@ -26,37 +26,62 @@ import ViewDataModal from "@/components/ViewDataModal";
 import { IconButton, InputAdornment, MenuItem, TextField } from "@mui/material";
 import { TableSkeleton, CardSkeleton } from "@/components/skeletons/DataSkeletons";
 import EmptyState from "@/components/EmptyState";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 export default function DescricoesPage() {
-  const [descricoes, setDescricoes] = useState<Descricao[]>([]);
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
-  const [total, setTotal] = useState(0);
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const [showModal, setShowModal] = useState(false);
-  const [editingDescricao, setEditingDescricao] = useState<Descricao | null>(
-    null,
-  );
-  const [filterAtivo, setFilterAtivo] = useState<boolean | undefined>(
-    undefined,
-  );
-  const [filterCategoria, setFilterCategoria] = useState<number | "TODOS">(
-    "TODOS",
-  );
-  const [feedback, setFeedback] = useState<{
-    type: "success" | "error";
-    message: string;
-  } | null>(null);
+  const [editingDescricao, setEditingDescricao] = useState<Descricao | null>(null);
+  const [filterAtivo, setFilterAtivo] = useState<boolean | undefined>(undefined);
+  const [filterCategoria, setFilterCategoria] = useState<number | "TODOS">("TODOS");
   const [deleteTarget, setDeleteTarget] = useState<Descricao | null>(null);
-  const [viewingDescricao, setViewingDescricao] = useState<Descricao | null>(
-    null,
-  );
+  const [viewingDescricao, setViewingDescricao] = useState<Descricao | null>(null);
   const [sortBy, setSortBy] = useState<"nome" | "categoria" | "status">("nome");
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
   const [showFilters, setShowFilters] = useState(false);
+
+  // TanStack Queries
+  const { data: categories = [] } = useQuery({
+    queryKey: ["categories-reference"],
+    queryFn: () => categoryService.getAll({ limit: 999 }).then(res => res.data || []),
+  });
+
+  const queryFilters = useMemo(() => {
+    const filters: DescricaoFilters = {
+      page: currentPage,
+      limit: itemsPerPage,
+      search: searchTerm || undefined,
+      ativo: filterAtivo,
+      categoria_id: filterCategoria === "TODOS" ? undefined : filterCategoria,
+    };
+    return filters;
+  }, [currentPage, itemsPerPage, searchTerm, filterAtivo, filterCategoria]);
+
+  const { data: descricoesData, isLoading: loading, isFetching } = useQuery({
+    queryKey: ["descricoes", queryFilters],
+    queryFn: () => descricaoService.getAll(queryFilters),
+    placeholderData: (prev) => prev,
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: (id: number) => descricaoService.delete(id),
+    onSuccess: () => {
+      toast.success("Descrição excluída com sucesso.");
+      queryClient.invalidateQueries({ queryKey: ["descricoes"] });
+      setDeleteTarget(null);
+    },
+    onError: (error: any) => {
+      const apiMessage = error?.response?.data?.message;
+      toast.error(apiMessage || "Não foi possível excluir a descrição.");
+    }
+  });
+
+  const descricoes = descricoesData?.data || [];
+  const total = descricoesData?.pagination?.total || 0;
+  const totalPages = descricoesData?.pagination?.totalPages || 1;
 
   const activeFiltersCount = useMemo(() => {
     let count = 0;
@@ -92,106 +117,26 @@ export default function DescricoesPage() {
         return a.nome.localeCompare(b.nome, "pt-BR") * direction;
       }
       if (sortBy === "categoria") {
-        return (
-          getCategoryNameById(a.categoria_id).localeCompare(
-            getCategoryNameById(b.categoria_id),
-            "pt-BR",
-          ) * direction
-        );
+        return (getCategoryNameById(a.categoria_id).localeCompare(getCategoryNameById(b.categoria_id), "pt-BR") * direction);
       }
-      return Number(a.ativo === true) === Number(b.ativo === true)
-        ? 0
-        : (a.ativo ? 1 : -1) * direction;
+      return Number(a.ativo === true) === Number(b.ativo === true) ? 0 : (a.ativo ? 1 : -1) * direction;
     });
   }, [descricoes, sortBy, sortDirection, categories]);
-
-  const showFeedback = (type: "success" | "error", message: string) => {
-    setFeedback({ type, message });
-    window.setTimeout(() => setFeedback(null), 4000);
-  };
-
-  const loadDescricoes = async () => {
-    try {
-      setLoading(true);
-      const filters: DescricaoFilters = {
-        page: currentPage,
-        limit: itemsPerPage,
-        search: searchTerm || undefined,
-        ativo: filterAtivo,
-        categoria_id: filterCategoria === "TODOS" ? undefined : filterCategoria,
-      };
-
-      const response = await descricaoService.getAll(filters);
-      setDescricoes(response.data || []);
-      setTotal(response.pagination?.total || 0);
-      setTotalPages(response.pagination?.totalPages || 1);
-    } catch (error) {
-      console.error("Erro ao carregar descrições:", error);
-      showFeedback(
-        "error",
-        "Não foi possível carregar as descrições. Verifique a conexão com a API.",
-      );
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const loadCategories = async () => {
-    try {
-      const response = await categoryService.getAll({ limit: 100 });
-      setCategories(response.data || []);
-    } catch (error) {
-      console.error("Erro ao carregar categorias:", error);
-    }
-  };
-
-  useEffect(() => {
-    loadCategories();
-  }, []);
-
-  useEffect(() => {
-    loadDescricoes();
-  }, [currentPage, searchTerm, filterAtivo, filterCategoria, itemsPerPage]);
 
   const handleSearch = (value: string) => {
     setSearchTerm(value);
     setCurrentPage(1);
   };
 
-  const handleDelete = (descricao: Descricao) => {
-    setDeleteTarget(descricao);
-  };
-
   const handleConfirmDelete = async () => {
-    if (!deleteTarget) {
-      return;
-    }
-
-    try {
-      await descricaoService.delete(deleteTarget.id);
-      showFeedback(
-        "success",
-        "Descrição excluída com sucesso. A ação foi concluída.",
-      );
-      setDeleteTarget(null);
-      await loadDescricoes();
-    } catch (error) {
-      console.error("Erro ao excluir descrição:", error);
-      const apiMessage = (error as any)?.response?.data?.message;
-      showFeedback(
-        "error",
-        apiMessage || "Não foi possível excluir a descrição. Tente novamente.",
-      );
+    if (deleteTarget) {
+      deleteMutation.mutate(deleteTarget.id);
     }
   };
 
   const handleEdit = (descricao: Descricao) => {
     setEditingDescricao(descricao);
     setShowModal(true);
-  };
-
-  const handleView = (descricao: Descricao) => {
-    setViewingDescricao(descricao);
   };
 
   const handleCreate = () => {
@@ -205,16 +150,14 @@ export default function DescricoesPage() {
   };
 
   const handleSaveSuccess = async (message: string): Promise<void> => {
-    showFeedback("success", message);
-    await loadDescricoes();
+    toast.success(message);
+    queryClient.invalidateQueries({ queryKey: ["descricoes"] });
     handleCloseModal();
   };
 
   return (
     <div className="app-page py-4 sm:py-8">
       <div className="mx-auto max-w-7xl space-y-6 px-4 sm:px-6 lg:px-8">
-        <FeedbackAlert feedback={feedback} onClose={() => setFeedback(null)} />
-
         <PageContainer>
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
@@ -287,11 +230,7 @@ export default function DescricoesPage() {
                   ),
                   endAdornment: searchTerm ? (
                     <InputAdornment position="end">
-                      <IconButton
-                        size="small"
-                        onClick={() => handleSearch("")}
-                        aria-label="Limpar pesquisa"
-                      >
+                      <IconButton size="small" onClick={() => handleSearch("")} aria-label="Limpar pesquisa">
                         <X size={16} />
                       </IconButton>
                     </InputAdornment>
@@ -309,11 +248,7 @@ export default function DescricoesPage() {
               InputLabelProps={{ shrink: true }}
               value={filterCategoria}
               onChange={(e) => {
-                setFilterCategoria(
-                  e.target.value === "TODOS"
-                    ? "TODOS"
-                    : Number(e.target.value),
-                );
+                setFilterCategoria(e.target.value === "TODOS" ? "TODOS" : Number(e.target.value));
                 setCurrentPage(1);
               }}
             >
@@ -346,7 +281,7 @@ export default function DescricoesPage() {
           </div>
         </div>
 
-        <div className="app-surface p-4">
+        <div className={`app-surface p-4 transition-opacity duration-200 ${isFetching && !loading ? "opacity-50" : "opacity-100"}`}>
           {loading ? (
             <>
               <div className="md:hidden">
@@ -386,42 +321,19 @@ export default function DescricoesPage() {
                   >
                     <div className="flex items-start justify-between gap-3">
                       <div>
-                        <p className="text-sm font-semibold text-gray-900 dark:text-white">
-                          {descricao.nome}
-                        </p>
-                        <p className="mt-1 text-xs text-gray-600 dark:text-slate-400">
-                          Categoria:{" "}
-                          {getCategoryNameById(descricao.categoria_id)}
-                        </p>
+                        <p className="text-sm font-semibold text-gray-900 dark:text-white">{descricao.nome}</p>
+                        <p className="mt-1 text-xs text-gray-600 dark:text-slate-400">Categoria: {getCategoryNameById(descricao.categoria_id)}</p>
                       </div>
-
                       {descricao.ativo ? (
-                        <span className="inline-flex items-center rounded-full bg-green-100 px-2.5 py-1 text-[11px] font-semibold leading-none text-green-800 dark:bg-green-900/30 dark:text-green-400">
-                          Ativo
-                        </span>
+                        <span className="inline-flex items-center rounded-full bg-green-100 px-2.5 py-1 text-[11px] font-semibold leading-none text-green-800 dark:bg-green-900/30 dark:text-green-400">Ativo</span>
                       ) : (
-                        <span className="inline-flex items-center rounded-full bg-red-100 px-2.5 py-1 text-[11px] font-semibold leading-none text-red-800 dark:bg-red-900/30 dark:text-red-400">
-                          Inativo
-                        </span>
+                        <span className="inline-flex items-center rounded-full bg-red-100 px-2.5 py-1 text-[11px] font-semibold leading-none text-red-800 dark:bg-red-900/30 dark:text-red-400">Inativo</span>
                       )}
                     </div>
-
                     <div className="mt-3 flex items-center justify-end gap-2 border-t border-gray-100 pt-3 dark:border-slate-800">
-                      <TableActionButton
-                        action="view"
-                        title="Visualizar"
-                        onClick={() => handleView(descricao)}
-                      />
-                      <TableActionButton
-                        action="edit"
-                        title="Editar"
-                        onClick={() => handleEdit(descricao)}
-                      />
-                      <TableActionButton
-                        action="delete"
-                        title="Excluir"
-                        onClick={() => handleDelete(descricao)}
-                      />
+                      <TableActionButton action="view" title="Visualizar" onClick={() => setViewingDescricao(descricao)} />
+                      <TableActionButton action="edit" title="Editar" onClick={() => handleEdit(descricao)} />
+                      <TableActionButton action="delete" title="Excluir" onClick={() => setDeleteTarget(descricao)} />
                     </div>
                   </div>
                 ))}
@@ -432,99 +344,43 @@ export default function DescricoesPage() {
                   <thead className="app-table-head">
                     <tr>
                       <th className="app-table-head-cell">
-                        <button
-                          type="button"
-                          onClick={() => handleSort("nome")}
-                          className="inline-flex items-center gap-1"
-                        >
+                        <button type="button" onClick={() => handleSort("nome")} className="inline-flex items-center gap-1">
                           Descrição
-                          {sortBy === "nome" && sortDirection === "asc" ? (
-                            <ArrowUpNarrowWide size={14} />
-                          ) : sortBy === "nome" ? (
-                            <ArrowDownWideNarrow size={14} />
-                          ) : null}
+                          {sortBy === "nome" && sortDirection === "asc" ? <ArrowUpNarrowWide size={14} /> : sortBy === "nome" ? <ArrowDownWideNarrow size={14} /> : null}
                         </button>
                       </th>
                       <th className="app-table-head-cell">
-                        <button
-                          type="button"
-                          onClick={() => handleSort("categoria")}
-                          className="inline-flex items-center gap-1"
-                        >
+                        <button type="button" onClick={() => handleSort("categoria")} className="inline-flex items-center gap-1">
                           Categoria
-                          {sortBy === "categoria" && sortDirection === "asc" ? (
-                            <ArrowUpNarrowWide size={14} />
-                          ) : sortBy === "categoria" ? (
-                            <ArrowDownWideNarrow size={14} />
-                          ) : null}
+                          {sortBy === "categoria" && sortDirection === "asc" ? <ArrowUpNarrowWide size={14} /> : sortBy === "categoria" ? <ArrowDownWideNarrow size={14} /> : null}
                         </button>
                       </th>
                       <th className="app-table-head-cell">
-                        <button
-                          type="button"
-                          onClick={() => handleSort("status")}
-                          className="inline-flex items-center gap-1"
-                        >
+                        <button type="button" onClick={() => handleSort("status")} className="inline-flex items-center gap-1">
                           Status
-                          {sortBy === "status" && sortDirection === "asc" ? (
-                            <ArrowUpNarrowWide size={14} />
-                          ) : sortBy === "status" ? (
-                            <ArrowDownWideNarrow size={14} />
-                          ) : null}
+                          {sortBy === "status" && sortDirection === "asc" ? <ArrowUpNarrowWide size={14} /> : sortBy === "status" ? <ArrowDownWideNarrow size={14} /> : null}
                         </button>
                       </th>
-                      <th className="app-table-head-cell-center">
-                        Ações
-                      </th>
+                      <th className="app-table-head-cell-center">Ações</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-200 dark:divide-slate-800 bg-white dark:bg-slate-900">
                     {sortedDescricoes.map((descricao) => (
-                      <tr
-                        key={descricao.id}
-                        className="app-table-row"
-                      >
-                        <td className="whitespace-nowrap px-3 py-2">
-                          <div className="text-xs font-medium text-gray-900 dark:text-slate-200">
-                            {descricao.nome}
-                          </div>
-                        </td>
-                        <td className="whitespace-nowrap px-3 py-2">
-                          <div className="text-xs text-gray-600 dark:text-slate-400">
-                            {getCategoryNameById(descricao.categoria_id)}
-                          </div>
-                        </td>
+                      <tr key={descricao.id} className="app-table-row">
+                        <td className="whitespace-nowrap px-3 py-2 text-xs font-medium text-gray-900 dark:text-slate-200">{descricao.nome}</td>
+                        <td className="whitespace-nowrap px-3 py-2 text-xs text-gray-600 dark:text-slate-400">{getCategoryNameById(descricao.categoria_id)}</td>
                         <td className="whitespace-nowrap px-3 py-2">
                           {descricao.ativo ? (
-                            <span className="inline-flex items-center rounded-full bg-green-100 px-2.5 py-1 text-[11px] font-semibold leading-none text-green-800 dark:bg-green-900/30 dark:text-green-400">
-                              Ativo
-                            </span>
+                            <span className="inline-flex items-center rounded-full bg-green-100 px-2.5 py-1 text-[11px] font-semibold leading-none text-green-800 dark:bg-green-900/30 dark:text-green-400">Ativo</span>
                           ) : (
-                            <span className="inline-flex items-center rounded-full bg-red-100 px-2.5 py-1 text-[11px] font-semibold leading-none text-red-800 dark:bg-red-900/30 dark:text-red-400">
-                              Inativo
-                            </span>
+                            <span className="inline-flex items-center rounded-full bg-red-100 px-2.5 py-1 text-[11px] font-semibold leading-none text-red-800 dark:bg-red-900/30 dark:text-red-400">Inativo</span>
                           )}
                         </td>
                         <td className="whitespace-nowrap px-3 py-2 text-center text-xs font-medium">
                           <div className="flex justify-center gap-1">
-                            <TableActionButton
-                              action="view"
-                              title="Visualizar"
-                              onClick={() => handleView(descricao)}
-                              compact
-                            />
-                            <TableActionButton
-                              action="edit"
-                              title="Editar"
-                              onClick={() => handleEdit(descricao)}
-                              compact
-                            />
-                            <TableActionButton
-                              action="delete"
-                              title="Excluir"
-                              onClick={() => handleDelete(descricao)}
-                              compact
-                            />
+                            <TableActionButton action="view" title="Visualizar" onClick={() => setViewingDescricao(descricao)} compact />
+                            <TableActionButton action="edit" title="Editar" onClick={() => handleEdit(descricao)} compact />
+                            <TableActionButton action="delete" title="Excluir" onClick={() => setDeleteTarget(descricao)} compact />
                           </div>
                         </td>
                       </tr>
@@ -532,7 +388,6 @@ export default function DescricoesPage() {
                   </tbody>
                 </table>
               </div>
-
             </>
           )}
         </div>
@@ -554,18 +409,10 @@ export default function DescricoesPage() {
       <ViewDataModal
         isOpen={!!viewingDescricao}
         title="Visualizar Descrição"
-        data={
-          viewingDescricao
-            ? {
-                ...viewingDescricao,
-                categoria_nome: getCategoryNameById(viewingDescricao.categoria_id),
-              }
-            : null
-        }
+        data={viewingDescricao ? { ...viewingDescricao, categoria_nome: getCategoryNameById(viewingDescricao.categoria_id) } : null}
         onClose={() => setViewingDescricao(null)}
       />
 
-      {/* Modal */}
       <DescricaoModal
         isOpen={showModal}
         descricao={editingDescricao}
@@ -576,12 +423,7 @@ export default function DescricoesPage() {
       <ConfirmDeleteModal
         isOpen={!!deleteTarget}
         title="Confirmar exclusão"
-        description={
-          <>
-            Esta ação removerá a descrição <strong>{deleteTarget?.nome}</strong>
-            .
-          </>
-        }
+        description={<>Esta ação removerá a descrição <strong>{deleteTarget?.nome}</strong>.</>}
         confirmLabel="Excluir descrição"
         onCancel={() => setDeleteTarget(null)}
         onConfirm={handleConfirmDelete}
@@ -589,5 +431,3 @@ export default function DescricoesPage() {
     </div>
   );
 }
-
-

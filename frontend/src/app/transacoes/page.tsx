@@ -187,14 +187,20 @@ export default function TransacoesPage() {
     return filters;
   }, [currentPage, itemsPerPage, searchTerm, filterTipo, filterCategoria, filterBanco, filterSituacao, filterMes]);
 
-  const { data: transacoesData, isLoading: loadingTransacoes } = useQuery({
+  const { 
+    data: transacoesData, 
+    isLoading: loadingTransacoes,
+    isFetching: fetchingTransacoes 
+  } = useQuery({
     queryKey: ["transacoes", queryFilters],
     queryFn: () => transacaoService.getAll(queryFilters),
+    placeholderData: (previousData) => previousData,
   });
 
   const { data: summary } = useQuery({
     queryKey: ["transacoes-summary", queryFilters],
     queryFn: () => transacaoService.getSummary(queryFilters),
+    placeholderData: (previousData) => previousData,
   });
 
   const transacoes = transacoesData?.data || [];

@@ -9,13 +9,11 @@ import { transacaoService } from "@/services/transacaoService";
 import { categoryService } from "@/services/categoryService";
 import { bankService } from "@/services/bankService";
 import { Transacao } from "@/types/transacao";
-import { Category } from "@/types/category";
-import { Bank } from "@/types/bank";
 import { toast } from "sonner";
 import PageContainer from "@/components/PageContainer";
 import AppButton from "@/components/AppButton";
 import { useQuery } from "@tanstack/react-query";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 
 // New Components
 import { SummaryCards } from "./components/SummaryCards";
@@ -158,9 +156,14 @@ export default function DashboardPage() {
   };
 
   // TanStack Queries
-  const { data: transacoes = [], isLoading: loadingTransacoes } = useQuery({
+  const { 
+    data: transacoes = [], 
+    isLoading: loadingTransacoes,
+    isFetching: fetchingTransacoes 
+  } = useQuery({
     queryKey: ["all-transacoes-dashboard"],
     queryFn: () => transacaoService.getAll({ page: 1, limit: 5000 }).then(res => res.data || []),
+    placeholderData: (previousData) => previousData,
   });
 
   const { data: categories = [] } = useQuery({
@@ -379,6 +382,7 @@ export default function DashboardPage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
+          className={`transition-opacity duration-200 ${fetchingTransacoes && !loadingTransacoes ? "opacity-50" : "opacity-100"}`}
         >
           <DashboardTransactionsTable 
             detailedRows={detailedRows} tableSortBy={tableSortBy} tableSortDirection={tableSortDirection} 
