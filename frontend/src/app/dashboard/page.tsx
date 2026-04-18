@@ -4,8 +4,6 @@ import { useEffect, useMemo, useState } from "react";
 import {
   BarChart3,
   Filter,
-  ArrowUpNarrowWide,
-  ArrowDownWideNarrow,
 } from "lucide-react";
 import { transacaoService } from "@/services/transacaoService";
 import { categoryService } from "@/services/categoryService";
@@ -13,9 +11,11 @@ import { bankService } from "@/services/bankService";
 import { Transacao } from "@/types/transacao";
 import { Category } from "@/types/category";
 import { Bank } from "@/types/bank";
-import FeedbackAlert from "@/components/FeedbackAlert";
+import { toast } from "sonner";
 import PageContainer from "@/components/PageContainer";
 import AppButton from "@/components/AppButton";
+import { useQuery } from "@tanstack/react-query";
+import { motion, AnimatePresence } from "framer-motion";
 
 // New Components
 import { SummaryCards } from "./components/SummaryCards";
@@ -106,17 +106,8 @@ const currency = (value: number): string =>
 
 export default function DashboardPage() {
   const currentYear = String(new Date().getFullYear());
-  const [loading, setLoading] = useState(true);
-  const [feedback, setFeedback] = useState<{
-    type: "success" | "error";
-    message: string;
-  } | null>(null);
   const [isMobile, setIsMobile] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
-
-  const [transacoes, setTransacoes] = useState<Transacao[]>([]);
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [banks, setBanks] = useState<Bank[]>([]);
 
   useEffect(() => {
     const mediaQuery = window.matchMedia("(max-width: 767px)");
@@ -159,30 +150,21 @@ export default function DashboardPage() {
     setTableSortDirection("asc");
   };
 
-  useEffect(() => {
-    const loadDashboard = async () => {
-      try {
-        setLoading(true);
-        const [transacoesResp, categoriesResp, banksResp] = await Promise.all([
-          transacaoService.getAll({ page: 1, limit: 5000 }),
-          categoryService.getAll({ page: 1, limit: 1000 }),
-          bankService.getAll({ page: 1, limit: 1000 }),
-        ]);
-        setTransacoes(transacoesResp.data || []);
-        setCategories(categoriesResp.data || []);
-        setBanks(banksResp.data || []);
-      } catch (error) {
-        console.error("Erro ao carregar dashboard:", error);
-        setFeedback({
-          type: "error",
-          message: "Não foi possível carregar os dados do dashboard.",
-        });
-      } finally {
-        setLoading(false);
-      }
-    };
-    loadDashboard();
-  }, []);
+  // TanStack Queries
+  const { data: transacoes = [], isLoading: loadingTransacoes } = useQuery({
+    queryKey: ["all-transacoes-dashboard"],
+    queryFn: () => transacaoService.getAll({ page: 1, limit: 5000 }).then(res => res.data || []),
+  });
+
+  const { data: categories = [] } = useQuery({
+    queryKey: ["categories"],
+    queryFn: () => categoryService.getAll({ page: 1, limit: 1000 }).then(res => res.data || []),
+  });
+
+  const { data: banks = [] } = useQuery({
+    queryKey: ["banks"],
+    queryFn: () => bankService.getAll({ page: 1, limit: 1000 }).then(res => res.data || []),
+  });
 
   const filteredTransacoes = useMemo(() => {
     return transacoes.filter((t) => {
@@ -208,25 +190,20 @@ export default function DashboardPage() {
     return Array.from(years).sort((a, b) => b.localeCompare(a));
   }, [transacoes, currentYear]);
 
-  // Timeline SEMPRE completa (12 meses ou ano selecionado), ignorando o filtro de mês específico
   const timeline = useMemo(() => {
     const allMonthsSet = new Set<string>();
     transacoes.forEach((t) => {
       const month = parseMesToKey(t.mes);
       if (month) {
-        // Se houver ano selecionado, filtra por ele, caso contrário, pega tudo para o slice posterior
         if (filterAno === "TODOS" || month.startsWith(`${filterAno}-`)) {
           allMonthsSet.add(month);
         }
       }
     });
     const sortedMonths = Array.from(allMonthsSet).sort();
-    
-    // Se estiver filtrando um mês específico, mostramos os meses que levam a ele (12 meses)
     const selectedMonths = sortedMonths.slice(-periodMonths);
 
     return selectedMonths.map((monthKey) => {
-      // Aqui filtramos as transações apenas pelos outros critérios, mas no mês da timeline
       const monthItems = transacoes.filter((t) => {
         const tMesKey = parseMesToKey(t.mes);
         if (tMesKey !== monthKey) return false;
@@ -322,7 +299,7 @@ export default function DashboardPage() {
       .slice(0, 12);
   }, [filteredTransacoes, tableSortBy, tableSortDirection]);
 
-  if (loading) {
+  if (loadingTransacoes) {
     return (
       <div className="app-page py-4 sm:py-8">
         <div className="mx-auto max-w-7xl space-y-6 px-4 sm:px-6 lg:px-8">
@@ -338,17 +315,18 @@ export default function DashboardPage() {
   return (
     <div className="app-page py-4 sm:py-8">
       <div className="mx-auto max-w-7xl space-y-6 px-4 sm:px-6 lg:px-8">
-        <FeedbackAlert feedback={feedback} onClose={() => setFeedback(null)} />
-
         <PageContainer>
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <div>
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+            >
               <h1 className="flex items-center gap-3 text-2xl font-bold text-gray-900 sm:text-3xl dark:text-white">
                 <BarChart3 size={32} className="text-blue-600 dark:text-blue-400" />
                 Dashboard Executivo
               </h1>
               <p className="mt-2 text-sm text-gray-600 dark:text-slate-400">Visão consolidada de desempenho financeiro.</p>
-            </div>
+            </motion.div>
             <AppButton
               tone={showFilters ? "outline-primary" : "outline"}
               onClick={() => setShowFilters(!showFilters)}
@@ -369,19 +347,37 @@ export default function DashboardPage() {
           availableYears={availableYears} sortedBanks={sortedBanks} sortedCategories={sortedCategories} currentYear={currentYear}
         />
 
-        <SummaryCards summary={summaryCardsData} currency={currency} />
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+        >
+          <SummaryCards summary={summaryCardsData} currency={currency} />
+        </motion.div>
 
-        <DashboardCharts 
-          comparisonData={comparisonData} timeline={timeline} currentMonthData={currentMonthData} 
-          byCategory={byCategory} isMobile={isMobile} chartColors={chartColors} 
-          getTooltipSeriesColor={getTooltipSeriesColor} currency={currency} hasData={periodFilteredTransacoes.length > 0}
-          filterAno={filterAno}
-        />
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+        >
+          <DashboardCharts 
+            comparisonData={comparisonData} timeline={timeline} currentMonthData={currentMonthData} 
+            byCategory={byCategory} isMobile={isMobile} chartColors={chartColors} 
+            getTooltipSeriesColor={getTooltipSeriesColor} currency={currency} hasData={periodFilteredTransacoes.length > 0}
+            filterAno={filterAno}
+          />
+        </motion.div>
 
-        <DashboardTransactionsTable 
-          detailedRows={detailedRows} tableSortBy={tableSortBy} tableSortDirection={tableSortDirection} 
-          handleTableSort={handleTableSort} tipoLabel={tipoLabel} situacaoLabel={situacaoLabel} currency={currency}
-        />
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3 }}
+        >
+          <DashboardTransactionsTable 
+            detailedRows={detailedRows} tableSortBy={tableSortBy} tableSortDirection={tableSortDirection} 
+            handleTableSort={handleTableSort} tipoLabel={tipoLabel} situacaoLabel={situacaoLabel} currency={currency}
+          />
+        </motion.div>
       </div>
     </div>
   );

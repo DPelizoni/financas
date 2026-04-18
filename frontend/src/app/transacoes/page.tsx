@@ -26,13 +26,14 @@ import {
 } from "lucide-react";
 import Icon from "@mdi/react";
 import { mdiPlusBoxOutline } from "@mdi/js";
-import FeedbackAlert from "@/components/FeedbackAlert";
+import { toast } from "sonner";
 import ConfirmDeleteModal from "@/components/ConfirmDeleteModal";
 import PageContainer from "@/components/PageContainer";
 import AppButton from "@/components/AppButton";
 import ViewDataModal from "@/components/ViewDataModal";
 import { useAccessibleModal } from "@/utils/useAccessibleModal";
 import { createPortal } from "react-dom";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 // New Components
 import { TransactionSummaryCards } from "./components/TransactionSummaryCards";
@@ -49,11 +50,6 @@ interface DeleteConfirmation {
 interface DeleteTransactionMonthsTarget {
   transacaoId: number;
   transacaoMes: string;
-}
-
-interface FeedbackMessage {
-  type: "success" | "error";
-  message: string;
 }
 
 const situacaoLabel: Record<"PENDENTE" | "PAGO", string> = {
@@ -108,6 +104,7 @@ const parseDateToTimestamp = (value: string): number => {
 };
 
 export default function TransacoesPage() {
+  const queryClient = useQueryClient();
   const copyModalRef = useRef<HTMLDivElement>(null);
   const copyModalTitleId = useId();
   const deleteModalRef = useRef<HTMLDivElement>(null);
@@ -115,42 +112,24 @@ export default function TransacoesPage() {
   const deleteTransactionMonthsModalRef = useRef<HTMLDivElement>(null);
   const deleteTransactionMonthsModalTitleId = useId();
 
-  const [transacoes, setTransacoes] = useState<Transacao[]>([]);
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [banks, setBanks] = useState<Bank[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [summary, setSummary] = useState<TransacaoSummary | null>(null);
-
   const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
-  const [total, setTotal] = useState(0);
   const [itemsPerPage, setItemsPerPage] = useState(10);
-
   const [searchTerm, setSearchTerm] = useState("");
-  const [filterTipo, setFilterTipo] = useState<
-    "DESPESA" | "RECEITA" | "TODOS"
-  >("TODOS");
-  const [filterCategoria, setFilterCategoria] = useState<number | "TODOS">(
-    "TODOS",
-  );
+  const [filterTipo, setFilterTipo] = useState<"DESPESA" | "RECEITA" | "TODOS">("TODOS");
+  const [filterCategoria, setFilterCategoria] = useState<number | "TODOS">("TODOS");
   const [filterBanco, setFilterBanco] = useState<number | "TODOS">("TODOS");
-  const [filterSituacao, setFilterSituacao] = useState<
-    "PENDENTE" | "PAGO" | "TODOS"
-  >("TODOS");
+  const [filterSituacao, setFilterSituacao] = useState<"PENDENTE" | "PAGO" | "TODOS">("TODOS");
   const [filterMes, setFilterMes] = useState(currentMonthInputValue);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingTransacao, setEditingTransacao] = useState<Transacao>();
-  const [viewingTransacao, setViewingTransacao] = useState<Transacao | null>(
-    null,
-  );
-
+  const [viewingTransacao, setViewingTransacao] = useState<Transacao | null>(null);
   const [deleteConfirm, setDeleteConfirm] = useState<DeleteConfirmation>({
     isOpen: false,
     transacaoId: null,
     transacaoMes: null,
   });
-  const [feedback, setFeedback] = useState<FeedbackMessage | null>(null);
+
   const [sortBy, setSortBy] = useState<
     | "mes"
     | "vencimento"
@@ -170,24 +149,106 @@ export default function TransacoesPage() {
   const [deleteMeses, setDeleteMeses] = useState<string[]>([]);
   const [deleteMonthsLoading, setDeleteMonthsLoading] = useState(false);
   const [deleteMonthsConfirmOpen, setDeleteMonthsConfirmOpen] = useState(false);
-  const [deleteTransactionMonthsTarget, setDeleteTransactionMonthsTarget] =
-    useState<DeleteTransactionMonthsTarget | null>(null);
-  const [deleteTransactionMesInput, setDeleteTransactionMesInput] =
-    useState("");
-  const [deleteTransactionMeses, setDeleteTransactionMeses] = useState<string[]>(
-    [],
-  );
-  const [deleteTransactionMonthsLoading, setDeleteTransactionMonthsLoading] =
-    useState(false);
-  const [deleteTransactionMonthsModalOpen, setDeleteTransactionMonthsModalOpen] =
-    useState(false);
-  const [deleteTransactionMonthsConfirmOpen, setDeleteTransactionMonthsConfirmOpen] =
-    useState(false);
+  const [deleteTransactionMonthsTarget, setDeleteTransactionMonthsTarget] = useState<DeleteTransactionMonthsTarget | null>(null);
+  const [deleteTransactionMesInput, setDeleteTransactionMesInput] = useState("");
+  const [deleteTransactionMeses, setDeleteTransactionMeses] = useState<string[]>([]);
+  const [deleteTransactionMonthsLoading, setDeleteTransactionMonthsLoading] = useState(false);
+  const [deleteTransactionMonthsModalOpen, setDeleteTransactionMonthsModalOpen] = useState(false);
+  const [deleteTransactionMonthsConfirmOpen, setDeleteTransactionMonthsConfirmOpen] = useState(false);
   const [advancedActionsOpen, setAdvancedActionsOpen] = useState(false);
   const [copyModalOpen, setCopyModalOpen] = useState(false);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
   const [isPortalReady, setIsPortalReady] = useState(false);
+
+  // TanStack Queries
+  const { data: categories = [] } = useQuery({
+    queryKey: ["categories"],
+    queryFn: () => categoryService.getAll({ limit: 999 }).then((res) => res.data || []),
+  });
+
+  const { data: banks = [] } = useQuery({
+    queryKey: ["banks"],
+    queryFn: () => bankService.getAll({ limit: 999 }).then((res) => res.data || []),
+  });
+
+  const queryFilters = useMemo(() => {
+    const filters: TransacaoFilters = {
+      page: currentPage,
+      limit: itemsPerPage,
+    };
+    if (searchTerm) filters.search = searchTerm;
+    if (filterTipo !== "TODOS") filters.tipo = filterTipo;
+    if (filterCategoria !== "TODOS") filters.categoria_id = filterCategoria as number;
+    if (filterBanco !== "TODOS") filters.banco_id = filterBanco as number;
+    if (filterSituacao !== "TODOS") filters.situacao = filterSituacao;
+    const mesApi = monthInputToApi(filterMes);
+    if (mesApi) filters.mes = mesApi;
+    return filters;
+  }, [currentPage, itemsPerPage, searchTerm, filterTipo, filterCategoria, filterBanco, filterSituacao, filterMes]);
+
+  const { data: transacoesData, isLoading: loadingTransacoes } = useQuery({
+    queryKey: ["transacoes", queryFilters],
+    queryFn: () => transacaoService.getAll(queryFilters),
+  });
+
+  const { data: summary } = useQuery({
+    queryKey: ["transacoes-summary", queryFilters],
+    queryFn: () => transacaoService.getSummary(queryFilters),
+  });
+
+  const transacoes = transacoesData?.data || [];
+  const totalPages = transacoesData?.pagination?.totalPages || 1;
+  const total = transacoesData?.pagination?.total || 0;
+
+  // Mutations
+  const toggleSituacaoMutation = useMutation({
+    mutationFn: (transacao: Transacao) => {
+      const novaSituacao = transacao.situacao === "PAGO" ? "PENDENTE" : "PAGO";
+      return transacaoService.update(transacao.id, { situacao: novaSituacao });
+    },
+    onMutate: async (updatedTransacao) => {
+      await queryClient.cancelQueries({ queryKey: ["transacoes"] });
+      const previousData = queryClient.getQueryData(["transacoes", queryFilters]);
+      
+      queryClient.setQueryData(["transacoes", queryFilters], (old: any) => {
+        if (!old) return old;
+        return {
+          ...old,
+          data: old.data.map((t: Transacao) => 
+            t.id === updatedTransacao.id 
+              ? { ...t, situacao: t.situacao === "PAGO" ? "PENDENTE" : "PAGO" } 
+              : t
+          )
+        };
+      });
+
+      return { previousData };
+    },
+    onError: (err, variables, context) => {
+      queryClient.setQueryData(["transacoes", queryFilters], context?.previousData);
+      toast.error("Erro ao atualizar situação.");
+    },
+    onSuccess: (data, variables) => {
+      const novaSituacao = variables.situacao === "PAGO" ? "PENDENTE" : "PAGO";
+      toast.success(`Transação marcada como ${situacaoLabel[novaSituacao]}.`);
+      queryClient.invalidateQueries({ queryKey: ["transacoes"] });
+      queryClient.invalidateQueries({ queryKey: ["transacoes-summary"] });
+    }
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: (id: number) => transacaoService.delete(id),
+    onSuccess: () => {
+      toast.success("Transação excluída com sucesso.");
+      queryClient.invalidateQueries({ queryKey: ["transacoes"] });
+      queryClient.invalidateQueries({ queryKey: ["transacoes-summary"] });
+    },
+    onError: (error: any) => {
+      const apiMessage = error?.response?.data?.message;
+      toast.error(apiMessage || "Não foi possível excluir a transação.");
+    }
+  });
 
   const activeFiltersCount = useMemo(() => {
     let count = 0;
@@ -197,25 +258,9 @@ export default function TransacoesPage() {
     if (filterBanco !== "TODOS") count++;
     if (filterSituacao !== "TODOS") count++;
     return count;
-  }, [
-    searchTerm,
-    filterTipo,
-    filterCategoria,
-    filterBanco,
-    filterSituacao,
-  ]);
+  }, [searchTerm, filterTipo, filterCategoria, filterBanco, filterSituacao]);
 
-  const handleSort = (
-    column:
-      | "mes"
-      | "vencimento"
-      | "tipo"
-      | "categoria"
-      | "descricao"
-      | "banco"
-      | "valor"
-      | "situacao",
-  ) => {
+  const handleSort = (column: any) => {
     if (sortBy === column) {
       setSortDirection((prev) => (prev === "asc" ? "desc" : "asc"));
       return;
@@ -224,96 +269,9 @@ export default function TransacoesPage() {
     setSortDirection("asc");
   };
 
-  const showFeedback = (type: "success" | "error", message: string) => {
-    setFeedback({ type, message });
-    window.setTimeout(() => setFeedback(null), 4000);
-  };
-
-  useEffect(() => {
-    loadData();
-  }, []);
-
   useEffect(() => {
     setIsPortalReady(true);
   }, []);
-
-  useEffect(() => {
-    loadTransacoes();
-  }, [
-    currentPage,
-    itemsPerPage,
-    searchTerm,
-    filterTipo,
-    filterCategoria,
-    filterBanco,
-    filterSituacao,
-    filterMes,
-  ]);
-
-  const loadData = async () => {
-    try {
-      setLoading(true);
-      await Promise.all([loadCategories(), loadBanks()]);
-      await loadTransacoes();
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const loadTransacoes = async () => {
-    try {
-      const filters: TransacaoFilters = {
-        page: currentPage,
-        limit: itemsPerPage,
-      };
-
-      if (searchTerm) filters.search = searchTerm;
-      if (filterTipo !== "TODOS") filters.tipo = filterTipo;
-      if (filterCategoria !== "TODOS")
-        filters.categoria_id = filterCategoria as number;
-      if (filterBanco !== "TODOS") filters.banco_id = filterBanco as number;
-      if (filterSituacao !== "TODOS") filters.situacao = filterSituacao;
-      const mesApi = monthInputToApi(filterMes);
-      if (mesApi) filters.mes = mesApi;
-
-      const response = await transacaoService.getAll(filters);
-      setTransacoes(response.data || []);
-      setTotalPages(response.pagination?.totalPages || 1);
-      setTotal(response.pagination?.total || 0);
-
-      const summaryResponse = await transacaoService.getSummary({
-        search: searchTerm || undefined,
-        tipo: filterTipo === "TODOS" ? undefined : filterTipo,
-        categoria_id:
-          filterCategoria === "TODOS" ? undefined : (filterCategoria as number),
-        banco_id: filterBanco === "TODOS" ? undefined : (filterBanco as number),
-        situacao: filterSituacao === "TODOS" ? undefined : filterSituacao,
-        mes: mesApi,
-      });
-      setSummary(summaryResponse);
-    } catch (error) {
-      console.error("Erro ao carregar transações:", error);
-      showFeedback("error", "Não foi possível carregar as transações.");
-    }
-  };
-
-  const loadCategories = async () => {
-    try {
-      const response = await categoryService.getAll({ limit: 999 });
-      setCategories(response.data || []);
-    } catch (error) {
-      console.error("Erro ao carregar categorias:", error);
-    }
-  };
-
-  const loadBanks = async () => {
-    try {
-      const response = await bankService.getAll({ limit: 999 });
-      setBanks(response.data || []);
-    } catch (error) {
-      console.error("Erro ao carregar bancos:", error);
-    }
-  };
 
   const handleEdit = (transacao: Transacao) => {
     setEditingTransacao(transacao);
@@ -352,29 +310,18 @@ export default function TransacoesPage() {
 
   const confirmDelete = async () => {
     if (deleteConfirm.transacaoId) {
-      try {
-        await transacaoService.delete(deleteConfirm.transacaoId);
-        setDeleteConfirm({
-          isOpen: false,
-          transacaoId: null,
-          transacaoMes: null,
-        });
-        showFeedback("success", "Transação excluída com sucesso.");
-        await loadTransacoes();
-      } catch (error) {
-        console.error("Erro ao deletar transação:", error);
-        const apiMessage = (error as any)?.response?.data?.message;
-        showFeedback(
-          "error",
-          apiMessage || "Não foi possível excluir a transação.",
-        );
-      }
+      deleteMutation.mutate(deleteConfirm.transacaoId);
+      setDeleteConfirm({
+        isOpen: false,
+        transacaoId: null,
+        transacaoMes: null,
+      });
     }
   };
 
   const handleOpenDeleteTransactionMonths = () => {
     if (!deleteConfirm.transacaoId || !deleteConfirm.transacaoMes) {
-      showFeedback("error", "Não foi possível identificar a transação base.");
+      toast.error("Não foi possível identificar a transação base.");
       return;
     }
 
@@ -393,16 +340,8 @@ export default function TransacoesPage() {
     });
   };
 
-  const handleToggleSituacao = async (transacao: Transacao) => {
-    try {
-      const novaSituacao = transacao.situacao === "PAGO" ? "PENDENTE" : "PAGO";
-      await transacaoService.update(transacao.id, { situacao: novaSituacao });
-      showFeedback("success", `Transação marcada como ${situacaoLabel[novaSituacao]}.`);
-      await loadTransacoes();
-    } catch (error) {
-      console.error("Erro ao atualizar situação:", error);
-      showFeedback("error", "Não foi possível atualizar a situação.");
-    }
+  const handleToggleSituacao = (transacao: Transacao) => {
+    toggleSituacaoMutation.mutate(transacao);
   };
 
   const sortedTransacoes = useMemo(() => {
@@ -451,7 +390,7 @@ export default function TransacoesPage() {
   const handleAddDestinoMes = () => {
     const mesApi = monthInputToApi(copyMesDestinoInput);
     if (!mesApi) {
-      showFeedback("error", "Selecione um mês de destino válido.");
+      toast.error("Selecione um mês de destino válido.");
       return;
     }
 
@@ -473,7 +412,7 @@ export default function TransacoesPage() {
   const handleAddNextMonths = (count: number) => {
     const origemApi = monthInputToApi(copyMesOrigem);
     if (!origemApi) {
-      showFeedback("error", "Selecione o mês de origem para usar o atalho.");
+      toast.error("Selecione o mês de origem para usar o atalho.");
       return;
     }
 
@@ -494,21 +433,18 @@ export default function TransacoesPage() {
   const handleCopyByMonth = async () => {
     const origemApi = monthInputToApi(copyMesOrigem);
     if (!origemApi) {
-      showFeedback("error", "Selecione o mês de origem.");
+      toast.error("Selecione o mês de origem.");
       return;
     }
 
     if (copyMesesDestino.length === 0) {
-      showFeedback("error", "Adicione ao menos um mês de destino.");
+      toast.error("Adicione ao menos um mês de destino.");
       return;
     }
 
     const destinoSemOrigem = copyMesesDestino.filter((m) => m !== origemApi);
     if (destinoSemOrigem.length === 0) {
-      showFeedback(
-        "error",
-        "O mês de destino deve ser diferente do mês de origem.",
-      );
+      toast.error("O mês de destino deve ser diferente do mês de origem.");
       return;
     }
 
@@ -519,23 +455,16 @@ export default function TransacoesPage() {
         meses_destino: destinoSemOrigem,
       });
 
-      showFeedback(
-        "success",
-        `Cópia concluída: ${result.total_criadas} transações criadas para ${result.meses_destino.length} mês(es) de destino.`,
-      );
-
+      toast.success(`Cópia concluída: ${result.total_criadas} transações criadas.`);
       setCopyMesOrigem("");
       setCopyMesesDestino([]);
       setCopyMesDestinoInput("");
       setCopyModalOpen(false);
       setCurrentPage(1);
-      await loadTransacoes();
-    } catch (error) {
-      const apiMessage = (error as any)?.response?.data?.message;
-      showFeedback(
-        "error",
-        apiMessage || "Não foi possível copiar as transações por mês.",
-      );
+      queryClient.invalidateQueries({ queryKey: ["transacoes"] });
+    } catch (error: any) {
+      const apiMessage = error?.response?.data?.message;
+      toast.error(apiMessage || "Não foi possível copiar as transações.");
     } finally {
       setCopyLoading(false);
     }
@@ -544,7 +473,7 @@ export default function TransacoesPage() {
   const handleAddDeleteMes = () => {
     const mesApi = monthInputToApi(deleteMesInput);
     if (!mesApi) {
-      showFeedback("error", "Selecione um mês válido para exclusão.");
+      toast.error("Selecione um mês válido para exclusão.");
       return;
     }
 
@@ -566,10 +495,7 @@ export default function TransacoesPage() {
   const handleAddDeleteNextMonths = (count: number) => {
     const baseMesApi = monthInputToApi(deleteMesInput);
     if (!baseMesApi) {
-      showFeedback(
-        "error",
-        "Para usar este atalho, selecione o mês na rotina de exclusão.",
-      );
+      toast.error("Para usar este atalho, selecione o mês na rotina de exclusão.");
       return;
     }
 
@@ -589,7 +515,7 @@ export default function TransacoesPage() {
 
   const handleDeleteByMonths = async () => {
     if (deleteMeses.length === 0) {
-      showFeedback("error", "Adicione ao menos um mês para exclusão.");
+      toast.error("Adicione ao menos um mês para exclusão.");
       return;
     }
 
@@ -599,21 +525,15 @@ export default function TransacoesPage() {
         meses: deleteMeses,
       });
 
-      showFeedback(
-        "success",
-        `Exclusão concluída: ${result.total_excluidas} transações removidas em ${result.meses.length} mês(es).`,
-      );
-
+      toast.success(`Exclusão concluída: ${result.total_excluidas} transações removidas.`);
       setDeleteMeses([]);
       setDeleteMesInput("");
       setCurrentPage(1);
-      await loadTransacoes();
-    } catch (error) {
-      const apiMessage = (error as any)?.response?.data?.message;
-      showFeedback(
-        "error",
-        apiMessage || "Não foi possível excluir as transações por mês.",
-      );
+      queryClient.invalidateQueries({ queryKey: ["transacoes"] });
+      queryClient.invalidateQueries({ queryKey: ["transacoes-summary"] });
+    } catch (error: any) {
+      const apiMessage = error?.response?.data?.message;
+      toast.error(apiMessage || "Não foi possível excluir as transações.");
     } finally {
       setDeleteMonthsLoading(false);
     }
@@ -621,10 +541,9 @@ export default function TransacoesPage() {
 
   const requestDeleteByMonths = () => {
     if (deleteMeses.length === 0) {
-      showFeedback("error", "Adicione ao menos um mês para exclusão.");
+      toast.error("Adicione ao menos um mês para exclusão.");
       return;
     }
-
     setDeleteMonthsConfirmOpen(true);
     setDeleteModalOpen(false);
   };
@@ -632,7 +551,7 @@ export default function TransacoesPage() {
   const handleAddDeleteTransactionMes = () => {
     const mesApi = monthInputToApi(deleteTransactionMesInput);
     if (!mesApi) {
-      showFeedback("error", "Selecione um mês válido para exclusão.");
+      toast.error("Selecione um mês válido para exclusão.");
       return;
     }
 
@@ -654,10 +573,7 @@ export default function TransacoesPage() {
   const handleAddDeleteTransactionNextMonths = (count: number) => {
     const baseMesApi = monthInputToApi(deleteTransactionMesInput);
     if (!baseMesApi) {
-      showFeedback(
-        "error",
-        "Para usar este atalho, selecione o mês na rotina de exclusão.",
-      );
+      toast.error("Para usar este atalho, selecione o mês na rotina de exclusão.");
       return;
     }
 
@@ -677,29 +593,19 @@ export default function TransacoesPage() {
 
   const requestDeleteTransactionByMonths = () => {
     if (!deleteTransactionMonthsTarget) {
-      showFeedback("error", "Selecione uma transação para exclusão em meses.");
+      toast.error("Selecione uma transação para exclusão.");
       return;
     }
-
     if (deleteTransactionMeses.length === 0) {
-      showFeedback("error", "Adicione ao menos um mês para exclusão.");
+      toast.error("Adicione ao menos um mês para exclusão.");
       return;
     }
-
     setDeleteTransactionMonthsConfirmOpen(true);
     setDeleteTransactionMonthsModalOpen(false);
   };
 
   const handleDeleteTransactionByMonths = async () => {
-    if (!deleteTransactionMonthsTarget) {
-      showFeedback("error", "Selecione uma transação para exclusão em meses.");
-      return;
-    }
-
-    if (deleteTransactionMeses.length === 0) {
-      showFeedback("error", "Adicione ao menos um mês para exclusão.");
-      return;
-    }
+    if (!deleteTransactionMonthsTarget) return;
 
     try {
       setDeleteTransactionMonthsLoading(true);
@@ -709,23 +615,17 @@ export default function TransacoesPage() {
           meses: deleteTransactionMeses,
         });
 
-      showFeedback(
-        "success",
-        `Exclusão concluída: ${result.total_excluidas} transação(ões) removida(s) em ${result.meses.length} mês(es).`,
-      );
-
+      toast.success(`Exclusão concluída: ${result.total_excluidas} transações removidas.`);
       setDeleteTransactionMonthsTarget(null);
       setDeleteTransactionMeses([]);
       setDeleteTransactionMesInput("");
       setDeleteTransactionMonthsModalOpen(false);
       setCurrentPage(1);
-      await loadTransacoes();
-    } catch (error) {
-      const apiMessage = (error as any)?.response?.data?.message;
-      showFeedback(
-        "error",
-        apiMessage || "Não foi possível excluir a transação nos meses selecionados.",
-      );
+      queryClient.invalidateQueries({ queryKey: ["transacoes"] });
+      queryClient.invalidateQueries({ queryKey: ["transacoes-summary"] });
+    } catch (error: any) {
+      const apiMessage = error?.response?.data?.message;
+      toast.error(apiMessage || "Não foi possível excluir a transação.");
     } finally {
       setDeleteTransactionMonthsLoading(false);
     }
@@ -744,19 +644,14 @@ export default function TransacoesPage() {
   const viewingTransacaoData = useMemo(() => {
     if (!viewingTransacao) return null;
     const { categoria_id, banco_id, descricao_id, ...rest } = viewingTransacao;
-    
-    // Removendo campos internos e formatando para exibição
     const data = { ...rest } as Record<string, any>;
     delete data.id;
-    
     return data;
   }, [viewingTransacao]);
 
   return (
     <div className="app-page py-4 sm:py-8">
       <div className="mx-auto max-w-7xl space-y-6 px-4 sm:px-6 lg:px-8">
-        <FeedbackAlert feedback={feedback} onClose={() => setFeedback(null)} />
-
         <PageContainer>
           <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
             <div className="min-w-0">
@@ -784,7 +679,6 @@ export default function TransacoesPage() {
               </AppButton>
               
               <div className="relative inline-block text-left">
-                {/* Desktop Dropdown Button */}
                 <div className="hidden sm:block">
                   <AppButton
                     tone="outline"
@@ -823,7 +717,6 @@ export default function TransacoesPage() {
                   )}
                 </div>
 
-                {/* Mobile Bottom Sheet Trigger */}
                 <div className="sm:hidden">
                   <AppButton
                     tone="outline"
@@ -947,7 +840,7 @@ export default function TransacoesPage() {
         <div className="app-surface p-4 w-full overflow-hidden">
           <TransactionList
             transacoes={sortedTransacoes}
-            loading={loading}
+            loading={loadingTransacoes}
             sortBy={sortBy}
             sortDirection={sortDirection}
             onSort={handleSort}
@@ -963,7 +856,7 @@ export default function TransacoesPage() {
           />
         </div>
 
-        {!loading && transacoes.length > 0 && (
+        {!loadingTransacoes && transacoes.length > 0 && (
           <Pagination
             currentPage={currentPage}
             totalPages={totalPages}
@@ -991,8 +884,9 @@ export default function TransacoesPage() {
           setEditingTransacao(undefined);
         }}
         onSuccess={async (message) => {
-          showFeedback("success", message);
-          await loadTransacoes();
+          toast.success(message);
+          queryClient.invalidateQueries({ queryKey: ["transacoes"] });
+          queryClient.invalidateQueries({ queryKey: ["transacoes-summary"] });
         }}
         transacao={editingTransacao}
         isEditing={!!editingTransacao}

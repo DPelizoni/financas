@@ -4,6 +4,7 @@ import "./globals.css";
 import AppLayout from "@/components/AppLayout";
 import MuiAppProvider from "@/components/MuiAppProvider";
 import { themeInitScript } from "@/theme/theme-script";
+import { Providers } from "@/components/Providers";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-app" });
 
@@ -28,9 +29,11 @@ export default function RootLayout({
         <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
       </head>
       <body className={`${inter.variable} ${inter.className} min-h-screen`}>
-        <MuiAppProvider>
-          <AppLayout>{children}</AppLayout>
-        </MuiAppProvider>
+        <Providers>
+          <MuiAppProvider>
+            <AppLayout>{children}</AppLayout>
+          </MuiAppProvider>
+        </Providers>
       </body>
     </html>
   );

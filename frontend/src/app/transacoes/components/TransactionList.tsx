@@ -13,6 +13,7 @@ import { TableSkeleton, CardSkeleton } from "@/components/skeletons/DataSkeleton
 import EmptyState from "@/components/EmptyState";
 import Icon from "@mdi/react";
 import { mdiBroom, mdiCheckCircle, mdiClockOutline } from "@mdi/js";
+import { motion, AnimatePresence } from "framer-motion";
 
 interface TransactionListProps {
   transacoes: Transacao[];
@@ -38,6 +39,22 @@ const formatCurrency = (valor: number) => {
     style: "currency",
     currency: "BRL",
   }).format(valor);
+};
+
+const containerVariants = {
+  hidden: { opacity: 0 },
+  show: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.05,
+    },
+  },
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 10 },
+  show: { opacity: 1, y: 0 },
+  exit: { opacity: 0, x: -20, transition: { duration: 0.2 } },
 };
 
 export function TransactionList({
@@ -91,62 +108,76 @@ export function TransactionList({
 
   return (
     <>
-      {/* Visão Mobile - Cards (Apenas em telas bem pequenas < 640px) */}
-      <div className="space-y-2 px-2 sm:px-0 sm:hidden">
-        {transacoes.map((transacao) => (
-          <div
-            key={transacao.id}
-            className="rounded-xl border border-gray-200/80 bg-gradient-to-b from-white to-gray-50 p-4 shadow-[0_1px_2px_rgba(0,0,0,0.06)] dark:border-slate-800 dark:from-slate-900 dark:to-slate-900/50"
-          >
-            <div className="flex items-start justify-between gap-3">
-              <div className="flex items-center gap-3 min-w-0">
-                <div
-                  className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full font-bold text-white shadow-sm ${
-                    transacao.tipo === "DESPESA" ? "bg-red-500" : "bg-green-500"
-                  }`}
-                >
-                  {transacao.tipo === "DESPESA" ? "D" : "R"}
-                </div>
-                <div className="min-w-0">
-                  <p className="truncate text-sm font-semibold text-gray-900 dark:text-white">
-                    {transacao.descricao_nome || "Sem descrição"}
-                  </p>
-                  <div className="flex flex-wrap items-center gap-x-2 text-[11px] text-gray-600 dark:text-slate-400">
-                    <span>{transacao.mes}</span>
-                    <span className="text-gray-300 dark:text-slate-700">•</span>
-                    <span>{transacao.vencimento}</span>
+      {/* Visão Mobile - Cards */}
+      <div className="px-2 sm:px-0 sm:hidden">
+        <motion.div 
+          variants={containerVariants}
+          initial="hidden"
+          animate="show"
+          className="space-y-3"
+        >
+          <AnimatePresence mode="popLayout">
+            {transacoes.map((transacao) => (
+              <motion.div
+                key={transacao.id}
+                variants={itemVariants}
+                layout
+                initial="hidden"
+                animate="show"
+                exit="exit"
+                className="rounded-xl border border-gray-200/80 bg-gradient-to-b from-white to-gray-50 p-4 shadow-[0_1px_2px_rgba(0,0,0,0.06)] dark:border-slate-800 dark:from-slate-900 dark:to-slate-900/50"
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div
+                      className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full font-bold text-white shadow-sm ${
+                        transacao.tipo === "DESPESA" ? "bg-red-500" : "bg-green-500"
+                      }`}
+                    >
+                      {transacao.tipo === "DESPESA" ? "D" : "R"}
+                    </div>
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-semibold text-gray-900 dark:text-white">
+                        {transacao.descricao_nome || "Sem descrição"}
+                      </p>
+                      <div className="flex flex-wrap items-center gap-x-2 text-[11px] text-gray-600 dark:text-slate-400">
+                        <span>{transacao.mes}</span>
+                        <span className="text-gray-300 dark:text-slate-700">•</span>
+                        <span>{transacao.vencimento}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-col items-end shrink-0">
+                    <p className="text-sm font-bold text-gray-900 dark:text-white">
+                      {formatCurrency(transacao.valor)}
+                    </p>
+                    <button
+                      onClick={() => onToggleSituacao(transacao)}
+                      className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold transition-all active:scale-95 ${
+                        transacao.situacao === "PAGO"
+                          ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
+                          : "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400"
+                      }`}
+                    >
+                      <Icon path={transacao.situacao === "PAGO" ? mdiCheckCircle : mdiClockOutline} size={0.4} />
+                      {situacaoLabel[transacao.situacao]}
+                    </button>
                   </div>
                 </div>
-              </div>
 
-              <div className="flex flex-col items-end shrink-0">
-                <p className="text-sm font-bold text-gray-900 dark:text-white">
-                  {formatCurrency(transacao.valor)}
-                </p>
-                <button
-                  onClick={() => onToggleSituacao(transacao)}
-                  className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold transition-all active:scale-95 ${
-                    transacao.situacao === "PAGO"
-                      ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
-                      : "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400"
-                  }`}
-                >
-                  <Icon path={transacao.situacao === "PAGO" ? mdiCheckCircle : mdiClockOutline} size={0.4} />
-                  {situacaoLabel[transacao.situacao]}
-                </button>
-              </div>
-            </div>
-
-            <div className="mt-3 flex items-center justify-end gap-2 border-t border-gray-100 pt-3 dark:border-slate-800">
-              <TableActionButton action="view" title="Visualizar" onClick={() => onView(transacao)} />
-              <TableActionButton action="edit" title="Editar" onClick={() => onEdit(transacao)} />
-              <TableActionButton action="delete" title="Excluir" onClick={() => onDelete(transacao.id, transacao.mes)} />
-            </div>
-          </div>
-        ))}
+                <div className="mt-3 flex items-center justify-end gap-2 border-t border-gray-100 pt-3 dark:border-slate-800">
+                  <TableActionButton action="view" title="Visualizar" onClick={() => onView(transacao)} />
+                  <TableActionButton action="edit" title="Editar" onClick={() => onEdit(transacao)} />
+                  <TableActionButton action="delete" title="Excluir" onClick={() => onDelete(transacao.id, transacao.mes)} />
+                </div>
+              </motion.div>
+            ))}
+          </AnimatePresence>
+        </motion.div>
       </div>
 
-      {/* Visão Desktop/Tablet - Tabela (Para larguras >= 640px, incluindo tela dividida) */}
+      {/* Visão Desktop/Tablet - Tabela */}
       <div className="hidden overflow-x-auto sm:block w-full">
         <table className="min-w-[1000px] w-full table-fixed divide-y divide-gray-200 text-xs dark:divide-slate-800">
           <thead className="app-table-head">
@@ -205,41 +236,50 @@ export function TransactionList({
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-200 bg-white dark:divide-slate-800 dark:bg-slate-900">
-            {transacoes.map((transacao) => (
-              <tr key={transacao.id} className={`app-table-row ${transacao.situacao === "PAGO" ? "app-row-pago" : "app-row-pendente"}`}>
-                <td className="whitespace-nowrap px-3 py-2 text-gray-900 dark:text-slate-200">{transacao.mes}</td>
-                <td className="whitespace-nowrap px-3 py-2 text-gray-900 dark:text-slate-200">{transacao.vencimento}</td>
-                <td className="whitespace-nowrap px-3 py-2">
-                  <span className={`inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-semibold leading-none ${transacao.tipo === "DESPESA" ? "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400" : "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400"}`}>
-                    {transacao.tipo === "DESPESA" ? "Despesa" : "Receita"}
-                  </span>
-                </td>
-                <td className="whitespace-nowrap px-3 py-2 text-gray-900 dark:text-slate-200"><span className="block truncate" title={transacao.categoria_nome || "-"}>{transacao.categoria_nome || "-"}</span></td>
-                <td className="whitespace-nowrap px-3 py-2 text-gray-900 dark:text-slate-200"><span className="block truncate" title={transacao.descricao_nome || "-"}>{transacao.descricao_nome || "-"}</span></td>
-                <td className="whitespace-nowrap px-3 py-2 text-gray-900 dark:text-slate-200"><span className="block truncate" title={transacao.banco_nome || "-"}>{transacao.banco_nome || "-"}</span></td>
-                <td className="whitespace-nowrap px-3 py-2 text-right font-semibold text-gray-900 dark:text-white">{formatCurrency(transacao.valor)}</td>
-                <td className="whitespace-nowrap px-3 py-2 text-center">
-                  <button
-                    onClick={() => onToggleSituacao(transacao)}
-                    className={`inline-flex min-h-[22px] items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-bold transition-all hover:scale-105 active:scale-95 ${
-                      transacao.situacao === "PAGO"
-                        ? "bg-green-100 text-green-700 border border-green-200 dark:bg-green-900/30 dark:text-green-400 dark:border-green-800/50 hover:bg-green-200 dark:hover:bg-green-900/50 shadow-sm"
-                        : "bg-amber-100 text-amber-700 border border-amber-200 dark:bg-amber-900/30 dark:text-amber-400 dark:border-amber-800/50 hover:bg-amber-200 dark:hover:bg-amber-900/50 shadow-sm"
-                    }`}
-                  >
-                    <Icon path={transacao.situacao === "PAGO" ? mdiCheckCircle : mdiClockOutline} size={0.4} />
-                    {situacaoLabel[transacao.situacao]}
-                  </button>
-                </td>
-                <td className="whitespace-nowrap px-3 py-2 text-center text-xs font-medium">
-                  <div className="flex justify-center gap-1">
-                    <TableActionButton action="view" title="Visualizar" onClick={() => onView(transacao)} compact />
-                    <TableActionButton action="edit" title="Editar" onClick={() => onEdit(transacao)} compact />
-                    <TableActionButton action="delete" title="Excluir" onClick={() => onDelete(transacao.id, transacao.mes)} compact />
-                  </div>
-                </td>
-              </tr>
-            ))}
+            <AnimatePresence mode="popLayout">
+              {transacoes.map((transacao) => (
+                <motion.tr 
+                  key={transacao.id} 
+                  layout
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, scale: 0.95, transition: { duration: 0.2 } }}
+                  className={`app-table-row group ${transacao.situacao === "PAGO" ? "app-row-pago" : "app-row-pendente"}`}
+                >
+                  <td className="whitespace-nowrap px-3 py-2 text-gray-900 dark:text-slate-200">{transacao.mes}</td>
+                  <td className="whitespace-nowrap px-3 py-2 text-gray-900 dark:text-slate-200">{transacao.vencimento}</td>
+                  <td className="whitespace-nowrap px-3 py-2">
+                    <span className={`inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-semibold leading-none ${transacao.tipo === "DESPESA" ? "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400" : "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400"}`}>
+                      {transacao.tipo === "DESPESA" ? "Despesa" : "Receita"}
+                    </span>
+                  </td>
+                  <td className="whitespace-nowrap px-3 py-2 text-gray-900 dark:text-slate-200"><span className="block truncate" title={transacao.categoria_nome || "-"}>{transacao.categoria_nome || "-"}</span></td>
+                  <td className="whitespace-nowrap px-3 py-2 text-gray-900 dark:text-slate-200"><span className="block truncate" title={transacao.descricao_nome || "-"}>{transacao.descricao_nome || "-"}</span></td>
+                  <td className="whitespace-nowrap px-3 py-2 text-gray-900 dark:text-slate-200"><span className="block truncate" title={transacao.banco_nome || "-"}>{transacao.banco_nome || "-"}</span></td>
+                  <td className="whitespace-nowrap px-3 py-2 text-right font-semibold text-gray-900 dark:text-white">{formatCurrency(transacao.valor)}</td>
+                  <td className="whitespace-nowrap px-3 py-2 text-center">
+                    <button
+                      onClick={() => onToggleSituacao(transacao)}
+                      className={`inline-flex min-h-[22px] items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-bold transition-all hover:scale-105 active:scale-95 ${
+                        transacao.situacao === "PAGO"
+                          ? "bg-green-100 text-green-700 border border-green-200 dark:bg-green-900/30 dark:text-green-400 dark:border-green-800/50 hover:bg-green-200 dark:hover:bg-green-900/50 shadow-sm"
+                          : "bg-amber-100 text-amber-700 border border-amber-200 dark:bg-amber-900/30 dark:text-amber-400 dark:border-amber-800/50 hover:bg-amber-200 dark:hover:bg-amber-900/50 shadow-sm"
+                      }`}
+                    >
+                      <Icon path={transacao.situacao === "PAGO" ? mdiCheckCircle : mdiClockOutline} size={0.4} />
+                      {situacaoLabel[transacao.situacao]}
+                    </button>
+                  </td>
+                  <td className="whitespace-nowrap px-3 py-2 text-center text-xs font-medium">
+                    <div className="flex justify-center gap-1">
+                      <TableActionButton action="view" title="Visualizar" onClick={() => onView(transacao)} compact />
+                      <TableActionButton action="edit" title="Editar" onClick={() => onEdit(transacao)} compact />
+                      <TableActionButton action="delete" title="Excluir" onClick={() => onDelete(transacao.id, transacao.mes)} compact />
+                    </div>
+                  </td>
+                </motion.tr>
+              ))}
+            </AnimatePresence>
           </tbody>
         </table>
       </div>
