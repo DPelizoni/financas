@@ -378,7 +378,7 @@ export default function InvestimentosDashboardPage() {
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Análise de Mês (ITEM 4: TOTALMENTE ESTÁTICA) */}
-          <div className="app-surface p-6 overflow-hidden min-h-[480px] flex flex-col lg:col-span-1">
+          <div className="app-surface p-6 overflow-hidden min-h-[480px] flex flex-col lg:col-span-2">
             <div className="mb-8 flex items-center justify-between">
               <div>
                 <h3 className="text-sm font-black uppercase tracking-[0.1em] text-gray-800 dark:text-slate-200">Análise de {monthLabel}</h3>
@@ -405,11 +405,11 @@ export default function InvestimentosDashboardPage() {
                 </div>
               </div>
 
-              <div className="mt-8 grid grid-cols-3 gap-3 w-full">
+              <div className="mt-8 grid grid-cols-3 gap-4 w-full max-w-2xl mx-auto">
                 {monthAnalysisData.length > 0 ? monthAnalysisData.map((d, i) => (
-                  <div key={i} className="bg-gray-50 dark:bg-slate-800/40 rounded-2xl p-3 border border-gray-100 dark:border-slate-700/30 flex flex-col items-center text-center">
-                    <span className="text-[9px] font-black uppercase mb-1" style={{ color: d.fill }}>{d.name}</span>
-                    <span className="text-sm font-black tabular-nums" style={{ color: d.fill }}>{formatCurrencyBRL(d.value)}</span>
+                  <div key={i} className="bg-gray-50 dark:bg-slate-800/40 rounded-2xl p-4 border border-gray-100 dark:border-slate-700/30 flex flex-col items-center text-center shadow-sm">
+                    <span className="text-[10px] font-black uppercase mb-1" style={{ color: d.fill }}>{d.name}</span>
+                    <span className="text-base font-black tabular-nums" style={{ color: d.fill }}>{formatCurrencyBRL(d.value)}</span>
                   </div>
                 )) : (
                   <div className="col-span-3 py-4 text-center text-[10px] font-bold text-gray-400 uppercase tracking-widest">Sem movimentações no mês</div>
@@ -418,38 +418,38 @@ export default function InvestimentosDashboardPage() {
             </div>
           </div>
 
-          <div className="app-surface p-6 lg:col-span-2">
+          <div className="app-surface p-6 lg:col-span-1 overflow-hidden">
             <div className="mb-6 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between border-b border-gray-100 pb-4 dark:border-slate-800">
               <h3 className="text-sm font-black uppercase tracking-widest text-gray-700 dark:text-slate-300">Carteira Atual</h3>
-              <div className="text-[10px] font-black uppercase text-gray-500">
-                Ativos: <span className="text-gray-900 dark:text-white">{dashboard.carteira.total_ativos}</span> | Saldo Total: <span className="text-blue-600 dark:text-blue-400">{formatCurrencyBRL(dashboard.carteira.saldo_total)}</span>
-              </div>
+            </div>
+            
+            <div className="mb-6 rounded-2xl bg-blue-50/50 p-4 dark:bg-blue-900/10 border border-blue-100 dark:border-blue-800/50">
+               <p className="text-[10px] font-black uppercase tracking-widest text-blue-600 dark:text-blue-400 opacity-70 mb-1">Saldo Total</p>
+               <p className="text-xl font-black text-blue-600 dark:text-blue-400 tabular-nums">{formatCurrencyBRL(dashboard.carteira.saldo_total)}</p>
+               <p className="text-[10px] font-bold text-slate-500 mt-1 uppercase">{dashboard.carteira.total_ativos} Ativos Ativos</p>
             </div>
 
-            <div className="overflow-x-auto">
-              <table className="w-full text-xs">
-                <thead>
-                  <tr className="bg-gray-50/50 dark:bg-slate-800/50">
-                    {["Ativo", "Banco", "Saldo Atual", "Status"].map((h, i) => (
-                      <th key={i} className={`px-4 py-3 text-gray-500 uppercase font-black tracking-widest ${h.includes('Saldo') ? 'text-right' : 'text-left'}`}>{h}</th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-100 dark:divide-slate-800">
-                  {dashboard.carteira.ativos.length === 0 ? (
-                    <tr><td colSpan={4} className="px-4 py-12 text-center text-gray-400">Nenhum ativo encontrado.</td></tr>
-                  ) : (
-                    dashboard.carteira.ativos.map((item) => (
-                      <tr key={item.id} className="transition-colors hover:bg-gray-50/50 dark:hover:bg-slate-800/30">
-                        <td className="px-4 py-4 font-bold text-gray-900 dark:text-white">{item.nome}</td>
-                        <td className="px-4 py-4 text-gray-500 dark:text-slate-400">{item.banco_nome || "-"}</td>
-                        <td className="px-4 py-4 text-right tabular-nums font-black text-blue-600 dark:text-blue-400">{formatCurrencyBRL(Number(item.saldo_atual || 0))}</td>
-                        <td className="px-4 py-4"><span className={`inline-flex items-center rounded-lg px-2.5 py-1 text-[9px] font-black uppercase ${item.ativo ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'}`}>{item.ativo ? 'Ativo' : 'Inativo'}</span></td>
-                      </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
+            <div className="overflow-y-auto max-h-[300px] custom-scrollbar">
+              <div className="space-y-3 pr-2">
+                {dashboard.carteira.ativos.length === 0 ? (
+                  <p className="py-8 text-center text-gray-400 text-xs">Nenhum ativo encontrado.</p>
+                ) : (
+                  dashboard.carteira.ativos.map((item) => (
+                    <div key={item.id} className="flex flex-col gap-1 p-3 rounded-xl bg-gray-50/50 dark:bg-slate-800/30 border border-gray-100 dark:border-slate-700/30 hover:border-blue-200 transition-colors">
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="text-xs font-bold text-gray-900 dark:text-white truncate">{item.nome}</span>
+                        <span className={`inline-flex items-center rounded-md px-1.5 py-0.5 text-[8px] font-black uppercase ${item.ativo ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'}`}>
+                          {item.ativo ? 'Ativo' : 'Inativo'}
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between text-[10px]">
+                        <span className="text-gray-500 dark:text-slate-400 truncate max-w-[100px]">{item.banco_nome || "Sem Banco"}</span>
+                        <span className="font-black text-blue-600 dark:text-blue-400 tabular-nums">{formatCurrencyBRL(Number(item.saldo_atual || 0))}</span>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
             </div>
           </div>
         </div>
