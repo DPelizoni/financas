@@ -83,6 +83,15 @@ export default function InvestimentosDashboardPage() {
     timeline: [],
   });
 
+  const activeFiltersCount = useMemo(() => {
+    let count = 0;
+    if (filterMesAno !== currentMonthKey) count++;
+    if (filterAno !== currentYearStr) count++;
+    if (filterAtivo !== "TODOS") count++;
+    if (filterBanco !== "TODOS") count++;
+    return count;
+  }, [filterMesAno, filterAno, filterAtivo, filterBanco, currentMonthKey, currentYearStr]);
+
   useEffect(() => {
     const mediaQuery = window.matchMedia("(max-width: 767px)");
     const handleChange = (event: MediaQueryListEvent) => setIsMobile(event.matches);
@@ -243,8 +252,10 @@ export default function InvestimentosDashboardPage() {
               startIcon={<Filter size={18} />}
             >
               Filtros
-              {(filterMesAno !== currentMonthKey || filterAno !== currentYearStr) && (
-                <span className="absolute -right-2 -top-2 flex h-5 w-5 items-center justify-center rounded-full bg-blue-600 text-[10px] font-bold text-white shadow-md ring-2 ring-white dark:ring-slate-900" />
+              {activeFiltersCount > 0 && (
+                <span className="absolute -right-2 -top-2 flex h-5 w-5 items-center justify-center rounded-full bg-blue-600 text-[10px] font-bold text-white shadow-md ring-2 ring-white dark:ring-slate-900">
+                  {activeFiltersCount}
+                </span>
               )}
             </AppButton>
           </div>
