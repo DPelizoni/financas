@@ -748,8 +748,6 @@ export default function TransacoesPage() {
     // Removendo campos internos e formatando para exibição
     const data = { ...rest } as Record<string, any>;
     delete data.id;
-    delete data.created_at;
-    delete data.updated_at;
     
     return data;
   }, [viewingTransacao]);

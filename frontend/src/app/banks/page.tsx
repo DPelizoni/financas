@@ -184,10 +184,7 @@ export default function BanksPage() {
   };
 
   const viewingBankData = viewingBank
-    ? (() => {
-        const { cor, icone, ...baseData } = viewingBank;
-        return baseData;
-      })()
+    ? viewingBank
     : null;
 
   return (

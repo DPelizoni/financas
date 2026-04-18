@@ -172,10 +172,7 @@ export default function CategoriesPage() {
   };
 
   const viewingCategoryData = viewingCategory
-    ? (() => {
-        const { cor, ...baseData } = viewingCategory;
-        return baseData;
-      })()
+    ? viewingCategory
     : null;
 
   const tipoBadge = (tipo: CategoryType) => {
