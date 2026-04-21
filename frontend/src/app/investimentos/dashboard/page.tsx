@@ -194,6 +194,37 @@ export default function InvestimentosDashboardPage() {
     return formatMonthYearLabel(filterMesAno);
   }, [displayPoint, filterMesAno]);
 
+  const renderCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent }: any) => {
+    const RADIAN = Math.PI / 180;
+    const sin = Math.sin(-RADIAN * midAngle);
+    const cos = Math.cos(-RADIAN * midAngle);
+    const sx = cx + (outerRadius + 2) * cos;
+    const sy = cy + (outerRadius + 2) * sin;
+    const mx = cx + (outerRadius + 15) * cos;
+    const my = cy + (outerRadius + 15) * sin;
+    const ex = mx + (cos >= 0 ? 1 : -1) * 10;
+    const ey = my;
+    const textAnchor = cos >= 0 ? 'start' : 'end';
+
+    if (percent < 0.03) return null;
+
+    return (
+      <g>
+        <path d={`M${sx},${sy}L${mx},${my}L${ex},${ey}`} stroke="rgb(var(--app-text-muted))" fill="none" strokeWidth={1} opacity={0.4} />
+        <text 
+          x={ex + (cos >= 0 ? 1 : -1) * 4} 
+          y={ey} 
+          textAnchor={textAnchor} 
+          fill="rgb(var(--app-text-primary))" 
+          dominantBaseline="central" 
+          className="text-[10px] font-black"
+        >
+          {`${(percent * 100).toFixed(0)}%`}
+        </text>
+      </g>
+    );
+  };
+
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
       return (
@@ -402,7 +433,20 @@ export default function InvestimentosDashboardPage() {
               <div className="h-64 w-full relative">
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
-                    <Pie data={monthAnalysisData} cx="50%" cy="50%" innerRadius="70%" outerRadius="90%" paddingAngle={8} cornerRadius={10} dataKey="value" stroke="none" animationDuration={1200}>
+                    <Pie 
+                      data={monthAnalysisData} 
+                      cx="50%" 
+                      cy="50%" 
+                      innerRadius="70%" 
+                      outerRadius="90%" 
+                      paddingAngle={8} 
+                      cornerRadius={10} 
+                      dataKey="value" 
+                      stroke="none" 
+                      animationDuration={1200}
+                      label={renderCustomizedLabel}
+                      labelLine={false}
+                    >
                       {monthAnalysisData.map((entry, index) => <Cell key={`cell-${index}`} fill={entry.fill} style={{ outline: 'none' }} />)}
                     </Pie>
                   </PieChart>

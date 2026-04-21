@@ -94,23 +94,33 @@ export function DashboardCharts({
   const donutOuterRadius = isMobile ? "90%" : "95%";
 
   const renderCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent }: any) => {
-    const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
-    const x = cx + radius * Math.cos(-midAngle * (Math.PI / 180));
-    const y = cy + radius * Math.sin(-midAngle * (Math.PI / 180));
+    const RADIAN = Math.PI / 180;
+    const sin = Math.sin(-RADIAN * midAngle);
+    const cos = Math.cos(-RADIAN * midAngle);
+    const sx = cx + (outerRadius + 2) * cos;
+    const sy = cy + (outerRadius + 2) * sin;
+    const mx = cx + (outerRadius + 15) * cos;
+    const my = cy + (outerRadius + 15) * sin;
+    const ex = mx + (cos >= 0 ? 1 : -1) * 10;
+    const ey = my;
+    const textAnchor = cos >= 0 ? 'start' : 'end';
 
-    if (percent < 0.05) return null;
+    if (percent < 0.03) return null;
 
     return (
-      <text 
-        x={x} 
-        y={y} 
-        fill="white" 
-        textAnchor="middle" 
-        dominantBaseline="central" 
-        className="text-[10px] font-black"
-      >
-        {`${(percent * 100).toFixed(0)}%`}
-      </text>
+      <g>
+        <path d={`M${sx},${sy}L${mx},${my}L${ex},${ey}`} stroke="rgb(var(--app-text-muted))" fill="none" strokeWidth={1} opacity={0.4} />
+        <text 
+          x={ex + (cos >= 0 ? 1 : -1) * 4} 
+          y={ey} 
+          textAnchor={textAnchor} 
+          fill="rgb(var(--app-text-primary))" 
+          dominantBaseline="central" 
+          className="text-[10px] font-black"
+        >
+          {`${(percent * 100).toFixed(0)}%`}
+        </text>
+      </g>
     );
   };
 
