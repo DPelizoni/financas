@@ -88,8 +88,31 @@ export function DashboardCharts({
     { name: "Despesas", value: summary.total_despesa, fill: chartColors.despesas },
   ];
 
+  const totalComposition = summary.total_receita + summary.total_despesa;
+
   const donutInnerRadius = isMobile ? "70%" : "75%";
   const donutOuterRadius = isMobile ? "90%" : "95%";
+
+  const renderCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent }: any) => {
+    const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
+    const x = cx + radius * Math.cos(-midAngle * (Math.PI / 180));
+    const y = cy + radius * Math.sin(-midAngle * (Math.PI / 180));
+
+    if (percent < 0.05) return null;
+
+    return (
+      <text 
+        x={x} 
+        y={y} 
+        fill="white" 
+        textAnchor="middle" 
+        dominantBaseline="central" 
+        className="text-[10px] font-black"
+      >
+        {`${(percent * 100).toFixed(0)}%`}
+      </text>
+    );
+  };
 
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
@@ -186,7 +209,20 @@ export function DashboardCharts({
           <div className="h-64 w-full relative">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
-                <Pie data={compositionData} cx="50%" cy="50%" innerRadius={donutInnerRadius} outerRadius={donutOuterRadius} paddingAngle={8} cornerRadius={10} dataKey="value" stroke="none" animationDuration={1200}>
+                <Pie 
+                  data={compositionData} 
+                  cx="50%" 
+                  cy="50%" 
+                  innerRadius={donutInnerRadius} 
+                  outerRadius={donutOuterRadius} 
+                  paddingAngle={8} 
+                  cornerRadius={10} 
+                  dataKey="value" 
+                  stroke="none" 
+                  animationDuration={1200}
+                  label={renderCustomizedLabel}
+                  labelLine={false}
+                >
                   {compositionData.map((entry, index) => <Cell key={`cell-${index}`} fill={entry.fill} />)}
                 </Pie>
               </PieChart>
@@ -252,7 +288,21 @@ export function DashboardCharts({
           <div className="h-64 w-full sm:w-1/2 relative">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
-                <Pie data={byCategory} cx="50%" cy="50%" innerRadius="75%" outerRadius="95%" paddingAngle={4} cornerRadius={6} dataKey="value" nameKey="name" stroke="none" animationDuration={1500}>
+                <Pie 
+                  data={byCategory} 
+                  cx="50%" 
+                  cy="50%" 
+                  innerRadius="75%" 
+                  outerRadius="95%" 
+                  paddingAngle={4} 
+                  cornerRadius={6} 
+                  dataKey="value" 
+                  nameKey="name" 
+                  stroke="none" 
+                  animationDuration={1500}
+                  label={renderCustomizedLabel}
+                  labelLine={false}
+                >
                   {byCategory.map((entry, index) => <Cell key={`cell-${index}`} fill={categoryPalette[index % categoryPalette.length]} />)}
                 </Pie>
                 <Tooltip content={<CustomTooltip />} />
