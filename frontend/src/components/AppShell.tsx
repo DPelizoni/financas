@@ -449,9 +449,6 @@ export default function AppShell({ children }: AppShellProps) {
                   )}
                 </button>
                 <div>
-                  <p className="text-xs uppercase tracking-wider text-[rgb(var(--app-text-muted))]">
-                    Painel
-                  </p>
                   <h2 className="text-lg font-semibold text-[rgb(var(--app-text-primary))]">
                     {pageTitle}
                   </h2>
