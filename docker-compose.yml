@@ -52,5 +52,29 @@ services:
     ports:
       - "3000:3000"
 
+  db_backup:
+    image: mysql:8.0
+    container_name: financas-db-backup
+    restart: unless-stopped
+    volumes:
+      - "./backups:/backup"
+    depends_on:
+      db:
+        condition: service_healthy
+    command: >
+      sh -c "while true; do
+        FILENAME=/backup/$$(date +%Y-%m-%d).sql;
+        echo \"[$$(date)] Iniciando backup para $$FILENAME...\";
+        if mysqldump -h db -u root -proot financas_db > \"$$FILENAME\"; then
+          echo \"[$$(date)] Backup concluído com sucesso.\";
+          find /backup -name \"*.sql\" -type f -mtime +30 -delete;
+        else
+          echo \"[$$(date)] ERRO: Falha ao realizar o backup.\";
+        fi;
+        echo \"Aguardando 24 horas para o próximo ciclo...\";
+        sleep 86400;
+      done"
+
+
 volumes:
   mysql_data:

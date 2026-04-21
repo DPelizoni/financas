@@ -3,5 +3,8 @@
 .env.*
 !.env.example
 
+# Backups
+backups/
+
 # TypeScript incremental cache
 *.tsbuildinfo
