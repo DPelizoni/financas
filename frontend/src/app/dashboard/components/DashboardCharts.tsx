@@ -32,7 +32,11 @@ interface MonthlyPoint {
 interface DashboardChartsProps {
   comparisonData: any[];
   timeline: MonthlyPoint[];
-  currentMonthData: MonthlyPoint | null;
+  summary: {
+    total_receita: number;
+    total_despesa: number;
+    total_liquido: number;
+  };
   byCategory: any[];
   isMobile: boolean;
   chartColors: any;
@@ -56,7 +60,7 @@ const monthNames = [
 export function DashboardCharts({
   comparisonData,
   timeline,
-  currentMonthData,
+  summary,
   byCategory,
   isMobile,
   chartColors,
@@ -79,12 +83,10 @@ export function DashboardCharts({
 
   const periodLabel = formatPeriodLabel();
   
-  const compositionData = currentMonthData
-    ? [
-        { name: "Receitas", value: currentMonthData.receitas, fill: chartColors.receitas },
-        { name: "Despesas", value: currentMonthData.despesas, fill: chartColors.despesas },
-      ]
-    : [];
+  const compositionData = [
+    { name: "Receitas", value: summary.total_receita, fill: chartColors.receitas },
+    { name: "Despesas", value: summary.total_despesa, fill: chartColors.despesas },
+  ];
 
   const donutInnerRadius = isMobile ? "70%" : "75%";
   const donutOuterRadius = isMobile ? "90%" : "95%";
@@ -169,13 +171,13 @@ export function DashboardCharts({
         </div>
       </div>
 
-      {/* 2. Composição do Mês (Vigente) */}
+      {/* 2. Composição do Período */}
       <div className="app-surface p-6 overflow-hidden flex flex-col h-[480px]">
         <div className="mb-8 flex items-center justify-between">
           <div>
-            <h3 className="text-sm font-black uppercase tracking-[0.1em] text-gray-800 dark:text-slate-200">Composição do Mês</h3>
+            <h3 className="text-sm font-black uppercase tracking-[0.1em] text-gray-800 dark:text-slate-200">Composição do Período</h3>
             <p className="text-[10px] font-bold text-gray-400 uppercase mt-1">
-              {currentMonthData?.monthKey ? formatPeriodLabel(currentMonthData.monthKey) : 'Mês atual'}
+              {periodLabel}
             </p>
           </div>
           <div className="rounded-xl bg-indigo-50 p-2.5 text-indigo-600 dark:bg-indigo-900/20 dark:text-indigo-400"><PieChartIcon size={20} /></div>
@@ -192,18 +194,18 @@ export function DashboardCharts({
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center pointer-events-none">
               <span className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 block mb-1">Resultado</span>
               <span className="text-2xl font-black tabular-nums tracking-tighter text-blue-600 dark:text-blue-400">
-                {currency(currentMonthData?.saldo || 0)}
+                {currency(summary.total_liquido)}
               </span>
             </div>
           </div>
           <div className="mt-8 grid grid-cols-2 gap-4 max-w-sm mx-auto w-full">
             <div className="bg-gray-50 dark:bg-slate-800/40 rounded-2xl p-3 border border-gray-100 dark:border-slate-700/30 flex flex-col items-center">
               <span className="text-[9px] font-black text-emerald-600 dark:text-emerald-400 uppercase mb-1">Receitas</span>
-              <span className="text-sm font-black text-emerald-600 dark:text-emerald-400">{currency(currentMonthData?.receitas || 0)}</span>
+              <span className="text-sm font-black text-emerald-600 dark:text-emerald-400">{currency(summary.total_receita)}</span>
             </div>
             <div className="bg-gray-50 dark:bg-slate-800/40 rounded-2xl p-3 border border-gray-100 dark:border-slate-700/30 flex flex-col items-center">
               <span className="text-[9px] font-black text-rose-600 dark:text-rose-400 uppercase mb-1">Despesas</span>
-              <span className="text-sm font-black text-rose-600 dark:text-rose-400">{currency(currentMonthData?.despesas || 0)}</span>
+              <span className="text-sm font-black text-rose-600 dark:text-rose-400">{currency(summary.total_despesa)}</span>
             </div>
           </div>
         </div>

@@ -265,26 +265,6 @@ export default function DashboardPage() {
     };
   }, [periodFilteredTransacoes]);
 
-  const currentMonthData = useMemo(() => {
-    // Se há um mês específico no filtro, usa ele
-    if (filterMesAno) {
-      return timeline.find(p => p.monthKey === filterMesAno) || null;
-    }
-    
-    // Se estamos vendo um ano específico, pega o último mês desse ano que tem dados
-    if (filterAno !== "TODOS") {
-      const yearMonths = timeline.filter(p => p.monthKey.startsWith(`${filterAno}-`));
-      if (yearMonths.length > 0) {
-        return yearMonths[yearMonths.length - 1];
-      }
-    }
-
-    // Fallback: mês atual ou último disponível
-    const now = new Date();
-    const currentKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
-    return timeline.find(p => p.monthKey === currentKey) || (timeline.length > 0 ? timeline[timeline.length - 1] : null);
-  }, [timeline, filterMesAno, filterAno]);
-
   const byCategory = useMemo(() => {
     const map = new Map<string, number>();
     periodFilteredTransacoes.filter(t => t.tipo === "DESPESA").forEach((t) => {
@@ -382,10 +362,17 @@ export default function DashboardPage() {
           transition={{ delay: 0.2 }}
         >
           <DashboardCharts 
-            comparisonData={comparisonData} timeline={timeline} currentMonthData={currentMonthData} 
-            byCategory={byCategory} isMobile={isMobile} chartColors={chartColors} 
-            getTooltipSeriesColor={getTooltipSeriesColor} currency={currency} hasData={periodFilteredTransacoes.length > 0}
-            filterAno={filterAno} filterMesAno={filterMesAno}
+            comparisonData={comparisonData} 
+            timeline={timeline} 
+            summary={summaryCardsData}
+            byCategory={byCategory} 
+            isMobile={isMobile} 
+            chartColors={chartColors} 
+            getTooltipSeriesColor={getTooltipSeriesColor} 
+            currency={currency} 
+            hasData={periodFilteredTransacoes.length > 0}
+            filterAno={filterAno} 
+            filterMesAno={filterMesAno}
           />
         </motion.div>
 
