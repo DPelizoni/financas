@@ -40,6 +40,7 @@ interface DashboardChartsProps {
   currency: (value: number) => string;
   hasData: boolean;
   filterAno: string;
+  filterMesAno: string;
 }
 
 const categoryPalette = [
@@ -58,7 +59,18 @@ export function DashboardCharts({
   currency,
   hasData,
   filterAno,
+  filterMesAno,
 }: DashboardChartsProps) {
+
+  const formatPeriodLabel = () => {
+    if (filterMesAno) {
+      const [year, month] = filterMesAno.split("-");
+      return `${month}/${year}`;
+    }
+    return filterAno === "TODOS" ? "Histórico Completo" : `Ano ${filterAno}`;
+  };
+
+  const periodLabel = formatPeriodLabel();
   
   const compositionData = currentMonthData
     ? [
@@ -113,7 +125,7 @@ export function DashboardCharts({
           <div>
             <h3 className="text-sm font-black uppercase tracking-[0.1em] text-gray-800 dark:text-slate-200">Evolução Financeira</h3>
             <p className="text-[10px] font-bold text-gray-400 uppercase mt-1">
-              Ano {filterAno === "TODOS" ? "Histórico Completo" : filterAno}
+              {filterAno === "TODOS" ? "Histórico Completo" : `Ano ${filterAno}`}
             </p>
           </div>
           <div className="rounded-xl bg-blue-50 p-2.5 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400"><TrendingUp size={20} /></div>
@@ -155,7 +167,11 @@ export function DashboardCharts({
         <div className="mb-8 flex items-center justify-between">
           <div>
             <h3 className="text-sm font-black uppercase tracking-[0.1em] text-gray-800 dark:text-slate-200">Composição do Mês</h3>
-            <p className="text-[10px] font-bold text-gray-400 uppercase mt-1">{currentMonthData?.monthLabel || 'Mês atual'}</p>
+            <p className="text-[10px] font-bold text-gray-400 uppercase mt-1">
+              {currentMonthData?.monthKey ? (
+                `${currentMonthData.monthKey.split('-')[1]}/${currentMonthData.monthKey.split('-')[0]}`
+              ) : 'Mês atual'}
+            </p>
           </div>
           <div className="rounded-xl bg-indigo-50 p-2.5 text-indigo-600 dark:bg-indigo-900/20 dark:text-indigo-400"><PieChartIcon size={20} /></div>
         </div>
@@ -193,7 +209,7 @@ export function DashboardCharts({
         <div className="mb-8 flex items-center justify-between">
           <div>
             <h3 className="text-sm font-black uppercase tracking-[0.1em] text-gray-800 dark:text-slate-200">Realizado vs Projetado</h3>
-            <p className="text-[10px] font-bold text-gray-400 uppercase mt-1">Saúde das liquidações</p>
+            <p className="text-[10px] font-bold text-gray-400 uppercase mt-1">{periodLabel}</p>
           </div>
           <div className="rounded-xl bg-emerald-50 p-2.5 text-emerald-600 dark:bg-emerald-900/20 dark:text-emerald-400"><BarChart3 size={20} /></div>
         </div>
@@ -221,7 +237,7 @@ export function DashboardCharts({
         <div className="mb-8 flex items-center justify-between">
           <div>
             <h3 className="text-sm font-black uppercase tracking-[0.1em] text-gray-800 dark:text-slate-200">Gastos por Categoria</h3>
-            <p className="text-[10px] font-bold text-gray-400 uppercase mt-1">Distribuição das despesas</p>
+            <p className="text-[10px] font-bold text-gray-400 uppercase mt-1">{periodLabel}</p>
           </div>
           <div className="rounded-xl bg-purple-50 p-2.5 text-purple-600 dark:bg-purple-900/20 dark:text-purple-400"><PieChartIcon size={20} /></div>
         </div>

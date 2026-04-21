@@ -374,7 +374,7 @@ export default function DashboardPage() {
             comparisonData={comparisonData} timeline={timeline} currentMonthData={currentMonthData} 
             byCategory={byCategory} isMobile={isMobile} chartColors={chartColors} 
             getTooltipSeriesColor={getTooltipSeriesColor} currency={currency} hasData={periodFilteredTransacoes.length > 0}
-            filterAno={filterAno}
+            filterAno={filterAno} filterMesAno={filterMesAno}
           />
         </motion.div>
 
