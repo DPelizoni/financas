@@ -263,7 +263,7 @@ export function DashboardCharts({
             </div>
           </div>
           <div className="w-full sm:w-1/2 mt-6 sm:mt-0 sm:pl-8 overflow-y-auto max-h-64 scrollbar-hide">
-            <div className="space-y-3">
+            <div className="space-y-3 pb-6 sm:pb-0">
               {byCategory.slice(0, 6).map((item, index) => (
                 <div key={index} className="flex items-center justify-between group">
                   <div className="flex items-center gap-3">
