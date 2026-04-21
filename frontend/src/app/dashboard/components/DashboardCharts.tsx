@@ -129,7 +129,7 @@ export function DashboardCharts({
   return (
     <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
       {/* 1. Evolução Financeira */}
-      <div className="app-surface p-6 overflow-hidden flex flex-col h-[480px]">
+      <div className="app-surface p-6 overflow-hidden flex flex-col h-auto min-h-[480px] sm:h-[480px]">
         <div className="mb-8 flex items-center justify-between">
           <div>
             <h3 className="text-sm font-black uppercase tracking-[0.1em] text-gray-800 dark:text-slate-200">Evolução Financeira</h3>
@@ -172,7 +172,7 @@ export function DashboardCharts({
       </div>
 
       {/* 2. Composição do Período */}
-      <div className="app-surface p-6 overflow-hidden flex flex-col h-[480px]">
+      <div className="app-surface p-6 overflow-hidden flex flex-col h-auto min-h-[480px] sm:h-[480px]">
         <div className="mb-8 flex items-center justify-between">
           <div>
             <h3 className="text-sm font-black uppercase tracking-[0.1em] text-gray-800 dark:text-slate-200">Composição do Período</h3>
@@ -212,7 +212,7 @@ export function DashboardCharts({
       </div>
 
       {/* 3. Realizado vs Projetado */}
-      <div className="app-surface p-6 overflow-hidden flex flex-col h-[480px]">
+      <div className="app-surface p-6 overflow-hidden flex flex-col h-auto min-h-[480px] sm:h-[480px]">
         <div className="mb-8 flex items-center justify-between">
           <div>
             <h3 className="text-sm font-black uppercase tracking-[0.1em] text-gray-800 dark:text-slate-200">Realizado vs Projetado</h3>
@@ -240,7 +240,7 @@ export function DashboardCharts({
       </div>
 
       {/* 4. Gastos por Categoria */}
-      <div className="app-surface p-6 overflow-hidden flex flex-col h-[480px]">
+      <div className="app-surface p-6 overflow-hidden flex flex-col h-auto min-h-[480px] sm:h-[480px]">
         <div className="mb-8 flex items-center justify-between">
           <div>
             <h3 className="text-sm font-black uppercase tracking-[0.1em] text-gray-800 dark:text-slate-200">Gastos por Categoria</h3>
@@ -263,7 +263,7 @@ export function DashboardCharts({
             </div>
           </div>
           <div className="w-full sm:w-1/2 mt-6 sm:mt-0 sm:pl-8 overflow-y-auto max-h-64 scrollbar-hide">
-            <div className="space-y-3 pb-6 sm:pb-0">
+            <div className="space-y-3 pb-12 sm:pb-0">
               {byCategory.slice(0, 6).map((item, index) => (
                 <div key={index} className="flex items-center justify-between group">
                   <div className="flex items-center gap-3">
