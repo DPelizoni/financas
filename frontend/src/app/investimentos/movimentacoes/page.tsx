@@ -80,6 +80,8 @@ export default function InvestimentosMovimentacoesPage() {
   const [filterMesAno, setFilterMesAno] = useState("");
   const [filterAno, setFilterAno] = useState<string>("TODOS");
   const [filterBanco, setFilterBanco] = useState<number | "TODOS">("TODOS");
+  const [filterTipo, setFilterTipo] = useState<InvestimentoMovimentacaoTipo | "TODOS">("TODOS");
+  const [filterAtivo, setFilterAtivo] = useState<number | "TODOS">("TODOS");
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const [sortBy, setSortBy] = useState<"data" | "tipo" | "ativo" | "banco" | "valor">("data");
@@ -116,10 +118,12 @@ export default function InvestimentosMovimentacoesPage() {
       limit: itemsPerPage,
       search: searchTerm || undefined,
       banco_id: filterBanco === "TODOS" ? undefined : filterBanco,
+      tipo: filterTipo === "TODOS" ? undefined : filterTipo,
+      investimento_ativo_id: filterAtivo === "TODOS" ? undefined : filterAtivo,
       data_de: dateRange.data_de,
       data_ate: dateRange.data_ate,
     };
-  }, [currentPage, itemsPerPage, searchTerm, filterMesAno, filterAno, filterBanco]);
+  }, [currentPage, itemsPerPage, searchTerm, filterMesAno, filterAno, filterBanco, filterTipo, filterAtivo]);
 
   const { data: movsData, isLoading: loading, isFetching } = useQuery({
     queryKey: ["movimentacoes", queryFilters],
@@ -146,10 +150,13 @@ export default function InvestimentosMovimentacoesPage() {
     if (filterMesAno) count++;
     if (filterAno !== "TODOS" && !filterMesAno) count++;
     if (filterBanco !== "TODOS") count++;
+    if (filterTipo !== "TODOS") count++;
+    if (filterAtivo !== "TODOS") count++;
     return count;
-  }, [searchTerm, filterMesAno, filterAno, filterBanco]);
+  }, [searchTerm, filterMesAno, filterAno, filterBanco, filterTipo, filterAtivo]);
 
   const sortedBanks = useMemo(() => [...banks].sort((a, b) => a.nome.localeCompare(b.nome, "pt-BR")), [banks]);
+  const sortedAtivos = useMemo(() => [...ativos].sort((a, b) => a.nome.localeCompare(b.nome, "pt-BR")), [ativos]);
 
   const sortedMovimentacoes = useMemo(() => {
     const direction = sortDirection === "asc" ? 1 : -1;
@@ -167,7 +174,15 @@ export default function InvestimentosMovimentacoesPage() {
     setSortBy(column); setSortDirection(column === "data" ? "desc" : "asc");
   };
 
-  const handleClearFilters = () => { setSearchTerm(""); setFilterMesAno(""); setFilterAno("TODOS"); setFilterBanco("TODOS"); setCurrentPage(1); };
+  const handleClearFilters = () => {
+    setSearchTerm("");
+    setFilterMesAno("");
+    setFilterAno("TODOS");
+    setFilterBanco("TODOS");
+    setFilterTipo("TODOS");
+    setFilterAtivo("TODOS");
+    setCurrentPage(1);
+  };
 
   return (
     <div className="app-page py-4 sm:py-8">
@@ -184,11 +199,13 @@ export default function InvestimentosMovimentacoesPage() {
 
         <div className={`filter-panel-surface ${!showFilters ? "hidden" : "block animate-in fade-in slide-in-from-top-2 duration-300"}`}>
           <div className="mb-4 flex items-center justify-between border-b border-gray-100 pb-3"><h3 className="text-sm font-semibold text-gray-700">Filtros de Movimentação</h3><button type="button" onClick={handleClearFilters} className="text-xs font-medium text-blue-600 hover:text-blue-800 transition">Limpar tudo</button></div>
-          <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             <TextField type="text" label="Buscar" variant="outlined" size="small" fullWidth value={searchTerm} onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }} InputLabelProps={{ shrink: true }} InputProps={{ startAdornment: (<InputAdornment position="start"><Search size={16} className="text-gray-400" /></InputAdornment>), endAdornment: searchTerm ? (<InputAdornment position="end"><button type="button" onClick={() => { setSearchTerm(""); setCurrentPage(1); }} className="rounded p-1 hover:bg-gray-100"><X size={14} /></button></InputAdornment>) : undefined }} />
             <TextField type="month" label="Mês/Ano" variant="outlined" size="small" fullWidth value={filterMesAno} onChange={(e) => { setFilterMesAno(e.target.value); setCurrentPage(1); }} InputLabelProps={{ shrink: true }} />
             <TextField select label="Ano" variant="outlined" size="small" fullWidth InputLabelProps={{ shrink: true }} value={filterAno} onChange={(e) => { setFilterAno(e.target.value); setCurrentPage(1); }} disabled={Boolean(filterMesAno)}><MenuItem value="TODOS">Todos</MenuItem>{availableYears.map((year) => (<MenuItem key={year} value={year}>{year}</MenuItem>))}</TextField>
             <TextField select label="Bancos" variant="outlined" size="small" fullWidth InputLabelProps={{ shrink: true }} value={filterBanco} onChange={(e) => { setFilterBanco(e.target.value === "TODOS" ? "TODOS" : Number(e.target.value)); setCurrentPage(1); }}><MenuItem value="TODOS">Todos</MenuItem>{sortedBanks.map((bank) => (<MenuItem key={bank.id} value={bank.id}>{bank.nome}</MenuItem>))}</TextField>
+            <TextField select label="Tipo" variant="outlined" size="small" fullWidth InputLabelProps={{ shrink: true }} value={filterTipo} onChange={(e) => { setFilterTipo(e.target.value as any); setCurrentPage(1); }}><MenuItem value="TODOS">Todos</MenuItem><MenuItem value="APORTE">Aporte</MenuItem><MenuItem value="RESGATE">Resgate</MenuItem><MenuItem value="RENDIMENTO">Rendimentos</MenuItem></TextField>
+            <TextField select label="Ativo" variant="outlined" size="small" fullWidth InputLabelProps={{ shrink: true }} value={filterAtivo} onChange={(e) => { setFilterAtivo(e.target.value === "TODOS" ? "TODOS" : Number(e.target.value)); setCurrentPage(1); }}><MenuItem value="TODOS">Todos</MenuItem>{sortedAtivos.map((ativo) => (<MenuItem key={ativo.id} value={ativo.id}>{ativo.nome}</MenuItem>))}</TextField>
           </div>
         </div>
 
