@@ -411,6 +411,7 @@ export default function DescricoesPage() {
         title="Visualizar Descrição"
         data={viewingDescricao ? { ...viewingDescricao, categoria_nome: getCategoryNameById(viewingDescricao.categoria_id) } : null}
         onClose={() => setViewingDescricao(null)}
+        excludeCopyFields={["id"]}
       />
 
       <DescricaoModal

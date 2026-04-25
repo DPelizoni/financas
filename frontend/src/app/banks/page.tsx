@@ -418,6 +418,7 @@ export default function BanksPage() {
         title="Visualizar Banco"
         data={viewingBank}
         onClose={() => setViewingBank(null)}
+        excludeCopyFields={["id", "codigo"]}
       />
 
       <BankModal

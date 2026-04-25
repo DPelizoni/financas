@@ -358,6 +358,7 @@ export default function CategoriesPage() {
         title="Visualizar Categoria"
         data={viewingCategory}
         onClose={() => setViewingCategory(null)}
+        excludeCopyFields={["id"]}
       />
 
       <CategoryModal
