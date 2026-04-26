@@ -44,34 +44,37 @@ export function TransactionSummaryCards({
   }) => {
     const colors = {
       blue: {
-        border: "border-blue-200 dark:border-blue-800/50",
-        bg: "bg-blue-50/50 dark:bg-blue-900/10",
-        text: "text-blue-900 dark:text-blue-300",
-        glow: "hover:shadow-[0_0_20px_rgba(59,130,246,0.15)]",
+        border: "border-blue-200 dark:border-blue-800/50 border-t-blue-500 dark:border-t-blue-500",
+        bg: "bg-blue-50/80 dark:bg-blue-900/20",
+        text: "text-blue-900 dark:text-blue-200",
+        iconContainer: "bg-blue-100 dark:bg-blue-800/40 text-blue-600 dark:text-blue-300",
+        glow: "hover:shadow-[0_8px_30px_rgb(59,130,246,0.12)]",
       },
       green: {
-        border: "border-green-200 dark:border-green-800/50",
-        bg: "bg-green-50/50 dark:bg-green-900/10",
-        text: "text-green-900 dark:text-green-300",
-        glow: "hover:shadow-[0_0_20px_rgba(34,197,94,0.15)]",
+        border: "border-green-200 dark:border-green-800/50 border-t-green-500 dark:border-t-green-500",
+        bg: "bg-green-50/80 dark:bg-green-900/20",
+        text: "text-green-900 dark:text-green-200",
+        iconContainer: "bg-green-100 dark:bg-green-800/40 text-green-600 dark:text-green-300",
+        glow: "hover:shadow-[0_8px_30px_rgb(34,197,94,0.12)]",
       },
       amber: {
-        border: "border-amber-200 dark:border-amber-800/50",
-        bg: "bg-amber-50/50 dark:bg-amber-900/10",
-        text: "text-amber-900 dark:text-amber-300",
-        glow: "hover:shadow-[0_0_20px_rgba(245,158,11,0.15)]",
+        border: "border-amber-200 dark:border-amber-800/50 border-t-amber-500 dark:border-t-amber-500",
+        bg: "bg-amber-50/80 dark:bg-amber-900/20",
+        text: "text-amber-900 dark:text-amber-200",
+        iconContainer: "bg-amber-100 dark:bg-amber-800/40 text-amber-600 dark:text-amber-300",
+        glow: "hover:shadow-[0_8px_30px_rgb(245,158,11,0.12)]",
       }
     };
 
     const config = colors[accentColor];
 
     return (
-      <div className={`group relative overflow-hidden rounded-2xl border ${config.border} ${config.bg} p-5 backdrop-blur-sm transition-all duration-500 hover:-translate-y-2 ${config.glow}`}>
+      <div className={`group relative overflow-hidden rounded-2xl border-t-4 border ${config.border} ${config.bg} p-5 backdrop-blur-sm transition-all duration-500 hover:-translate-y-2 ${config.glow}`}>
         <div className="mb-4 flex items-center justify-between">
-          <h3 className={`text-sm font-bold uppercase tracking-wider ${config.text} opacity-80`}>
+          <h3 className={`text-sm font-bold uppercase tracking-wider ${config.text} opacity-90`}>
             {title}
           </h3>
-          <div className={`rounded-lg ${config.bg} p-2 ${config.text} transition-transform duration-500 group-hover:rotate-12 group-hover:scale-110`}>
+          <div className={`rounded-lg ${config.iconContainer} p-2 transition-transform duration-500 group-hover:rotate-12 group-hover:scale-110`}>
             <Icon size={20} />
           </div>
         </div>

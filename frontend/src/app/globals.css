@@ -492,9 +492,9 @@ body {
     background: linear-gradient(
       to bottom,
       rgb(var(--app-bg-surface)),
-      rgb(var(--app-bg-muted))
+      rgb(var(--app-bg-muted) / 0.5)
     );
-    box-shadow: var(--app-shadow-sm);
+    box-shadow: var(--app-shadow-md);
     @apply rounded p-5;
   }
 

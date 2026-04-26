@@ -97,12 +97,16 @@ export function TransactionList({
           {transacoes.map((transacao) => (
             <div
               key={transacao.id}
-              className="rounded-xl border border-gray-200/80 bg-gradient-to-b from-white to-gray-50 p-4 shadow-[0_1px_2px_rgba(0,0,0,0.06)] dark:border-slate-800 dark:from-slate-900 dark:to-slate-900/50"
+              className={`relative overflow-hidden rounded-xl border border-gray-200/80 bg-white p-4 shadow-sm transition-all active:scale-[0.98] dark:border-slate-800 dark:bg-slate-900 ${
+                transacao.tipo === "DESPESA" 
+                  ? "border-l-4 border-l-red-500" 
+                  : "border-l-4 border-l-green-500"
+              }`}
             >
               <div className="flex items-start justify-between gap-3">
                 <div className="flex items-center gap-3 min-w-0">
                   <div
-                    className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full font-bold text-white shadow-sm ${
+                    className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full font-bold text-white shadow-md ${
                       transacao.tipo === "DESPESA" ? "bg-red-500" : "bg-green-500"
                     }`}
                   >
