@@ -286,22 +286,22 @@ export default function InvestimentosDashboardPage() {
         {/* Cards Premium com Ícone na Direita e Cores Sincronizadas */}
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-4">
           {[
-            { title: "Aporte", value: displayPoint?.aporte || 0, icon: ArrowUpRight, color: "amber", text: "text-amber-600 dark:text-amber-400", bg: "bg-amber-50/50 dark:bg-amber-900/10", border: "border-amber-200 dark:border-amber-800/50", iconBg: "bg-amber-100 dark:bg-amber-900/30" },
-            { title: "Resgate", value: displayPoint?.resgate || 0, icon: ArrowDownRight, color: "red", text: "text-red-600 dark:text-red-400", bg: "bg-red-50/50 dark:bg-red-900/10", border: "border-red-200 dark:border-red-800/50", iconBg: "bg-red-100 dark:bg-red-900/30" },
-            { title: "Rendimentos", value: displayPoint?.rendimentos || 0, icon: TrendingUp, color: "emerald", text: "text-emerald-600 dark:text-emerald-400", bg: "bg-emerald-50/50 dark:bg-emerald-900/10", border: "border-emerald-200 dark:border-emerald-800/50", iconBg: "bg-emerald-100 dark:bg-emerald-900/30" },
-            { title: "Saldo Atual", value: displayPoint?.saldo || 0, icon: DollarSign, color: "blue", text: "text-blue-600 dark:text-blue-400", bg: "bg-blue-50/50 dark:bg-blue-900/10", border: "border-blue-200 dark:border-blue-800/50", iconBg: "bg-blue-100 dark:bg-blue-900/30" },
+            { title: "Aporte", value: displayPoint?.aporte || 0, icon: ArrowUpRight, color: "amber", text: "text-amber-900 dark:text-amber-200", bg: "bg-amber-50/80 dark:bg-amber-900/20", border: "border-amber-200 dark:border-amber-800/50 border-t-amber-500", iconContainer: "bg-amber-100 dark:bg-amber-800/40 text-amber-600 dark:text-amber-300", glow: "hover:shadow-[0_8px_30px_rgb(245,158,11,0.12)]" },
+            { title: "Resgate", value: displayPoint?.resgate || 0, icon: ArrowDownRight, color: "red", text: "text-red-900 dark:text-red-200", bg: "bg-red-50/80 dark:bg-red-900/20", border: "border-red-200 dark:border-red-800/50 border-t-red-500", iconContainer: "bg-red-100 dark:bg-red-800/40 text-red-600 dark:text-red-300", glow: "hover:shadow-[0_8px_30px_rgb(239,68,68,0.12)]" },
+            { title: "Rendimentos", value: displayPoint?.rendimentos || 0, icon: TrendingUp, color: "emerald", text: "text-emerald-900 dark:text-emerald-200", bg: "bg-emerald-50/80 dark:bg-emerald-900/20", border: "border-emerald-200 dark:border-emerald-800/50 border-t-emerald-500", iconContainer: "bg-emerald-100 dark:bg-emerald-800/40 text-emerald-600 dark:text-emerald-300", glow: "hover:shadow-[0_8px_30px_rgb(16,185,129,0.12)]" },
+            { title: "Saldo Atual", value: displayPoint?.saldo || 0, icon: DollarSign, color: "blue", text: "text-blue-900 dark:text-blue-200", bg: "bg-blue-50/80 dark:bg-blue-900/20", border: "border-blue-200 dark:border-blue-800/50 border-t-blue-500", iconContainer: "bg-blue-100 dark:bg-blue-800/40 text-blue-600 dark:text-blue-300", glow: "hover:shadow-[0_8px_30px_rgb(59,130,246,0.12)]" },
           ].map((card, i) => (
-            <div key={i} className={`group relative overflow-hidden rounded-2xl border p-6 backdrop-blur-sm transition-all duration-500 hover:-translate-y-2 ${card.bg} ${card.border}`}>
+            <div key={i} className={`group relative overflow-hidden rounded-2xl border-t-4 border p-6 backdrop-blur-sm transition-all duration-500 hover:-translate-y-2 ${card.bg} ${card.border} ${card.glow}`}>
               <div className="flex items-center justify-between">
                 <div className="min-w-0">
-                  <p className={`text-xs font-black uppercase tracking-[0.1em] opacity-80 ${card.text}`}>{card.title}</p>
+                  <p className={`text-xs font-black uppercase tracking-[0.1em] opacity-90 ${card.text}`}>{card.title}</p>
                   <p className={`mt-2 text-2xl font-black tabular-nums tracking-tight ${card.text}`}>{formatCurrencyBRL(card.value)}</p>
                 </div>
-                <div className={`rounded-xl p-2.5 transition-transform duration-500 group-hover:rotate-12 group-hover:scale-110 ${card.iconBg} ${card.text}`}>
+                <div className={`rounded-xl p-2.5 transition-transform duration-500 group-hover:rotate-12 group-hover:scale-110 ${card.iconContainer}`}>
                   <card.icon size={24} />
                 </div>
               </div>
-              <div className={`absolute -right-10 -top-10 h-32 w-32 rounded-full opacity-0 blur-3xl transition-opacity duration-700 group-hover:opacity-100 bg-current opacity-10`} />
+              <div className={`absolute -right-10 -top-10 h-32 w-32 rounded-full bg-current opacity-10 blur-3xl transition-opacity duration-700 group-hover:opacity-40`} />
             </div>
           ))}
         </div>
