@@ -263,12 +263,8 @@ export default function InvestimentosDashboardPage() {
               className="relative"
               startIcon={<Filter size={18} />}
             >
-              Filtros
-              {activeFiltersCount > 0 && (
-                <span className="absolute -right-2 -top-2 flex h-5 w-5 items-center justify-center rounded-full bg-blue-600 text-[10px] font-bold text-white shadow-md ring-2 ring-white dark:ring-slate-900">
-                  {activeFiltersCount}
-                </span>
-              )}
+              {showFilters ? "Ocultar Filtros" : "Mostrar Filtros"}
+              {activeFiltersCount > 0 && <span className="absolute -right-2 -top-2 flex h-5 w-5 items-center justify-center rounded-full bg-blue-600 text-[10px] font-bold text-white shadow-md ring-2 ring-white dark:ring-slate-900">{activeFiltersCount}</span>}
             </AppButton>
           </div>
         </PageContainer>

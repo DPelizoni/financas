@@ -191,7 +191,19 @@ export default function InvestimentosMovimentacoesPage() {
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div><h1 className="text-2xl font-bold text-gray-900 sm:text-3xl">Movimentações de Investimento</h1><p className="mt-2 text-sm text-gray-600">Lançamentos de aportes, resgates e rendimentos.</p></div>
             <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-              <AppButton tone={showFilters ? "outline-primary" : "outline"} onClick={() => setShowFilters(!showFilters)} className="relative" startIcon={<Filter size={18} className={showFilters ? "fill-blue-100 dark:fill-blue-900/50" : ""} />}>Filtros{activeFiltersCount > 0 && <span className="absolute -right-2 -top-2 flex h-5 w-5 items-center justify-center rounded-full bg-blue-600 text-[10px] font-bold text-white shadow-md ring-2 ring-white dark:ring-slate-900">{activeFiltersCount}</span>}</AppButton>
+              <AppButton
+                tone={showFilters ? "outline-primary" : "outline"}
+                onClick={() => setShowFilters(!showFilters)}
+                className="relative"
+                startIcon={<Filter size={18} />}
+              >
+                {showFilters ? "Ocultar Filtros" : "Mostrar Filtros"}
+                {activeFiltersCount > 0 && (
+                  <span className="absolute -right-2 -top-2 flex h-5 w-5 items-center justify-center rounded-full bg-blue-600 text-[10px] font-bold text-white shadow-md ring-2 ring-white dark:ring-slate-900">
+                    {activeFiltersCount}
+                  </span>
+                )}
+              </AppButton>
               <AppButton onClick={() => { setEditingMovimentacao(null); setShowModal(true); }} tone="primary" startIcon={<Icon path={mdiPlusBoxOutline} size={0.8} />} className="w-full sm:w-auto">Nova Movimentação</AppButton>
             </div>
           </div>
