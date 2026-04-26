@@ -165,15 +165,27 @@ export default function InvestimentosDashboardPage() {
     return dashboard.timeline.find(p => p.month_key === filterMesAno) || null;
   }, [dashboard.timeline, filterMesAno]);
 
-  // Se houver mês selecionado, os cards e donut usam esse ponto. Caso contrário, o primeiro da timeline.
+  // Dados consolidados do ano para quando nenhum mês específico está em foco
+  const yearSummary = useMemo(() => {
+    return dashboard.timeline.reduce((acc, point) => ({
+      aporte: acc.aporte + point.aporte,
+      resgate: acc.resgate + point.resgate,
+      rendimentos: acc.rendimentos + point.rendimentos,
+    }), { aporte: 0, resgate: 0, rendimentos: 0 });
+  }, [dashboard.timeline]);
+
+  // Se houver mês selecionado, os cards e donut usam esse ponto. Caso contrário, o consolidado do ano.
   const displayPoint = useMemo(() => {
     if (selectedMonthPoint) return selectedMonthPoint;
-    if (dashboard.timeline.length > 0) {
-      // Se não achou o ponto exato (ex: mudou o ano), pega o último disponível daquela timeline
-      return dashboard.timeline[dashboard.timeline.length - 1];
-    }
-    return null;
-  }, [selectedMonthPoint, dashboard.timeline]);
+    
+    // Se não há mês selecionado, retorna o consolidado do ano para Aporte/Resgate/Rendimentos
+    // Mas o Saldo (que é um valor de posição) usamos o do último ponto disponível ou da carteira
+    return {
+      ...yearSummary,
+      saldo: dashboard.carteira.saldo_total,
+      month_key: null
+    };
+  }, [selectedMonthPoint, yearSummary, dashboard.carteira.saldo_total]);
 
   const monthAnalysisData = useMemo(() => {
     if (!displayPoint) return [];
