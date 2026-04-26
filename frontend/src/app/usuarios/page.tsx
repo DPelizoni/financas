@@ -283,7 +283,13 @@ export default function UsuariosPage() {
 
       <UserModal isOpen={showUserModal} user={editingUser} isAdmin={isAdmin} onClose={() => { setShowUserModal(false); setEditingUser(null); }} onSave={async (message) => { toast.success(message); queryClient.invalidateQueries({ queryKey: ["users"] }); setShowUserModal(false); setEditingUser(null); }} />
 
-      <ViewDataModal isOpen={!!viewingUser} title="Visualizar Usuário" data={viewingUser} onClose={() => setViewingUser(null)} />
+      <ViewDataModal 
+        isOpen={!!viewingUser} 
+        title="Visualizar Usuário" 
+        data={viewingUser} 
+        onClose={() => setViewingUser(null)} 
+        hideCopy={true}
+      />
 
       <ConfirmDeleteModal isOpen={!!deleteTarget} title="Confirmar exclusão" description={<>Esta ação excluirá definitivamente o usuário <strong>{deleteTarget?.nome}</strong>.</>} confirmLabel="Excluir usuário" onCancel={() => setDeleteTarget(null)} onConfirm={handleConfirmDelete} />
     </div>

@@ -278,7 +278,14 @@ export default function InvestimentosMovimentacoesPage() {
 
       <ConfirmDeleteModal isOpen={!!deleteTarget} title="Confirmar exclusão" description={<>Esta ação removerá a movimentação de <strong>{deleteTarget?.ativo_nome}</strong>.</>} confirmLabel="Excluir movimentação" onCancel={() => setDeleteTarget(null)} onConfirm={() => deleteMutation.mutate(deleteTarget!.id)} />
 
-      <ViewDataModal isOpen={!!viewingMovimentacao} title="Visualizar Movimentação" data={viewingMovimentacao} onClose={() => setViewingMovimentacao(null)} fieldLabels={{ id: "ID da movimentação", ativo_nome: "Ativo", ativo_status: "Status do ativo", banco_nome: "Banco", investimento_ativo_id: "ID do ativo" }} />
+      <ViewDataModal 
+        isOpen={!!viewingMovimentacao} 
+        title="Visualizar Movimentação" 
+        data={viewingMovimentacao} 
+        onClose={() => setViewingMovimentacao(null)} 
+        fieldLabels={{ id: "ID da movimentação", ativo_nome: "Ativo", ativo_status: "Status do ativo", banco_nome: "Banco", investimento_ativo_id: "ID do ativo" }} 
+        hideCopy={true}
+      />
     </div>
   );
 }

@@ -319,7 +319,14 @@ export default function InvestimentosAtivosPage() {
 
       <ConfirmDeleteModal isOpen={!!deleteTarget} title="Confirmar exclusão" description={<>Esta ação removerá o ativo <strong>{deleteTarget?.nome}</strong>.</>} confirmLabel="Excluir ativo" onCancel={() => setDeleteTarget(null)} onConfirm={handleConfirmDelete} />
 
-      <ViewDataModal isOpen={!!viewingAtivo} title="Visualizar Ativo" data={viewingAtivo} onClose={() => setViewingAtivo(null)} fieldLabels={{ data_saldo_inicial: "Data do saldo inicial", total_aporte: "Total de aporte", total_resgate: "Total de resgate", total_rendimento: "Total de rendimentos", saldo_atual: "Saldo atual" }} />
+      <ViewDataModal 
+        isOpen={!!viewingAtivo} 
+        title="Visualizar Ativo" 
+        data={viewingAtivo} 
+        onClose={() => setViewingAtivo(null)} 
+        fieldLabels={{ data_saldo_inicial: "Data do saldo inicial", total_aporte: "Total de aporte", total_resgate: "Total de resgate", total_rendimento: "Total de rendimentos", saldo_atual: "Saldo atual" }} 
+        hideCopy={true}
+      />
     </div>
   );
 }

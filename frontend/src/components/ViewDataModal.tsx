@@ -28,6 +28,7 @@ interface ViewDataModalProps {
   onClose: () => void;
   fieldLabels?: Record<string, string>;
   excludeCopyFields?: string[];
+  hideCopy?: boolean;
 }
 
 const defaultFieldLabels: Record<string, string> = {
@@ -223,6 +224,7 @@ export default function ViewDataModal({
   onClose,
   fieldLabels = {},
   excludeCopyFields = [],
+  hideCopy = false,
 }: ViewDataModalProps) {
   const modalRef = useRef<HTMLDivElement>(null);
   const titleId = useId();
@@ -343,6 +345,7 @@ export default function ViewDataModal({
   };
 
   const isCopyable = (key: string) => {
+    if (hideCopy) return false;
     const k = key.toLowerCase();
     if (excludeCopyFields.map(f => f.toLowerCase()).includes(k)) return false;
     return ["id", "codigo", "code"].includes(k);

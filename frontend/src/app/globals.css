@@ -139,6 +139,10 @@ html.dark {
   --app-chart-pie-e: 251 113 133;
 }
 
+html {
+  scrollbar-gutter: stable;
+}
+
 body {
   color: rgb(var(--app-text-primary));
   background-color: rgb(var(--app-bg-canvas));
