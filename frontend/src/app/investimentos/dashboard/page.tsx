@@ -26,6 +26,8 @@ import { InvestimentoDashboardResponse } from "@/types/investimento";
 
 type AtivoFilter = "TODOS" | "ATIVOS" | "INATIVOS";
 
+const DEFAULT_ATIVO_FILTER: AtivoFilter = "ATIVOS";
+
 const chartColors = {
   aporte: "rgb(var(--app-chart-pendente))",
   resgate: "rgb(var(--app-chart-despesa))",
@@ -66,7 +68,7 @@ export default function InvestimentosDashboardPage() {
   const [availableYears, setAvailableYears] = useState<string[]>([]);
   
   // Filtros inicializados com o presente
-  const [filterAtivo, setFilterAtivo] = useState<AtivoFilter>("TODOS");
+  const [filterAtivo, setFilterAtivo] = useState<AtivoFilter>(DEFAULT_ATIVO_FILTER);
   const [filterMesAno, setFilterMesAno] = useState(currentMonthKey);
   const [filterAno, setFilterAno] = useState<string>(currentYearStr);
   const [filterBanco, setFilterBanco] = useState<number | "TODOS">("TODOS");
@@ -87,7 +89,7 @@ export default function InvestimentosDashboardPage() {
     let count = 0;
     if (filterMesAno !== currentMonthKey) count++;
     if (filterAno !== currentYearStr) count++;
-    if (filterAtivo !== "TODOS") count++;
+    if (filterAtivo !== DEFAULT_ATIVO_FILTER) count++;
     if (filterBanco !== "TODOS") count++;
     return count;
   }, [filterMesAno, filterAno, filterAtivo, filterBanco, currentMonthKey, currentYearStr]);
@@ -156,7 +158,7 @@ export default function InvestimentosDashboardPage() {
   const handleClearFilters = () => {
     setFilterMesAno(currentMonthKey);
     setFilterAno(currentYearStr);
-    setFilterAtivo("TODOS");
+    setFilterAtivo(DEFAULT_ATIVO_FILTER);
     setFilterBanco("TODOS");
   };
 
@@ -205,6 +207,20 @@ export default function InvestimentosDashboardPage() {
     }
     return formatMonthYearLabel(filterMesAno);
   }, [displayPoint, filterMesAno]);
+
+  const carteiraTotalLabel = useMemo(() => {
+    const total = dashboard.carteira.total_ativos;
+
+    if (filterAtivo === "INATIVOS") {
+      return `${total} ${total === 1 ? "inativo" : "inativos"}`;
+    }
+
+    if (filterAtivo === "TODOS") {
+      return `${total} ${total === 1 ? "ativo cadastrado" : "ativos cadastrados"}`;
+    }
+
+    return `${total} ${total === 1 ? "ativo" : "ativos"}`;
+  }, [dashboard.carteira.total_ativos, filterAtivo]);
 
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
@@ -456,7 +472,7 @@ export default function InvestimentosDashboardPage() {
             <div className="mb-6 rounded-2xl bg-blue-50/50 p-4 dark:bg-blue-900/10 border border-blue-100 dark:border-blue-800/50">
                <p className="text-[10px] font-black uppercase tracking-widest text-blue-600 dark:text-blue-400 opacity-70 mb-1">Saldo Total</p>
                <p className="text-xl font-black text-blue-600 dark:text-blue-400 tabular-nums">{formatCurrencyBRL(dashboard.carteira.saldo_total)}</p>
-               <p className="text-[10px] font-bold text-slate-500 mt-1 uppercase">{dashboard.carteira.total_ativos} Ativos Ativos</p>
+               <p className="text-[10px] font-bold text-slate-500 mt-1 uppercase">{carteiraTotalLabel}</p>
             </div>
 
             <div className="overflow-y-auto max-h-[300px] custom-scrollbar">
