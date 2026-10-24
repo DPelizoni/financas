@@ -62,3 +62,14 @@ export const previousMonthKey = (value: string): string => {
   const date = new Date(year, month - 2, 1);
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
 };
+
+const compactCurrencyFormatter = new Intl.NumberFormat("pt-BR", {
+  style: "currency",
+  currency: "BRL",
+  notation: "compact",
+  maximumFractionDigits: 1,
+});
+
+// Para rótulos de gráfico com pouco espaço: "R$ 12,3 mil", "R$ 1,2 mi"
+export const formatCompactCurrency = (value: number | string | null | undefined): string =>
+  compactCurrencyFormatter.format(Number(value || 0));
