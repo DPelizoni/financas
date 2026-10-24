@@ -9,14 +9,6 @@ export const createBankSchema = z.object({
     .string()
     .max(10, "Código deve ter no máximo 10 caracteres")
     .optional(),
-  cor: z
-    .string()
-    .regex(
-      /^#[0-9A-Fa-f]{6}$/,
-      "Cor deve estar no formato hexadecimal (#RRGGBB)",
-    )
-    .optional()
-    .default("#3B82F6"),
   icone: z
     .string()
     .max(100, "Ícone deve ter no máximo 100 caracteres")
@@ -38,13 +30,6 @@ export const updateBankSchema = z.object({
   codigo: z
     .string()
     .max(10, "Código deve ter no máximo 10 caracteres")
-    .optional(),
-  cor: z
-    .string()
-    .regex(
-      /^#[0-9A-Fa-f]{6}$/,
-      "Cor deve estar no formato hexadecimal (#RRGGBB)",
-    )
     .optional(),
   icone: z
     .string()

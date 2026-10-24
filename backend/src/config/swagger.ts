@@ -170,12 +170,6 @@ const options: swaggerJsdoc.Options = {
               example: "260",
               nullable: true,
             },
-            cor: {
-              type: "string",
-              description: "Cor em hexadecimal para identificação visual",
-              example: "#8B10AE",
-              default: "#3B82F6",
-            },
             icone: {
               type: "string",
               description: "URL ou nome do ícone",
@@ -220,11 +214,6 @@ const options: swaggerJsdoc.Options = {
               type: "string",
               description: "Código do banco",
               example: "260",
-            },
-            cor: {
-              type: "string",
-              description: "Cor em hexadecimal",
-              example: "#8B10AE",
             },
             icone: {
               type: "string",

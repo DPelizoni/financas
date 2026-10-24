@@ -92,7 +92,6 @@ Aguarde até ver:
 {
   "nome": "Nubank",
   "codigo": "260",
-  "cor": "#8B10AE",
   "saldo_inicial": 1500.0,
   "ativo": true
 }
@@ -109,7 +108,6 @@ curl -X POST http://localhost:3001/api/banks \
   -d '{
     "nome": "Nubank",
     "codigo": "260",
-    "cor": "#8B10AE",
     "saldo_inicial": 1500.00,
     "ativo": true
   }'
@@ -139,12 +137,12 @@ Após iniciar o backend, você pode inserir dados de exemplo via SQL:
 ```sql
 USE financas_db;
 
-INSERT INTO banks (nome, codigo, cor, icone, saldo_inicial, ativo) VALUES
-('Nubank', '260', '#8B10AE', 'nubank-icon', 1500.00, true),
-('Itaú', '341', '#FF6600', 'itau-icon', 5000.00, true),
-('Bradesco', '237', '#CC092F', 'bradesco-icon', 3200.00, true),
-('Banco do Brasil', '001', '#FFDD00', 'bb-icon', 2800.00, true),
-('Caixa Econômica', '104', '#0066B3', 'caixa-icon', 1200.00, true);
+INSERT INTO banks (nome, codigo, icone, saldo_inicial, ativo) VALUES
+('Nubank', '260', 'nubank-icon', 1500.00, true),
+('Itaú', '341', 'itau-icon', 5000.00, true),
+('Bradesco', '237', 'bradesco-icon', 3200.00, true),
+('Banco do Brasil', '001', 'bb-icon', 2800.00, true),
+('Caixa Econômica', '104', 'caixa-icon', 1200.00, true);
 ```
 
 Ou use o frontend para criar os bancos visualmente! 🎨

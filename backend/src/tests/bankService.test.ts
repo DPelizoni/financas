@@ -9,7 +9,6 @@ const createBankRecord = (overrides: Partial<Bank> = {}): Bank => ({
   id: 1,
   nome: "Banco Base",
   codigo: "001",
-  cor: "#111111",
   icone: null as unknown as string,
   saldo_inicial: 0,
   ativo: true,

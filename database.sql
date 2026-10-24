@@ -10,15 +10,15 @@ USE financas_db;
 
 -- Exemplos de INSERT (execute após iniciar o backend pela primeira vez):
 /*
-INSERT INTO banks (nome, codigo, cor, icone, saldo_inicial, ativo) VALUES
-('Nubank', '260', '#8B10AE', 'nubank-icon', 1500.00, true),
-('Itaú', '341', '#FF6600', 'itau-icon', 5000.00, true),
-('Bradesco', '237', '#CC092F', 'bradesco-icon', 3200.00, true),
-('Banco do Brasil', '001', '#FFDD00', 'bb-icon', 2800.00, true),
-('Caixa Econômica', '104', '#0066B3', 'caixa-icon', 1200.00, true),
-('Inter', '077', '#FF7A00', 'inter-icon', 800.00, true),
-('Santander', '033', '#EC0000', 'santander-icon', 4500.00, true),
-('Picpay', '', '#11C76F', 'picpay-icon', 350.00, true);
+INSERT INTO banks (nome, codigo, icone, saldo_inicial, ativo) VALUES
+('Nubank', '260', 'nubank-icon', 1500.00, true),
+('Itaú', '341', 'itau-icon', 5000.00, true),
+('Bradesco', '237', 'bradesco-icon', 3200.00, true),
+('Banco do Brasil', '001', 'bb-icon', 2800.00, true),
+('Caixa Econômica', '104', 'caixa-icon', 1200.00, true),
+('Inter', '077', 'inter-icon', 800.00, true),
+('Santander', '033', 'santander-icon', 4500.00, true),
+('Picpay', '', 'picpay-icon', 350.00, true);
 
 INSERT INTO categories (nome, tipo, cor, ativo) VALUES
 ('Alimentação', 'DESPESA', '#F97316', true),

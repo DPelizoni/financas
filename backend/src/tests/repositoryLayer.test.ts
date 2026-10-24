@@ -299,7 +299,7 @@ const bankRepositoryCreateAplicaDefaults = async () => {
     stubPoolQuery(
       [
         [{ insertId: 15 }],
-        [[{ id: 15, nome: "Banco Novo", cor: "#3B82F6", ativo: true }]],
+        [[{ id: 15, nome: "Banco Novo", ativo: true }]],
       ],
       captures,
     );
@@ -315,7 +315,6 @@ const bankRepositoryCreateAplicaDefaults = async () => {
     assert.deepEqual(captures[0].params, [
       "Banco Novo",
       null,
-      "#3B82F6",
       null,
       0,
       true,

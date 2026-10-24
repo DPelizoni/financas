@@ -70,7 +70,6 @@ const listParseiaFiltrosERetornaPaginado = async () => {
 const createRetorna201QuandoSucesso = async () => {
   const payload = {
     nome: "Banco XP",
-    cor: "#123456",
     saldo_inicial: 10,
   };
   const created = {

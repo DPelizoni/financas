@@ -58,12 +58,11 @@ export class BankRepository {
    */
   async create(bank: BankInput): Promise<Bank> {
     const [result] = await pool.query<ResultSetHeader>(
-      `INSERT INTO banks (nome, codigo, cor, icone, saldo_inicial, ativo) 
-       VALUES (?, ?, ?, ?, ?, ?)`,
+      `INSERT INTO banks (nome, codigo, icone, saldo_inicial, ativo) 
+       VALUES (?, ?, ?, ?, ?)`,
       [
         bank.nome,
         bank.codigo || null,
-        bank.cor || "#3B82F6",
         bank.icone || null,
         bank.saldo_inicial || 0,
         bank.ativo !== undefined ? bank.ativo : true,
@@ -87,7 +86,6 @@ export class BankRepository {
     const allowedFields: (keyof BankInput)[] = [
       "nome",
       "codigo",
-      "cor",
       "icone",
       "saldo_inicial",
       "ativo",

@@ -91,7 +91,6 @@ export const initDatabase = async (): Promise<void> => {
         id INT PRIMARY KEY AUTO_INCREMENT,
         nome VARCHAR(100) NOT NULL,
         codigo VARCHAR(10),
-        cor VARCHAR(7) DEFAULT '#3B82F6',
         icone VARCHAR(100),
         saldo_inicial DECIMAL(15, 2) DEFAULT 0.00,
         ativo BOOLEAN DEFAULT true,
@@ -101,6 +100,16 @@ export const initDatabase = async (): Promise<void> => {
         INDEX idx_ativo (ativo)
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
     `);
+
+    // A cor do banco foi substituída pelo logotipo exibido no frontend
+    try {
+      await connection.query(`
+        ALTER TABLE banks
+        DROP COLUMN cor;
+      `);
+    } catch {
+      // Ignora quando a coluna não existe (instalações novas ou migração já aplicada)
+    }
 
     // Cria a tabela de categorias
     await connection.query(`
