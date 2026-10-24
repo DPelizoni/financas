@@ -6,13 +6,15 @@ import {
   ArrowDownWideNarrow,
   ArrowUpNarrowWide,
   Search,
+  CheckCircle2,
+  Clock,
+  FilterX,
 } from "lucide-react";
 import AppButton from "@/components/AppButton";
 import TableActionButton from "@/components/TableActionButton";
 import { TableSkeleton, CardSkeleton } from "@/components/skeletons/DataSkeletons";
 import EmptyState from "@/components/EmptyState";
-import Icon from "@mdi/react";
-import { mdiBroom, mdiCheckCircle, mdiClockOutline } from "@mdi/js";
+import { formatCurrency } from "@/utils/format";
 
 interface TransactionListProps {
   transacoes: Transacao[];
@@ -31,13 +33,6 @@ interface TransactionListProps {
 const situacaoLabel: Record<"PENDENTE" | "PAGO", string> = {
   PENDENTE: "Pendente",
   PAGO: "Pago",
-};
-
-const formatCurrency = (valor: number) => {
-  return new Intl.NumberFormat("pt-BR", {
-    style: "currency",
-    currency: "BRL",
-  }).format(valor);
 };
 
 export function TransactionList({
@@ -80,7 +75,7 @@ export function TransactionList({
           <AppButton
             tone="outline"
             onClick={onClearFilters}
-            startIcon={<Icon path={mdiBroom} size={0.7} />}
+            startIcon={<FilterX size={16} />}
           >
             Limpar Filtros
           </AppButton>
@@ -97,7 +92,7 @@ export function TransactionList({
           {transacoes.map((transacao) => (
             <div
               key={transacao.id}
-              className={`relative overflow-hidden rounded-xl border border-gray-200/80 bg-white p-4 shadow-sm transition-all active:scale-[0.98] dark:border-slate-800 dark:bg-slate-900 ${
+              className={`relative overflow-hidden rounded-lg border border-gray-200/80 bg-white p-4 shadow-sm transition-all active:scale-[0.98] dark:border-slate-800 dark:bg-slate-900 ${
                 transacao.tipo === "DESPESA" 
                   ? "border-l-4 border-l-red-500" 
                   : "border-l-4 border-l-green-500"
@@ -116,7 +111,7 @@ export function TransactionList({
                     <p className="truncate text-sm font-semibold text-gray-900 dark:text-white">
                       {transacao.descricao_nome || "Sem descrição"}
                     </p>
-                    <div className="flex flex-wrap items-center gap-x-2 text-[11px] text-gray-600 dark:text-slate-400">
+                    <div className="flex flex-wrap items-center gap-x-2 text-xs text-gray-600 dark:text-slate-400">
                       <span>{transacao.mes}</span>
                       <span className="text-gray-300 dark:text-slate-700">•</span>
                       <span>{transacao.vencimento}</span>
@@ -130,13 +125,13 @@ export function TransactionList({
                   </p>
                   <button
                     onClick={() => onToggleSituacao(transacao)}
-                    className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold transition-all active:scale-95 ${
+                    className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-bold transition-all active:scale-95 ${
                       transacao.situacao === "PAGO"
                         ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
                         : "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400"
                     }`}
                   >
-                    <Icon path={transacao.situacao === "PAGO" ? mdiCheckCircle : mdiClockOutline} size={0.4} />
+                    {transacao.situacao === "PAGO" ? <CheckCircle2 size={12} /> : <Clock size={12} />}
                     {situacaoLabel[transacao.situacao]}
                   </button>
                 </div>
@@ -169,7 +164,7 @@ export function TransactionList({
                   {sortBy === "vencimento" && sortDirection === "asc" ? <ArrowUpNarrowWide size={14} className="text-blue-600" /> : sortBy === "vencimento" ? <ArrowDownWideNarrow size={14} className="text-blue-600" /> : null}
                 </button>
               </th>
-              <th className="app-table-head-cell w-[8%]">
+              <th className="app-table-head-cell-center w-[8%]">
                 <button type="button" onClick={() => onSort("tipo")} className="inline-flex items-center gap-1 hover:text-blue-600 transition-colors">
                   Tipo
                   {sortBy === "tipo" && sortDirection === "asc" ? <ArrowUpNarrowWide size={14} className="text-blue-600" /> : sortBy === "tipo" ? <ArrowDownWideNarrow size={14} className="text-blue-600" /> : null}
@@ -218,8 +213,8 @@ export function TransactionList({
               >
                 <td className="whitespace-nowrap px-3 py-2 text-gray-900 dark:text-slate-200">{transacao.mes}</td>
                 <td className="whitespace-nowrap px-3 py-2 text-gray-900 dark:text-slate-200">{transacao.vencimento}</td>
-                <td className="whitespace-nowrap px-3 py-2">
-                  <span className={`inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-semibold leading-none ${transacao.tipo === "DESPESA" ? "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400" : "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400"}`}>
+                <td className="whitespace-nowrap px-3 py-2 text-center">
+                  <span className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold leading-none ${transacao.tipo === "DESPESA" ? "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400" : "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400"}`}>
                     {transacao.tipo === "DESPESA" ? "Despesa" : "Receita"}
                   </span>
                 </td>
@@ -230,13 +225,13 @@ export function TransactionList({
                 <td className="whitespace-nowrap px-3 py-2 text-center">
                   <button
                     onClick={() => onToggleSituacao(transacao)}
-                    className={`inline-flex min-h-[22px] items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-bold transition-all hover:scale-105 active:scale-95 ${
+                    className={`inline-flex min-h-[22px] items-center gap-1 rounded-full px-2 py-0.5 text-xs font-bold transition-all hover:scale-105 active:scale-95 ${
                       transacao.situacao === "PAGO"
                         ? "bg-green-100 text-green-700 border border-green-200 dark:bg-green-900/30 dark:text-green-400 dark:border-green-800/50 hover:bg-green-200 dark:hover:bg-green-900/50 shadow-sm"
                         : "bg-amber-100 text-amber-700 border border-amber-200 dark:bg-amber-900/30 dark:text-amber-400 dark:border-amber-800/50 hover:bg-amber-200 dark:hover:bg-amber-900/50 shadow-sm"
                     }`}
                   >
-                    <Icon path={transacao.situacao === "PAGO" ? mdiCheckCircle : mdiClockOutline} size={0.4} />
+                    {transacao.situacao === "PAGO" ? <CheckCircle2 size={12} /> : <Clock size={12} />}
                     {situacaoLabel[transacao.situacao]}
                   </button>
                 </td>

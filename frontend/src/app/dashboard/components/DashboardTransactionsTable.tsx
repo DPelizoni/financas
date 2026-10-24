@@ -45,7 +45,7 @@ export function DashboardTransactionsTable({
             detailedRows.map((t) => (
               <div
                 key={t.id}
-                className="rounded-xl border border-gray-200/80 bg-gradient-to-b from-white to-gray-50 p-4 shadow-[0_1px_2px_rgba(0,0,0,0.06)] dark:border-slate-800 dark:from-slate-900 dark:to-slate-900/50"
+                className="rounded-lg border border-gray-200/80 bg-gradient-to-b from-white to-gray-50 p-4 shadow-[0_1px_2px_rgba(0,0,0,0.06)] dark:border-slate-800 dark:from-slate-900 dark:to-slate-900/50"
               >
                 <div className="flex items-start justify-between gap-3">
                   <div>
@@ -55,7 +55,7 @@ export function DashboardTransactionsTable({
                     <p className="mt-1 text-xs text-gray-600 dark:text-slate-400">{t.mes}</p>
                   </div>
                   <span
-                    className={`inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-semibold leading-none ${
+                    className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold leading-none ${
                       t.tipo === "RECEITA"
                         ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400"
                         : "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
@@ -78,7 +78,7 @@ export function DashboardTransactionsTable({
 
                 <div className="mt-3 flex items-center justify-between">
                   <span
-                    className={`inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-semibold leading-none ${
+                    className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold leading-none ${
                       t.situacao === "PAGO"
                         ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
                         : "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400"
@@ -114,7 +114,7 @@ export function DashboardTransactionsTable({
                   ) : null}
                 </button>
               </th>
-              <th className="app-table-head-cell w-[10%]">
+              <th className="app-table-head-cell-center w-[10%]">
                 <button
                   type="button"
                   onClick={() => handleTableSort("tipo")}
@@ -162,7 +162,7 @@ export function DashboardTransactionsTable({
                   ) : null}
                 </button>
               </th>
-              <th className="app-table-head-cell w-[12%]">
+              <th className="app-table-head-cell-center w-[12%]">
                 <button
                   type="button"
                   onClick={() => handleTableSort("situacao")}
@@ -210,9 +210,9 @@ export function DashboardTransactionsTable({
                   <td className="px-3 py-2 text-xs text-gray-700 dark:text-slate-300">
                     {t.mes}
                   </td>
-                  <td className="px-3 py-2 text-xs">
+                  <td className="px-3 py-2 text-xs text-center">
                     <span
-                      className={`inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-semibold leading-none ${
+                      className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold leading-none ${
                         t.tipo === "RECEITA"
                           ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400"
                           : "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
@@ -245,9 +245,9 @@ export function DashboardTransactionsTable({
                       {t.banco_nome || "-"}
                     </span>
                   </td>
-                  <td className="px-3 py-2 text-xs">
+                  <td className="px-3 py-2 text-xs text-center">
                     <span
-                      className={`inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-semibold leading-none ${
+                      className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold leading-none ${
                         t.situacao === "PAGO"
                           ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
                           : "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400"

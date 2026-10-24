@@ -17,18 +17,16 @@ import { bankService } from "@/services/bankService";
 import { TransacaoModal } from "@/components/TransacaoModal";
 import Pagination from "@/components/Pagination";
 import {
-  ArrowLeftRight,
   Filter,
   MoreVertical,
   ChevronDown,
   Copy,
   Trash,
+  Plus,
 } from "lucide-react";
-import Icon from "@mdi/react";
-import { mdiPlusBoxOutline } from "@mdi/js";
 import { toast } from "sonner";
 import ConfirmDeleteModal from "@/components/ConfirmDeleteModal";
-import PageContainer from "@/components/PageContainer";
+import PageHeader from "@/components/PageHeader";
 import AppButton from "@/components/AppButton";
 import ViewDataModal from "@/components/ViewDataModal";
 import { useAccessibleModal } from "@/utils/useAccessibleModal";
@@ -658,18 +656,11 @@ export default function TransacoesPage() {
   return (
     <div className="app-page py-4 sm:py-8">
       <div className="mx-auto max-w-7xl space-y-6 px-4 sm:px-6 lg:px-8">
-        <PageContainer>
-          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-            <div className="min-w-0">
-              <h1 className="flex items-center gap-3 text-2xl font-bold text-gray-900 sm:text-3xl dark:text-white">
-                <ArrowLeftRight size={32} className="shrink-0 text-blue-600 dark:text-blue-400" />
-                <span>Gerenciamento de Transações</span>
-              </h1>
-              <p className="mt-2 text-sm text-gray-600 dark:text-slate-400">
-                Controle suas receitas e despesas mensais
-              </p>
-            </div>
-            <div className="flex flex-col gap-2 md:flex-row md:items-center shrink-0">
+        <PageHeader
+          title="Transações"
+          description="Controle suas receitas e despesas mensais"
+          actions={
+            <>
               <AppButton
                 tone={showFilters ? "outline-primary" : "outline"}
                 onClick={() => setShowFilters(!showFilters)}
@@ -678,12 +669,12 @@ export default function TransacoesPage() {
               >
                 {showFilters ? "Ocultar Filtros" : "Mostrar Filtros"}
                 {activeFiltersCount > 0 && (
-                  <span className="absolute -right-2 -top-2 flex h-5 w-5 items-center justify-center rounded-full bg-blue-600 text-[10px] font-bold text-white shadow-md ring-2 ring-white dark:ring-slate-900">
+                  <span className="absolute -right-2 -top-2 flex h-5 w-5 items-center justify-center rounded-full bg-blue-600 text-xs font-bold text-white shadow-md ring-2 ring-white dark:ring-slate-900">
                     {activeFiltersCount}
                   </span>
                 )}
               </AppButton>
-              
+
               <div className="relative inline-block text-left">
                 <div className="hidden sm:block">
                   <AppButton
@@ -739,7 +730,7 @@ export default function TransacoesPage() {
                         className="absolute inset-0 bg-black/40 backdrop-blur-[2px]"
                         onClick={() => setAdvancedActionsOpen(false)}
                       />
-                      <div className="absolute inset-x-0 bottom-0 animate-in slide-in-from-bottom duration-300 rounded-t-2xl bg-white p-4 pb-8 shadow-2xl dark:bg-slate-900">
+                      <div className="absolute inset-x-0 bottom-0 animate-in slide-in-from-bottom duration-300 rounded-t-xl bg-white p-4 pb-8 shadow-2xl dark:bg-slate-900">
                         <div className="mx-auto mb-4 h-1.5 w-12 rounded-full bg-gray-200 dark:bg-slate-700" />
                         <h3 className="mb-4 text-center text-xs font-bold text-gray-400 uppercase tracking-widest">
                           Menu de Ações
@@ -750,7 +741,7 @@ export default function TransacoesPage() {
                               setAdvancedActionsOpen(false);
                               setCopyModalOpen(true);
                             }}
-                            className="flex w-full items-center gap-4 rounded-xl border border-blue-100 bg-blue-50/50 p-4 text-left text-blue-700 transition active:bg-blue-100 dark:border-blue-900/30 dark:bg-blue-900/20 dark:text-blue-400"
+                            className="flex w-full items-center gap-4 rounded-lg border border-blue-100 bg-blue-50/50 p-4 text-left text-blue-700 transition active:bg-blue-100 dark:border-blue-900/30 dark:bg-blue-900/20 dark:text-blue-400"
                           >
                             <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-100 text-blue-600 dark:bg-blue-900 dark:text-blue-400">
                               <Copy size={20} />
@@ -765,7 +756,7 @@ export default function TransacoesPage() {
                               setAdvancedActionsOpen(false);
                               setDeleteModalOpen(true);
                             }}
-                            className="flex w-full items-center gap-4 rounded-xl border border-red-100 bg-red-50/50 p-4 text-left text-red-700 transition active:bg-red-100 dark:border-red-900/30 dark:bg-red-900/20 dark:text-red-400"
+                            className="flex w-full items-center gap-4 rounded-lg border border-red-100 bg-red-50/50 p-4 text-left text-red-700 transition active:bg-red-100 dark:border-red-900/30 dark:bg-red-900/20 dark:text-red-400"
                           >
                             <div className="flex h-10 w-10 items-center justify-center rounded-full bg-red-100 text-red-600 dark:bg-red-900 dark:text-red-400">
                               <Trash size={20} />
@@ -778,7 +769,7 @@ export default function TransacoesPage() {
                         </div>
                         <button
                           onClick={() => setAdvancedActionsOpen(false)}
-                          className="mt-4 w-full rounded-xl bg-gray-100 p-4 text-sm font-bold text-gray-700 transition active:bg-gray-200 dark:bg-slate-800 dark:text-slate-300"
+                          className="mt-4 w-full rounded-lg bg-gray-100 p-4 text-sm font-bold text-gray-700 transition active:bg-gray-200 dark:bg-slate-800 dark:text-slate-300"
                         >
                           Cancelar
                         </button>
@@ -795,14 +786,14 @@ export default function TransacoesPage() {
                   setIsModalOpen(true);
                 }}
                 tone="primary"
-                startIcon={<Icon path={mdiPlusBoxOutline} size={0.8} />}
+                startIcon={<Plus size={18} />}
                 className="w-full sm:w-auto"
               >
                 Nova Transação
               </AppButton>
-            </div>
-          </div>
-        </PageContainer>
+            </>
+          }
+        />
         
         <TransactionFilters
           searchTerm={searchTerm}

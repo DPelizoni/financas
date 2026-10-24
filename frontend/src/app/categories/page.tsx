@@ -6,9 +6,8 @@ import {
   ArrowDownWideNarrow,
   ArrowUpNarrowWide,
   Filter,
+  Plus,
 } from "lucide-react";
-import Icon from "@mdi/react";
-import { mdiPlusBoxOutline } from "@mdi/js";
 import { categoryService } from "@/services/categoryService";
 import { Category, CategoryFilters as ICategoryFilters, CategoryType } from "@/types/category";
 
@@ -17,7 +16,7 @@ import CategoryIcon from "@/components/CategoryIcon";
 import Pagination from "@/components/Pagination";
 import { toast } from "sonner";
 import ConfirmDeleteModal from "@/components/ConfirmDeleteModal";
-import PageContainer from "@/components/PageContainer";
+import PageHeader from "@/components/PageHeader";
 import AppButton from "@/components/AppButton";
 import TableActionButton from "@/components/TableActionButton";
 import ViewDataModal from "@/components/ViewDataModal";
@@ -25,6 +24,7 @@ import { TableSkeleton, CardSkeleton } from "@/components/skeletons/DataSkeleton
 import EmptyState from "@/components/EmptyState";
 import { CategoryFilters } from "./components/CategoryFilters";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import ActiveBadge from "@/components/ActiveBadge";
 
 export default function CategoriesPage() {
   const queryClient = useQueryClient();
@@ -144,18 +144,11 @@ export default function CategoriesPage() {
   return (
     <div className="app-page py-4 sm:py-8">
       <div className="mx-auto max-w-7xl space-y-6 px-4 sm:px-6 lg:px-8">
-        <PageContainer>
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <h1 className="flex items-center gap-3 text-2xl font-bold text-gray-900 sm:text-3xl dark:text-white">
-                <Tags size={32} className="text-blue-600 dark:text-blue-400" />
-                Gerenciamento de Categorias
-              </h1>
-              <p className="mt-2 text-sm text-gray-600 dark:text-slate-400">
-                Organize categorias para classificar receitas e despesas
-              </p>
-            </div>
-            <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+        <PageHeader
+          title="Categorias"
+          description="Organize categorias para classificar receitas e despesas"
+          actions={
+            <>
               <AppButton
                 tone={showFilters ? "outline-primary" : "outline"}
                 onClick={() => setShowFilters(!showFilters)}
@@ -164,7 +157,7 @@ export default function CategoriesPage() {
               >
                 {showFilters ? "Ocultar Filtros" : "Mostrar Filtros"}
                 {activeFiltersCount > 0 && (
-                  <span className="absolute -right-2 -top-2 flex h-5 w-5 items-center justify-center rounded-full bg-blue-600 text-[10px] font-bold text-white shadow-md ring-2 ring-white dark:ring-slate-900">
+                  <span className="absolute -right-2 -top-2 flex h-5 w-5 items-center justify-center rounded-full bg-blue-600 text-xs font-bold text-white shadow-md ring-2 ring-white dark:ring-slate-900">
                     {activeFiltersCount}
                   </span>
                 )}
@@ -172,14 +165,14 @@ export default function CategoriesPage() {
               <AppButton
                 onClick={handleCreate}
                 tone="primary"
-                startIcon={<Icon path={mdiPlusBoxOutline} size={0.8} />}
+                startIcon={<Plus size={18} />}
                 className="w-full sm:w-auto"
               >
                 Nova Categoria
               </AppButton>
-            </div>
-          </div>
-        </PageContainer>
+            </>
+          }
+        />
 
         <CategoryFilters
           showFilters={showFilters}
@@ -230,7 +223,7 @@ export default function CategoriesPage() {
                 {categories.map((category) => (
                   <div
                     key={category.id}
-                    className="rounded-xl border border-gray-200/80 bg-gradient-to-b from-white to-gray-50 p-4 shadow-[0_1px_2px_rgba(0,0,0,0.06)] dark:border-slate-800 dark:from-slate-900 dark:to-slate-900/50"
+                    className="rounded-lg border border-gray-200/80 bg-gradient-to-b from-white to-gray-50 p-4 shadow-[0_1px_2px_rgba(0,0,0,0.06)] dark:border-slate-800 dark:from-slate-900 dark:to-slate-900/50"
                   >
                     <div className="flex items-start justify-between gap-3">
                       <div className="flex items-center gap-3">
@@ -240,7 +233,7 @@ export default function CategoriesPage() {
                             {category.nome}
                           </p>
                           <span
-                            className={`inline-flex rounded-full px-2.5 py-1 text-[11px] font-semibold leading-none ${tipoBadge(
+                            className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold leading-none ${tipoBadge(
                               category.tipo,
                             )}`}
                           >
@@ -251,15 +244,7 @@ export default function CategoriesPage() {
                         </div>
                       </div>
 
-                      {category.ativo ? (
-                        <span className="inline-flex items-center rounded-full bg-green-100 px-2.5 py-1 text-[11px] font-semibold leading-none text-green-800 dark:bg-green-900/30 dark:text-green-400">
-                          Ativo
-                        </span>
-                      ) : (
-                        <span className="inline-flex items-center rounded-full bg-red-100 px-2.5 py-1 text-[11px] font-semibold leading-none text-red-800 dark:bg-red-900/30 dark:text-red-400">
-                          Inativo
-                        </span>
-                      )}
+                      <ActiveBadge ativo={category.ativo} />
                     </div>
 
                     <div className="mt-3 flex items-center justify-end gap-2 border-t border-gray-100 pt-3 dark:border-slate-800">
@@ -281,13 +266,13 @@ export default function CategoriesPage() {
                           {sortBy === "nome" && sortDirection === "asc" ? <ArrowUpNarrowWide size={14} className="text-blue-600" /> : sortBy === "nome" ? <ArrowDownWideNarrow size={14} className="text-blue-600" /> : null}
                         </button>
                       </th>
-                      <th className="app-table-head-cell w-[15%]">
+                      <th className="app-table-head-cell-center w-[15%]">
                         <button type="button" onClick={() => handleSort("tipo")} className="inline-flex items-center gap-1 hover:text-blue-600 transition-colors">
                           Tipo
                           {sortBy === "tipo" && sortDirection === "asc" ? <ArrowUpNarrowWide size={14} className="text-blue-600" /> : sortBy === "tipo" ? <ArrowDownWideNarrow size={14} className="text-blue-600" /> : null}
                         </button>
                       </th>
-                      <th className="app-table-head-cell w-[15%]">
+                      <th className="app-table-head-cell-center w-[15%]">
                         <button type="button" onClick={() => handleSort("ativo")} className="inline-flex items-center gap-1 hover:text-blue-600 transition-colors">
                           Status
                           {sortBy === "ativo" && sortDirection === "asc" ? <ArrowUpNarrowWide size={14} className="text-blue-600" /> : sortBy === "ativo" ? <ArrowDownWideNarrow size={14} className="text-blue-600" /> : null}
@@ -305,17 +290,13 @@ export default function CategoriesPage() {
                             <div className="text-xs font-medium text-gray-900 dark:text-slate-200">{category.nome}</div>
                           </div>
                         </td>
-                        <td className="whitespace-nowrap px-3 py-2">
-                          <span className={`inline-flex rounded-full px-2.5 py-1 text-[11px] font-semibold leading-none ${tipoBadge(category.tipo)}`}>
+                        <td className="whitespace-nowrap px-3 py-2 text-center">
+                          <span className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold leading-none ${tipoBadge(category.tipo)}`}>
                             {category.tipo === "RECEITA" ? "Receita" : "Despesa"}
                           </span>
                         </td>
-                        <td className="whitespace-nowrap px-3 py-2">
-                          {category.ativo ? (
-                            <span className="inline-flex items-center rounded-full bg-green-100 px-2.5 py-1 text-[11px] font-semibold leading-none text-green-800 dark:bg-green-900/30 dark:text-green-400">Ativo</span>
-                          ) : (
-                            <span className="inline-flex items-center rounded-full bg-red-100 px-2.5 py-1 text-[11px] font-semibold leading-none text-red-800 dark:bg-red-900/30 dark:text-red-400">Inativo</span>
-                          )}
+                        <td className="whitespace-nowrap px-3 py-2 text-center">
+                          <ActiveBadge ativo={category.ativo} />
                         </td>
                         <td className="whitespace-nowrap px-3 py-2 text-center text-xs font-medium">
                           <div className="flex justify-center gap-1">

@@ -2,7 +2,6 @@
 
 import { useEffect, useMemo, useState } from "react";
 import {
-  BarChart3,
   Filter,
 } from "lucide-react";
 import { transacaoService } from "@/services/transacaoService";
@@ -10,10 +9,11 @@ import { categoryService } from "@/services/categoryService";
 import { bankService } from "@/services/bankService";
 import { Transacao } from "@/types/transacao";
 import { toast } from "sonner";
-import PageContainer from "@/components/PageContainer";
+import PageHeader from "@/components/PageHeader";
 import AppButton from "@/components/AppButton";
 import { useQuery } from "@tanstack/react-query";
 import { motion } from "framer-motion";
+import { formatCurrency } from "@/utils/format";
 
 // New Components
 import { SummaryCards } from "./components/SummaryCards";
@@ -95,12 +95,7 @@ const parseMesToKey = (mes: string): string | null => {
   return null;
 };
 
-const currency = (value: number): string =>
-  new Intl.NumberFormat("pt-BR", {
-    style: "currency",
-    currency: "BRL",
-    maximumFractionDigits: 2,
-  }).format(value);
+const currency = (value: number): string => formatCurrency(value);
 
 const currentMonthValue = (): string => {
   const now = new Date();
@@ -304,9 +299,9 @@ export default function DashboardPage() {
     return (
       <div className="app-page py-4 sm:py-8">
         <div className="mx-auto max-w-7xl space-y-6 px-4 sm:px-6 lg:px-8">
-          <PageContainer><div className="h-10 w-64 animate-pulse rounded-md bg-gray-200" /></PageContainer>
+          <div className="h-8 w-48 animate-pulse rounded-md bg-gray-200" />
           <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-            {[1, 2, 3].map((i) => <div key={i} className="h-32 w-full animate-pulse rounded-xl bg-gray-200" />)}
+            {[1, 2, 3].map((i) => <div key={i} className="h-32 w-full animate-pulse rounded-lg bg-gray-200" />)}
           </div>
         </div>
       </div>
@@ -316,29 +311,23 @@ export default function DashboardPage() {
   return (
     <div className="app-page py-4 sm:py-8">
       <div className="mx-auto max-w-7xl space-y-6 px-4 sm:px-6 lg:px-8">
-        <PageContainer>
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <motion.div
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-            >
-              <h1 className="flex items-center gap-3 text-2xl font-bold text-gray-900 sm:text-3xl dark:text-white">
-                <BarChart3 size={32} className="text-blue-600 dark:text-blue-400" />
-                Dashboard Executivo
-              </h1>
-              <p className="mt-2 text-sm text-gray-600 dark:text-slate-400">Visão consolidada de desempenho financeiro.</p>
-            </motion.div>
-            <AppButton
-              tone={showFilters ? "outline-primary" : "outline"}
-              onClick={() => setShowFilters(!showFilters)}
-              className="relative"
-              startIcon={<Filter size={18} />}
-            >
-              {showFilters ? "Ocultar Filtros" : "Mostrar Filtros"}
-              {activeFiltersCount > 0 && <span className="absolute -right-2 -top-2 flex h-5 w-5 items-center justify-center rounded-full bg-blue-600 text-[10px] font-bold text-white shadow-md ring-2 ring-white dark:ring-slate-900">{activeFiltersCount}</span>}
-            </AppButton>
-          </div>
-        </PageContainer>
+        <PageHeader
+          title="Dashboard"
+          description="Visão consolidada de desempenho financeiro."
+          actions={
+            <>
+              <AppButton
+                tone={showFilters ? "outline-primary" : "outline"}
+                onClick={() => setShowFilters(!showFilters)}
+                className="relative"
+                startIcon={<Filter size={18} />}
+              >
+                {showFilters ? "Ocultar Filtros" : "Mostrar Filtros"}
+                {activeFiltersCount > 0 && <span className="absolute -right-2 -top-2 flex h-5 w-5 items-center justify-center rounded-full bg-blue-600 text-xs font-bold text-white shadow-md ring-2 ring-white dark:ring-slate-900">{activeFiltersCount}</span>}
+              </AppButton>
+            </>
+          }
+        />
 
         <DashboardFilters 
           showFilters={showFilters} periodMonths={periodMonths} setPeriodMonths={setPeriodMonths} 

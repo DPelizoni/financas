@@ -7,14 +7,13 @@ import {
   Filter,
   Search,
   X,
+  Plus,
 } from "lucide-react";
 import { InputAdornment, MenuItem, TextField } from "@mui/material";
-import Icon from "@mdi/react";
-import { mdiPlusBoxOutline } from "@mdi/js";
 import AppButton from "@/components/AppButton";
 import ConfirmDeleteModal from "@/components/ConfirmDeleteModal";
 import InvestimentoMovimentacaoModal from "@/components/InvestimentoMovimentacaoModal";
-import PageContainer from "@/components/PageContainer";
+import PageHeader from "@/components/PageHeader";
 import Pagination from "@/components/Pagination";
 import TableActionButton from "@/components/TableActionButton";
 import ViewDataModal from "@/components/ViewDataModal";
@@ -32,29 +31,12 @@ import { TableSkeleton, CardSkeleton } from "@/components/skeletons/DataSkeleton
 import EmptyState from "@/components/EmptyState";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { formatCurrency, formatDateBR } from "@/utils/format";
 
 const tipoLabel: Record<InvestimentoMovimentacaoTipo, string> = {
   APORTE: "Aporte",
   RESGATE: "Resgate",
   RENDIMENTO: "Rendimentos",
-};
-
-const formatCurrencyBRL = (value: number) =>
-  new Intl.NumberFormat("pt-BR", {
-    style: "currency",
-    currency: "BRL",
-  }).format(Number(value || 0));
-
-const formatDateBR = (value: string): string => {
-  if (!value) return "-";
-  const isoMatch = value.match(/^(\d{4})-(\d{2})-(\d{2})$/);
-  if (isoMatch) {
-    const [, year, month, day] = isoMatch;
-    return `${day}/${month}/${year}`;
-  }
-  const parsed = new Date(value);
-  if (Number.isNaN(parsed.getTime())) return value;
-  return new Intl.DateTimeFormat("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric" }).format(parsed);
 };
 
 const toIsoDate = (date: Date): string => {
@@ -187,10 +169,11 @@ export default function InvestimentosMovimentacoesPage() {
   return (
     <div className="app-page py-4 sm:py-8">
       <div className="mx-auto max-w-7xl space-y-6 px-4 sm:px-6 lg:px-8">
-        <PageContainer>
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <div><h1 className="text-2xl font-bold text-gray-900 sm:text-3xl">Movimentações de Investimento</h1><p className="mt-2 text-sm text-gray-600">Lançamentos de aportes, resgates e rendimentos.</p></div>
-            <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+        <PageHeader
+          title="Movimentações"
+          description="Lançamentos de aportes, resgates e rendimentos."
+          actions={
+            <>
               <AppButton
                 tone={showFilters ? "outline-primary" : "outline"}
                 onClick={() => setShowFilters(!showFilters)}
@@ -199,15 +182,15 @@ export default function InvestimentosMovimentacoesPage() {
               >
                 {showFilters ? "Ocultar Filtros" : "Mostrar Filtros"}
                 {activeFiltersCount > 0 && (
-                  <span className="absolute -right-2 -top-2 flex h-5 w-5 items-center justify-center rounded-full bg-blue-600 text-[10px] font-bold text-white shadow-md ring-2 ring-white dark:ring-slate-900">
+                  <span className="absolute -right-2 -top-2 flex h-5 w-5 items-center justify-center rounded-full bg-blue-600 text-xs font-bold text-white shadow-md ring-2 ring-white dark:ring-slate-900">
                     {activeFiltersCount}
                   </span>
                 )}
               </AppButton>
-              <AppButton onClick={() => { setEditingMovimentacao(null); setShowModal(true); }} tone="primary" startIcon={<Icon path={mdiPlusBoxOutline} size={0.8} />} className="w-full sm:w-auto">Nova Movimentação</AppButton>
-            </div>
-          </div>
-        </PageContainer>
+              <AppButton onClick={() => { setEditingMovimentacao(null); setShowModal(true); }} tone="primary" startIcon={<Plus size={18} />} className="w-full sm:w-auto">Nova Movimentação</AppButton>
+            </>
+          }
+        />
 
         <div className={`filter-panel-surface ${!showFilters ? "hidden" : "block animate-in fade-in slide-in-from-top-2 duration-300"}`}>
           <div className="mb-4 flex items-center justify-between border-b border-gray-100 pb-3"><h3 className="text-sm font-semibold text-gray-700">Filtros de Movimentação</h3><button type="button" onClick={handleClearFilters} className="text-xs font-medium text-blue-600 hover:text-blue-800 transition">Limpar tudo</button></div>
@@ -230,12 +213,12 @@ export default function InvestimentosMovimentacoesPage() {
             <>
               <div className="space-y-2 px-2 sm:px-0 md:hidden">
                 {sortedMovimentacoes.map((item) => (
-                  <div key={item.id} className="rounded-xl border border-gray-200/80 bg-gradient-to-b from-white to-gray-50 p-4 shadow-[0_1px_2px_rgba(0,0,0,0.06)]">
+                  <div key={item.id} className="rounded-lg border border-gray-200/80 bg-gradient-to-b from-white to-gray-50 p-4 shadow-[0_1px_2px_rgba(0,0,0,0.06)]">
                     <div className="flex items-start justify-between gap-3">
                       <div><p className="text-sm font-semibold text-gray-900">{item.ativo_nome}</p><p className="mt-1 text-xs text-gray-600">Data: {formatDateBR(item.data)}</p><p className="mt-1 text-xs text-gray-600">Banco: {item.banco_nome || "-"}</p></div>
                       <span className={`${item.tipo === "APORTE" ? "app-badge-info" : item.tipo === "RESGATE" ? "app-badge-error" : "app-badge-success"}`}>{tipoLabel[item.tipo]}</span>
                     </div>
-                    <div className="mt-3 text-xs text-gray-700"><span className="font-medium">Valor: </span><span className="font-semibold text-gray-900">{formatCurrencyBRL(Number(item.valor))}</span></div>
+                    <div className="mt-3 text-xs text-gray-700"><span className="font-medium">Valor: </span><span className="font-semibold text-gray-900">{formatCurrency(Number(item.valor))}</span></div>
                     <div className="mt-3 flex items-center justify-end gap-2 border-t border-gray-100 pt-3"><TableActionButton action="view" title="Visualizar" onClick={() => setViewingMovimentacao(item)} /><TableActionButton action="edit" title="Editar" onClick={() => { setEditingMovimentacao(item); setShowModal(true); }} /><TableActionButton action="delete" title="Excluir" onClick={() => setDeleteTarget(item)} /></div>
                   </div>
                 ))}
@@ -260,7 +243,7 @@ export default function InvestimentosMovimentacoesPage() {
                         <td className="px-3 py-2 text-xs text-gray-700"><span className="block truncate" title={item.ativo_nome || "-"}>{item.ativo_nome || "-"}</span></td>
                         <td className="hidden px-3 py-2 text-xs text-gray-700 xl:table-cell"><span className="block truncate" title={item.banco_nome || "-"}>{item.banco_nome || "-"}</span></td>
                         <td className="px-3 py-2 text-center text-xs"><div className="flex justify-center"><span className={`${item.tipo === "APORTE" ? "app-badge-info" : item.tipo === "RESGATE" ? "app-badge-error" : "app-badge-success"}`}>{tipoLabel[item.tipo]}</span></div></td>
-                        <td className="px-3 py-2 text-right text-xs font-semibold text-gray-900">{formatCurrencyBRL(Number(item.valor))}</td>
+                        <td className="px-3 py-2 text-right text-xs font-semibold text-gray-900">{formatCurrency(Number(item.valor))}</td>
                         <td className="px-3 py-2 text-center text-xs"><div className="flex justify-center gap-1"><TableActionButton action="view" title="Visualizar" onClick={() => setViewingMovimentacao(item)} compact /><TableActionButton action="edit" title="Editar" onClick={() => { setEditingMovimentacao(item); setShowModal(true); }} compact /><TableActionButton action="delete" title="Excluir" onClick={() => setDeleteTarget(item)} compact /></div></td>
                       </tr>
                     ))}

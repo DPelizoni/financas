@@ -9,11 +9,10 @@ import {
   ArrowDownWideNarrow,
   ArrowUpNarrowWide,
   Filter,
+  Plus,
 } from "lucide-react";
-import Icon from "@mdi/react";
-import { mdiPlusBoxOutline } from "@mdi/js";
 import Pagination from "@/components/Pagination";
-import PageContainer from "@/components/PageContainer";
+import PageHeader from "@/components/PageHeader";
 import AppButton from "@/components/AppButton";
 import TableActionButton from "@/components/TableActionButton";
 import ViewDataModal from "@/components/ViewDataModal";
@@ -174,24 +173,19 @@ export default function UsuariosPage() {
   return (
     <div className="app-page py-4 sm:py-8">
       <div className="mx-auto max-w-7xl space-y-6 px-4 sm:px-6 lg:px-8">
-        <PageContainer>
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <h1 className="flex items-center gap-3 text-2xl font-bold text-gray-900 sm:text-3xl">
-                <ShieldCheck size={32} className="text-blue-600" />
-                Gestão de Usuários
-              </h1>
-              <p className="mt-2 text-sm text-gray-600">Gerencie o status de acesso dos usuários do sistema.</p>
-            </div>
-            <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+        <PageHeader
+          title="Usuários"
+          description="Gerencie o status de acesso dos usuários do sistema."
+          actions={
+            <>
               <AppButton tone={showFilters ? "outline-primary" : "outline"} onClick={() => setShowFilters(!showFilters)} className="relative" startIcon={<Filter size={18} />}>
                 {showFilters ? "Ocultar Filtros" : "Mostrar Filtros"}
-                {activeFiltersCount > 0 && <span className="absolute -right-2 -top-2 flex h-5 w-5 items-center justify-center rounded-full bg-blue-600 text-[10px] font-bold text-white shadow-md ring-2 ring-white dark:ring-slate-900">{activeFiltersCount}</span>}
+                {activeFiltersCount > 0 && <span className="absolute -right-2 -top-2 flex h-5 w-5 items-center justify-center rounded-full bg-blue-600 text-xs font-bold text-white shadow-md ring-2 ring-white dark:ring-slate-900">{activeFiltersCount}</span>}
               </AppButton>
-              <AppButton onClick={() => { setEditingUser(null); setShowUserModal(true); }} tone="primary" startIcon={<Icon path={mdiPlusBoxOutline} size={0.8} />} className="w-full sm:w-auto">Novo Usuário</AppButton>
-            </div>
-          </div>
-        </PageContainer>
+              <AppButton onClick={() => { setEditingUser(null); setShowUserModal(true); }} tone="primary" startIcon={<Plus size={18} />} className="w-full sm:w-auto">Novo Usuário</AppButton>
+            </>
+          }
+        />
 
         <div className={`filter-panel-surface ${!showFilters ? "hidden" : "block animate-in fade-in slide-in-from-top-2 duration-300"}`}>
           <div className="mb-4 flex items-center justify-between border-b border-gray-100 pb-3 dark:border-slate-800">
@@ -232,14 +226,14 @@ export default function UsuariosPage() {
             <>
               <div className="space-y-2 px-2 sm:px-0 md:hidden">
                 {sortedUsers.map((user) => (
-                  <div key={user.id} className="rounded-xl border border-gray-200/80 bg-gradient-to-b from-white to-gray-50 p-4 shadow-[0_1px_2px_rgba(0,0,0,0.06)] dark:border-slate-800 dark:from-slate-900 dark:to-slate-900/50 dark:shadow-none">
+                  <div key={user.id} className="rounded-lg border border-gray-200/80 bg-gradient-to-b from-white to-gray-50 p-4 shadow-[0_1px_2px_rgba(0,0,0,0.06)] dark:border-slate-800 dark:from-slate-900 dark:to-slate-900/50 dark:shadow-none">
                     <div className="flex items-start justify-between gap-3">
                       <div><p className="text-sm font-semibold text-gray-900 dark:text-white">{user.nome}</p><p className="mt-1 text-xs text-gray-600 dark:text-slate-400">{user.email}</p></div>
-                      <button type="button" onClick={() => handleToggleStatus(user)} disabled={updatingId === user.id} className={`inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-medium leading-none transition ${user.status === "ATIVO" ? "app-status-toggle-success" : "app-status-toggle-error"}`} title="Clique para alternar o status">{updatingId === user.id ? "Atualizando..." : statusLabel[user.status]}</button>
+                      <button type="button" onClick={() => handleToggleStatus(user)} disabled={updatingId === user.id} className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium leading-none transition ${user.status === "ATIVO" ? "app-status-toggle-success" : "app-status-toggle-error"}`} title="Clique para alternar o status">{updatingId === user.id ? "Atualizando..." : statusLabel[user.status]}</button>
                     </div>
                     <div className="mt-3">
                       <p className="mb-1 text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-slate-400">Papel</p>
-                      <span className={`inline-flex rounded-full px-2.5 py-1 text-[11px] font-semibold leading-none ${roleBadgeClass[user.role]}`}>{roleLabel[user.role]}</span>
+                      <span className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold leading-none ${roleBadgeClass[user.role]}`}>{roleLabel[user.role]}</span>
                     </div>
                     <div className="mt-3 flex items-center justify-end gap-2 border-t border-gray-100 pt-3 dark:border-slate-800">
                       <TableActionButton action="view" title="Visualizar" onClick={() => setViewingUser(user)} />
@@ -251,24 +245,24 @@ export default function UsuariosPage() {
               </div>
 
               <div className="hidden overflow-x-auto md:block">
-                <table className="min-w-[640px] w-full divide-y divide-gray-200 dark:divide-slate-800 text-xs">
+                <table className="min-w-[640px] w-full table-fixed divide-y divide-gray-200 dark:divide-slate-800 text-xs">
                   <thead className="app-table-head">
                     <tr>
-                      <th className="app-table-head-cell"><button type="button" onClick={() => handleSort("nome")} className="inline-flex items-center gap-1">Nome{sortBy === "nome" && sortDirection === "asc" ? <ArrowUpNarrowWide size={14} /> : sortBy === "nome" ? <ArrowDownWideNarrow size={14} /> : null}</button></th>
-                      <th className="app-table-head-cell"><button type="button" onClick={() => handleSort("email")} className="inline-flex items-center gap-1">Email{sortBy === "email" && sortDirection === "asc" ? <ArrowUpNarrowWide size={14} /> : sortBy === "email" ? <ArrowDownWideNarrow size={14} /> : null}</button></th>
-                      <th className="app-table-head-cell">Papel</th>
-                      <th className="app-table-head-cell"><button type="button" onClick={() => handleSort("status")} className="inline-flex items-center gap-1">Status{sortBy === "status" && sortDirection === "asc" ? <ArrowUpNarrowWide size={14} /> : sortBy === "status" ? <ArrowDownWideNarrow size={14} /> : null}</button></th>
-                      <th className="app-table-head-cell-center">Ações</th>
+                      <th className="app-table-head-cell w-[25%]"><button type="button" onClick={() => handleSort("nome")} className="inline-flex items-center gap-1">Nome{sortBy === "nome" && sortDirection === "asc" ? <ArrowUpNarrowWide size={14} /> : sortBy === "nome" ? <ArrowDownWideNarrow size={14} /> : null}</button></th>
+                      <th className="app-table-head-cell w-[30%]"><button type="button" onClick={() => handleSort("email")} className="inline-flex items-center gap-1">Email{sortBy === "email" && sortDirection === "asc" ? <ArrowUpNarrowWide size={14} /> : sortBy === "email" ? <ArrowDownWideNarrow size={14} /> : null}</button></th>
+                      <th className="app-table-head-cell-center w-[15%]">Papel</th>
+                      <th className="app-table-head-cell-center w-[15%]"><button type="button" onClick={() => handleSort("status")} className="inline-flex items-center gap-1">Status{sortBy === "status" && sortDirection === "asc" ? <ArrowUpNarrowWide size={14} /> : sortBy === "status" ? <ArrowDownWideNarrow size={14} /> : null}</button></th>
+                      <th className="app-table-head-cell-center w-[15%]">Ações</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-100 dark:divide-slate-800 bg-white dark:bg-slate-900">
                     {sortedUsers.map((user) => (
                       <tr key={user.id} className="app-table-row">
-                        <td className="px-3 py-2 text-xs text-gray-700 dark:text-slate-300">{user.nome}</td>
-                        <td className="px-3 py-2 text-xs text-gray-700 dark:text-slate-300">{user.email}</td>
-                        <td className="px-3 py-2 text-xs"><span className={`inline-flex rounded-full px-2.5 py-1 text-[11px] font-semibold leading-none ${roleBadgeClass[user.role]}`}>{roleLabel[user.role]}</span></td>
-                        <td className="px-3 py-2 text-xs"><button type="button" onClick={() => handleToggleStatus(user)} disabled={updatingId === user.id} className={`inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-medium leading-none transition ${user.status === "ATIVO" ? "app-status-toggle-success" : "app-status-toggle-error"}`} title="Clique para alternar o status">{updatingId === user.id ? "Atualizando..." : statusLabel[user.status]}</button></td>
-                        <td className="px-3 py-2 text-center text-xs font-medium"><div className="flex justify-center gap-1"><TableActionButton action="view" title="Visualizar" onClick={() => setViewingUser(user)} compact /><TableActionButton action="edit" title="Editar" onClick={() => { setEditingUser(user); setShowUserModal(true); }} compact />{isAdmin && <TableActionButton action="delete" title="Excluir usuário" onClick={() => setDeleteTarget(user)} compact disabled={updatingId === user.id} />}</div></td>
+                        <td className="whitespace-nowrap px-3 py-2 text-xs text-gray-700 dark:text-slate-300"><span className="block truncate" title={user.nome}>{user.nome}</span></td>
+                        <td className="whitespace-nowrap px-3 py-2 text-xs text-gray-700 dark:text-slate-300"><span className="block truncate" title={user.email}>{user.email}</span></td>
+                        <td className="whitespace-nowrap px-3 py-2 text-xs text-center"><span className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold leading-none ${roleBadgeClass[user.role]}`}>{roleLabel[user.role]}</span></td>
+                        <td className="whitespace-nowrap px-3 py-2 text-xs text-center"><button type="button" onClick={() => handleToggleStatus(user)} disabled={updatingId === user.id} className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium leading-none transition ${user.status === "ATIVO" ? "app-status-toggle-success" : "app-status-toggle-error"}`} title="Clique para alternar o status">{updatingId === user.id ? "Atualizando..." : statusLabel[user.status]}</button></td>
+                        <td className="whitespace-nowrap px-3 py-2 text-center text-xs font-medium"><div className="flex justify-center gap-1"><TableActionButton action="view" title="Visualizar" onClick={() => setViewingUser(user)} compact /><TableActionButton action="edit" title="Editar" onClick={() => { setEditingUser(user); setShowUserModal(true); }} compact />{isAdmin && <TableActionButton action="delete" title="Excluir usuário" onClick={() => setDeleteTarget(user)} compact disabled={updatingId === user.id} />}</div></td>
                       </tr>
                     ))}
                   </tbody>

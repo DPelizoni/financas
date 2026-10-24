@@ -8,9 +8,8 @@ import {
   ArrowDownWideNarrow,
   ArrowUpNarrowWide,
   Filter,
+  Plus,
 } from "lucide-react";
-import Icon from "@mdi/react";
-import { mdiPlusBoxOutline } from "@mdi/js";
 import { descricaoService } from "@/services/descricaoService";
 import { categoryService } from "@/services/categoryService";
 import { Descricao, DescricaoFilters } from "@/types/descricao";
@@ -19,7 +18,7 @@ import DescricaoModal from "@/components/DescricaoModal";
 import Pagination from "@/components/Pagination";
 import { toast } from "sonner";
 import ConfirmDeleteModal from "@/components/ConfirmDeleteModal";
-import PageContainer from "@/components/PageContainer";
+import PageHeader from "@/components/PageHeader";
 import AppButton from "@/components/AppButton";
 import TableActionButton from "@/components/TableActionButton";
 import ViewDataModal from "@/components/ViewDataModal";
@@ -27,6 +26,7 @@ import { IconButton, InputAdornment, MenuItem, TextField } from "@mui/material";
 import { TableSkeleton, CardSkeleton } from "@/components/skeletons/DataSkeletons";
 import EmptyState from "@/components/EmptyState";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import ActiveBadge from "@/components/ActiveBadge";
 
 export default function DescricoesPage() {
   const queryClient = useQueryClient();
@@ -158,18 +158,11 @@ export default function DescricoesPage() {
   return (
     <div className="app-page py-4 sm:py-8">
       <div className="mx-auto max-w-7xl space-y-6 px-4 sm:px-6 lg:px-8">
-        <PageContainer>
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <h1 className="flex items-center gap-3 text-2xl font-bold text-gray-900 sm:text-3xl">
-                <FileText size={32} className="text-blue-600" />
-                Gerenciamento de Descrições
-              </h1>
-              <p className="mt-2 text-sm text-gray-600">
-                Gerencie descrições vinculadas às categorias
-              </p>
-            </div>
-            <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+        <PageHeader
+          title="Descrições"
+          description="Gerencie descrições vinculadas às categorias"
+          actions={
+            <>
               <AppButton
                 tone={showFilters ? "outline-primary" : "outline"}
                 onClick={() => setShowFilters(!showFilters)}
@@ -178,7 +171,7 @@ export default function DescricoesPage() {
               >
                 {showFilters ? "Ocultar Filtros" : "Mostrar Filtros"}
                 {activeFiltersCount > 0 && (
-                  <span className="absolute -right-2 -top-2 flex h-5 w-5 items-center justify-center rounded-full bg-blue-600 text-[10px] font-bold text-white shadow-md ring-2 ring-white dark:ring-slate-900">
+                  <span className="absolute -right-2 -top-2 flex h-5 w-5 items-center justify-center rounded-full bg-blue-600 text-xs font-bold text-white shadow-md ring-2 ring-white dark:ring-slate-900">
                     {activeFiltersCount}
                   </span>
                 )}
@@ -186,14 +179,14 @@ export default function DescricoesPage() {
               <AppButton
                 onClick={handleCreate}
                 tone="primary"
-                startIcon={<Icon path={mdiPlusBoxOutline} size={0.8} />}
+                startIcon={<Plus size={18} />}
                 className="w-full sm:w-auto"
               >
                 Nova Descrição
               </AppButton>
-            </div>
-          </div>
-        </PageContainer>
+            </>
+          }
+        />
 
         <div className={`filter-panel-surface ${!showFilters ? "hidden" : "block animate-in fade-in slide-in-from-top-2 duration-300"}`}>
           <div className="mb-4 flex items-center justify-between border-b border-gray-100 pb-3 dark:border-slate-800">
@@ -317,18 +310,14 @@ export default function DescricoesPage() {
                 {sortedDescricoes.map((descricao) => (
                   <div
                     key={descricao.id}
-                    className="rounded-xl border border-gray-200/80 bg-gradient-to-b from-white to-gray-50 p-4 shadow-[0_1px_2px_rgba(0,0,0,0.06)] dark:border-slate-800 dark:from-slate-900 dark:to-slate-900/50 dark:shadow-none"
+                    className="rounded-lg border border-gray-200/80 bg-gradient-to-b from-white to-gray-50 p-4 shadow-[0_1px_2px_rgba(0,0,0,0.06)] dark:border-slate-800 dark:from-slate-900 dark:to-slate-900/50 dark:shadow-none"
                   >
                     <div className="flex items-start justify-between gap-3">
                       <div>
                         <p className="text-sm font-semibold text-gray-900 dark:text-white">{descricao.nome}</p>
                         <p className="mt-1 text-xs text-gray-600 dark:text-slate-400">Categoria: {getCategoryNameById(descricao.categoria_id)}</p>
                       </div>
-                      {descricao.ativo ? (
-                        <span className="inline-flex items-center rounded-full bg-green-100 px-2.5 py-1 text-[11px] font-semibold leading-none text-green-800 dark:bg-green-900/30 dark:text-green-400">Ativo</span>
-                      ) : (
-                        <span className="inline-flex items-center rounded-full bg-red-100 px-2.5 py-1 text-[11px] font-semibold leading-none text-red-800 dark:bg-red-900/30 dark:text-red-400">Inativo</span>
-                      )}
+                      <ActiveBadge ativo={descricao.ativo} />
                     </div>
                     <div className="mt-3 flex items-center justify-end gap-2 border-t border-gray-100 pt-3 dark:border-slate-800">
                       <TableActionButton action="view" title="Visualizar" onClick={() => setViewingDescricao(descricao)} />
@@ -340,41 +329,37 @@ export default function DescricoesPage() {
               </div>
 
               <div className="hidden overflow-x-auto md:block">
-                <table className="min-w-[640px] w-full divide-y divide-gray-200 dark:divide-slate-800 text-xs">
+                <table className="min-w-[640px] w-full table-fixed divide-y divide-gray-200 dark:divide-slate-800 text-xs">
                   <thead className="app-table-head">
                     <tr>
-                      <th className="app-table-head-cell">
+                      <th className="app-table-head-cell w-[45%]">
                         <button type="button" onClick={() => handleSort("nome")} className="inline-flex items-center gap-1">
                           Descrição
                           {sortBy === "nome" && sortDirection === "asc" ? <ArrowUpNarrowWide size={14} /> : sortBy === "nome" ? <ArrowDownWideNarrow size={14} /> : null}
                         </button>
                       </th>
-                      <th className="app-table-head-cell">
+                      <th className="app-table-head-cell w-[25%]">
                         <button type="button" onClick={() => handleSort("categoria")} className="inline-flex items-center gap-1">
                           Categoria
                           {sortBy === "categoria" && sortDirection === "asc" ? <ArrowUpNarrowWide size={14} /> : sortBy === "categoria" ? <ArrowDownWideNarrow size={14} /> : null}
                         </button>
                       </th>
-                      <th className="app-table-head-cell">
+                      <th className="app-table-head-cell-center w-[15%]">
                         <button type="button" onClick={() => handleSort("status")} className="inline-flex items-center gap-1">
                           Status
                           {sortBy === "status" && sortDirection === "asc" ? <ArrowUpNarrowWide size={14} /> : sortBy === "status" ? <ArrowDownWideNarrow size={14} /> : null}
                         </button>
                       </th>
-                      <th className="app-table-head-cell-center">Ações</th>
+                      <th className="app-table-head-cell-center w-[15%]">Ações</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-200 dark:divide-slate-800 bg-white dark:bg-slate-900">
                     {sortedDescricoes.map((descricao) => (
                       <tr key={descricao.id} className="app-table-row">
-                        <td className="whitespace-nowrap px-3 py-2 text-xs font-medium text-gray-900 dark:text-slate-200">{descricao.nome}</td>
-                        <td className="whitespace-nowrap px-3 py-2 text-xs text-gray-600 dark:text-slate-400">{getCategoryNameById(descricao.categoria_id)}</td>
-                        <td className="whitespace-nowrap px-3 py-2">
-                          {descricao.ativo ? (
-                            <span className="inline-flex items-center rounded-full bg-green-100 px-2.5 py-1 text-[11px] font-semibold leading-none text-green-800 dark:bg-green-900/30 dark:text-green-400">Ativo</span>
-                          ) : (
-                            <span className="inline-flex items-center rounded-full bg-red-100 px-2.5 py-1 text-[11px] font-semibold leading-none text-red-800 dark:bg-red-900/30 dark:text-red-400">Inativo</span>
-                          )}
+                        <td className="whitespace-nowrap px-3 py-2 text-xs font-medium text-gray-900 dark:text-slate-200"><span className="block truncate" title={descricao.nome}>{descricao.nome}</span></td>
+                        <td className="whitespace-nowrap px-3 py-2 text-xs text-gray-600 dark:text-slate-400"><span className="block truncate" title={getCategoryNameById(descricao.categoria_id)}>{getCategoryNameById(descricao.categoria_id)}</span></td>
+                        <td className="whitespace-nowrap px-3 py-2 text-center">
+                          <ActiveBadge ativo={descricao.ativo} />
                         </td>
                         <td className="whitespace-nowrap px-3 py-2 text-center text-xs font-medium">
                           <div className="flex justify-center gap-1">
