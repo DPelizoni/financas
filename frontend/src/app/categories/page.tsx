@@ -13,6 +13,7 @@ import { categoryService } from "@/services/categoryService";
 import { Category, CategoryFilters as ICategoryFilters, CategoryType } from "@/types/category";
 
 import CategoryModal from "@/components/CategoryModal";
+import CategoryIcon from "@/components/CategoryIcon";
 import Pagination from "@/components/Pagination";
 import { toast } from "sonner";
 import ConfirmDeleteModal from "@/components/ConfirmDeleteModal";
@@ -233,12 +234,7 @@ export default function CategoriesPage() {
                   >
                     <div className="flex items-start justify-between gap-3">
                       <div className="flex items-center gap-3">
-                        <div
-                          className="flex h-10 w-10 items-center justify-center rounded-full font-bold text-white shadow-sm"
-                          style={{ backgroundColor: category.cor }}
-                        >
-                          {category.nome.substring(0, 2).toUpperCase()}
-                        </div>
+                        <CategoryIcon nome={category.nome} tipo={category.tipo} cor={category.cor} />
                         <div>
                           <p className="text-sm font-semibold text-gray-900 dark:text-white">
                             {category.nome}
@@ -304,10 +300,8 @@ export default function CategoriesPage() {
                     {categories.map((category) => (
                       <tr key={category.id} className="app-table-row">
                         <td className="whitespace-nowrap px-3 py-2">
-                          <div className="flex items-center">
-                            <div className="mr-2 flex h-7 w-7 items-center justify-center rounded-full text-[10px] font-bold text-white shadow-sm" style={{ backgroundColor: category.cor }}>
-                              {category.nome.substring(0, 2).toUpperCase()}
-                            </div>
+                          <div className="flex items-center gap-2">
+                            <CategoryIcon nome={category.nome} tipo={category.tipo} cor={category.cor} size="sm" />
                             <div className="text-xs font-medium text-gray-900 dark:text-slate-200">{category.nome}</div>
                           </div>
                         </td>
