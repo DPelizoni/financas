@@ -44,3 +44,21 @@ export const formatMonthYearLabel = (value: string): string => {
     year: "numeric",
   }).format(parsedDate);
 };
+
+// "2026-10" -> "out/2026"
+export const formatMonthShort = (value: string): string => {
+  const match = value.match(/^(\d{4})-(\d{2})$/);
+  if (!match) return value;
+  const [, year, month] = match;
+  const monthName = new Intl.DateTimeFormat("pt-BR", { month: "short" })
+    .format(new Date(Number(year), Number(month) - 1, 1))
+    .replace(".", "");
+  return `${monthName}/${year}`;
+};
+
+// "2026-01" -> "2025-12"
+export const previousMonthKey = (value: string): string => {
+  const [year, month] = value.split("-").map(Number);
+  const date = new Date(year, month - 2, 1);
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
+};
