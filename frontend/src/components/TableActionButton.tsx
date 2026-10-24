@@ -1,12 +1,6 @@
 "use client";
 
-import Icon from "@mdi/react";
-import {
-  mdiAccountOffOutline,
-  mdiEyeOutline,
-  mdiFileEditOutline,
-  mdiTrashCanOutline,
-} from "@mdi/js";
+import { Eye, Pencil, Trash2, UserX } from "lucide-react";
 
 interface TableActionButtonProps {
   action: "view" | "edit" | "delete" | "deactivate";
@@ -25,23 +19,23 @@ export default function TableActionButton({
 }: TableActionButtonProps) {
   const actionConfig = {
     view: {
-      iconPath: mdiEyeOutline,
+      icon: Eye,
       toneClass: "app-action-view",
     },
     edit: {
-      iconPath: mdiFileEditOutline,
+      icon: Pencil,
       toneClass: "app-action-edit",
     },
     delete: {
-      iconPath: mdiTrashCanOutline,
+      icon: Trash2,
       toneClass: "app-action-delete",
     },
     deactivate: {
-      iconPath: mdiAccountOffOutline,
+      icon: UserX,
       toneClass: "app-action-deactivate",
     },
   }[action];
-  const { toneClass } = actionConfig;
+  const { toneClass, icon: ActionIcon } = actionConfig;
 
   return (
     <button
@@ -50,11 +44,11 @@ export default function TableActionButton({
       aria-label={title}
       onClick={onClick}
       disabled={disabled}
-      className={`inline-flex items-center justify-center rounded transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent disabled:cursor-not-allowed disabled:opacity-40 ${toneClass} ${
+      className={`inline-flex items-center justify-center rounded transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[rgb(var(--app-focus-ring))] focus-visible:ring-offset-2 focus-visible:ring-offset-transparent disabled:cursor-not-allowed disabled:opacity-40 ${toneClass} ${
         compact ? "h-8 w-8" : "h-10 w-10"
       }`}
     >
-      <Icon path={actionConfig.iconPath} size={compact ? 0.95 : 1.1} />
+      <ActionIcon size={compact ? 16 : 20} />
     </button>
   );
 }

@@ -20,6 +20,7 @@ import {
 import AppButton from "@/components/AppButton";
 import { formatDateTimeBR } from "@/utils/formatDateTimeBR";
 import { useAccessibleModal } from "@/utils/useAccessibleModal";
+import { formatCurrency } from "@/utils/format";
 
 interface ViewDataModalProps {
   isOpen: boolean;
@@ -113,13 +114,6 @@ const getCurrencyValue = (key: string, value: unknown): number | null => {
   }
 
   return parseNumericValue(value);
-};
-
-const formatCurrencyBR = (value: number): string => {
-  return new Intl.NumberFormat("pt-BR", {
-    style: "currency",
-    currency: "BRL",
-  }).format(value);
 };
 
 const formatStatusValue = (value: unknown): { label: string; active: boolean } | null => {
@@ -322,7 +316,7 @@ export default function ViewDataModal({
 
       return (
         <span className={`font-semibold ${colorClass}`}>
-          {formatCurrencyBR(currencyValue)}
+          {formatCurrency(currencyValue)}
         </span>
       );
     }
@@ -394,7 +388,7 @@ export default function ViewDataModal({
               <div className="grid grid-cols-1 gap-x-6 gap-y-5 md:grid-cols-2">
                 {regularEntries.map(([key, value]) => (
                   <div key={key} className="group flex flex-col space-y-1">
-                    <div className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                    <div className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
                       {getFieldIcon(key)}
                       {fieldLabels[key] || formatLabel(key)}
                     </div>
@@ -429,7 +423,7 @@ export default function ViewDataModal({
                       {getFieldIcon(key)}
                     </div>
                     <div>
-                      <p className="text-[10px] font-bold uppercase text-slate-400 leading-none mb-1">
+                      <p className="text-xs font-bold uppercase text-slate-400 leading-none mb-1">
                         {fieldLabels[key] || formatLabel(key)}
                       </p>
                       <p className="text-xs font-medium text-slate-600 dark:text-slate-400">
