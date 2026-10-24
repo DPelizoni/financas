@@ -23,58 +23,8 @@ interface BankModalProps {
   onSave: (message: string) => Promise<void> | void;
 }
 
-const bankFields = ["nome", "codigo", "cor", "saldo_inicial", "ativo"] as const;
+const bankFields = ["nome", "codigo", "cor", "ativo"] as const;
 type BankField = (typeof bankFields)[number];
-
-const formatBrlInput = (value: number) =>
-  new Intl.NumberFormat("pt-BR", {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  }).format(value);
-
-const parseBrlInput = (value: string): number => {
-  if (!value || typeof value !== "string") return 0;
-  const cleaned = value.trim().replace(/\./g, "").replace(",", ".");
-  const parsed = parseFloat(cleaned);
-  return Number.isFinite(parsed) && parsed >= 0
-    ? Math.round(parsed * 100) / 100
-    : 0;
-};
-
-const valueToNumber = (value: unknown): number => {
-  if (typeof value === "number") {
-    return Number.isFinite(value) && value >= 0
-      ? Math.round(value * 100) / 100
-      : 0;
-  }
-
-  if (typeof value === "string") {
-    const trimmed = value.trim();
-    if (!trimmed) return 0;
-
-    if (trimmed.includes(",")) {
-      return parseBrlInput(trimmed);
-    }
-
-    if (trimmed.includes(".")) {
-      const parts = trimmed.split(".");
-      const afterDot = parts[parts.length - 1];
-      if (afterDot.length <= 2 && /^\d+$/.test(afterDot)) {
-        const parsed = parseFloat(trimmed);
-        return Number.isFinite(parsed) && parsed >= 0
-          ? Math.round(parsed * 100) / 100
-          : 0;
-      }
-    }
-
-    const parsed = parseFloat(trimmed);
-    return Number.isFinite(parsed) && parsed >= 0
-      ? Math.round(parsed * 100) / 100
-      : 0;
-  }
-
-  return 0;
-};
 
 const validateBankForm = (values: BankInput): FormFieldErrors<BankField> => {
   const errors: FormFieldErrors<BankField> = {};
@@ -85,10 +35,6 @@ const validateBankForm = (values: BankInput): FormFieldErrors<BankField> => {
 
   if (values.cor && !/^#[0-9A-Fa-f]{6}$/.test(values.cor)) {
     errors.cor = "Cor deve estar no formato hexadecimal (#RRGGBB).";
-  }
-
-  if (valueToNumber(values.saldo_inicial) < 0) {
-    errors.saldo_inicial = "Saldo inicial não pode ser negativo.";
   }
 
   return errors;
@@ -107,10 +53,8 @@ export default function BankModal({
     nome: "",
     codigo: "",
     cor: "#3B82F6",
-    saldo_inicial: 0,
     ativo: true,
   });
-  const [saldoDisplay, setSaldoDisplay] = useState("0,00");
   const [originalBank, setOriginalBank] = useState<Bank | null>(null);
 
   const {
@@ -133,26 +77,21 @@ export default function BankModal({
     if (!isOpen) return;
 
     if (bank) {
-      const currentSaldo = valueToNumber(bank.saldo_inicial);
       setFormData({
         nome: bank.nome,
         codigo: bank.codigo || "",
         cor: bank.cor,
-        saldo_inicial: currentSaldo,
         ativo: bank.ativo,
       });
       setOriginalBank(bank);
-      setSaldoDisplay(formatBrlInput(currentSaldo));
     } else {
       setOriginalBank(null);
       setFormData({
         nome: "",
         codigo: "",
         cor: "#3B82F6",
-        saldo_inicial: 0,
         ativo: true,
       });
-      setSaldoDisplay(formatBrlInput(0));
     }
 
     clearAllErrors();
@@ -213,8 +152,6 @@ export default function BankModal({
         const updates: Partial<BankInput> = {};
         const trimmedNome = formData.nome.trim();
         const trimmedCodigo = formData.codigo?.trim() || "";
-        const currentSaldo = valueToNumber(formData.saldo_inicial);
-        const originalSaldo = valueToNumber(originalBank.saldo_inicial);
 
         if (trimmedNome !== originalBank.nome) {
           updates.nome = trimmedNome;
@@ -224,9 +161,6 @@ export default function BankModal({
         }
         if (formData.cor !== originalBank.cor) {
           updates.cor = formData.cor;
-        }
-        if (Math.abs(currentSaldo - originalSaldo) > 0.01) {
-          updates.saldo_inicial = currentSaldo;
         }
         if (formData.ativo !== originalBank.ativo) {
           updates.ativo = formData.ativo;
@@ -244,7 +178,6 @@ export default function BankModal({
           nome: formData.nome.trim(),
           codigo: formData.codigo?.trim() || undefined,
           cor: formData.cor,
-          saldo_inicial: valueToNumber(formData.saldo_inicial),
           ativo: formData.ativo,
         };
 
@@ -348,36 +281,6 @@ export default function BankModal({
                 helperText={shouldShowError("cor") ? fieldErrors.cor : ""}
               />
             </div>
-          </div>
-
-          <div>
-            <TextField
-              id="saldo_inicial"
-              name="saldo_inicial"
-              type="text"
-              label="Saldo Inicial"
-              inputMode="decimal"
-              variant="outlined"
-              size="small"
-              fullWidth
-              value={saldoDisplay}
-              onChange={(e) => {
-                const inputValue = e.target.value;
-                const parsedValue = parseBrlInput(inputValue);
-                setSaldoDisplay(inputValue);
-                updateField("saldo_inicial", parsedValue);
-              }}
-              onBlur={() => {
-                handleFieldBlur("saldo_inicial");
-                const formatted = formatBrlInput(valueToNumber(formData.saldo_inicial));
-                setSaldoDisplay(formatted);
-              }}
-              InputLabelProps={{ shrink: true }}
-              error={shouldShowError("saldo_inicial")}
-              helperText={
-                shouldShowError("saldo_inicial") ? fieldErrors.saldo_inicial : ""
-              }
-            />
           </div>
 
           <div className="flex items-center">

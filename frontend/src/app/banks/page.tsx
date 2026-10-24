@@ -36,7 +36,7 @@ export default function BanksPage() {
   const [filterAtivo, setFilterAtivo] = useState<boolean | undefined>(undefined);
   const [deleteTarget, setDeleteTarget] = useState<Bank | null>(null);
   const [viewingBank, setViewingBank] = useState<Bank | null>(null);
-  const [sortBy, setSortBy] = useState<"nome" | "codigo" | "saldo" | "status">("nome");
+  const [sortBy, setSortBy] = useState<"nome" | "codigo" | "status">("nome");
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
   const [showFilters, setShowFilters] = useState(false);
 
@@ -81,7 +81,7 @@ export default function BanksPage() {
     return count;
   }, [searchTerm, filterAtivo]);
 
-  const handleSort = (column: "nome" | "codigo" | "saldo" | "status") => {
+  const handleSort = (column: "nome" | "codigo" | "status") => {
     if (sortBy === column) {
       setSortDirection((prev) => (prev === "asc" ? "desc" : "asc"));
       return;
@@ -99,18 +99,9 @@ export default function BanksPage() {
       if (sortBy === "codigo") {
         return ((a.codigo || "").localeCompare(b.codigo || "", "pt-BR") * direction);
       }
-      if (sortBy === "saldo") {
-        return (Number(a.saldo_inicial) - Number(b.saldo_inicial)) * direction;
-      }
       return Number(a.ativo === true) === Number(b.ativo === true) ? 0 : (a.ativo ? 1 : -1) * direction;
     });
   }, [banks, sortBy, sortDirection]);
-
-  const formatCurrencyBRL = (value: number) =>
-    new Intl.NumberFormat("pt-BR", {
-      style: "currency",
-      currency: "BRL",
-    }).format(value);
 
   const handleSearch = (value: string) => {
     setSearchTerm(value);
@@ -318,11 +309,6 @@ export default function BanksPage() {
                       )}
                     </div>
 
-                    <div className="mt-3 text-sm text-gray-700 dark:text-slate-300">
-                      <span className="font-medium">Saldo Inicial: </span>
-                      {formatCurrencyBRL(bank.saldo_inicial)}
-                    </div>
-
                     <div className="mt-3 flex items-center justify-end gap-2 border-t border-gray-100 pt-3 dark:border-slate-800">
                       <TableActionButton action="view" title="Visualizar" onClick={() => setViewingBank(bank)} />
                       <TableActionButton action="edit" title="Editar" onClick={() => handleEdit(bank)} />
@@ -336,7 +322,7 @@ export default function BanksPage() {
                 <table className="min-w-[640px] w-full table-fixed divide-y divide-gray-200 dark:divide-slate-800 text-xs">
                   <thead className="app-table-head">
                     <tr>
-                      <th className="app-table-head-cell w-[40%]">
+                      <th className="app-table-head-cell w-[50%]">
                         <button type="button" onClick={() => handleSort("nome")} className="inline-flex items-center gap-1">
                           Banco
                           {sortBy === "nome" && sortDirection === "asc" ? <ArrowUpNarrowWide size={14} /> : sortBy === "nome" ? <ArrowDownWideNarrow size={14} /> : null}
@@ -348,13 +334,7 @@ export default function BanksPage() {
                           {sortBy === "codigo" && sortDirection === "asc" ? <ArrowUpNarrowWide size={14} /> : sortBy === "codigo" ? <ArrowDownWideNarrow size={14} /> : null}
                         </button>
                       </th>
-                      <th className="app-table-head-cell w-[15%]">
-                        <button type="button" onClick={() => handleSort("saldo")} className="inline-flex items-center gap-1">
-                          Saldo Inicial
-                          {sortBy === "saldo" && sortDirection === "asc" ? <ArrowUpNarrowWide size={14} /> : sortBy === "saldo" ? <ArrowDownWideNarrow size={14} /> : null}
-                        </button>
-                      </th>
-                      <th className="app-table-head-cell w-[15%]">
+                      <th className="app-table-head-cell w-[20%]">
                         <button type="button" onClick={() => handleSort("status")} className="inline-flex items-center gap-1">
                           Status
                           {sortBy === "status" && sortDirection === "asc" ? <ArrowUpNarrowWide size={14} /> : sortBy === "status" ? <ArrowDownWideNarrow size={14} /> : null}
@@ -375,7 +355,6 @@ export default function BanksPage() {
                           </div>
                         </td>
                         <td className="px-3 py-2 whitespace-nowrap text-xs text-gray-900 dark:text-slate-300">{bank.codigo || "-"}</td>
-                        <td className="px-3 py-2 whitespace-nowrap text-xs text-gray-900 dark:text-slate-300">{formatCurrencyBRL(bank.saldo_inicial)}</td>
                         <td className="px-3 py-2 whitespace-nowrap">
                           {bank.ativo ? (
                             <span className="inline-flex items-center rounded-full bg-green-100 px-2.5 py-1 text-[11px] font-semibold leading-none text-green-800 dark:bg-green-900/30 dark:text-green-400">Ativo</span>
@@ -416,7 +395,7 @@ export default function BanksPage() {
       <ViewDataModal
         isOpen={!!viewingBank}
         title="Visualizar Banco"
-        data={viewingBank}
+        data={viewingBank && (({ saldo_inicial, ...rest }) => rest)(viewingBank)}
         onClose={() => setViewingBank(null)}
         excludeCopyFields={["id", "codigo"]}
       />
