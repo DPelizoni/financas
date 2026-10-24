@@ -1,6 +1,6 @@
 export const authFieldSx = {
   "& .MuiOutlinedInput-root": {
-    borderRadius: "4px",
+    borderRadius: "6px",
     minHeight: "44px",
     "&.MuiInputBase-sizeSmall": {
       minHeight: "44px",

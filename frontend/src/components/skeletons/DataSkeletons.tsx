@@ -49,7 +49,7 @@ export function CardSkeleton({ count = 3 }: { count?: number }) {
       {Array.from({ length: count }).map((_, i) => (
         <div
           key={`card-${i}`}
-          className="animate-pulse rounded-xl border border-slate-100 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900/40"
+          className="animate-pulse rounded-lg border border-slate-100 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900/40"
         >
           <div className="flex items-center gap-4">
             <div className="h-10 w-10 rounded-full bg-slate-200 dark:bg-slate-800" />

@@ -96,8 +96,8 @@ export function DashboardCharts({
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
       return (
-        <div className="rounded-xl border border-white/20 bg-white/95 p-3 shadow-2xl backdrop-blur-md dark:border-slate-700/50 dark:bg-slate-900/95">
-          {label && <p className="mb-2 text-[10px] font-black uppercase tracking-widest text-gray-400">{label}</p>}
+        <div className="rounded-lg border border-white/20 bg-white/95 p-3 shadow-2xl backdrop-blur-md dark:border-slate-700/50 dark:bg-slate-900/95">
+          {label && <p className="mb-2 text-xs font-bold uppercase tracking-widest text-gray-400">{label}</p>}
           <div className="space-y-2">
             {payload.map((item: any, index: number) => (
               <div key={index} className="flex items-center justify-between gap-6">
@@ -105,7 +105,7 @@ export function DashboardCharts({
                   <div className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: item.payload?.fill || item.color || getTooltipSeriesColor(item.name || "") }} />
                   <span className="text-xs font-bold text-gray-600 dark:text-slate-300">{item.name}</span>
                 </div>
-                <span className="text-xs font-black tabular-nums" style={{ color: item.payload?.fill || item.color || getTooltipSeriesColor(item.name || "") }}>
+                <span className="text-xs font-bold tabular-nums" style={{ color: item.payload?.fill || item.color || getTooltipSeriesColor(item.name || "") }}>
                   {currency(item.value || 0)}
                 </span>
               </div>
@@ -134,12 +134,12 @@ export function DashboardCharts({
       <div className="app-surface p-6 overflow-hidden flex flex-col h-auto min-h-[480px] sm:h-[480px]">
         <div className="mb-8 flex items-center justify-between">
           <div>
-            <h3 className="text-sm font-black uppercase tracking-[0.1em] text-gray-800 dark:text-slate-200">Evolução Financeira</h3>
-            <p className="text-[10px] font-bold text-gray-400 uppercase mt-1">
+            <h3 className="text-sm font-bold uppercase tracking-[0.1em] text-gray-800 dark:text-slate-200">Evolução Financeira</h3>
+            <p className="text-xs font-bold text-gray-400 uppercase mt-1">
               {filterAno === "TODOS" ? "Histórico Completo" : `Análise de ${filterAno}`}
             </p>
           </div>
-          <div className="rounded-xl bg-blue-50 p-2.5 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400"><TrendingUp size={20} /></div>
+          <div className="rounded-md bg-blue-50 p-2.5 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400"><TrendingUp size={20} /></div>
         </div>
         <div className="flex-1 w-full">
           <ResponsiveContainer width="100%" height="100%">
@@ -177,12 +177,12 @@ export function DashboardCharts({
       <div className="app-surface p-6 overflow-hidden flex flex-col h-auto min-h-[480px] sm:h-[480px]">
         <div className="mb-8 flex items-center justify-between">
           <div>
-            <h3 className="text-sm font-black uppercase tracking-[0.1em] text-gray-800 dark:text-slate-200">Composição do Período</h3>
-            <p className="text-[10px] font-bold text-gray-400 uppercase mt-1">
+            <h3 className="text-sm font-bold uppercase tracking-[0.1em] text-gray-800 dark:text-slate-200">Composição do Período</h3>
+            <p className="text-xs font-bold text-gray-400 uppercase mt-1">
               {periodLabel}
             </p>
           </div>
-          <div className="rounded-xl bg-indigo-50 p-2.5 text-indigo-600 dark:bg-indigo-900/20 dark:text-indigo-400"><PieChartIcon size={20} /></div>
+          <div className="rounded-md bg-indigo-50 p-2.5 text-indigo-600 dark:bg-indigo-900/20 dark:text-indigo-400"><PieChartIcon size={20} /></div>
         </div>
         <div className="flex-1 w-full relative flex flex-col justify-center">
           <div className="h-64 w-full relative">
@@ -205,20 +205,20 @@ export function DashboardCharts({
               </PieChart>
             </ResponsiveContainer>
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center pointer-events-none">
-              <span className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 block mb-1">Resultado</span>
-              <span className="text-2xl font-black tabular-nums tracking-tighter text-blue-600 dark:text-blue-400">
+              <span className="text-xs font-bold uppercase tracking-[0.2em] text-gray-400 block mb-1">Resultado</span>
+              <span className="text-2xl font-bold tabular-nums tracking-tighter text-blue-600 dark:text-blue-400">
                 {currency(summary.total_liquido)}
               </span>
             </div>
           </div>
           <div className="mt-8 grid grid-cols-2 gap-4 max-w-sm mx-auto w-full">
-            <div className="bg-gray-50 dark:bg-slate-800/40 rounded-2xl p-3 border border-gray-100 dark:border-slate-700/30 flex flex-col items-center">
-              <span className="text-[9px] font-black text-emerald-600 dark:text-emerald-400 uppercase mb-1">Receitas</span>
-              <span className="text-sm font-black text-emerald-600 dark:text-emerald-400">{currency(summary.total_receita)}</span>
+            <div className="bg-gray-50 dark:bg-slate-800/40 rounded-lg p-3 border border-gray-100 dark:border-slate-700/30 flex flex-col items-center">
+              <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400 uppercase mb-1">Receitas</span>
+              <span className="text-sm font-bold text-emerald-600 dark:text-emerald-400">{currency(summary.total_receita)}</span>
             </div>
-            <div className="bg-gray-50 dark:bg-slate-800/40 rounded-2xl p-3 border border-gray-100 dark:border-slate-700/30 flex flex-col items-center">
-              <span className="text-[9px] font-black text-rose-600 dark:text-rose-400 uppercase mb-1">Despesas</span>
-              <span className="text-sm font-black text-rose-600 dark:text-rose-400">{currency(summary.total_despesa)}</span>
+            <div className="bg-gray-50 dark:bg-slate-800/40 rounded-lg p-3 border border-gray-100 dark:border-slate-700/30 flex flex-col items-center">
+              <span className="text-xs font-bold text-rose-600 dark:text-rose-400 uppercase mb-1">Despesas</span>
+              <span className="text-sm font-bold text-rose-600 dark:text-rose-400">{currency(summary.total_despesa)}</span>
             </div>
           </div>
         </div>
@@ -228,10 +228,10 @@ export function DashboardCharts({
       <div className="app-surface p-6 overflow-hidden flex flex-col h-auto min-h-[480px] sm:h-[480px]">
         <div className="mb-8 flex items-center justify-between">
           <div>
-            <h3 className="text-sm font-black uppercase tracking-[0.1em] text-gray-800 dark:text-slate-200">Realizado vs Projetado</h3>
-            <p className="text-[10px] font-bold text-gray-400 uppercase mt-1">{periodLabel}</p>
+            <h3 className="text-sm font-bold uppercase tracking-[0.1em] text-gray-800 dark:text-slate-200">Realizado vs Projetado</h3>
+            <p className="text-xs font-bold text-gray-400 uppercase mt-1">{periodLabel}</p>
           </div>
-          <div className="rounded-xl bg-emerald-50 p-2.5 text-emerald-600 dark:bg-emerald-900/20 dark:text-emerald-400"><BarChart3 size={20} /></div>
+          <div className="rounded-md bg-emerald-50 p-2.5 text-emerald-600 dark:bg-emerald-900/20 dark:text-emerald-400"><BarChart3 size={20} /></div>
         </div>
         <div className="flex-1 w-full">
           <ResponsiveContainer width="100%" height="100%">
@@ -256,10 +256,10 @@ export function DashboardCharts({
       <div className="app-surface p-6 overflow-hidden flex flex-col h-auto min-h-[480px] sm:h-[480px]">
         <div className="mb-8 flex items-center justify-between">
           <div>
-            <h3 className="text-sm font-black uppercase tracking-[0.1em] text-gray-800 dark:text-slate-200">Gastos por Categoria</h3>
-            <p className="text-[10px] font-bold text-gray-400 uppercase mt-1">{periodLabel}</p>
+            <h3 className="text-sm font-bold uppercase tracking-[0.1em] text-gray-800 dark:text-slate-200">Gastos por Categoria</h3>
+            <p className="text-xs font-bold text-gray-400 uppercase mt-1">{periodLabel}</p>
           </div>
-          <div className="rounded-xl bg-purple-50 p-2.5 text-purple-600 dark:bg-purple-900/20 dark:text-purple-400"><PieChartIcon size={20} /></div>
+          <div className="rounded-md bg-purple-50 p-2.5 text-purple-600 dark:bg-purple-900/20 dark:text-purple-400"><PieChartIcon size={20} /></div>
         </div>
         <div className="flex-1 w-full relative flex flex-col sm:flex-row items-center">
           <div className="h-64 w-full sm:w-1/2 relative">
@@ -293,9 +293,9 @@ export function DashboardCharts({
                 <div key={index} className="flex items-center justify-between group">
                   <div className="flex items-center gap-3">
                     <div className="h-2 w-2 rounded-full" style={{ backgroundColor: categoryPalette[index % categoryPalette.length] }} />
-                    <span className="text-[11px] font-bold text-gray-600 dark:text-slate-400 truncate max-w-[100px]">{item.name}</span>
+                    <span className="text-xs font-bold text-gray-600 dark:text-slate-400 truncate max-w-[100px]">{item.name}</span>
                   </div>
-                  <span className="text-[11px] font-black text-gray-800 dark:text-slate-200 tabular-nums">{currency(item.value)}</span>
+                  <span className="text-xs font-bold text-gray-800 dark:text-slate-200 tabular-nums">{currency(item.value)}</span>
                 </div>
               ))}
             </div>

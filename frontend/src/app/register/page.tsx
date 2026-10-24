@@ -176,7 +176,7 @@ export default function RegisterPage() {
           <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[rgb(var(--app-text-muted))]">
             Sistema Financeiro
           </p>
-          <h1 className="mt-2 text-3xl font-black tracking-tight text-[rgb(var(--app-text-primary))]">
+          <h1 className="mt-2 text-3xl font-bold tracking-tight text-[rgb(var(--app-text-primary))]">
             Criar Usuário
           </h1>
           <p className="mt-1 text-sm text-[rgb(var(--app-text-secondary))]">

@@ -9,13 +9,13 @@ module.exports = {
   theme: {
     borderRadius: {
       none: "0",
-      sm: "0.125rem",
-      DEFAULT: "0.25rem",
-      md: "0.25rem",
-      lg: "0.25rem",
-      xl: "0.25rem",
-      "2xl": "0.25rem",
-      "3xl": "0.25rem",
+      sm: "0.25rem",
+      DEFAULT: "0.375rem",
+      md: "0.375rem",
+      lg: "0.5rem",
+      xl: "0.75rem",
+      "2xl": "0.75rem",
+      "3xl": "0.75rem",
       full: "9999px",
     },
     extend: {
@@ -39,6 +39,30 @@ module.exports = {
           brand: {
             primary: "rgb(var(--app-brand-primary) / <alpha-value>)",
             secondary: "rgb(var(--app-brand-secondary) / <alpha-value>)",
+          },
+          success: {
+            DEFAULT: "rgb(var(--app-semantic-success) / <alpha-value>)",
+            surface: "rgb(var(--app-status-success-bg) / <alpha-value>)",
+            text: "rgb(var(--app-status-success-text) / <alpha-value>)",
+            border: "rgb(var(--app-status-success-border) / <alpha-value>)",
+          },
+          warning: {
+            DEFAULT: "rgb(var(--app-semantic-warning) / <alpha-value>)",
+            surface: "rgb(var(--app-status-warning-bg) / <alpha-value>)",
+            text: "rgb(var(--app-status-warning-text) / <alpha-value>)",
+            border: "rgb(var(--app-status-warning-border) / <alpha-value>)",
+          },
+          error: {
+            DEFAULT: "rgb(var(--app-semantic-error) / <alpha-value>)",
+            surface: "rgb(var(--app-status-error-bg) / <alpha-value>)",
+            text: "rgb(var(--app-status-error-text) / <alpha-value>)",
+            border: "rgb(var(--app-status-error-border) / <alpha-value>)",
+          },
+          info: {
+            DEFAULT: "rgb(var(--app-semantic-info) / <alpha-value>)",
+            surface: "rgb(var(--app-status-info-bg) / <alpha-value>)",
+            text: "rgb(var(--app-status-info-text) / <alpha-value>)",
+            border: "rgb(var(--app-status-info-border) / <alpha-value>)",
           },
         },
         neutral: {

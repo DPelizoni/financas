@@ -6,7 +6,9 @@ export const createMuiTheme = (mode: ThemeMode) => {
   const tokens = appThemeTokens[mode];
   const inputSurfaceColor = alpha(tokens.background.surface, mode === "dark" ? 0.92 : 1);
   const controlHeight = 44;
-  const borderRadius = 4;
+  const borderRadius = 6;
+  // Painéis (menus, popovers) seguem o raio dos cards
+  const surfaceRadius = 8;
 
   return createTheme(
     {
@@ -175,7 +177,7 @@ export const createMuiTheme = (mode: ThemeMode) => {
         MuiPaper: {
           styleOverrides: {
             rounded: {
-              borderRadius,
+              borderRadius: surfaceRadius,
             },
             root: {
               backgroundImage: "none",

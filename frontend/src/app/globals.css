@@ -3,7 +3,7 @@
 @tailwind utilities;
 
 :root {
-  --app-bg-canvas: 230 238 248;
+  --app-bg-canvas: 245 247 250;
   --app-bg-surface: 255 255 255;
   --app-bg-elevated: 255 255 255;
   --app-bg-muted: 241 245 249;
@@ -155,6 +155,10 @@ body {
     background-color: rgb(var(--app-brand-primary) / 0.3);
   }
 
+  table {
+    font-variant-numeric: tabular-nums;
+  }
+
   h1 {
     @apply text-3xl font-bold;
   }
@@ -212,13 +216,23 @@ body {
     border: 1px solid rgb(var(--app-border-default));
     background-color: rgb(var(--app-bg-surface));
     box-shadow: var(--app-shadow-sm);
-    @apply rounded;
+    @apply rounded-lg;
+  }
+
+  .kpi-card {
+    container-type: inline-size;
+  }
+
+  .kpi-value {
+    /* espaço útil = largura do card − ícone (44px) − gap (16px); valor ≈ 8 × fonte */
+    font-size: clamp(1.125rem, calc((100cqi - 3.75rem) / 8), 1.875rem);
+    line-height: 1.2;
   }
 
   .app-surface-muted {
     border: 1px solid rgb(var(--app-border-subtle));
     background-color: rgb(var(--app-bg-muted));
-    @apply rounded;
+    @apply rounded-lg;
   }
 
   .app-control-button {
@@ -406,7 +420,7 @@ body {
     border: 1px solid rgb(var(--app-border-default));
     background-color: rgb(var(--app-bg-surface));
     box-shadow: var(--app-shadow-lg);
-    @apply w-full rounded;
+    @apply w-full overflow-hidden rounded-xl;
   }
 
   .app-modal-header {
@@ -441,34 +455,34 @@ body {
     border: 1px solid rgb(var(--app-status-success-border));
     background-color: rgb(var(--app-status-success-bg));
     color: rgb(var(--app-status-success-text));
-    @apply inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-semibold leading-none;
+    @apply inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold leading-none;
   }
 
   .app-badge-warning {
     border: 1px solid rgb(var(--app-status-warning-border));
     background-color: rgb(var(--app-status-warning-bg));
     color: rgb(var(--app-status-warning-text));
-    @apply inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-semibold leading-none;
+    @apply inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold leading-none;
   }
 
   .app-badge-error {
     border: 1px solid rgb(var(--app-status-error-border));
     background-color: rgb(var(--app-status-error-bg));
     color: rgb(var(--app-status-error-text));
-    @apply inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-semibold leading-none;
+    @apply inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold leading-none;
   }
 
   .app-badge-info {
     border: 1px solid rgb(var(--app-status-info-border));
     background-color: rgb(var(--app-status-info-bg));
     color: rgb(var(--app-status-info-text));
-    @apply inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-semibold leading-none;
+    @apply inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold leading-none;
   }
 
   .app-checkbox {
     accent-color: rgb(var(--app-brand-primary));
     border-color: rgb(var(--app-border-default));
-    @apply h-4 w-4 rounded;
+    @apply h-4 w-4 rounded-sm;
   }
 
   .app-table-row {
@@ -499,7 +513,7 @@ body {
       rgb(var(--app-bg-muted) / 0.5)
     );
     box-shadow: var(--app-shadow-md);
-    @apply rounded p-5;
+    @apply rounded-lg p-5;
   }
 
   .dashboard-summary-card-success {
@@ -511,7 +525,7 @@ body {
       rgb(var(--app-bg-elevated))
     );
     box-shadow: var(--app-shadow-sm);
-    @apply rounded;
+    @apply rounded-lg;
   }
 
   .dashboard-summary-card-warning {
@@ -523,7 +537,7 @@ body {
       rgb(var(--app-bg-elevated))
     );
     box-shadow: var(--app-shadow-sm);
-    @apply rounded;
+    @apply rounded-lg;
   }
 
   .dashboard-summary-card-error {
@@ -535,7 +549,7 @@ body {
       rgb(var(--app-bg-elevated))
     );
     box-shadow: var(--app-shadow-sm);
-    @apply rounded;
+    @apply rounded-lg;
   }
 
   .dashboard-summary-card-info {
@@ -547,7 +561,7 @@ body {
       rgb(var(--app-bg-elevated))
     );
     box-shadow: var(--app-shadow-sm);
-    @apply rounded;
+    @apply rounded-lg;
   }
 
   .dashboard-summary-card-neutral {
@@ -558,7 +572,7 @@ body {
       rgb(var(--app-bg-surface))
     );
     box-shadow: var(--app-shadow-sm);
-    @apply rounded;
+    @apply rounded-lg;
   }
 
   .app-table-row,
