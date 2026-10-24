@@ -1,6 +1,6 @@
 "use client";
 
-import { useId, useRef, useState } from "react";
+import { ReactNode, useId, useRef, useState } from "react";
 import { 
   XCircle, 
   Copy, 
@@ -29,6 +29,7 @@ interface ViewDataModalProps {
   fieldLabels?: Record<string, string>;
   excludeCopyFields?: string[];
   hideCopy?: boolean;
+  renderField?: (key: string, value: unknown) => ReactNode | undefined;
 }
 
 const defaultFieldLabels: Record<string, string> = {
@@ -225,6 +226,7 @@ export default function ViewDataModal({
   fieldLabels = {},
   excludeCopyFields = [],
   hideCopy = false,
+  renderField,
 }: ViewDataModalProps) {
   const modalRef = useRef<HTMLDivElement>(null);
   const titleId = useId();
@@ -269,6 +271,9 @@ export default function ViewDataModal({
     .sort((a, b) => a[0].localeCompare(b[0]));
 
   const renderValue = (key: string, value: unknown) => {
+    const customValue = renderField?.(key, value);
+    if (customValue !== undefined) return customValue;
+
     if (value === null || value === undefined || value === "") {
       return <span className="text-slate-400 italic">Nulo</span>;
     }
