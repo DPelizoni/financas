@@ -4,7 +4,6 @@ export interface Bank {
   id: number;
   nome: string;
   codigo?: string;
-  cor: string;
   icone?: string;
   saldo_inicial: number;
   ativo: boolean;
@@ -15,7 +14,6 @@ export interface Bank {
 export interface BankInput {
   nome: string;
   codigo?: string;
-  cor?: string;
   icone?: string;
   saldo_inicial?: number;
   ativo?: boolean;

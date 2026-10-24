@@ -14,6 +14,7 @@ import { mdiPlusBoxOutline } from "@mdi/js";
 import { bankService } from "@/services/bankService";
 import { Bank, BankFilters } from "@/types/bank";
 import BankModal from "@/components/BankModal";
+import BankLogo, { getBankLogo } from "@/components/BankLogo";
 import Pagination from "@/components/Pagination";
 import { toast } from "sonner";
 import ConfirmDeleteModal from "@/components/ConfirmDeleteModal";
@@ -283,12 +284,7 @@ export default function BanksPage() {
                   >
                     <div className="flex items-start justify-between gap-3">
                       <div className="flex items-center gap-3">
-                        <div
-                          className="flex h-10 w-10 items-center justify-center rounded-full font-bold text-white"
-                          style={{ backgroundColor: bank.cor }}
-                        >
-                          {bank.nome.substring(0, 2).toUpperCase()}
-                        </div>
+                        <BankLogo nome={bank.nome} codigo={bank.codigo} />
                         <div>
                           <p className="text-sm font-semibold text-gray-900 dark:text-white">
                             {bank.nome}
@@ -347,10 +343,8 @@ export default function BanksPage() {
                     {sortedBanks.map((bank) => (
                       <tr key={bank.id} className="app-table-row">
                         <td className="px-3 py-2 whitespace-nowrap">
-                          <div className="flex items-center">
-                            <div className="mr-2 flex h-7 w-7 items-center justify-center rounded-full text-[10px] font-bold text-white" style={{ backgroundColor: bank.cor }}>
-                              {bank.nome.substring(0, 2).toUpperCase()}
-                            </div>
+                          <div className="flex items-center gap-2">
+                            <BankLogo nome={bank.nome} codigo={bank.codigo} size="sm" />
                             <div className="text-xs font-medium text-gray-900 dark:text-slate-200">{bank.nome}</div>
                           </div>
                         </td>
@@ -397,7 +391,20 @@ export default function BanksPage() {
         title="Visualizar Banco"
         data={viewingBank && (({ saldo_inicial, ...rest }) => rest)(viewingBank)}
         onClose={() => setViewingBank(null)}
-        excludeCopyFields={["id", "codigo"]}
+        excludeCopyFields={["id", "codigo", "icone"]}
+        fieldLabels={{ icone: "Logotipo" }}
+        renderField={(key) =>
+          key === "icone" && viewingBank ? (
+            <div className="flex items-center gap-2">
+              <BankLogo nome={viewingBank.nome} codigo={viewingBank.codigo} size="sm" />
+              <span>
+                {getBankLogo(viewingBank.nome, viewingBank.codigo)
+                  ? "Logotipo identificado automaticamente"
+                  : "Ícone padrão (banco sem logotipo cadastrado)"}
+              </span>
+            </div>
+          ) : undefined
+        }
       />
 
       <BankModal

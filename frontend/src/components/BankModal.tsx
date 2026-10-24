@@ -23,7 +23,7 @@ interface BankModalProps {
   onSave: (message: string) => Promise<void> | void;
 }
 
-const bankFields = ["nome", "codigo", "cor", "ativo"] as const;
+const bankFields = ["nome", "codigo", "ativo"] as const;
 type BankField = (typeof bankFields)[number];
 
 const validateBankForm = (values: BankInput): FormFieldErrors<BankField> => {
@@ -33,9 +33,6 @@ const validateBankForm = (values: BankInput): FormFieldErrors<BankField> => {
     errors.nome = "Nome deve ter no mínimo 2 caracteres.";
   }
 
-  if (values.cor && !/^#[0-9A-Fa-f]{6}$/.test(values.cor)) {
-    errors.cor = "Cor deve estar no formato hexadecimal (#RRGGBB).";
-  }
 
   return errors;
 };
@@ -52,7 +49,6 @@ export default function BankModal({
   const [formData, setFormData] = useState<BankInput>({
     nome: "",
     codigo: "",
-    cor: "#3B82F6",
     ativo: true,
   });
   const [originalBank, setOriginalBank] = useState<Bank | null>(null);
@@ -80,7 +76,6 @@ export default function BankModal({
       setFormData({
         nome: bank.nome,
         codigo: bank.codigo || "",
-        cor: bank.cor,
         ativo: bank.ativo,
       });
       setOriginalBank(bank);
@@ -89,7 +84,6 @@ export default function BankModal({
       setFormData({
         nome: "",
         codigo: "",
-        cor: "#3B82F6",
         ativo: true,
       });
     }
@@ -159,9 +153,6 @@ export default function BankModal({
         if (trimmedCodigo !== (originalBank.codigo || "")) {
           updates.codigo = trimmedCodigo || undefined;
         }
-        if (formData.cor !== originalBank.cor) {
-          updates.cor = formData.cor;
-        }
         if (formData.ativo !== originalBank.ativo) {
           updates.ativo = formData.ativo;
         }
@@ -177,7 +168,6 @@ export default function BankModal({
         const payload: BankInput = {
           nome: formData.nome.trim(),
           codigo: formData.codigo?.trim() || undefined,
-          cor: formData.cor,
           ativo: formData.ativo,
         };
 
@@ -255,32 +245,6 @@ export default function BankModal({
               error={shouldShowError("codigo")}
               helperText={shouldShowError("codigo") ? fieldErrors.codigo : ""}
             />
-          </div>
-
-          <div>
-            <div className="flex gap-2">
-              <input
-                type="color"
-                value={formData.cor}
-                onChange={(e) => updateField("cor", e.target.value)}
-                className="h-11 w-20 cursor-pointer rounded border border-[rgb(var(--app-border-default))] bg-[rgb(var(--app-bg-surface))]"
-              />
-              <TextField
-                id="cor"
-                name="cor"
-                type="text"
-                label="Cor"
-                variant="outlined"
-                size="small"
-                fullWidth
-                value={formData.cor}
-                onChange={(e) => updateField("cor", e.target.value)}
-                onBlur={() => handleFieldBlur("cor")}
-                InputLabelProps={{ shrink: true }}
-                error={shouldShowError("cor")}
-                helperText={shouldShowError("cor") ? fieldErrors.cor : ""}
-              />
-            </div>
           </div>
 
           <div className="flex items-center">
