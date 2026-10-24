@@ -10,6 +10,7 @@ import {
   Receipt,
   PieChart,
 } from "lucide-react";
+import { formatCurrency } from "@/utils/format";
 
 interface TransactionSummaryCardsProps {
   summary: TransacaoSummary | null;
@@ -19,13 +20,6 @@ export function TransactionSummaryCards({
   summary,
 }: TransactionSummaryCardsProps) {
   if (!summary) return null;
-
-  const formatCurrency = (valor: number) => {
-    return new Intl.NumberFormat("pt-BR", {
-      style: "currency",
-      currency: "BRL",
-    }).format(valor);
-  };
 
   const CardGroup = ({ 
     title, 
@@ -69,9 +63,9 @@ export function TransactionSummaryCards({
     const config = colors[accentColor];
 
     return (
-      <div className={`group relative overflow-hidden rounded-2xl border-t-4 border ${config.border} ${config.bg} p-5 backdrop-blur-sm transition-all duration-500 hover:-translate-y-2 ${config.glow}`}>
+      <div className={`group relative overflow-hidden rounded-lg border-t-4 border ${config.border} ${config.bg} p-5 backdrop-blur-sm transition-all duration-500 hover:-translate-y-2 ${config.glow}`}>
         <div className="mb-4 flex items-center justify-between">
-          <h3 className={`text-sm font-bold uppercase tracking-wider ${config.text} opacity-90`}>
+          <h3 className={`text-sm font-semibold ${config.text}`}>
             {title}
           </h3>
           <div className={`rounded-lg ${config.iconContainer} p-2 transition-transform duration-500 group-hover:rotate-12 group-hover:scale-110`}>
@@ -85,9 +79,9 @@ export function TransactionSummaryCards({
               <div className="flex h-8 w-8 items-center justify-center rounded-full bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400">
                 <ArrowUpNarrowWide size={16} />
               </div>
-              <span className="text-xs font-medium text-gray-500 dark:text-slate-400">Receitas</span>
+              <span className="text-sm font-medium text-gray-500 dark:text-slate-400">Receitas</span>
             </div>
-            <span className="text-sm font-bold text-green-600 dark:text-green-400">
+            <span className="whitespace-nowrap text-base font-semibold tabular-nums text-green-600 dark:text-green-400">
               {formatCurrency(receita)}
             </span>
           </div>
@@ -97,22 +91,22 @@ export function TransactionSummaryCards({
               <div className="flex h-8 w-8 items-center justify-center rounded-full bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400">
                 <ArrowDownWideNarrow size={16} />
               </div>
-              <span className="text-xs font-medium text-gray-500 dark:text-slate-400">Despesas</span>
+              <span className="text-sm font-medium text-gray-500 dark:text-slate-400">Despesas</span>
             </div>
-            <span className="text-sm font-bold text-red-600 dark:text-red-400">
+            <span className="whitespace-nowrap text-base font-semibold tabular-nums text-red-600 dark:text-red-400">
               {formatCurrency(despesa)}
             </span>
           </div>
 
           <div className="mt-2 border-t border-gray-200/50 pt-4 dark:border-slate-700/50">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1">
               <div className="flex items-center gap-3">
                 <div className={`flex h-8 w-8 items-center justify-center rounded-full ${liquido >= 0 ? "bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400" : "bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400"}`}>
                   <DollarSign size={16} />
                 </div>
-                <span className="text-xs font-bold text-gray-700 dark:text-slate-300">Saldo Líquido</span>
+                <span className="text-sm font-medium text-gray-700 dark:text-slate-300">Saldo Líquido</span>
               </div>
-              <span className={`text-lg font-black ${liquido >= 0 ? "text-blue-600 dark:text-blue-400" : "text-red-600 dark:text-red-400"}`}>
+              <span className={`ml-auto whitespace-nowrap text-2xl font-bold tabular-nums tracking-tight xl:text-xl 2xl:text-2xl ${liquido >= 0 ? "text-blue-600 dark:text-blue-400" : "text-red-600 dark:text-red-400"}`}>
                 {formatCurrency(liquido)}
               </span>
             </div>

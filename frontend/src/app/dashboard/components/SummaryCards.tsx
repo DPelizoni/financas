@@ -55,18 +55,21 @@ export function SummaryCards({ summary, currency }: SummaryCardsProps) {
     const theme = themes[color];
 
     return (
-      <div className={`group relative overflow-hidden rounded-2xl border-t-4 border ${theme.border} ${theme.bg} p-6 backdrop-blur-sm transition-all duration-500 hover:-translate-y-2 ${theme.glow}`}>
-        <div className="flex items-center justify-between">
-          <div className="min-w-0">
-            <p className={`text-xs font-black uppercase tracking-[0.15em] opacity-90 ${theme.text}`}>
+      <div className={`kpi-card group relative overflow-hidden rounded-lg border-t-4 border ${theme.border} ${theme.bg} p-5 backdrop-blur-sm transition-all duration-500 hover:-translate-y-2 ${theme.glow}`}>
+        <div className="flex items-center justify-between gap-4">
+          <div className="min-w-0 flex-1 overflow-hidden">
+            <p className={`text-sm font-semibold opacity-80 ${theme.text}`}>
               {title}
             </p>
-            <p className={`mt-2 text-2xl font-black tabular-nums tracking-tight ${theme.text}`}>
+            <p
+              className={`kpi-value mt-1 whitespace-nowrap font-bold tabular-nums tracking-tight ${theme.text}`}
+              title={currency(value)}
+            >
               {currency(value)}
             </p>
           </div>
-          <div className={`rounded-xl ${theme.iconContainer} p-3 transition-transform duration-500 group-hover:rotate-12 group-hover:scale-110`}>
-            <Icon size={28} />
+          <div className={`shrink-0 rounded-md ${theme.iconContainer} p-2.5 transition-transform duration-500 group-hover:rotate-12 group-hover:scale-110`}>
+            <Icon size={24} />
           </div>
         </div>
         <div className={`absolute -right-8 -top-8 h-24 w-24 rounded-full ${theme.bg} opacity-20 blur-3xl transition-opacity duration-700 group-hover:opacity-40`} />
