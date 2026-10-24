@@ -1,7 +1,10 @@
 "use client";
 
 import React from "react";
-import { BarChart3, TrendingUp, PieChart as PieChartIcon, Activity, ArrowUpRight, ArrowDownRight } from "lucide-react";
+import ChartCardHeader from "@/components/ChartCardHeader";
+import { formatCompactCurrency } from "@/utils/format";
+import CategoryIcon from "@/components/CategoryIcon";
+import { BarChart3, BarChartHorizontal, TrendingUp, PieChart as PieChartIcon, Activity, ArrowUpRight, ArrowDownRight } from "lucide-react";
 import {
   Bar,
   BarChart,
@@ -47,10 +50,7 @@ interface DashboardChartsProps {
   filterMesAno: string;
 }
 
-const categoryPalette = [
-  "#3b82f6", "#10b981", "#f59e0b", "#ef4444", "#8b5cf6", 
-  "#ec4899", "#06b6d4", "#f97316", "#14b8a6", "#6366f1"
-];
+const percentFormatter = new Intl.NumberFormat("pt-BR", { style: "percent", maximumFractionDigits: 0 });
 
 const monthNames = [
   "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
@@ -89,6 +89,7 @@ export function DashboardCharts({
   ];
 
   const totalComposition = summary.total_receita + summary.total_despesa;
+  const maxCategoryValue = byCategory.reduce((max, item) => Math.max(max, item.value), 0);
 
   const donutInnerRadius = isMobile ? "70%" : "75%";
   const donutOuterRadius = isMobile ? "90%" : "95%";
@@ -97,15 +98,15 @@ export function DashboardCharts({
     if (active && payload && payload.length) {
       return (
         <div className="rounded-lg border border-white/20 bg-white/95 p-3 shadow-2xl backdrop-blur-md dark:border-slate-700/50 dark:bg-slate-900/95">
-          {label && <p className="mb-2 text-xs font-bold uppercase tracking-widest text-gray-400">{label}</p>}
+          {label && <p className="mb-2 text-xs font-medium text-[rgb(var(--app-text-muted))]">{label}</p>}
           <div className="space-y-2">
             {payload.map((item: any, index: number) => (
               <div key={index} className="flex items-center justify-between gap-6">
                 <div className="flex items-center gap-2">
                   <div className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: item.payload?.fill || item.color || getTooltipSeriesColor(item.name || "") }} />
-                  <span className="text-xs font-bold text-gray-600 dark:text-slate-300">{item.name}</span>
+                  <span className="text-xs text-[rgb(var(--app-text-secondary))]">{item.name}</span>
                 </div>
-                <span className="text-xs font-bold tabular-nums" style={{ color: item.payload?.fill || item.color || getTooltipSeriesColor(item.name || "") }}>
+                <span className="text-xs font-semibold tabular-nums" style={{ color: item.payload?.fill || item.color || getTooltipSeriesColor(item.name || "") }}>
                   {currency(item.value || 0)}
                 </span>
               </div>
@@ -132,15 +133,12 @@ export function DashboardCharts({
     <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
       {/* 1. Evolução Financeira */}
       <div className="app-surface p-6 overflow-hidden flex flex-col h-auto min-h-[480px] sm:h-[480px]">
-        <div className="mb-8 flex items-center justify-between">
-          <div>
-            <h3 className="text-sm font-bold uppercase tracking-[0.1em] text-gray-800 dark:text-slate-200">Evolução Financeira</h3>
-            <p className="text-xs font-bold text-gray-400 uppercase mt-1">
-              {filterAno === "TODOS" ? "Histórico Completo" : `Análise de ${filterAno}`}
-            </p>
-          </div>
-          <div className="rounded-md bg-blue-50 p-2.5 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400"><TrendingUp size={20} /></div>
-        </div>
+        <ChartCardHeader
+          title="Evolução Financeira"
+          subtitle={filterAno === "TODOS" ? "Histórico Completo" : `Análise de ${filterAno}`}
+          icon={<TrendingUp size={20} />}
+          iconClassName="bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400"
+        />
         <div className="flex-1 w-full">
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart data={timeline} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
@@ -157,14 +155,14 @@ export function DashboardCharts({
                 dataKey="monthLabel" 
                 axisLine={false} 
                 tickLine={false} 
-                tick={{ fontSize: 10, fill: "rgb(var(--app-text-secondary))", fontWeight: 700 }} 
+                tick={{ fontSize: 12, fill: "rgb(var(--app-text-secondary))", fontWeight: 500 }} 
                 interval={0} 
                 minTickGap={0}
                 padding={{ left: 10, right: 10 }}
               />
               <YAxis hide />
               <Tooltip content={<CustomTooltip />} />
-              <Legend verticalAlign="top" align="right" iconType="circle" iconSize={6} wrapperStyle={{ fontSize: '9px', fontWeight: '900', textTransform: 'uppercase', letterSpacing: '0.1em', paddingBottom: '30px' }} />
+              <Legend verticalAlign="top" align="right" iconType="circle" iconSize={6} wrapperStyle={{ fontSize: '12px', fontWeight: 500, paddingBottom: '24px' }} />
               <Area type="monotone" dataKey="receitas" name="Receitas" stroke={chartColors.receitas} strokeWidth={4} fillOpacity={1} fill="url(#color-receitas)" animationDuration={1500} />
               <Area type="monotone" dataKey="despesas" name="Despesas" stroke={chartColors.despesas} strokeWidth={4} fillOpacity={1} fill="url(#color-despesas)" animationDuration={1500} />
               <Area type="monotone" dataKey="saldo" name="Saldo" stroke={chartColors.saldo} strokeWidth={4} fillOpacity={1} fill="url(#color-saldo)" animationDuration={1500} />
@@ -175,15 +173,12 @@ export function DashboardCharts({
 
       {/* 2. Composição do Período */}
       <div className="app-surface p-6 overflow-hidden flex flex-col h-auto min-h-[480px] sm:h-[480px]">
-        <div className="mb-8 flex items-center justify-between">
-          <div>
-            <h3 className="text-sm font-bold uppercase tracking-[0.1em] text-gray-800 dark:text-slate-200">Composição do Período</h3>
-            <p className="text-xs font-bold text-gray-400 uppercase mt-1">
-              {periodLabel}
-            </p>
-          </div>
-          <div className="rounded-md bg-indigo-50 p-2.5 text-indigo-600 dark:bg-indigo-900/20 dark:text-indigo-400"><PieChartIcon size={20} /></div>
-        </div>
+        <ChartCardHeader
+          title="Composição do Período"
+          subtitle={periodLabel}
+          icon={<PieChartIcon size={20} />}
+          iconClassName="bg-indigo-50 text-indigo-600 dark:bg-indigo-900/20 dark:text-indigo-400"
+        />
         <div className="flex-1 w-full relative flex flex-col justify-center">
           <div className="h-64 w-full relative">
             <ResponsiveContainer width="100%" height="100%">
@@ -205,7 +200,7 @@ export function DashboardCharts({
               </PieChart>
             </ResponsiveContainer>
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center pointer-events-none">
-              <span className="text-xs font-bold uppercase tracking-[0.2em] text-gray-400 block mb-1">Resultado</span>
+              <span className="mb-1 block text-xs font-medium text-[rgb(var(--app-text-muted))]">Resultado</span>
               <span className="text-2xl font-bold tabular-nums tracking-tighter text-blue-600 dark:text-blue-400">
                 {currency(summary.total_liquido)}
               </span>
@@ -213,12 +208,12 @@ export function DashboardCharts({
           </div>
           <div className="mt-8 grid grid-cols-2 gap-4 max-w-sm mx-auto w-full">
             <div className="bg-gray-50 dark:bg-slate-800/40 rounded-lg p-3 border border-gray-100 dark:border-slate-700/30 flex flex-col items-center">
-              <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400 uppercase mb-1">Receitas</span>
-              <span className="text-sm font-bold text-emerald-600 dark:text-emerald-400">{currency(summary.total_receita)}</span>
+              <span className="mb-1 text-xs font-medium text-emerald-600 dark:text-emerald-400">Receitas</span>
+              <span className="text-sm font-semibold tabular-nums text-emerald-600 dark:text-emerald-400">{currency(summary.total_receita)}</span>
             </div>
             <div className="bg-gray-50 dark:bg-slate-800/40 rounded-lg p-3 border border-gray-100 dark:border-slate-700/30 flex flex-col items-center">
-              <span className="text-xs font-bold text-rose-600 dark:text-rose-400 uppercase mb-1">Despesas</span>
-              <span className="text-sm font-bold text-rose-600 dark:text-rose-400">{currency(summary.total_despesa)}</span>
+              <span className="mb-1 text-xs font-medium text-rose-600 dark:text-rose-400">Despesas</span>
+              <span className="text-sm font-semibold tabular-nums text-rose-600 dark:text-rose-400">{currency(summary.total_despesa)}</span>
             </div>
           </div>
         </div>
@@ -226,26 +221,30 @@ export function DashboardCharts({
 
       {/* 3. Realizado vs Projetado */}
       <div className="app-surface p-6 overflow-hidden flex flex-col h-auto min-h-[480px] sm:h-[480px]">
-        <div className="mb-8 flex items-center justify-between">
-          <div>
-            <h3 className="text-sm font-bold uppercase tracking-[0.1em] text-gray-800 dark:text-slate-200">Realizado vs Projetado</h3>
-            <p className="text-xs font-bold text-gray-400 uppercase mt-1">{periodLabel}</p>
-          </div>
-          <div className="rounded-md bg-emerald-50 p-2.5 text-emerald-600 dark:bg-emerald-900/20 dark:text-emerald-400"><BarChart3 size={20} /></div>
-        </div>
+        <ChartCardHeader
+          title="Realizado vs Projetado"
+          subtitle={periodLabel}
+          icon={<BarChart3 size={20} />}
+          iconClassName="bg-emerald-50 text-emerald-600 dark:bg-emerald-900/20 dark:text-emerald-400"
+        />
         <div className="flex-1 w-full">
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={comparisonData} barGap={12} margin={{ top: 40, bottom: 10 }}>
+            <BarChart data={comparisonData} barGap={16} margin={{ top: 40, bottom: 10 }}>
               <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(var(--app-border-default), 0.1)" />
-              <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 11, fontWeight: 900, fill: "rgb(var(--app-text-primary))" }} />
+              <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 12, fontWeight: 500, fill: "rgb(var(--app-text-secondary))" }} />
               <YAxis hide />
               <Tooltip content={<CustomTooltip />} cursor={{ fill: 'currentColor', opacity: 0.04 }} />
-              <Legend verticalAlign="top" align="right" iconType="circle" iconSize={6} wrapperStyle={{ fontSize: '9px', fontWeight: '900', textTransform: 'uppercase', letterSpacing: '0.1em', paddingBottom: '30px' }} />
+              <Legend verticalAlign="top" align="right" iconType="circle" iconSize={6} wrapperStyle={{ fontSize: '12px', fontWeight: 500, paddingBottom: '24px' }} />
               <Bar dataKey="Pago" fill={chartColors.pago} radius={[8, 8, 0, 0]} barSize={isMobile ? 32 : 56} animationDuration={1500}>
-                <LabelList dataKey="Pago" position="top" offset={15} formatter={(v: any) => currency(Number(v))} style={{ fontSize: 10, fontWeight: 900, fill: chartColors.pago }} />
+                {/* Valor compacto sobre a barra; o valor completo aparece no tooltip. No celular não há espaço para o rótulo */}
+                {!isMobile && (
+                  <LabelList dataKey="Pago" position="top" offset={15} formatter={(v: any) => formatCompactCurrency(Number(v))} style={{ fontSize: 12, fontWeight: 600, fill: chartColors.pago }} />
+                )}
               </Bar>
               <Bar dataKey="Provisao" name="Provisão" fill={chartColors.pendente} radius={[8, 8, 0, 0]} barSize={isMobile ? 32 : 56} animationDuration={1500}>
-                <LabelList dataKey="Provisao" position="top" offset={15} formatter={(v: any) => currency(Number(v))} style={{ fontSize: 10, fontWeight: 900, fill: chartColors.pendente }} />
+                {!isMobile && (
+                  <LabelList dataKey="Provisao" position="top" offset={15} formatter={(v: any) => formatCompactCurrency(Number(v))} style={{ fontSize: 12, fontWeight: 600, fill: chartColors.pendente }} />
+                )}
               </Bar>
             </BarChart>
           </ResponsiveContainer>
@@ -254,53 +253,36 @@ export function DashboardCharts({
 
       {/* 4. Gastos por Categoria */}
       <div className="app-surface p-6 overflow-hidden flex flex-col h-auto min-h-[480px] sm:h-[480px]">
-        <div className="mb-8 flex items-center justify-between">
-          <div>
-            <h3 className="text-sm font-bold uppercase tracking-[0.1em] text-gray-800 dark:text-slate-200">Gastos por Categoria</h3>
-            <p className="text-xs font-bold text-gray-400 uppercase mt-1">{periodLabel}</p>
-          </div>
-          <div className="rounded-md bg-purple-50 p-2.5 text-purple-600 dark:bg-purple-900/20 dark:text-purple-400"><PieChartIcon size={20} /></div>
-        </div>
-        <div className="flex-1 w-full relative flex flex-col sm:flex-row items-center">
-          <div className="h-64 w-full sm:w-1/2 relative">
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie 
-                  data={byCategory} 
-                  cx="50%" 
-                  cy="50%" 
-                  innerRadius="75%" 
-                  outerRadius="95%" 
-                  paddingAngle={4} 
-                  cornerRadius={6} 
-                  dataKey="value" 
-                  nameKey="name" 
-                  stroke="none" 
-                  animationDuration={1500}
-                >
-                  {byCategory.map((entry, index) => <Cell key={`cell-${index}`} fill={categoryPalette[index % categoryPalette.length]} />)}
-                </Pie>
-                <Tooltip content={<CustomTooltip />} />
-              </PieChart>
-            </ResponsiveContainer>
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center pointer-events-none">
-              <PieChartIcon size={24} className="text-gray-200 dark:text-slate-700 mx-auto" />
-            </div>
-          </div>
-          <div className="w-full sm:w-1/2 mt-6 sm:mt-0 sm:pl-8 overflow-y-auto max-h-64 scrollbar-hide">
-            <div className="space-y-3 pb-12 sm:pb-0">
-              {byCategory.slice(0, 6).map((item, index) => (
-                <div key={index} className="flex items-center justify-between group">
-                  <div className="flex items-center gap-3">
-                    <div className="h-2 w-2 rounded-full" style={{ backgroundColor: categoryPalette[index % categoryPalette.length] }} />
-                    <span className="text-xs font-bold text-gray-600 dark:text-slate-400 truncate max-w-[100px]">{item.name}</span>
+        <ChartCardHeader
+          title="Gastos por Categoria"
+          subtitle={periodLabel}
+          icon={<BarChartHorizontal size={20} />}
+          iconClassName="bg-purple-50 text-purple-600 dark:bg-purple-900/20 dark:text-purple-400"
+        />
+        {/* Barras horizontais ordenadas: comparar comprimentos é mais fácil que comparar fatias */}
+        <ul className="flex flex-1 flex-col justify-center gap-4">
+          {byCategory.map((item) => {
+            const share = summary.total_despesa > 0 ? item.value / summary.total_despesa : 0;
+            const width = maxCategoryValue > 0 ? (item.value / maxCategoryValue) * 100 : 0;
+            return (
+              <li key={item.name}>
+                <div className="mb-1.5 flex items-center justify-between gap-3">
+                  <div className="flex min-w-0 items-center gap-2">
+                    <CategoryIcon nome={item.name} tipo="DESPESA" size="sm" />
+                    <span className="truncate text-sm text-[rgb(var(--app-text-secondary))]" title={item.name}>{item.name}</span>
                   </div>
-                  <span className="text-xs font-bold text-gray-800 dark:text-slate-200 tabular-nums">{currency(item.value)}</span>
+                  <div className="flex shrink-0 items-baseline gap-2">
+                    <span className="text-sm font-semibold tabular-nums text-[rgb(var(--app-text-primary))]">{currency(item.value)}</span>
+                    <span className="w-10 text-right text-xs tabular-nums text-[rgb(var(--app-text-muted))]">{percentFormatter.format(share)}</span>
+                  </div>
                 </div>
-              ))}
-            </div>
-          </div>
-        </div>
+                <div className="h-2 w-full overflow-hidden rounded-full bg-[rgb(var(--app-border-subtle))]">
+                  <div className="h-full rounded-full" style={{ width: `${width}%`, backgroundColor: chartColors.despesas }} />
+                </div>
+              </li>
+            );
+          })}
+        </ul>
       </div>
     </div>
   );

@@ -17,6 +17,7 @@ import { SummaryCards } from "./components/SummaryCards";
 import { DashboardFilters } from "./components/DashboardFilters";
 import { DashboardCharts } from "./components/DashboardCharts";
 import { DashboardTransactionsTable } from "./components/DashboardTransactionsTable";
+import { UpcomingDues } from "./components/UpcomingDues";
 
 interface MonthlyPoint {
   monthKey: string;
@@ -306,10 +307,13 @@ export default function DashboardPage() {
       const key = t.categoria_nome || `Categoria #${t.categoria_id}`;
       map.set(key, (map.get(key) || 0) + Number(t.valor));
     });
-    return Array.from(map.entries())
+    const sorted = Array.from(map.entries())
       .map(([name, value]) => ({ name, value }))
-      .sort((a, b) => b.value - a.value)
-      .slice(0, 6);
+      .sort((a, b) => b.value - a.value);
+    // Até 6 linhas: as 5 maiores e o restante somado em "Outras", para o total bater
+    if (sorted.length <= 6) return sorted;
+    const outras = sorted.slice(5).reduce((acc, item) => acc + item.value, 0);
+    return [...sorted.slice(0, 5), { name: "Outras", value: outras }];
   }, [periodFilteredTransacoes]);
 
   const comparisonData = useMemo(() => [
@@ -380,9 +384,17 @@ export default function DashboardPage() {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.15 }}
+        >
+          <UpcomingDues transacoes={transacoes} />
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
         >
-          <DashboardCharts 
+          <DashboardCharts
             comparisonData={comparisonData} 
             timeline={timeline} 
             summary={summaryCardsData}
