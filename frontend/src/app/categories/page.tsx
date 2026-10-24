@@ -234,7 +234,7 @@ export default function CategoriesPage() {
                   >
                     <div className="flex items-start justify-between gap-3">
                       <div className="flex items-center gap-3">
-                        <CategoryIcon nome={category.nome} tipo={category.tipo} cor={category.cor} />
+                        <CategoryIcon nome={category.nome} tipo={category.tipo} />
                         <div>
                           <p className="text-sm font-semibold text-gray-900 dark:text-white">
                             {category.nome}
@@ -301,7 +301,7 @@ export default function CategoriesPage() {
                       <tr key={category.id} className="app-table-row">
                         <td className="whitespace-nowrap px-3 py-2">
                           <div className="flex items-center gap-2">
-                            <CategoryIcon nome={category.nome} tipo={category.tipo} cor={category.cor} size="sm" />
+                            <CategoryIcon nome={category.nome} tipo={category.tipo} size="sm" />
                             <div className="text-xs font-medium text-gray-900 dark:text-slate-200">{category.nome}</div>
                           </div>
                         </td>

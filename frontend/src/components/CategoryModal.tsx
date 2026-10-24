@@ -23,7 +23,7 @@ interface CategoryModalProps {
   onSave: (message: string) => Promise<void> | void;
 }
 
-const categoryFields = ["nome", "tipo", "cor", "ativo"] as const;
+const categoryFields = ["nome", "tipo", "ativo"] as const;
 type CategoryField = (typeof categoryFields)[number];
 
 const validateCategoryForm = (
@@ -33,10 +33,6 @@ const validateCategoryForm = (
 
   if (!values.nome || values.nome.trim().length < 2) {
     errors.nome = "Nome deve ter no mínimo 2 caracteres.";
-  }
-
-  if (values.cor && !/^#[0-9A-Fa-f]{6}$/.test(values.cor)) {
-    errors.cor = "Cor deve estar no formato hexadecimal (#RRGGBB).";
   }
 
   return errors;
@@ -54,7 +50,6 @@ export default function CategoryModal({
   const [formData, setFormData] = useState<CategoryInput>({
     nome: "",
     tipo: "DESPESA",
-    cor: "#0EA5E9",
     ativo: true,
   });
   const [originalCategory, setOriginalCategory] = useState<Category | null>(
@@ -84,7 +79,6 @@ export default function CategoryModal({
       setFormData({
         nome: category.nome,
         tipo: category.tipo,
-        cor: category.cor,
         ativo: category.ativo,
       });
       setOriginalCategory(category);
@@ -93,7 +87,6 @@ export default function CategoryModal({
       setFormData({
         nome: "",
         tipo: "DESPESA",
-        cor: "#0EA5E9",
         ativo: true,
       });
     }
@@ -162,9 +155,6 @@ export default function CategoryModal({
         if (formData.tipo !== originalCategory.tipo) {
           updates.tipo = formData.tipo;
         }
-        if (formData.cor !== originalCategory.cor) {
-          updates.cor = formData.cor;
-        }
         if (formData.ativo !== originalCategory.ativo) {
           updates.ativo = formData.ativo;
         }
@@ -180,7 +170,6 @@ export default function CategoryModal({
         const payload: CategoryInput = {
           nome: formData.nome.trim(),
           tipo: formData.tipo,
-          cor: formData.cor,
           ativo: formData.ativo,
         };
 
@@ -263,32 +252,6 @@ export default function CategoryModal({
               <MenuItem value="DESPESA">Despesa</MenuItem>
               <MenuItem value="RECEITA">Receita</MenuItem>
             </TextField>
-          </div>
-
-          <div>
-            <div className="flex gap-2">
-              <input
-                type="color"
-                value={formData.cor}
-                onChange={(e) => updateField("cor", e.target.value)}
-                className="h-11 w-20 cursor-pointer rounded border border-[rgb(var(--app-border-default))] bg-[rgb(var(--app-bg-surface))]"
-              />
-              <TextField
-                id="cor"
-                name="cor"
-                type="text"
-                label="Cor"
-                variant="outlined"
-                size="small"
-                fullWidth
-                value={formData.cor}
-                onChange={(e) => updateField("cor", e.target.value)}
-                onBlur={() => handleFieldBlur("cor")}
-                InputLabelProps={{ shrink: true }}
-                error={shouldShowError("cor")}
-                helperText={shouldShowError("cor") ? fieldErrors.cor : ""}
-              />
-            </div>
           </div>
 
           <div className="flex items-center">

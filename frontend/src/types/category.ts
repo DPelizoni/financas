@@ -6,7 +6,6 @@ export interface Category {
   id: number;
   nome: string;
   tipo: CategoryType;
-  cor: string;
   ativo: boolean;
   created_at: string;
   updated_at: string;
@@ -15,7 +14,6 @@ export interface Category {
 export interface CategoryInput {
   nome: string;
   tipo: CategoryType;
-  cor?: string;
   ativo?: boolean;
 }
 
