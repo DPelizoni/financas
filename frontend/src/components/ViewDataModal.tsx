@@ -1,8 +1,7 @@
 "use client";
 
-import { ReactNode, useId, useRef, useState } from "react";
+import { ReactNode, useState } from "react";
 import { 
-  XCircle, 
   Copy, 
   Check, 
   Clock, 
@@ -19,7 +18,7 @@ import {
 } from "lucide-react";
 import AppButton from "@/components/AppButton";
 import { formatDateTimeBR } from "@/utils/formatDateTimeBR";
-import { useAccessibleModal } from "@/utils/useAccessibleModal";
+import AppModal from "@/components/AppModal";
 import { formatCurrency } from "@/utils/format";
 
 interface ViewDataModalProps {
@@ -222,15 +221,7 @@ export default function ViewDataModal({
   hideCopy = false,
   renderField,
 }: ViewDataModalProps) {
-  const modalRef = useRef<HTMLDivElement>(null);
-  const titleId = useId();
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
-
-  useAccessibleModal({
-    isOpen: isOpen && Boolean(data),
-    modalRef,
-    onClose,
-  });
 
   if (!isOpen || !data) {
     return null;
@@ -351,103 +342,87 @@ export default function ViewDataModal({
   };
 
   return (
-    <div className="app-modal-overlay backdrop-blur-sm transition-all duration-300">
-      <div
-        ref={modalRef}
-        className="app-modal-content max-h-[90vh] max-w-2xl overflow-hidden animate-in zoom-in-95 fade-in duration-200"
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby={titleId}
-        tabIndex={-1}
-      >
-        <div className="app-modal-header !bg-slate-50 dark:!bg-slate-900/50">
-          <div className="flex items-center gap-2">
-            <div className="p-2 bg-blue-50 dark:bg-blue-900/30 rounded-lg text-blue-600">
-              {title.toLowerCase().includes("banco") ? <Building2 size={20} /> : <FileText size={20} />}
-            </div>
-            <h2 id={titleId} className="text-lg font-bold text-slate-800 dark:text-slate-100">
-              {title}
-            </h2>
-          </div>
-          <button 
-            onClick={onClose}
-            className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors"
-          >
-            <XCircle size={22} />
-          </button>
+    <AppModal
+      isOpen={isOpen}
+      title={title}
+      onClose={onClose}
+      size="lg"
+      headerIcon={
+        <div className="shrink-0 rounded-md bg-blue-50 p-2 text-blue-600 dark:bg-blue-900/30">
+          {title.toLowerCase().includes("banco") ? <Building2 size={20} /> : <FileText size={20} />}
         </div>
-
-        <div className="max-h-[60vh] overflow-y-auto custom-scrollbar">
-          <div className="p-6">
-            {regularEntries.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-8 text-slate-400">
-                <Info size={48} strokeWidth={1} className="mb-2 opacity-20" />
-                <p>Nenhum dado disponível.</p>
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 gap-x-6 gap-y-5 md:grid-cols-2">
-                {regularEntries.map(([key, value]) => (
-                  <div key={key} className="group flex flex-col space-y-1">
-                    <div className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                      {getFieldIcon(key)}
-                      {fieldLabels[key] || formatLabel(key)}
+      }
+    >
+      <div>
+        <div className="p-6">
+          {regularEntries.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-8 text-slate-400">
+              <Info size={48} strokeWidth={1} className="mb-2 opacity-20" />
+              <p>Nenhum dado disponível.</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 gap-x-6 gap-y-5 md:grid-cols-2">
+              {regularEntries.map(([key, value]) => (
+                <div key={key} className="group flex flex-col space-y-1">
+                  <div className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                    {getFieldIcon(key)}
+                    {fieldLabels[key] || formatLabel(key)}
+                  </div>
+                  
+                  <div className="flex items-center justify-between gap-2 rounded-lg bg-slate-50 dark:bg-slate-800/40 p-3 border border-transparent hover:border-slate-200 dark:hover:border-slate-700 transition-all">
+                    <div className="text-sm font-medium text-slate-800 dark:text-slate-200 break-words flex-1">
+                      {renderValue(key, value)}
                     </div>
                     
-                    <div className="flex items-center justify-between gap-2 rounded-lg bg-slate-50 dark:bg-slate-800/40 p-3 border border-transparent hover:border-slate-200 dark:hover:border-slate-700 transition-all">
-                      <div className="text-sm font-medium text-slate-800 dark:text-slate-200 break-words flex-1">
-                        {renderValue(key, value)}
-                      </div>
-                      
-                      {isCopyable(key) && (
-                        <button
-                          onClick={() => handleCopy(key, String(value))}
-                          className="p-1.5 rounded-md hover:bg-white dark:hover:bg-slate-700 text-slate-400 hover:text-blue-500 transition-all opacity-0 group-hover:opacity-100 shadow-sm border border-transparent hover:border-slate-100 dark:hover:border-slate-600"
-                          title="Copiar valor"
-                        >
-                          {copiedKey === key ? <Check size={14} className="text-green-500" /> : <Copy size={14} />}
-                        </button>
-                      )}
-                    </div>
+                    {isCopyable(key) && (
+                      <button
+                        onClick={() => handleCopy(key, String(value))}
+                        className="p-1.5 rounded-md hover:bg-white dark:hover:bg-slate-700 text-slate-400 hover:text-blue-500 transition-all opacity-0 group-hover:opacity-100 shadow-sm border border-transparent hover:border-slate-100 dark:hover:border-slate-600"
+                        title="Copiar valor"
+                      >
+                        {copiedKey === key ? <Check size={14} className="text-green-500" /> : <Copy size={14} />}
+                      </button>
+                    )}
                   </div>
-                ))}
-              </div>
-            )}
-          </div>
-
-          {timestampEntries.length > 0 && (
-            <div className="bg-slate-50/80 dark:bg-slate-900/40 px-6 py-4 border-t border-slate-100 dark:border-slate-800">
-              <div className="flex flex-wrap gap-x-8 gap-y-3">
-                {timestampEntries.map(([key, value]) => (
-                  <div key={key} className="flex items-center gap-2">
-                    <div className="p-1.5 bg-white dark:bg-slate-800 rounded-md border border-slate-200 dark:border-slate-700 text-slate-400">
-                      {getFieldIcon(key)}
-                    </div>
-                    <div>
-                      <p className="text-xs font-bold uppercase text-slate-400 leading-none mb-1">
-                        {fieldLabels[key] || formatLabel(key)}
-                      </p>
-                      <p className="text-xs font-medium text-slate-600 dark:text-slate-400">
-                        {renderValue(key, value)}
-                      </p>
-                    </div>
-                  </div>
-                ))}
-              </div>
+                </div>
+              ))}
             </div>
           )}
         </div>
 
-        <div className="app-modal-footer !bg-white dark:!bg-slate-900 !border-t-slate-100 dark:!border-t-slate-800">
-          <AppButton
-            onClick={onClose}
-            tone="outline"
-            className="min-w-[120px] shadow-sm"
-            data-modal-initial-focus
-          >
-            Fechar
-          </AppButton>
-        </div>
+        {timestampEntries.length > 0 && (
+          <div className="bg-slate-50/80 dark:bg-slate-900/40 px-6 py-4 border-t border-slate-100 dark:border-slate-800">
+            <div className="flex flex-wrap gap-x-8 gap-y-3">
+              {timestampEntries.map(([key, value]) => (
+                <div key={key} className="flex items-center gap-2">
+                  <div className="p-1.5 bg-white dark:bg-slate-800 rounded-md border border-slate-200 dark:border-slate-700 text-slate-400">
+                    {getFieldIcon(key)}
+                  </div>
+                  <div>
+                    <p className="text-xs font-bold uppercase text-slate-400 leading-none mb-1">
+                      {fieldLabels[key] || formatLabel(key)}
+                    </p>
+                    <p className="text-xs font-medium text-slate-600 dark:text-slate-400">
+                      {renderValue(key, value)}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
-    </div>
+
+      <div className="app-modal-footer !bg-white dark:!bg-slate-900 !border-t-slate-100 dark:!border-t-slate-800">
+        <AppButton
+          onClick={onClose}
+          tone="outline"
+          className="min-w-[120px] shadow-sm"
+          data-modal-initial-focus
+        >
+          Fechar
+        </AppButton>
+      </div>
+    </AppModal>
   );
 }

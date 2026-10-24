@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useId, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Ban, Save } from "lucide-react";
 import { MenuItem, TextField } from "@mui/material";
 import AppButton from "@/components/AppButton";
@@ -19,7 +19,8 @@ import {
   InvestimentoMovimentacaoInput,
   InvestimentoMovimentacaoTipo,
 } from "@/types/investimento";
-import { useAccessibleModal } from "@/utils/useAccessibleModal";
+import AppModal from "@/components/AppModal";
+import { useFormDirty } from "@/forms/hooks/useFormDirty";
 
 interface InvestimentoMovimentacaoModalProps {
   isOpen: boolean;
@@ -75,9 +76,7 @@ export default function InvestimentoMovimentacaoModal({
   onClose,
   onSave,
 }: InvestimentoMovimentacaoModalProps) {
-  const modalRef = useRef<HTMLDivElement>(null);
   const formRef = useRef<HTMLFormElement>(null);
-  const titleId = useId();
   const [formData, setFormData] = useState<InvestimentoMovimentacaoInput>({
     investimento_ativo_id: 0,
     tipo: "APORTE",
@@ -138,11 +137,7 @@ export default function InvestimentoMovimentacaoModal({
     resetTouched();
   }, [isOpen, movimentacao, sortedAtivos, clearAllErrors, resetTouched]);
 
-  useAccessibleModal({
-    isOpen,
-    modalRef,
-    onClose,
-  });
+  const isDirty = useFormDirty(isOpen, formData);
 
   if (!isOpen) return null;
 
@@ -255,164 +250,156 @@ export default function InvestimentoMovimentacaoModal({
   };
 
   return (
-    <div className="app-modal-overlay">
-      <div
-        ref={modalRef}
-        className="app-modal-content max-h-[90vh] w-full max-w-md overflow-y-auto"
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby={titleId}
-        tabIndex={-1}
-      >
-        <div className="app-modal-header p-6">
-          <h2 id={titleId} className="text-xl font-bold text-gray-900">
-            {movimentacao ? "Editar Movimentação" : "Nova Movimentação"}
-          </h2>
-        </div>
+    <AppModal
+      isOpen={isOpen}
+      title={movimentacao ? "Editar Movimentação" : "Nova Movimentação"}
+      onClose={onClose}
+      size="sm"
+      dirty={isDirty}
+    >
 
-        <form ref={formRef} onSubmit={handleSubmit} className="space-y-4 p-6" noValidate>
-          <div>
-            <TextField
-              id="investimento_ativo_id"
-              name="investimento_ativo_id"
-              select
-              label="Ativo *"
-              variant="outlined"
-              size="small"
-              fullWidth
-              value={formData.investimento_ativo_id}
-              onChange={(e) =>
-                updateField("investimento_ativo_id", Number(e.target.value))
-              }
-              onBlur={() => handleFieldBlur("investimento_ativo_id")}
-              InputLabelProps={{ shrink: true }}
-              error={shouldShowError("investimento_ativo_id")}
-              helperText={
-                shouldShowError("investimento_ativo_id")
-                  ? fieldErrors.investimento_ativo_id
-                  : ""
-              }
-            >
-              {sortedAtivos.map((item) => (
-                <MenuItem key={item.id} value={item.id}>
-                  {item.nome}
-                </MenuItem>
-              ))}
-            </TextField>
-          </div>
-
-          <div>
-            <TextField
-              id="tipo"
-              name="tipo"
-              select
-              label="Tipo *"
-              variant="outlined"
-              size="small"
-              fullWidth
-              value={formData.tipo}
-              onChange={(e) =>
-                updateField("tipo", e.target.value as InvestimentoMovimentacaoTipo)
-              }
-              onBlur={() => handleFieldBlur("tipo")}
-              InputLabelProps={{ shrink: true }}
-              error={shouldShowError("tipo")}
-              helperText={shouldShowError("tipo") ? fieldErrors.tipo : ""}
-            >
-              <MenuItem value="APORTE">{tipoLabel.APORTE}</MenuItem>
-              <MenuItem value="RESGATE">{tipoLabel.RESGATE}</MenuItem>
-              <MenuItem value="RENDIMENTO">{tipoLabel.RENDIMENTO}</MenuItem>
-            </TextField>
-          </div>
-
-          <div>
-            <TextField
-              id="data"
-              name="data"
-              type="date"
-              label="Data *"
-              variant="outlined"
-              size="small"
-              fullWidth
-              value={formData.data}
-              onChange={(e) => updateField("data", e.target.value)}
-              onBlur={() => handleFieldBlur("data")}
-              InputLabelProps={{ shrink: true }}
-              error={shouldShowError("data")}
-              helperText={shouldShowError("data") ? fieldErrors.data : ""}
-            />
-          </div>
-
-          <div>
-            <TextField
-              id="valor"
-              name="valor"
-              type="text"
-              label="Valor *"
-              variant="outlined"
-              size="small"
-              fullWidth
-              placeholder="0,00"
-              value={
-                formData.valor !== undefined
-                  ? new Intl.NumberFormat("pt-BR", {
-                      minimumFractionDigits: 2,
-                      maximumFractionDigits: 2,
-                    }).format(formData.valor)
-                  : "0,00"
-              }
-              onChange={(e) => {
-                const rawValue = e.target.value.replace(/[^\d]/g, "");
-                const numberValue = Number(rawValue) / 100;
-                updateField("valor", numberValue);
-              }}
-              onBlur={() => handleFieldBlur("valor")}
-              InputLabelProps={{ shrink: true }}
-              InputProps={{
-                startAdornment: (
-                  <span className="mr-2 font-semibold text-blue-600">
-                    R$
-                  </span>
-                ),
-              }}
-              error={shouldShowError("valor")}
-              helperText={shouldShowError("valor") ? fieldErrors.valor : ""}
-            />
-          </div>
-
-          <div className="rounded-md border border-[rgb(var(--app-border-default))] bg-[rgb(var(--app-bg-muted))] p-3 text-sm text-[rgb(var(--app-text-secondary))]">
-            Banco: {selectedAtivo?.banco_nome || "-"}
-          </div>
-
-          <FormErrorSummary generalMessage={generalError} />
-
-          <div className="app-modal-actions pt-4">
-            <AppButton
-              type="button"
-              onClick={onClose}
-              tone="outline-danger"
-              className="w-full sm:w-auto"
-              startIcon={<Ban size={16} />}
-              disabled={isSubmitting}
-            >
-              Cancelar
-            </AppButton>
-            <AppButton
-              type="submit"
-              tone="primary"
-              className="w-full sm:w-auto"
-              startIcon={<Save size={16} />}
-              disabled={isSubmitting}
-            >
-              {isSubmitting
-                ? "Salvando..."
-                : movimentacao
-                  ? "Atualizar"
-                  : "Criar"}
-            </AppButton>
-          </div>
-        </form>
+    <form ref={formRef} onSubmit={handleSubmit} className="space-y-4 p-6" noValidate>
+      <div>
+        <TextField
+          id="investimento_ativo_id"
+          name="investimento_ativo_id"
+          select
+          label="Ativo *"
+          variant="outlined"
+          size="small"
+          fullWidth
+          value={formData.investimento_ativo_id}
+          onChange={(e) =>
+            updateField("investimento_ativo_id", Number(e.target.value))
+          }
+          onBlur={() => handleFieldBlur("investimento_ativo_id")}
+          InputLabelProps={{ shrink: true }}
+          error={shouldShowError("investimento_ativo_id")}
+          helperText={
+            shouldShowError("investimento_ativo_id")
+              ? fieldErrors.investimento_ativo_id
+              : ""
+          }
+        >
+          {sortedAtivos.map((item) => (
+            <MenuItem key={item.id} value={item.id}>
+              {item.nome}
+            </MenuItem>
+          ))}
+        </TextField>
       </div>
-    </div>
+
+      <div>
+        <TextField
+          id="tipo"
+          name="tipo"
+          select
+          label="Tipo *"
+          variant="outlined"
+          size="small"
+          fullWidth
+          value={formData.tipo}
+          onChange={(e) =>
+            updateField("tipo", e.target.value as InvestimentoMovimentacaoTipo)
+          }
+          onBlur={() => handleFieldBlur("tipo")}
+          InputLabelProps={{ shrink: true }}
+          error={shouldShowError("tipo")}
+          helperText={shouldShowError("tipo") ? fieldErrors.tipo : ""}
+        >
+          <MenuItem value="APORTE">{tipoLabel.APORTE}</MenuItem>
+          <MenuItem value="RESGATE">{tipoLabel.RESGATE}</MenuItem>
+          <MenuItem value="RENDIMENTO">{tipoLabel.RENDIMENTO}</MenuItem>
+        </TextField>
+      </div>
+
+      <div>
+        <TextField
+          id="data"
+          name="data"
+          type="date"
+          label="Data *"
+          variant="outlined"
+          size="small"
+          fullWidth
+          value={formData.data}
+          onChange={(e) => updateField("data", e.target.value)}
+          onBlur={() => handleFieldBlur("data")}
+          InputLabelProps={{ shrink: true }}
+          error={shouldShowError("data")}
+          helperText={shouldShowError("data") ? fieldErrors.data : ""}
+        />
+      </div>
+
+      <div>
+        <TextField
+          id="valor"
+          name="valor"
+          type="text"
+          label="Valor *"
+          variant="outlined"
+          size="small"
+          fullWidth
+          placeholder="0,00"
+          value={
+            formData.valor !== undefined
+              ? new Intl.NumberFormat("pt-BR", {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2,
+                }).format(formData.valor)
+              : "0,00"
+          }
+          onChange={(e) => {
+            const rawValue = e.target.value.replace(/[^\d]/g, "");
+            const numberValue = Number(rawValue) / 100;
+            updateField("valor", numberValue);
+          }}
+          onBlur={() => handleFieldBlur("valor")}
+          InputLabelProps={{ shrink: true }}
+          InputProps={{
+            startAdornment: (
+              <span className="mr-2 font-semibold text-blue-600">
+                R$
+              </span>
+            ),
+          }}
+          error={shouldShowError("valor")}
+          helperText={shouldShowError("valor") ? fieldErrors.valor : ""}
+        />
+      </div>
+
+      <div className="rounded-md border border-[rgb(var(--app-border-default))] bg-[rgb(var(--app-bg-muted))] p-3 text-sm text-[rgb(var(--app-text-secondary))]">
+        Banco: {selectedAtivo?.banco_nome || "-"}
+      </div>
+
+      <FormErrorSummary generalMessage={generalError} />
+
+      <div className="app-modal-actions pt-4">
+        <AppButton
+          type="button"
+          data-modal-close
+          tone="outline"
+          className="w-full sm:w-auto"
+          startIcon={<Ban size={16} />}
+          disabled={isSubmitting}
+        >
+          Cancelar
+        </AppButton>
+        <AppButton
+          type="submit"
+          tone="primary"
+          className="w-full sm:w-auto"
+          startIcon={<Save size={16} />}
+          disabled={isSubmitting}
+        >
+          {isSubmitting
+            ? "Salvando..."
+            : movimentacao
+              ? "Atualizar"
+              : "Criar"}
+        </AppButton>
+      </div>
+    </form>
+    </AppModal>
   );
 }

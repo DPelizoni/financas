@@ -1,6 +1,6 @@
 ﻿"use client";
 
-import { useEffect, useId, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Ban, Save } from "lucide-react";
 import { MenuItem, TextField } from "@mui/material";
 import AppButton from "@/components/AppButton";
@@ -20,7 +20,8 @@ import {
   UserStatus,
   UserUpdateInput,
 } from "@/types/user";
-import { useAccessibleModal } from "@/utils/useAccessibleModal";
+import AppModal from "@/components/AppModal";
+import { useFormDirty } from "@/forms/hooks/useFormDirty";
 
 interface UserModalProps {
   isOpen: boolean;
@@ -94,9 +95,7 @@ export default function UserModal({
   onClose,
   onSave,
 }: UserModalProps) {
-  const modalRef = useRef<HTMLDivElement>(null);
   const formRef = useRef<HTMLFormElement>(null);
-  const titleId = useId();
   const [formData, setFormData] = useState<UserFormState>(defaultFormState);
 
   const {
@@ -135,11 +134,7 @@ export default function UserModal({
     resetTouched();
   }, [isOpen, user, clearAllErrors, resetTouched]);
 
-  useAccessibleModal({
-    isOpen,
-    modalRef,
-    onClose,
-  });
+  const isDirty = useFormDirty(isOpen, formData);
 
   const updateField = <K extends keyof UserFormState>(
     field: K,
@@ -240,177 +235,169 @@ export default function UserModal({
   }
 
   return (
-    <div className="app-modal-overlay">
-      <div
-        ref={modalRef}
-        className="app-modal-content max-h-[90vh] w-full max-w-xl overflow-y-auto"
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby={titleId}
-        tabIndex={-1}
-      >
-        <div className="app-modal-header">
-          <h2 id={titleId} className="text-lg font-semibold text-gray-900">
-            {user ? "Editar Usuário" : "Novo Usuário"}
-          </h2>
-        </div>
+    <AppModal
+      isOpen={isOpen}
+      title={user ? "Editar Usuário" : "Novo Usuário"}
+      onClose={onClose}
+      size="md"
+      dirty={isDirty}
+    >
 
-        <form ref={formRef} onSubmit={handleSubmit} className="space-y-4 p-6" noValidate>
-          <div>
-            <TextField
-              id="nome"
-              name="nome"
-              type="text"
-              label="Nome"
-              variant="outlined"
-              size="small"
-              fullWidth
-              autoFocus
-              value={formData.nome}
-              onChange={(e) => updateField("nome", e.target.value)}
-              onBlur={() => handleFieldBlur("nome")}
-              InputLabelProps={{ shrink: true }}
-              error={shouldShowError("nome")}
-              helperText={shouldShowError("nome") ? fieldErrors.nome : ""}
-            />
-          </div>
-
-          <div>
-            <TextField
-              id="email"
-              name="email"
-              type="email"
-              label="E-mail"
-              variant="outlined"
-              size="small"
-              fullWidth
-              value={formData.email}
-              onChange={(e) => updateField("email", e.target.value)}
-              onBlur={() => handleFieldBlur("email")}
-              InputLabelProps={{ shrink: true }}
-              error={shouldShowError("email")}
-              helperText={shouldShowError("email") ? fieldErrors.email : ""}
-            />
-          </div>
-
-          <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-            <TextField
-              id="senha"
-              name="senha"
-              type="password"
-              label="Senha"
-              variant="outlined"
-              size="small"
-              fullWidth
-              value={formData.senha}
-              onChange={(e) => updateField("senha", e.target.value)}
-              onBlur={() => handleFieldBlur("senha")}
-              InputLabelProps={{ shrink: true }}
-              error={shouldShowError("senha")}
-              helperText={
-                shouldShowError("senha")
-                  ? fieldErrors.senha
-                  : user
-                    ? "Senha atual carregada. Altere apenas se desejar trocar."
-                    : ""
-              }
-            />
-
-            <TextField
-              id="confirmarSenha"
-              name="confirmarSenha"
-              type="password"
-              label="Confirmar senha"
-              variant="outlined"
-              size="small"
-              fullWidth
-              value={formData.confirmarSenha}
-              onChange={(e) => updateField("confirmarSenha", e.target.value)}
-              onBlur={() => handleFieldBlur("confirmarSenha")}
-              InputLabelProps={{ shrink: true }}
-              error={shouldShowError("confirmarSenha")}
-              helperText={
-                shouldShowError("confirmarSenha")
-                  ? fieldErrors.confirmarSenha
-                  : user
-                    ? "Mantenha como está para não alterar a senha."
-                    : ""
-              }
-            />
-          </div>
-
-          <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-            <TextField
-              id="status"
-              name="status"
-              select
-              label="Status"
-              variant="outlined"
-              size="small"
-              fullWidth
-              value={formData.status}
-              onChange={(e) => updateField("status", e.target.value as UserStatus)}
-              onBlur={() => handleFieldBlur("status")}
-              InputLabelProps={{ shrink: true }}
-              error={shouldShowError("status")}
-              helperText={shouldShowError("status") ? fieldErrors.status : ""}
-            >
-              <MenuItem value="ATIVO">Ativo</MenuItem>
-              <MenuItem value="INATIVO">Inativo</MenuItem>
-            </TextField>
-
-            <TextField
-              id="role"
-              name="role"
-              select
-              label="Papel"
-              variant="outlined"
-              size="small"
-              fullWidth
-              value={formData.role}
-              onChange={(e) => updateField("role", e.target.value as UserRole)}
-              onBlur={() => handleFieldBlur("role")}
-              InputLabelProps={{ shrink: true }}
-              disabled={!isAdmin}
-              error={shouldShowError("role")}
-              helperText={
-                shouldShowError("role")
-                  ? fieldErrors.role
-                  : !isAdmin
-                    ? "Somente ADMIN pode alterar papel."
-                    : ""
-              }
-            >
-              <MenuItem value="USUARIO">Usuário</MenuItem>
-              <MenuItem value="GESTOR">Gestor</MenuItem>
-              <MenuItem value="ADMIN">Admin</MenuItem>
-            </TextField>
-          </div>
-
-          <FormErrorSummary generalMessage={generalError} />
-
-          <div className="app-modal-actions pt-2">
-            <AppButton
-              type="button"
-              tone="outline-danger"
-              onClick={onClose}
-              className="w-full sm:w-auto"
-              startIcon={<Ban size={16} />}
-              disabled={isSubmitting}
-            >
-              Cancelar
-            </AppButton>
-            <AppButton
-              type="submit"
-              className="w-full sm:w-auto"
-              startIcon={<Save size={16} />}
-              disabled={isSubmitting}
-            >
-              {isSubmitting ? "Salvando..." : user ? "Atualizar" : "Cadastrar"}
-            </AppButton>
-          </div>
-        </form>
+    <form ref={formRef} onSubmit={handleSubmit} className="space-y-4 p-6" noValidate>
+      <div>
+        <TextField
+          id="nome"
+          name="nome"
+          type="text"
+          label="Nome"
+          variant="outlined"
+          size="small"
+          fullWidth
+          autoFocus
+          value={formData.nome}
+          onChange={(e) => updateField("nome", e.target.value)}
+          onBlur={() => handleFieldBlur("nome")}
+          InputLabelProps={{ shrink: true }}
+          error={shouldShowError("nome")}
+          helperText={shouldShowError("nome") ? fieldErrors.nome : ""}
+        />
       </div>
-    </div>
+
+      <div>
+        <TextField
+          id="email"
+          name="email"
+          type="email"
+          label="E-mail"
+          variant="outlined"
+          size="small"
+          fullWidth
+          value={formData.email}
+          onChange={(e) => updateField("email", e.target.value)}
+          onBlur={() => handleFieldBlur("email")}
+          InputLabelProps={{ shrink: true }}
+          error={shouldShowError("email")}
+          helperText={shouldShowError("email") ? fieldErrors.email : ""}
+        />
+      </div>
+
+      <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+        <TextField
+          id="senha"
+          name="senha"
+          type="password"
+          label="Senha"
+          variant="outlined"
+          size="small"
+          fullWidth
+          value={formData.senha}
+          onChange={(e) => updateField("senha", e.target.value)}
+          onBlur={() => handleFieldBlur("senha")}
+          InputLabelProps={{ shrink: true }}
+          error={shouldShowError("senha")}
+          helperText={
+            shouldShowError("senha")
+              ? fieldErrors.senha
+              : user
+                ? "Senha atual carregada. Altere apenas se desejar trocar."
+                : ""
+          }
+        />
+
+        <TextField
+          id="confirmarSenha"
+          name="confirmarSenha"
+          type="password"
+          label="Confirmar senha"
+          variant="outlined"
+          size="small"
+          fullWidth
+          value={formData.confirmarSenha}
+          onChange={(e) => updateField("confirmarSenha", e.target.value)}
+          onBlur={() => handleFieldBlur("confirmarSenha")}
+          InputLabelProps={{ shrink: true }}
+          error={shouldShowError("confirmarSenha")}
+          helperText={
+            shouldShowError("confirmarSenha")
+              ? fieldErrors.confirmarSenha
+              : user
+                ? "Mantenha como está para não alterar a senha."
+                : ""
+          }
+        />
+      </div>
+
+      <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+        <TextField
+          id="status"
+          name="status"
+          select
+          label="Status"
+          variant="outlined"
+          size="small"
+          fullWidth
+          value={formData.status}
+          onChange={(e) => updateField("status", e.target.value as UserStatus)}
+          onBlur={() => handleFieldBlur("status")}
+          InputLabelProps={{ shrink: true }}
+          error={shouldShowError("status")}
+          helperText={shouldShowError("status") ? fieldErrors.status : ""}
+        >
+          <MenuItem value="ATIVO">Ativo</MenuItem>
+          <MenuItem value="INATIVO">Inativo</MenuItem>
+        </TextField>
+
+        <TextField
+          id="role"
+          name="role"
+          select
+          label="Papel"
+          variant="outlined"
+          size="small"
+          fullWidth
+          value={formData.role}
+          onChange={(e) => updateField("role", e.target.value as UserRole)}
+          onBlur={() => handleFieldBlur("role")}
+          InputLabelProps={{ shrink: true }}
+          disabled={!isAdmin}
+          error={shouldShowError("role")}
+          helperText={
+            shouldShowError("role")
+              ? fieldErrors.role
+              : !isAdmin
+                ? "Somente ADMIN pode alterar papel."
+                : ""
+          }
+        >
+          <MenuItem value="USUARIO">Usuário</MenuItem>
+          <MenuItem value="GESTOR">Gestor</MenuItem>
+          <MenuItem value="ADMIN">Admin</MenuItem>
+        </TextField>
+      </div>
+
+      <FormErrorSummary generalMessage={generalError} />
+
+      <div className="app-modal-actions pt-2">
+        <AppButton
+          type="button"
+          tone="outline"
+          data-modal-close
+          className="w-full sm:w-auto"
+          startIcon={<Ban size={16} />}
+          disabled={isSubmitting}
+        >
+          Cancelar
+        </AppButton>
+        <AppButton
+          type="submit"
+          className="w-full sm:w-auto"
+          startIcon={<Save size={16} />}
+          disabled={isSubmitting}
+        >
+          {isSubmitting ? "Salvando..." : user ? "Atualizar" : "Cadastrar"}
+        </AppButton>
+      </div>
+    </form>
+    </AppModal>
   );
 }

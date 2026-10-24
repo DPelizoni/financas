@@ -1,6 +1,6 @@
 ﻿"use client";
 
-import { useEffect, useId, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Ban, Save } from "lucide-react";
 import { TextField } from "@mui/material";
 import AppButton from "@/components/AppButton";
@@ -14,7 +14,8 @@ import {
 import { useFormFeedback } from "@/forms/hooks/useFormFeedback";
 import { bankService } from "@/services/bankService";
 import { Bank, BankInput } from "@/types/bank";
-import { useAccessibleModal } from "@/utils/useAccessibleModal";
+import AppModal from "@/components/AppModal";
+import { useFormDirty } from "@/forms/hooks/useFormDirty";
 
 interface BankModalProps {
   isOpen: boolean;
@@ -43,9 +44,7 @@ export default function BankModal({
   onClose,
   onSave,
 }: BankModalProps) {
-  const modalRef = useRef<HTMLDivElement>(null);
   const formRef = useRef<HTMLFormElement>(null);
-  const titleId = useId();
   const [formData, setFormData] = useState<BankInput>({
     nome: "",
     codigo: "",
@@ -92,11 +91,7 @@ export default function BankModal({
     resetTouched();
   }, [isOpen, bank, clearAllErrors, resetTouched]);
 
-  useAccessibleModal({
-    isOpen,
-    modalRef,
-    onClose,
-  });
+  const isDirty = useFormDirty(isOpen, formData);
 
   if (!isOpen) return null;
 
@@ -194,102 +189,94 @@ export default function BankModal({
   };
 
   return (
-    <div className="app-modal-overlay">
-      <div
-        ref={modalRef}
-        className="app-modal-content max-h-[90vh] w-full max-w-md overflow-y-auto"
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby={titleId}
-        tabIndex={-1}
-      >
-        <div className="app-modal-header p-6">
-          <h2 id={titleId} className="text-xl font-bold text-gray-900">
-            {bank ? "Editar Banco" : "Novo Banco"}
-          </h2>
-        </div>
+    <AppModal
+      isOpen={isOpen}
+      title={bank ? "Editar Banco" : "Novo Banco"}
+      onClose={onClose}
+      size="sm"
+      dirty={isDirty}
+    >
 
-        <form ref={formRef} onSubmit={handleSubmit} className="p-6 space-y-4" noValidate>
-          <div>
-            <TextField
-              id="nome"
-              name="nome"
-              type="text"
-              label="Nome do Banco *"
-              autoFocus
-              variant="outlined"
-              size="small"
-              fullWidth
-              value={formData.nome}
-              onChange={(e) => updateField("nome", e.target.value)}
-              onBlur={() => handleFieldBlur("nome")}
-              InputLabelProps={{ shrink: true }}
-              error={shouldShowError("nome")}
-              helperText={shouldShowError("nome") ? fieldErrors.nome : ""}
-            />
-          </div>
-
-          <div>
-            <TextField
-              id="codigo"
-              name="codigo"
-              type="text"
-              label="Código do Banco"
-              variant="outlined"
-              size="small"
-              fullWidth
-              value={formData.codigo}
-              onChange={(e) => updateField("codigo", e.target.value)}
-              onBlur={() => handleFieldBlur("codigo")}
-              InputLabelProps={{ shrink: true }}
-              error={shouldShowError("codigo")}
-              helperText={shouldShowError("codigo") ? fieldErrors.codigo : ""}
-            />
-          </div>
-
-          <div className="flex items-center">
-            <input
-              type="checkbox"
-              id="ativo"
-              name="ativo"
-              checked={formData.ativo}
-              onChange={(e) => updateField("ativo", e.target.checked)}
-              onBlur={() => handleFieldBlur("ativo")}
-              className="app-checkbox"
-            />
-            <label
-              htmlFor="ativo"
-              className="ml-2 block text-sm text-[rgb(var(--app-text-secondary))]"
-            >
-              Banco ativo
-            </label>
-          </div>
-
-          <FormErrorSummary generalMessage={generalError} />
-
-          <div className="app-modal-actions pt-4">
-            <AppButton
-              type="button"
-              onClick={onClose}
-              tone="outline-danger"
-              className="w-full sm:w-auto"
-              startIcon={<Ban size={16} />}
-              disabled={isSubmitting}
-            >
-              Cancelar
-            </AppButton>
-            <AppButton
-              type="submit"
-              tone="primary"
-              className="w-full sm:w-auto"
-              startIcon={<Save size={16} />}
-              disabled={isSubmitting}
-            >
-              {isSubmitting ? "Salvando..." : bank ? "Atualizar" : "Criar"}
-            </AppButton>
-          </div>
-        </form>
+    <form ref={formRef} onSubmit={handleSubmit} className="p-6 space-y-4" noValidate>
+      <div>
+        <TextField
+          id="nome"
+          name="nome"
+          type="text"
+          label="Nome do Banco *"
+          autoFocus
+          variant="outlined"
+          size="small"
+          fullWidth
+          value={formData.nome}
+          onChange={(e) => updateField("nome", e.target.value)}
+          onBlur={() => handleFieldBlur("nome")}
+          InputLabelProps={{ shrink: true }}
+          error={shouldShowError("nome")}
+          helperText={shouldShowError("nome") ? fieldErrors.nome : ""}
+        />
       </div>
-    </div>
+
+      <div>
+        <TextField
+          id="codigo"
+          name="codigo"
+          type="text"
+          label="Código do Banco"
+          variant="outlined"
+          size="small"
+          fullWidth
+          value={formData.codigo}
+          onChange={(e) => updateField("codigo", e.target.value)}
+          onBlur={() => handleFieldBlur("codigo")}
+          InputLabelProps={{ shrink: true }}
+          error={shouldShowError("codigo")}
+          helperText={shouldShowError("codigo") ? fieldErrors.codigo : ""}
+        />
+      </div>
+
+      <div className="flex items-center">
+        <input
+          type="checkbox"
+          id="ativo"
+          name="ativo"
+          checked={formData.ativo}
+          onChange={(e) => updateField("ativo", e.target.checked)}
+          onBlur={() => handleFieldBlur("ativo")}
+          className="app-checkbox"
+        />
+        <label
+          htmlFor="ativo"
+          className="ml-2 block text-sm text-[rgb(var(--app-text-secondary))]"
+        >
+          Banco ativo
+        </label>
+      </div>
+
+      <FormErrorSummary generalMessage={generalError} />
+
+      <div className="app-modal-actions pt-4">
+        <AppButton
+          type="button"
+          data-modal-close
+          tone="outline"
+          className="w-full sm:w-auto"
+          startIcon={<Ban size={16} />}
+          disabled={isSubmitting}
+        >
+          Cancelar
+        </AppButton>
+        <AppButton
+          type="submit"
+          tone="primary"
+          className="w-full sm:w-auto"
+          startIcon={<Save size={16} />}
+          disabled={isSubmitting}
+        >
+          {isSubmitting ? "Salvando..." : bank ? "Atualizar" : "Criar"}
+        </AppButton>
+      </div>
+    </form>
+    </AppModal>
   );
 }

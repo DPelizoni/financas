@@ -1,7 +1,6 @@
 ﻿"use client";
 
-import React, { useEffect, useId, useMemo, useRef, useState } from "react";
-import { createPortal } from "react-dom";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Ban, Save } from "lucide-react";
 import { MenuItem, TextField } from "@mui/material";
 import AppButton from "@/components/AppButton";
@@ -21,7 +20,8 @@ import { Bank } from "@/types/bank";
 import { Category } from "@/types/category";
 import { Descricao } from "@/types/descricao";
 import { Transacao, TransacaoInput } from "@/types/transacao";
-import { useAccessibleModal } from "@/utils/useAccessibleModal";
+import AppModal from "@/components/AppModal";
+import { useFormDirty } from "@/forms/hooks/useFormDirty";
 
 interface TransacaoModalProps {
   isOpen: boolean;
@@ -180,10 +180,7 @@ export const TransacaoModal: React.FC<TransacaoModalProps> = ({
   transacao,
   isEditing = false,
 }) => {
-  const modalRef = useRef<HTMLDivElement>(null);
   const formRef = useRef<HTMLFormElement>(null);
-  const titleId = useId();
-  const [isPortalReady, setIsPortalReady] = useState(false);
   const [formData, setFormData] = useState<TransacaoInput>({
     mes: "",
     vencimento: "",
@@ -344,8 +341,12 @@ export const TransacaoModal: React.FC<TransacaoModalProps> = ({
     }
   };
 
+  // Só considera o formulário "alterado" depois da carga inicial (bancos, categorias, descrições)
+  const [isInitialized, setIsInitialized] = useState(false);
+
   useEffect(() => {
     const initializeModal = async () => {
+      setIsInitialized(false);
       if (!isOpen) return;
 
       clearAllErrors();
@@ -386,21 +387,13 @@ export const TransacaoModal: React.FC<TransacaoModalProps> = ({
         });
         await loadCategoriesByType("DESPESA");
       }
+      setIsInitialized(true);
     };
 
     initializeModal();
   }, [isOpen, transacao, isEditing]);
 
-  useEffect(() => {
-    setIsPortalReady(true);
-    return () => setIsPortalReady(false);
-  }, []);
-
-  useAccessibleModal({
-    isOpen,
-    modalRef,
-    onClose,
-  });
+  const isDirty = useFormDirty(isOpen, formData, isInitialized);
 
   const updateField = <K extends keyof TransacaoInput>(
     field: K,
@@ -499,315 +492,309 @@ export const TransacaoModal: React.FC<TransacaoModalProps> = ({
     }
   };
 
-  if (!isOpen || !isPortalReady) return null;
+  if (!isOpen) return null;
 
-  return createPortal(
-    <div className="app-modal-overlay">
-      <div
-        ref={modalRef}
-        className="app-modal-content w-[95%] max-w-4xl overflow-y-auto max-h-[95vh]"
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby={titleId}
-        tabIndex={-1}
-      >
-        <div className="app-modal-header">
-          <h2 id={titleId} className="text-xl font-bold text-gray-900">
-            {isEditing ? "Editar Transação" : "Nova Transação"}
-          </h2>
+  return (
+    <AppModal
+      isOpen={isOpen}
+      title={isEditing ? "Editar Transação" : "Nova Transação"}
+      onClose={onClose}
+      size="xl"
+      dirty={isDirty}
+    >
+      <form ref={formRef} onSubmit={handleSubmit} className="space-y-6 p-6" noValidate>
+        {/* Seção 1: Valor e Tipo Principal */}
+        <div className="rounded-lg bg-slate-50 p-4 dark:bg-slate-900/50 border border-slate-100 dark:border-slate-800">
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3 items-end">
+            <div className="lg:col-span-2">
+              <p className="mb-2 text-xs font-bold uppercase tracking-wider text-slate-500">Valor da Transação</p>
+              <TextField
+                id="valor"
+                name="valor"
+                type="text"
+                variant="outlined"
+                size="medium"
+                fullWidth
+                placeholder="0,00"
+                autoFocus
+                value={
+                  formData.valor !== undefined
+                    ? new Intl.NumberFormat("pt-BR", {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2,
+                      }).format(formData.valor)
+                    : "0,00"
+                }
+                onChange={(e) => {
+                  const rawValue = e.target.value.replace(/[^\d]/g, "");
+                  const numberValue = Number(rawValue) / 100;
+                  updateField("valor", numberValue);
+                }}
+                onBlur={() => handleFieldBlur("valor")}
+                InputProps={{
+                  startAdornment: (
+                    <span className="mr-2 text-xl font-bold text-blue-600">
+                      R$
+                    </span>
+                  ),
+                  style: { fontSize: '1.5rem', fontWeight: 700 }
+                }}
+                error={shouldShowError("valor")}
+                helperText={shouldShowError("valor") ? fieldErrors.valor : ""}
+              />
+            </div>
+
+            <div>
+              <TextField
+                id="tipo"
+                name="tipo"
+                select
+                label="Tipo de Fluxo"
+                variant="outlined"
+                size="small"
+                fullWidth
+                value={formData.tipo}
+                onChange={(e) => handleTypeChange(e.target.value as "DESPESA" | "RECEITA")}
+                onBlur={() => handleFieldBlur("tipo")}
+                InputLabelProps={{ shrink: true }}
+                error={shouldShowError("tipo")}
+                helperText={shouldShowError("tipo") ? fieldErrors.tipo : ""}
+              >
+                <MenuItem value="DESPESA">Despesa</MenuItem>
+                <MenuItem value="RECEITA">Receita</MenuItem>
+              </TextField>
+            </div>
+          </div>
         </div>
 
-        <form ref={formRef} onSubmit={handleSubmit} className="space-y-6 p-6" noValidate>
-          {/* Seção 1: Valor e Tipo Principal */}
-          <div className="rounded-lg bg-slate-50 p-4 dark:bg-slate-900/50 border border-slate-100 dark:border-slate-800">
-            <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3 items-end">
-              <div className="lg:col-span-2">
-                <p className="mb-2 text-xs font-bold uppercase tracking-wider text-slate-500">Valor da Transação</p>
+        {/* Seção 2: Classificação e Origem */}
+        <div>
+          <h3 className="mb-4 flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-slate-500">
+            <span className="h-1.5 w-1.5 rounded-full bg-blue-500"></span>
+            Classificação
+          </h3>
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+            <div>
+              <TextField
+                id="categoria_id"
+                name="categoria_id"
+                select
+                label="Categoria"
+                variant="outlined"
+                size="small"
+                fullWidth
+                value={formData.categoria_id}
+                onChange={(e) => handleCategoryChange(Number(e.target.value))}
+                onBlur={() => handleFieldBlur("categoria_id")}
+                InputLabelProps={{ shrink: true }}
+                error={shouldShowError("categoria_id")}
+                helperText={
+                  shouldShowError("categoria_id") ? fieldErrors.categoria_id : ""
+                }
+              >
+                <MenuItem value={0}>Selecione...</MenuItem>
+                {sortedCategories.map((cat) => (
+                  <MenuItem key={cat.id} value={cat.id}>
+                    {cat.nome}
+                  </MenuItem>
+                ))}
+              </TextField>
+            </div>
+
+            <div>
+              <TextField
+                id="descricao_id"
+                name="descricao_id"
+                select
+                label="Descrição / Item"
+                variant="outlined"
+                size="small"
+                fullWidth
+                value={formData.descricao_id}
+                onChange={(e) => updateField("descricao_id", Number(e.target.value))}
+                onBlur={() => handleFieldBlur("descricao_id")}
+                disabled={formData.categoria_id <= 0}
+                InputLabelProps={{ shrink: true }}
+                error={shouldShowError("descricao_id")}
+                helperText={
+                  shouldShowError("descricao_id")
+                    ? fieldErrors.descricao_id
+                    : formData.categoria_id <= 0
+                      ? "Escolha uma categoria primeiro"
+                      : ""
+                }
+              >
+                <MenuItem value={0}>Selecione...</MenuItem>
+                {sortedDescricoes.map((desc) => (
+                  <MenuItem key={desc.id} value={desc.id}>
+                    {desc.nome}
+                  </MenuItem>
+                ))}
+              </TextField>
+            </div>
+
+            <div>
+              <TextField
+                id="banco_id"
+                name="banco_id"
+                select
+                label="Conta / Banco"
+                variant="outlined"
+                size="small"
+                fullWidth
+                value={formData.banco_id}
+                onChange={(e) => updateField("banco_id", Number(e.target.value))}
+                onBlur={() => handleFieldBlur("banco_id")}
+                InputLabelProps={{ shrink: true }}
+                error={shouldShowError("banco_id")}
+                helperText={
+                  shouldShowError("banco_id") ? fieldErrors.banco_id : ""
+                }
+              >
+                <MenuItem value={0}>Selecione...</MenuItem>
+                {sortedBanks.map((bank) => (
+                  <MenuItem key={bank.id} value={bank.id}>
+                    {bank.nome}
+                  </MenuItem>
+                ))}
+              </TextField>
+            </div>
+          </div>
+        </div>
+
+        {/* Seção 3: Prazos e Status */}
+        <div>
+          <h3 className="mb-4 flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-slate-500">
+            <span className="h-1.5 w-1.5 rounded-full bg-blue-500"></span>
+            Agendamento e Status
+          </h3>
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+            <div>
+              <TextField
+                id="mes"
+                name="mes"
+                type="month"
+                label="Mês de Referência"
+                variant="outlined"
+                size="small"
+                fullWidth
+                value={toMonthInput(formData.mes)}
+                onChange={(e) => updateField("mes", fromMonthInput(e.target.value))}
+                onBlur={() => handleFieldBlur("mes")}
+                InputLabelProps={{ shrink: true }}
+                error={shouldShowError("mes")}
+                helperText={shouldShowError("mes") ? fieldErrors.mes : ""}
+              />
+            </div>
+
+            <div>
+              <TextField
+                id="vencimento"
+                name="vencimento"
+                type="date"
+                label="Data de Vencimento"
+                variant="outlined"
+                size="small"
+                fullWidth
+                value={toDateInput(formData.vencimento)}
+                onChange={(e) =>
+                  updateField("vencimento", fromDateInput(e.target.value))
+                }
+                onBlur={() => handleFieldBlur("vencimento")}
+                InputLabelProps={{ shrink: true }}
+                error={shouldShowError("vencimento")}
+                helperText={
+                  shouldShowError("vencimento") ? fieldErrors.vencimento : ""
+                }
+              />
+            </div>
+
+            <div>
+              <TextField
+                id="situacao"
+                name="situacao"
+                select
+                label="Situação Atual"
+                variant="outlined"
+                size="small"
+                fullWidth
+                value={formData.situacao}
+                onChange={(e) =>
+                  updateField("situacao", e.target.value as "PENDENTE" | "PAGO")
+                }
+                onBlur={() => handleFieldBlur("situacao")}
+                InputLabelProps={{ shrink: true }}
+                error={shouldShowError("situacao")}
+                helperText={
+                  shouldShowError("situacao") ? fieldErrors.situacao : ""
+                }
+              >
+                <MenuItem value="PAGO">Pago / Recebido</MenuItem>
+                <MenuItem value="PENDENTE">Pendente / Aguardando</MenuItem>
+              </TextField>
+            </div>
+          </div>
+        </div>
+
+        {/* Seção 4: Recorrência (Apenas Criação) */}
+        {!isEditing && (
+          <div className="rounded-lg border border-dashed border-slate-200 bg-slate-50/50 p-4 dark:border-slate-800 dark:bg-slate-900/30">
+            <h3 className="mb-3 text-xs font-bold uppercase tracking-wider text-slate-500">Configuração de Recorrência</h3>
+            <div className="flex items-center gap-4">
+              <div className="w-48">
                 <TextField
-                  id="valor"
-                  name="valor"
-                  type="text"
+                  id="quantidade_meses"
+                  name="quantidade_meses"
+                  type="number"
+                  label="Repetir por quantos meses?"
                   variant="outlined"
-                  size="medium"
+                  size="small"
                   fullWidth
-                  placeholder="0,00"
-                  autoFocus
-                  value={
-                    formData.valor !== undefined
-                      ? new Intl.NumberFormat("pt-BR", {
-                          minimumFractionDigits: 2,
-                          maximumFractionDigits: 2,
-                        }).format(formData.valor)
-                      : "0,00"
-                  }
+                  value={quantidadeMeses}
                   onChange={(e) => {
-                    const rawValue = e.target.value.replace(/[^\d]/g, "");
-                    const numberValue = Number(rawValue) / 100;
-                    updateField("valor", numberValue);
+                    const parsed = Number(e.target.value);
+                    if (!Number.isFinite(parsed)) {
+                      setQuantidadeMeses(1);
+                      return;
+                    }
+                    const safe = Math.min(12, Math.max(1, Math.trunc(parsed)));
+                    setQuantidadeMeses(safe);
                   }}
-                  onBlur={() => handleFieldBlur("valor")}
-                  InputProps={{
-                    startAdornment: (
-                      <span className="mr-2 text-xl font-bold text-blue-600">
-                        R$
-                      </span>
-                    ),
-                    style: { fontSize: '1.5rem', fontWeight: 700 }
-                  }}
-                  error={shouldShowError("valor")}
-                  helperText={shouldShowError("valor") ? fieldErrors.valor : ""}
+                  inputProps={{ min: 1, max: 12, step: 1 }}
+                  InputLabelProps={{ shrink: true }}
                 />
               </div>
-
-              <div>
-                <TextField
-                  id="tipo"
-                  name="tipo"
-                  select
-                  label="Tipo de Fluxo"
-                  variant="outlined"
-                  size="small"
-                  fullWidth
-                  value={formData.tipo}
-                  onChange={(e) => handleTypeChange(e.target.value as "DESPESA" | "RECEITA")}
-                  onBlur={() => handleFieldBlur("tipo")}
-                  InputLabelProps={{ shrink: true }}
-                  error={shouldShowError("tipo")}
-                  helperText={shouldShowError("tipo") ? fieldErrors.tipo : ""}
-                >
-                  <MenuItem value="DESPESA">Despesa</MenuItem>
-                  <MenuItem value="RECEITA">Receita</MenuItem>
-                </TextField>
-              </div>
+              <p className="text-xs text-slate-500">
+                Isso criará automaticamente a transação para o mês atual e os próximos {quantidadeMeses - 1} meses.
+              </p>
             </div>
           </div>
+        )}
 
-          {/* Seção 2: Classificação e Origem */}
-          <div>
-            <h3 className="mb-4 flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-slate-500">
-              <span className="h-1.5 w-1.5 rounded-full bg-blue-500"></span>
-              Classificação
-            </h3>
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-              <div>
-                <TextField
-                  id="categoria_id"
-                  name="categoria_id"
-                  select
-                  label="Categoria"
-                  variant="outlined"
-                  size="small"
-                  fullWidth
-                  value={formData.categoria_id}
-                  onChange={(e) => handleCategoryChange(Number(e.target.value))}
-                  onBlur={() => handleFieldBlur("categoria_id")}
-                  InputLabelProps={{ shrink: true }}
-                  error={shouldShowError("categoria_id")}
-                  helperText={
-                    shouldShowError("categoria_id") ? fieldErrors.categoria_id : ""
-                  }
-                >
-                  <MenuItem value={0}>Selecione...</MenuItem>
-                  {sortedCategories.map((cat) => (
-                    <MenuItem key={cat.id} value={cat.id}>
-                      {cat.nome}
-                    </MenuItem>
-                  ))}
-                </TextField>
-              </div>
+        <FormErrorSummary generalMessage={generalError} />
 
-              <div>
-                <TextField
-                  id="descricao_id"
-                  name="descricao_id"
-                  select
-                  label="Descrição / Item"
-                  variant="outlined"
-                  size="small"
-                  fullWidth
-                  value={formData.descricao_id}
-                  onChange={(e) => updateField("descricao_id", Number(e.target.value))}
-                  onBlur={() => handleFieldBlur("descricao_id")}
-                  disabled={formData.categoria_id <= 0}
-                  InputLabelProps={{ shrink: true }}
-                  error={shouldShowError("descricao_id")}
-                  helperText={
-                    shouldShowError("descricao_id") ? fieldErrors.descricao_id : ""
-                  }
-                >
-                  <MenuItem value={0}>Selecione uma categoria primeiro</MenuItem>
-                  {sortedDescricoes.map((desc) => (
-                    <MenuItem key={desc.id} value={desc.id}>
-                      {desc.nome}
-                    </MenuItem>
-                  ))}
-                </TextField>
-              </div>
-
-              <div>
-                <TextField
-                  id="banco_id"
-                  name="banco_id"
-                  select
-                  label="Conta / Banco"
-                  variant="outlined"
-                  size="small"
-                  fullWidth
-                  value={formData.banco_id}
-                  onChange={(e) => updateField("banco_id", Number(e.target.value))}
-                  onBlur={() => handleFieldBlur("banco_id")}
-                  InputLabelProps={{ shrink: true }}
-                  error={shouldShowError("banco_id")}
-                  helperText={
-                    shouldShowError("banco_id") ? fieldErrors.banco_id : ""
-                  }
-                >
-                  <MenuItem value={0}>Selecione...</MenuItem>
-                  {sortedBanks.map((bank) => (
-                    <MenuItem key={bank.id} value={bank.id}>
-                      {bank.nome}
-                    </MenuItem>
-                  ))}
-                </TextField>
-              </div>
-            </div>
-          </div>
-
-          {/* Seção 3: Prazos e Status */}
-          <div>
-            <h3 className="mb-4 flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-slate-500">
-              <span className="h-1.5 w-1.5 rounded-full bg-blue-500"></span>
-              Agendamento e Status
-            </h3>
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-              <div>
-                <TextField
-                  id="mes"
-                  name="mes"
-                  type="month"
-                  label="Mês de Referência"
-                  variant="outlined"
-                  size="small"
-                  fullWidth
-                  value={toMonthInput(formData.mes)}
-                  onChange={(e) => updateField("mes", fromMonthInput(e.target.value))}
-                  onBlur={() => handleFieldBlur("mes")}
-                  InputLabelProps={{ shrink: true }}
-                  error={shouldShowError("mes")}
-                  helperText={shouldShowError("mes") ? fieldErrors.mes : ""}
-                />
-              </div>
-
-              <div>
-                <TextField
-                  id="vencimento"
-                  name="vencimento"
-                  type="date"
-                  label="Data de Vencimento"
-                  variant="outlined"
-                  size="small"
-                  fullWidth
-                  value={toDateInput(formData.vencimento)}
-                  onChange={(e) =>
-                    updateField("vencimento", fromDateInput(e.target.value))
-                  }
-                  onBlur={() => handleFieldBlur("vencimento")}
-                  InputLabelProps={{ shrink: true }}
-                  error={shouldShowError("vencimento")}
-                  helperText={
-                    shouldShowError("vencimento") ? fieldErrors.vencimento : ""
-                  }
-                />
-              </div>
-
-              <div>
-                <TextField
-                  id="situacao"
-                  name="situacao"
-                  select
-                  label="Situação Atual"
-                  variant="outlined"
-                  size="small"
-                  fullWidth
-                  value={formData.situacao}
-                  onChange={(e) =>
-                    updateField("situacao", e.target.value as "PENDENTE" | "PAGO")
-                  }
-                  onBlur={() => handleFieldBlur("situacao")}
-                  InputLabelProps={{ shrink: true }}
-                  error={shouldShowError("situacao")}
-                  helperText={
-                    shouldShowError("situacao") ? fieldErrors.situacao : ""
-                  }
-                >
-                  <MenuItem value="PAGO">Pago / Recebido</MenuItem>
-                  <MenuItem value="PENDENTE">Pendente / Aguardando</MenuItem>
-                </TextField>
-              </div>
-            </div>
-          </div>
-
-          {/* Seção 4: Recorrência (Apenas Criação) */}
-          {!isEditing && (
-            <div className="rounded-lg border border-dashed border-slate-200 bg-slate-50/50 p-4 dark:border-slate-800 dark:bg-slate-900/30">
-              <h3 className="mb-3 text-xs font-bold uppercase tracking-wider text-slate-500">Configuração de Recorrência</h3>
-              <div className="flex items-center gap-4">
-                <div className="w-48">
-                  <TextField
-                    id="quantidade_meses"
-                    name="quantidade_meses"
-                    type="number"
-                    label="Repetir por quantos meses?"
-                    variant="outlined"
-                    size="small"
-                    fullWidth
-                    value={quantidadeMeses}
-                    onChange={(e) => {
-                      const parsed = Number(e.target.value);
-                      if (!Number.isFinite(parsed)) {
-                        setQuantidadeMeses(1);
-                        return;
-                      }
-                      const safe = Math.min(12, Math.max(1, Math.trunc(parsed)));
-                      setQuantidadeMeses(safe);
-                    }}
-                    inputProps={{ min: 1, max: 12, step: 1 }}
-                    InputLabelProps={{ shrink: true }}
-                  />
-                </div>
-                <p className="text-xs text-slate-500">
-                  Isso criará automaticamente a transação para o mês atual e os próximos {quantidadeMeses - 1} meses.
-                </p>
-              </div>
-            </div>
-          )}
-
-          <FormErrorSummary generalMessage={generalError} />
-
-          <div className="app-modal-footer mt-6">
-            <AppButton
-              type="button"
-              onClick={onClose}
-              tone="outline-danger"
-              size="sm"
-              startIcon={<Ban size={16} />}
-              disabled={isSubmitting}
-            >
-              Cancelar
-            </AppButton>
-            <AppButton
-              type="submit"
-              disabled={isSubmitting}
-              tone="primary"
-              size="sm"
-              startIcon={<Save size={16} />}
-            >
-              {isSubmitting ? "Salvando..." : isEditing ? "Atualizar" : "Criar"}
-            </AppButton>
-          </div>
-        </form>
-      </div>
-    </div>,
-    document.body,
+        <div className="app-modal-footer mt-6">
+          <AppButton
+            type="button"
+            data-modal-close
+            tone="outline"
+            size="sm"
+            startIcon={<Ban size={16} />}
+            disabled={isSubmitting}
+          >
+            Cancelar
+          </AppButton>
+          <AppButton
+            type="submit"
+            disabled={isSubmitting}
+            tone="primary"
+            size="sm"
+            startIcon={<Save size={16} />}
+          >
+            {isSubmitting ? "Salvando..." : isEditing ? "Atualizar" : "Criar"}
+          </AppButton>
+        </div>
+      </form>
+    </AppModal>
   );
 };

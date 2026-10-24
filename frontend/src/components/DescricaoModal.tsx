@@ -1,6 +1,6 @@
 ﻿"use client";
 
-import { useEffect, useId, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Ban, Save } from "lucide-react";
 import { MenuItem, TextField } from "@mui/material";
 import AppButton from "@/components/AppButton";
@@ -16,7 +16,8 @@ import { categoryService } from "@/services/categoryService";
 import { descricaoService } from "@/services/descricaoService";
 import { Category } from "@/types/category";
 import { Descricao, DescricaoInput } from "@/types/descricao";
-import { useAccessibleModal } from "@/utils/useAccessibleModal";
+import AppModal from "@/components/AppModal";
+import { useFormDirty } from "@/forms/hooks/useFormDirty";
 
 interface DescricaoModalProps {
   isOpen: boolean;
@@ -55,9 +56,7 @@ export default function DescricaoModal({
   onClose,
   onSave,
 }: DescricaoModalProps) {
-  const modalRef = useRef<HTMLDivElement>(null);
   const formRef = useRef<HTMLFormElement>(null);
-  const titleId = useId();
 
   const [formData, setFormData] = useState<DescricaoInput>({
     nome: "",
@@ -132,11 +131,7 @@ export default function DescricaoModal({
     resetTouched();
   }, [isOpen, descricao, categories, clearAllErrors, resetTouched]);
 
-  useAccessibleModal({
-    isOpen,
-    modalRef,
-    onClose,
-  });
+  const isDirty = useFormDirty(isOpen, formData, !categoriesLoading);
 
   if (!isOpen) return null;
 
@@ -233,121 +228,113 @@ export default function DescricaoModal({
   };
 
   return (
-    <div className="app-modal-overlay">
-      <div
-        ref={modalRef}
-        className="app-modal-content max-h-[90vh] w-full max-w-md overflow-y-auto"
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby={titleId}
-        tabIndex={-1}
-      >
-        <div className="app-modal-header p-6">
-          <h2 id={titleId} className="text-xl font-bold text-gray-900">
-            {descricao ? "Editar Descrição" : "Nova Descrição"}
-          </h2>
-        </div>
+    <AppModal
+      isOpen={isOpen}
+      title={descricao ? "Editar Descrição" : "Nova Descrição"}
+      onClose={onClose}
+      size="sm"
+      dirty={isDirty}
+    >
 
-        <form ref={formRef} onSubmit={handleSubmit} className="space-y-4 p-6" noValidate>
-          <div>
-            <TextField
-              id="nome"
-              name="nome"
-              type="text"
-              label="Nome da Descrição *"
-              autoFocus
-              variant="outlined"
-              size="small"
-              fullWidth
-              value={formData.nome}
-              onChange={(e) => updateField("nome", e.target.value)}
-              onBlur={() => handleFieldBlur("nome")}
-              InputLabelProps={{ shrink: true }}
-              error={shouldShowError("nome")}
-              helperText={shouldShowError("nome") ? fieldErrors.nome : ""}
-            />
-          </div>
-
-          <div>
-            {categoriesLoading ? (
-              <div className="app-surface-muted flex h-11 items-center justify-center">
-                <p className="text-sm text-gray-500">Carregando categorias...</p>
-              </div>
-            ) : categories.length === 0 ? (
-              <div className="app-inline-error flex h-11 items-center justify-center">
-                <p className="text-sm text-red-600">Nenhuma categoria disponível</p>
-              </div>
-            ) : (
-              <TextField
-                id="categoria_id"
-                name="categoria_id"
-                select
-                label="Categoria *"
-                variant="outlined"
-                size="small"
-                fullWidth
-                value={formData.categoria_id}
-                onChange={(e) => updateField("categoria_id", Number(e.target.value))}
-                onBlur={() => handleFieldBlur("categoria_id")}
-                InputLabelProps={{ shrink: true }}
-                error={shouldShowError("categoria_id")}
-                helperText={
-                  shouldShowError("categoria_id") ? fieldErrors.categoria_id : ""
-                }
-              >
-                <MenuItem value={0}>Selecione uma categoria</MenuItem>
-                {sortedCategories.map((cat) => (
-                  <MenuItem key={cat.id} value={cat.id}>
-                    {cat.nome} ({categoryTipoLabel[cat.tipo]})
-                  </MenuItem>
-                ))}
-              </TextField>
-            )}
-          </div>
-
-          <div className="flex items-center">
-            <input
-              type="checkbox"
-              id="ativo"
-              name="ativo"
-              checked={formData.ativo}
-              onChange={(e) => updateField("ativo", e.target.checked)}
-              onBlur={() => handleFieldBlur("ativo")}
-              className="app-checkbox"
-            />
-            <label
-              htmlFor="ativo"
-              className="ml-2 block text-sm text-[rgb(var(--app-text-secondary))]"
-            >
-              Descrição ativa
-            </label>
-          </div>
-
-          <FormErrorSummary generalMessage={generalError} />
-
-          <div className="app-modal-actions pt-4">
-            <AppButton
-              type="button"
-              onClick={onClose}
-              tone="outline-danger"
-              className="w-full sm:w-auto"
-              startIcon={<Ban size={16} />}
-              disabled={isSubmitting}
-            >
-              Cancelar
-            </AppButton>
-            <AppButton
-              type="submit"
-              tone="primary"
-              className="w-full sm:w-auto"
-              startIcon={<Save size={16} />}
-              disabled={isSubmitting || categoriesLoading}
-            >
-              {isSubmitting ? "Salvando..." : "Salvar"}
-            </AppButton>
-          </div>
-        </form>
+    <form ref={formRef} onSubmit={handleSubmit} className="space-y-4 p-6" noValidate>
+      <div>
+        <TextField
+          id="nome"
+          name="nome"
+          type="text"
+          label="Nome da Descrição *"
+          autoFocus
+          variant="outlined"
+          size="small"
+          fullWidth
+          value={formData.nome}
+          onChange={(e) => updateField("nome", e.target.value)}
+          onBlur={() => handleFieldBlur("nome")}
+          InputLabelProps={{ shrink: true }}
+          error={shouldShowError("nome")}
+          helperText={shouldShowError("nome") ? fieldErrors.nome : ""}
+        />
       </div>
-    </div>
+
+      <div>
+        {categoriesLoading ? (
+          <div className="app-surface-muted flex h-11 items-center justify-center">
+            <p className="text-sm text-gray-500">Carregando categorias...</p>
+          </div>
+        ) : categories.length === 0 ? (
+          <div className="app-inline-error flex h-11 items-center justify-center">
+            <p className="text-sm text-red-600">Nenhuma categoria disponível</p>
+          </div>
+        ) : (
+          <TextField
+            id="categoria_id"
+            name="categoria_id"
+            select
+            label="Categoria *"
+            variant="outlined"
+            size="small"
+            fullWidth
+            value={formData.categoria_id}
+            onChange={(e) => updateField("categoria_id", Number(e.target.value))}
+            onBlur={() => handleFieldBlur("categoria_id")}
+            InputLabelProps={{ shrink: true }}
+            error={shouldShowError("categoria_id")}
+            helperText={
+              shouldShowError("categoria_id") ? fieldErrors.categoria_id : ""
+            }
+          >
+            <MenuItem value={0}>Selecione uma categoria</MenuItem>
+            {sortedCategories.map((cat) => (
+              <MenuItem key={cat.id} value={cat.id}>
+                {cat.nome} ({categoryTipoLabel[cat.tipo]})
+              </MenuItem>
+            ))}
+          </TextField>
+        )}
+      </div>
+
+      <div className="flex items-center">
+        <input
+          type="checkbox"
+          id="ativo"
+          name="ativo"
+          checked={formData.ativo}
+          onChange={(e) => updateField("ativo", e.target.checked)}
+          onBlur={() => handleFieldBlur("ativo")}
+          className="app-checkbox"
+        />
+        <label
+          htmlFor="ativo"
+          className="ml-2 block text-sm text-[rgb(var(--app-text-secondary))]"
+        >
+          Descrição ativa
+        </label>
+      </div>
+
+      <FormErrorSummary generalMessage={generalError} />
+
+      <div className="app-modal-actions pt-4">
+        <AppButton
+          type="button"
+          data-modal-close
+          tone="outline"
+          className="w-full sm:w-auto"
+          startIcon={<Ban size={16} />}
+          disabled={isSubmitting}
+        >
+          Cancelar
+        </AppButton>
+        <AppButton
+          type="submit"
+          tone="primary"
+          className="w-full sm:w-auto"
+          startIcon={<Save size={16} />}
+          disabled={isSubmitting || categoriesLoading}
+        >
+          {isSubmitting ? "Salvando..." : "Salvar"}
+        </AppButton>
+      </div>
+    </form>
+    </AppModal>
   );
 }

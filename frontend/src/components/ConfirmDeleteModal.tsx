@@ -1,9 +1,8 @@
 "use client";
 
-import { useId, useRef } from "react";
-import { AlertTriangle, Trash2, XCircle } from "lucide-react";
+import { AlertTriangle, Trash2 } from "lucide-react";
 import AppButton from "@/components/AppButton";
-import { useAccessibleModal } from "@/utils/useAccessibleModal";
+import AppModal from "@/components/AppModal";
 
 interface ConfirmDeleteModalProps {
   isOpen: boolean;
@@ -22,70 +21,43 @@ export default function ConfirmDeleteModal({
   onCancel,
   onConfirm,
 }: ConfirmDeleteModalProps) {
-  const modalRef = useRef<HTMLDivElement>(null);
-  const titleId = useId();
-
-  useAccessibleModal({
-    isOpen,
-    modalRef,
-    onClose: onCancel,
-    closeOnEscape: true,
-  });
-
-  if (!isOpen) return null;
-
   return (
-    <div className="app-modal-overlay">
-      <div
-        ref={modalRef}
-        className="app-modal-content max-w-md"
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby={titleId}
-        tabIndex={-1}
-      >
-        <div className="app-modal-header items-start gap-3">
-          <div className="flex items-start gap-3">
-            <div className="app-badge-error rounded-full p-2">
-              <AlertTriangle size={18} />
-            </div>
-            <div>
-              <h3 id={titleId} className="text-base font-semibold text-[rgb(var(--app-text-primary))]">
-                {title}
-              </h3>
-              <p className="mt-1 text-sm text-[rgb(var(--app-text-secondary))]">
-                {description}
-              </p>
-            </div>
-          </div>
+    <AppModal
+      isOpen={isOpen}
+      title={title}
+      description={description}
+      onClose={onCancel}
+      size="sm"
+      headerIcon={
+        <div className="app-badge-error shrink-0 rounded-full p-2">
+          <AlertTriangle size={18} />
         </div>
-
-        <div className="app-modal-body">
-          <p className="text-sm text-[rgb(var(--app-text-secondary))]">
-            Deseja continuar? Esta operação não pode ser desfeita.
-          </p>
-        </div>
-
-        <div className="app-modal-actions px-6 pb-5">
-          <AppButton
-            onClick={onCancel}
-            tone="outline-danger"
-            className="w-full sm:w-auto"
-            startIcon={<XCircle size={16} />}
-            data-modal-initial-focus
-          >
-            Cancelar
-          </AppButton>
-          <AppButton
-            onClick={onConfirm}
-            tone="danger"
-            className="w-full sm:w-auto"
-            startIcon={<Trash2 size={16} />}
-          >
-            {confirmLabel}
-          </AppButton>
-        </div>
+      }
+    >
+      <div className="app-modal-body">
+        <p className="text-sm text-[rgb(var(--app-text-secondary))]">
+          Deseja continuar? Esta operação não pode ser desfeita.
+        </p>
       </div>
-    </div>
+
+      <div className="app-modal-actions">
+        <AppButton
+          data-modal-close
+          tone="outline"
+          className="w-full sm:w-auto"
+          data-modal-initial-focus
+        >
+          Cancelar
+        </AppButton>
+        <AppButton
+          onClick={onConfirm}
+          tone="danger"
+          className="w-full sm:w-auto"
+          startIcon={<Trash2 size={16} />}
+        >
+          {confirmLabel}
+        </AppButton>
+      </div>
+    </AppModal>
   );
 }
