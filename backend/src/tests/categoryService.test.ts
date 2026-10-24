@@ -11,7 +11,6 @@ const createCategoryRecord = (
   id: 1,
   nome: "Categoria Base",
   tipo: "DESPESA",
-  cor: "#111111",
   ativo: true,
   created_at: new Date("2026-01-01T00:00:00.000Z"),
   updated_at: new Date("2026-01-01T00:00:00.000Z"),
@@ -140,7 +139,6 @@ const createRetornaCategoriaCriada = async () => {
     const result = await categoryService.createCategory({
       nome: "Moradia",
       tipo: "DESPESA",
-      cor: "#222222",
     });
 
     assert.equal(result.id, 12);

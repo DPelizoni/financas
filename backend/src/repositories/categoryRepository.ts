@@ -79,12 +79,11 @@ export class CategoryRepository {
    */
   async create(category: CategoryInput): Promise<Category> {
     const [result] = await pool.query<ResultSetHeader>(
-      `INSERT INTO categories (nome, tipo, cor, ativo)
-       VALUES (?, ?, ?, ?)`,
+      `INSERT INTO categories (nome, tipo, ativo)
+       VALUES (?, ?, ?)`,
       [
         category.nome,
         category.tipo,
-        category.cor || "#0EA5E9",
         category.ativo !== undefined ? category.ativo : true,
       ],
     );
@@ -110,7 +109,6 @@ export class CategoryRepository {
     const allowedFields: (keyof CategoryInput)[] = [
       "nome",
       "tipo",
-      "cor",
       "ativo",
     ];
 

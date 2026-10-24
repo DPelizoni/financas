@@ -253,11 +253,6 @@ const options: swaggerJsdoc.Options = {
               description: "Tipo da categoria",
               example: "DESPESA",
             },
-            cor: {
-              type: "string",
-              description: "Cor em hexadecimal",
-              example: "#0EA5E9",
-            },
             ativo: {
               type: "boolean",
               description: "Status da categoria",
@@ -287,11 +282,6 @@ const options: swaggerJsdoc.Options = {
               enum: ["RECEITA", "DESPESA"],
               description: "Tipo da categoria",
               example: "DESPESA",
-            },
-            cor: {
-              type: "string",
-              description: "Cor da categoria",
-              example: "#0EA5E9",
             },
             ativo: {
               type: "boolean",

@@ -117,7 +117,6 @@ export const initDatabase = async (): Promise<void> => {
         id INT PRIMARY KEY AUTO_INCREMENT,
         nome VARCHAR(100) NOT NULL,
         tipo ENUM('RECEITA', 'DESPESA') NOT NULL,
-        cor VARCHAR(7) DEFAULT '#0EA5E9',
         bank_id INT NULL,
         ativo BOOLEAN DEFAULT true,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -160,6 +159,16 @@ export const initDatabase = async (): Promise<void> => {
       await connection.query(`
         ALTER TABLE categories
         DROP COLUMN bank_id;
+      `);
+    } catch {
+      // Ignora quando a coluna não existe (instalações novas ou migração já aplicada)
+    }
+
+    // A cor da categoria foi substituída pela cor fixa do tipo (receita/despesa)
+    try {
+      await connection.query(`
+        ALTER TABLE categories
+        DROP COLUMN cor;
       `);
     } catch {
       // Ignora quando a coluna não existe (instalações novas ou migração já aplicada)

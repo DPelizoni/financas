@@ -20,9 +20,9 @@ INSERT INTO banks (nome, codigo, icone, saldo_inicial, ativo) VALUES
 ('Santander', '033', 'santander-icon', 4500.00, true),
 ('Picpay', '', 'picpay-icon', 350.00, true);
 
-INSERT INTO categories (nome, tipo, cor, ativo) VALUES
-('Alimentação', 'DESPESA', '#F97316', true),
-('Transporte', 'DESPESA', '#3B82F6', true),
-('Salário', 'RECEITA', '#10B981', true),
-('Investimentos', 'RECEITA', '#8B5CF6', true);
+INSERT INTO categories (nome, tipo, ativo) VALUES
+('Alimentação', 'DESPESA', true),
+('Transporte', 'DESPESA', true),
+('Salário', 'RECEITA', true),
+('Investimentos', 'RECEITA', true);
 */

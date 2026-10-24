@@ -229,7 +229,6 @@ const categoryRepositoryUpdateSemCamposRetornaFindById = async () => {
         id: 4,
         nome: "Categoria Atual",
         tipo: "DESPESA",
-        cor: "#111111",
         ativo: true,
       }]]],
       captures,
@@ -464,7 +463,6 @@ const categoryRepositoryCreateAplicaDefaults = async () => {
     assert.deepEqual(captures[0].params, [
       "Nova Categoria",
       "RECEITA",
-      "#0EA5E9",
       true,
     ]);
     assert.deepEqual(captures[1].params, [21]);
