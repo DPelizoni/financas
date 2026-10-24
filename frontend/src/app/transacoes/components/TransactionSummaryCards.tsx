@@ -42,33 +42,30 @@ export function TransactionSummaryCards({
         bg: "bg-blue-50/80 dark:bg-blue-900/20",
         text: "text-blue-900 dark:text-blue-200",
         iconContainer: "bg-blue-100 dark:bg-blue-800/40 text-blue-600 dark:text-blue-300",
-        glow: "hover:shadow-[0_8px_30px_rgb(59,130,246,0.12)]",
       },
       green: {
         border: "border-green-200 dark:border-green-800/50 border-t-green-500 dark:border-t-green-500",
         bg: "bg-green-50/80 dark:bg-green-900/20",
         text: "text-green-900 dark:text-green-200",
         iconContainer: "bg-green-100 dark:bg-green-800/40 text-green-600 dark:text-green-300",
-        glow: "hover:shadow-[0_8px_30px_rgb(34,197,94,0.12)]",
       },
       amber: {
         border: "border-amber-200 dark:border-amber-800/50 border-t-amber-500 dark:border-t-amber-500",
         bg: "bg-amber-50/80 dark:bg-amber-900/20",
         text: "text-amber-900 dark:text-amber-200",
         iconContainer: "bg-amber-100 dark:bg-amber-800/40 text-amber-600 dark:text-amber-300",
-        glow: "hover:shadow-[0_8px_30px_rgb(245,158,11,0.12)]",
       }
     };
 
     const config = colors[accentColor];
 
     return (
-      <div className={`group relative overflow-hidden rounded-lg border-t-4 border ${config.border} ${config.bg} p-5 backdrop-blur-sm transition-all duration-500 hover:-translate-y-2 ${config.glow}`}>
+      <div className={`rounded-lg border border-t-4 ${config.border} ${config.bg} p-5`}>
         <div className="mb-4 flex items-center justify-between">
           <h3 className={`text-sm font-semibold ${config.text}`}>
             {title}
           </h3>
-          <div className={`rounded-lg ${config.iconContainer} p-2 transition-transform duration-500 group-hover:rotate-12 group-hover:scale-110`}>
+          <div className={`rounded-md ${config.iconContainer} p-2`}>
             <Icon size={20} />
           </div>
         </div>
@@ -113,8 +110,6 @@ export function TransactionSummaryCards({
           </div>
         </div>
         
-        {/* Decorative background element */}
-        <div className={`absolute -right-4 -top-4 h-24 w-24 rounded-full ${config.bg} opacity-20 blur-2xl`} />
       </div>
     );
   };

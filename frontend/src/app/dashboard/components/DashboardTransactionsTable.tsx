@@ -1,7 +1,9 @@
 "use client";
 
-import { ArrowDownWideNarrow, ArrowUpNarrowWide } from "lucide-react";
 import { Transacao } from "@/types/transacao";
+import MoneyValue from "@/components/MoneyValue";
+import SituacaoBadge from "@/components/SituacaoBadge";
+import SortableHeader from "@/components/SortableHeader";
 
 interface DashboardTransactionsTableProps {
   detailedRows: Transacao[];
@@ -9,8 +11,6 @@ interface DashboardTransactionsTableProps {
   tableSortDirection: "asc" | "desc";
   handleTableSort: (column: "mes" | "tipo" | "categoria" | "banco" | "situacao" | "valor") => void;
   tipoLabel: Record<"DESPESA" | "RECEITA", string>;
-  situacaoLabel: Record<"PENDENTE" | "PAGO", string>;
-  currency: (value: number) => string;
 }
 
 export function DashboardTransactionsTable({
@@ -19,8 +19,6 @@ export function DashboardTransactionsTable({
   tableSortDirection,
   handleTableSort,
   tipoLabel,
-  situacaoLabel,
-  currency,
 }: DashboardTransactionsTableProps) {
   return (
     <div className="app-surface p-4">
@@ -77,18 +75,8 @@ export function DashboardTransactionsTable({
                 </div>
 
                 <div className="mt-3 flex items-center justify-between">
-                  <span
-                    className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold leading-none ${
-                      t.situacao === "PAGO"
-                        ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
-                        : "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400"
-                    }`}
-                  >
-                    {situacaoLabel[t.situacao]}
-                  </span>
-                  <span className="text-sm font-semibold text-gray-900 dark:text-white">
-                    {currency(Number(t.valor))}
-                  </span>
+                  <SituacaoBadge situacao={t.situacao} />
+                  <MoneyValue value={t.valor} tipo={t.tipo} className="text-sm" />
                 </div>
               </div>
             ))
@@ -96,102 +84,19 @@ export function DashboardTransactionsTable({
         </div>
       </div>
 
-      <div className="hidden overflow-x-auto md:block">
+      <div className="app-table-scroll hidden md:block">
         <table className="w-full table-fixed divide-y divide-gray-200 text-xs dark:divide-slate-800">
           <thead className="app-table-head">
             <tr>
-              <th className="app-table-head-cell w-[10%]">
-                <button
-                  type="button"
-                  onClick={() => handleTableSort("mes")}
-                  className="inline-flex items-center gap-1 hover:text-blue-600 transition-colors"
-                >
-                  Mês
-                  {tableSortBy === "mes" && tableSortDirection === "asc" ? (
-                    <ArrowUpNarrowWide size={14} className="text-blue-600" />
-                  ) : tableSortBy === "mes" ? (
-                    <ArrowDownWideNarrow size={14} className="text-blue-600" />
-                  ) : null}
-                </button>
-              </th>
-              <th className="app-table-head-cell-center w-[10%]">
-                <button
-                  type="button"
-                  onClick={() => handleTableSort("tipo")}
-                  className="inline-flex items-center gap-1 hover:text-blue-600 transition-colors"
-                >
-                  Tipo
-                  {tableSortBy === "tipo" &&
-                  tableSortDirection === "asc" ? (
-                    <ArrowUpNarrowWide size={14} className="text-blue-600" />
-                  ) : tableSortBy === "tipo" ? (
-                    <ArrowDownWideNarrow size={14} className="text-blue-600" />
-                  ) : null}
-                </button>
-              </th>
-              <th className="app-table-head-cell w-[18%]">
-                <button
-                  type="button"
-                  onClick={() => handleTableSort("categoria")}
-                  className="inline-flex items-center gap-1 hover:text-blue-600 transition-colors"
-                >
-                  Categoria
-                  {tableSortBy === "categoria" &&
-                  tableSortDirection === "asc" ? (
-                    <ArrowUpNarrowWide size={14} className="text-blue-600" />
-                  ) : tableSortBy === "categoria" ? (
-                    <ArrowDownWideNarrow size={14} className="text-blue-600" />
-                  ) : null}
-                </button>
-              </th>
+              <SortableHeader label="Mês" column="mes" sortBy={tableSortBy} sortDirection={tableSortDirection} onSort={handleTableSort} className="w-[10%]" />
+              <SortableHeader label="Tipo" column="tipo" sortBy={tableSortBy} sortDirection={tableSortDirection} onSort={handleTableSort} align="center" className="w-[10%]" />
+              <SortableHeader label="Categoria" column="categoria" sortBy={tableSortBy} sortDirection={tableSortDirection} onSort={handleTableSort} className="w-[18%]" />
               <th className="app-table-head-cell w-[22%] dark:text-slate-400">
                 Descrição
               </th>
-              <th className="app-table-head-cell w-[18%]">
-                <button
-                  type="button"
-                  onClick={() => handleTableSort("banco")}
-                  className="inline-flex items-center gap-1 hover:text-blue-600 transition-colors"
-                >
-                  Banco
-                  {tableSortBy === "banco" &&
-                  tableSortDirection === "asc" ? (
-                    <ArrowUpNarrowWide size={14} className="text-blue-600" />
-                  ) : tableSortBy === "banco" ? (
-                    <ArrowDownWideNarrow size={14} className="text-blue-600" />
-                  ) : null}
-                </button>
-              </th>
-              <th className="app-table-head-cell-center w-[12%]">
-                <button
-                  type="button"
-                  onClick={() => handleTableSort("situacao")}
-                  className="inline-flex items-center gap-1 hover:text-blue-600 transition-colors"
-                >
-                  Situação
-                  {tableSortBy === "situacao" &&
-                  tableSortDirection === "asc" ? (
-                    <ArrowUpNarrowWide size={14} className="text-blue-600" />
-                  ) : tableSortBy === "situacao" ? (
-                    <ArrowDownWideNarrow size={14} className="text-blue-600" />
-                  ) : null}
-                </button>
-              </th>
-              <th className="app-table-head-cell-right w-[10%]">
-                <button
-                  type="button"
-                  onClick={() => handleTableSort("valor")}
-                  className="inline-flex items-center gap-1 hover:text-blue-600 transition-colors"
-                >
-                  Valor
-                  {tableSortBy === "valor" &&
-                  tableSortDirection === "asc" ? (
-                    <ArrowUpNarrowWide size={14} className="text-blue-600" />
-                  ) : tableSortBy === "valor" ? (
-                    <ArrowDownWideNarrow size={14} className="text-blue-600" />
-                  ) : null}
-                </button>
-              </th>
+              <SortableHeader label="Banco" column="banco" sortBy={tableSortBy} sortDirection={tableSortDirection} onSort={handleTableSort} className="w-[18%]" />
+              <SortableHeader label="Situação" column="situacao" sortBy={tableSortBy} sortDirection={tableSortDirection} onSort={handleTableSort} align="center" className="w-[12%]" />
+              <SortableHeader label="Valor" column="valor" sortBy={tableSortBy} sortDirection={tableSortDirection} onSort={handleTableSort} align="right" className="w-[10%]" />
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100 bg-white dark:divide-slate-800 dark:bg-slate-900">
@@ -246,18 +151,10 @@ export function DashboardTransactionsTable({
                     </span>
                   </td>
                   <td className="px-3 py-2 text-xs text-center">
-                    <span
-                      className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold leading-none ${
-                        t.situacao === "PAGO"
-                          ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
-                          : "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400"
-                      }`}
-                    >
-                      {situacaoLabel[t.situacao]}
-                    </span>
+                    <SituacaoBadge situacao={t.situacao} />
                   </td>
-                  <td className="px-3 py-2 text-right text-xs font-semibold text-gray-900 dark:text-white">
-                    {currency(Number(t.valor))}
+                  <td className="px-3 py-2 text-right text-xs">
+                    <MoneyValue value={t.valor} tipo={t.tipo} />
                   </td>
                 </tr>
               ))

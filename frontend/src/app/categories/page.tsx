@@ -3,9 +3,6 @@
 import { useMemo, useState } from "react";
 import {
   Tags,
-  ArrowDownWideNarrow,
-  ArrowUpNarrowWide,
-  Filter,
   Plus,
 } from "lucide-react";
 import { categoryService } from "@/services/categoryService";
@@ -25,6 +22,8 @@ import EmptyState from "@/components/EmptyState";
 import { CategoryFilters } from "./components/CategoryFilters";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import ActiveBadge from "@/components/ActiveBadge";
+import SortableHeader from "@/components/SortableHeader";
+import { useUrlFilterSync } from "@/utils/useUrlFilterSync";
 
 export default function CategoriesPage() {
   const queryClient = useQueryClient();
@@ -39,7 +38,23 @@ export default function CategoriesPage() {
   const [viewingCategory, setViewingCategory] = useState<Category | null>(null);
   const [sortBy, setSortBy] = useState<string>("nome");
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
-  const [showFilters, setShowFilters] = useState(false);
+
+  // Filtros na URL: permite recarregar, compartilhar e voltar ao mesmo estado
+  const filtersReady = useUrlFilterSync(
+    (params) => {
+      const busca = params.get("busca");
+      if (busca) setSearchTerm(busca);
+      const tipo = params.get("tipo");
+      if (tipo === "DESPESA" || tipo === "RECEITA") setFilterTipo(tipo);
+      const status = params.get("status");
+      if (status === "ativos" || status === "inativos") setFilterAtivo(status === "ativos");
+    },
+    {
+      busca: searchTerm,
+      tipo: filterTipo === "TODOS" ? null : filterTipo,
+      status: filterAtivo === undefined ? null : filterAtivo ? "ativos" : "inativos",
+    },
+  );
 
   // TanStack Query
   const queryFilters = useMemo(() => {
@@ -55,11 +70,13 @@ export default function CategoriesPage() {
     return filters;
   }, [currentPage, itemsPerPage, searchTerm, filterAtivo, filterTipo, sortBy, sortDirection]);
 
-  const { data: categoriesData, isLoading: loading, isFetching } = useQuery({
+  const { data: categoriesData, isLoading, isFetching } = useQuery({
     queryKey: ["categories", queryFilters],
     queryFn: () => categoryService.getAll(queryFilters),
     placeholderData: (prev) => prev,
+    enabled: filtersReady,
   });
+  const loading = isLoading || !filtersReady;
 
   const deleteMutation = useMutation({
     mutationFn: (id: number) => categoryService.delete(id),
@@ -77,14 +94,6 @@ export default function CategoriesPage() {
   const categories = categoriesData?.data || [];
   const total = categoriesData?.pagination?.total || 0;
   const totalPages = categoriesData?.pagination?.totalPages || 1;
-
-  const activeFiltersCount = useMemo(() => {
-    let count = 0;
-    if (searchTerm) count++;
-    if (filterTipo !== "TODOS") count++;
-    if (filterAtivo !== undefined) count++;
-    return count;
-  }, [searchTerm, filterTipo, filterAtivo]);
 
   const handleSort = (column: string) => {
     if (sortBy === column) {
@@ -150,19 +159,6 @@ export default function CategoriesPage() {
           actions={
             <>
               <AppButton
-                tone={showFilters ? "outline-primary" : "outline"}
-                onClick={() => setShowFilters(!showFilters)}
-                className="relative"
-                startIcon={<Filter size={18} />}
-              >
-                {showFilters ? "Ocultar Filtros" : "Mostrar Filtros"}
-                {activeFiltersCount > 0 && (
-                  <span className="absolute -right-2 -top-2 flex h-5 w-5 items-center justify-center rounded-full bg-blue-600 text-xs font-bold text-white shadow-md ring-2 ring-white dark:ring-slate-900">
-                    {activeFiltersCount}
-                  </span>
-                )}
-              </AppButton>
-              <AppButton
                 onClick={handleCreate}
                 tone="primary"
                 startIcon={<Plus size={18} />}
@@ -175,7 +171,6 @@ export default function CategoriesPage() {
         />
 
         <CategoryFilters
-          showFilters={showFilters}
           searchTerm={searchTerm}
           filterTipo={filterTipo}
           filterAtivo={filterAtivo}
@@ -256,28 +251,13 @@ export default function CategoriesPage() {
                 ))}
               </div>
 
-              <div className="hidden overflow-x-auto md:block">
+              <div className="app-table-scroll hidden md:block">
                 <table className="min-w-[640px] w-full table-fixed divide-y divide-gray-200 text-xs dark:divide-slate-800">
                   <thead className="app-table-head">
                     <tr>
-                      <th className="app-table-head-cell w-[55%]">
-                        <button type="button" onClick={() => handleSort("nome")} className="inline-flex items-center gap-1 hover:text-blue-600 transition-colors">
-                          Categoria
-                          {sortBy === "nome" && sortDirection === "asc" ? <ArrowUpNarrowWide size={14} className="text-blue-600" /> : sortBy === "nome" ? <ArrowDownWideNarrow size={14} className="text-blue-600" /> : null}
-                        </button>
-                      </th>
-                      <th className="app-table-head-cell-center w-[15%]">
-                        <button type="button" onClick={() => handleSort("tipo")} className="inline-flex items-center gap-1 hover:text-blue-600 transition-colors">
-                          Tipo
-                          {sortBy === "tipo" && sortDirection === "asc" ? <ArrowUpNarrowWide size={14} className="text-blue-600" /> : sortBy === "tipo" ? <ArrowDownWideNarrow size={14} className="text-blue-600" /> : null}
-                        </button>
-                      </th>
-                      <th className="app-table-head-cell-center w-[15%]">
-                        <button type="button" onClick={() => handleSort("ativo")} className="inline-flex items-center gap-1 hover:text-blue-600 transition-colors">
-                          Status
-                          {sortBy === "ativo" && sortDirection === "asc" ? <ArrowUpNarrowWide size={14} className="text-blue-600" /> : sortBy === "ativo" ? <ArrowDownWideNarrow size={14} className="text-blue-600" /> : null}
-                        </button>
-                      </th>
+                      <SortableHeader label="Categoria" column="nome" sortBy={sortBy} sortDirection={sortDirection} onSort={handleSort} className="w-[55%]" />
+                      <SortableHeader label="Tipo" column="tipo" sortBy={sortBy} sortDirection={sortDirection} onSort={handleSort} align="center" className="w-[15%]" />
+                      <SortableHeader label="Status" column="ativo" sortBy={sortBy} sortDirection={sortDirection} onSort={handleSort} align="center" className="w-[15%]" />
                       <th className="app-table-head-cell-center w-[15%]">Ações</th>
                     </tr>
                   </thead>

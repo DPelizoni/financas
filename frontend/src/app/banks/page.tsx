@@ -1,15 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import {
-  Search,
-  Building2,
-  X,
-  ArrowDownWideNarrow,
-  ArrowUpNarrowWide,
-  Filter,
-  Plus,
-} from "lucide-react";
+import { Building2, Plus } from "lucide-react";
 import { bankService } from "@/services/bankService";
 import { Bank, BankFilters } from "@/types/bank";
 import BankModal from "@/components/BankModal";
@@ -21,11 +13,15 @@ import PageHeader from "@/components/PageHeader";
 import AppButton from "@/components/AppButton";
 import TableActionButton from "@/components/TableActionButton";
 import ViewDataModal from "@/components/ViewDataModal";
-import { IconButton, InputAdornment, MenuItem, TextField } from "@mui/material";
+import { MenuItem, TextField } from "@mui/material";
 import { TableSkeleton, CardSkeleton } from "@/components/skeletons/DataSkeletons";
 import EmptyState from "@/components/EmptyState";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import ActiveBadge from "@/components/ActiveBadge";
+import SortableHeader from "@/components/SortableHeader";
+import FilterBar from "@/components/FilterBar";
+import { FilterChip } from "@/components/FilterChips";
+import { useUrlFilterSync } from "@/utils/useUrlFilterSync";
 
 export default function BanksPage() {
   const queryClient = useQueryClient();
@@ -39,7 +35,20 @@ export default function BanksPage() {
   const [viewingBank, setViewingBank] = useState<Bank | null>(null);
   const [sortBy, setSortBy] = useState<"nome" | "codigo" | "status">("nome");
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
-  const [showFilters, setShowFilters] = useState(false);
+
+  // Filtros na URL: permite recarregar, compartilhar e voltar ao mesmo estado
+  const filtersReady = useUrlFilterSync(
+    (params) => {
+      const busca = params.get("busca");
+      if (busca) setSearchTerm(busca);
+      const status = params.get("status");
+      if (status === "ativos" || status === "inativos") setFilterAtivo(status === "ativos");
+    },
+    {
+      busca: searchTerm,
+      status: filterAtivo === undefined ? null : filterAtivo ? "ativos" : "inativos",
+    },
+  );
 
   // TanStack Query
   const queryFilters = useMemo(() => {
@@ -52,11 +61,13 @@ export default function BanksPage() {
     return filters;
   }, [currentPage, itemsPerPage, searchTerm, filterAtivo]);
 
-  const { data: banksData, isLoading: loading, isFetching } = useQuery({
+  const { data: banksData, isLoading, isFetching } = useQuery({
     queryKey: ["banks", queryFilters],
     queryFn: () => bankService.getAll(queryFilters),
     placeholderData: (prev) => prev,
+    enabled: filtersReady,
   });
+  const loading = isLoading || !filtersReady;
 
   const deleteMutation = useMutation({
     mutationFn: (id: number) => bankService.delete(id),
@@ -75,12 +86,26 @@ export default function BanksPage() {
   const total = banksData?.pagination?.total || 0;
   const totalPages = banksData?.pagination?.totalPages || 1;
 
-  const activeFiltersCount = useMemo(() => {
-    let count = 0;
-    if (searchTerm) count++;
-    if (filterAtivo !== undefined) count++;
-    return count;
-  }, [searchTerm, filterAtivo]);
+  const handleClearFilters = () => {
+    setSearchTerm("");
+    setFilterAtivo(undefined);
+    setCurrentPage(1);
+  };
+
+  const filterChips: FilterChip[] = [];
+  if (searchTerm) {
+    filterChips.push({ key: "busca", label: `Busca: “${searchTerm}”`, onRemove: () => handleSearch("") });
+  }
+  if (filterAtivo !== undefined) {
+    filterChips.push({
+      key: "status",
+      label: `Status: ${filterAtivo ? "Ativos" : "Inativos"}`,
+      onRemove: () => {
+        setFilterAtivo(undefined);
+        setCurrentPage(1);
+      },
+    });
+  }
 
   const handleSort = (column: "nome" | "codigo" | "status") => {
     if (sortBy === column) {
@@ -145,19 +170,6 @@ export default function BanksPage() {
           actions={
             <>
               <AppButton
-                tone={showFilters ? "outline-primary" : "outline"}
-                onClick={() => setShowFilters(!showFilters)}
-                className="relative"
-                startIcon={<Filter size={18} />}
-              >
-                {showFilters ? "Ocultar Filtros" : "Mostrar Filtros"}
-                {activeFiltersCount > 0 && (
-                  <span className="absolute -right-2 -top-2 flex h-5 w-5 items-center justify-center rounded-full bg-blue-600 text-xs font-bold text-white shadow-md ring-2 ring-white dark:ring-slate-900">
-                    {activeFiltersCount}
-                  </span>
-                )}
-              </AppButton>
-              <AppButton
                 onClick={handleCreate}
                 tone="primary"
                 startIcon={<Plus size={18} />}
@@ -169,74 +181,33 @@ export default function BanksPage() {
           }
         />
 
-        <div className={`filter-panel-surface ${!showFilters ? "hidden" : "block animate-in fade-in slide-in-from-top-2 duration-300"}`}>
-          <div className="mb-4 flex items-center justify-between border-b border-gray-100 pb-3 dark:border-slate-800">
-            <h3 className="text-sm font-semibold text-gray-700 dark:text-slate-300">Filtros de Bancos</h3>
-            <button
-              type="button"
-              onClick={() => {
-                setSearchTerm("");
-                setFilterAtivo(undefined);
+        <FilterBar
+          label="Filtros de bancos"
+          search={{ value: searchTerm, onChange: handleSearch, placeholder: "Buscar banco por nome ou código" }}
+          advancedCount={filterAtivo === undefined ? 0 : 1}
+          chips={filterChips}
+          onClearAll={handleClearFilters}
+          advanced={
+            <TextField
+              select
+              label="Status"
+              variant="outlined"
+              size="small"
+              fullWidth
+              InputLabelProps={{ shrink: true }}
+              value={filterAtivo === undefined ? "TODOS" : filterAtivo.toString()}
+              onChange={(e) => {
+                const val = e.target.value;
+                setFilterAtivo(val === "TODOS" ? undefined : val === "true");
                 setCurrentPage(1);
               }}
-              className="text-xs font-medium text-blue-600 hover:text-blue-800 transition dark:text-blue-400 dark:hover:text-blue-300"
             >
-              Limpar tudo
-            </button>
-          </div>
-          <div className="flex flex-col md:flex-row gap-4">
-            <div className="flex-1">
-              <TextField
-                type="text"
-                label="Buscar"
-                variant="outlined"
-                size="small"
-                fullWidth
-                value={searchTerm}
-                onChange={(e) => handleSearch(e.target.value)}
-                InputLabelProps={{ shrink: true }}
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <Search size={20} className="text-gray-400" />
-                    </InputAdornment>
-                  ),
-                  endAdornment: searchTerm ? (
-                    <InputAdornment position="end">
-                      <IconButton
-                        size="small"
-                        onClick={() => handleSearch("")}
-                        aria-label="Limpar pesquisa"
-                      >
-                        <X size={16} />
-                      </IconButton>
-                    </InputAdornment>
-                  ) : undefined,
-                }}
-              />
-            </div>
-            <div className="w-full md:w-48">
-              <TextField
-                select
-                label="Status"
-                variant="outlined"
-                size="small"
-                fullWidth
-                InputLabelProps={{ shrink: true }}
-                value={filterAtivo === undefined ? "TODOS" : filterAtivo.toString()}
-                onChange={(e) => {
-                  const val = e.target.value;
-                  setFilterAtivo(val === "TODOS" ? undefined : val === "true");
-                  setCurrentPage(1);
-                }}
-              >
-                <MenuItem value="TODOS">Todos</MenuItem>
-                <MenuItem value="true">Ativos</MenuItem>
-                <MenuItem value="false">Inativos</MenuItem>
-              </TextField>
-            </div>
-          </div>
-        </div>
+              <MenuItem value="TODOS">Todos</MenuItem>
+              <MenuItem value="true">Ativos</MenuItem>
+              <MenuItem value="false">Inativos</MenuItem>
+            </TextField>
+          }
+        />
 
         <div className={`app-surface p-4 transition-opacity duration-200 ${isFetching && !loading ? "opacity-50" : "opacity-100"}`}>
           {loading ? (
@@ -299,28 +270,13 @@ export default function BanksPage() {
                 ))}
               </div>
 
-              <div className="hidden overflow-x-auto md:block">
+              <div className="app-table-scroll hidden md:block">
                 <table className="min-w-[640px] w-full table-fixed divide-y divide-gray-200 dark:divide-slate-800 text-xs">
                   <thead className="app-table-head">
                     <tr>
-                      <th className="app-table-head-cell w-[50%]">
-                        <button type="button" onClick={() => handleSort("nome")} className="inline-flex items-center gap-1">
-                          Banco
-                          {sortBy === "nome" && sortDirection === "asc" ? <ArrowUpNarrowWide size={14} /> : sortBy === "nome" ? <ArrowDownWideNarrow size={14} /> : null}
-                        </button>
-                      </th>
-                      <th className="app-table-head-cell w-[15%]">
-                        <button type="button" onClick={() => handleSort("codigo")} className="inline-flex items-center gap-1">
-                          Código
-                          {sortBy === "codigo" && sortDirection === "asc" ? <ArrowUpNarrowWide size={14} /> : sortBy === "codigo" ? <ArrowDownWideNarrow size={14} /> : null}
-                        </button>
-                      </th>
-                      <th className="app-table-head-cell-center w-[20%]">
-                        <button type="button" onClick={() => handleSort("status")} className="inline-flex items-center gap-1">
-                          Status
-                          {sortBy === "status" && sortDirection === "asc" ? <ArrowUpNarrowWide size={14} /> : sortBy === "status" ? <ArrowDownWideNarrow size={14} /> : null}
-                        </button>
-                      </th>
+                      <SortableHeader label="Banco" column="nome" sortBy={sortBy} sortDirection={sortDirection} onSort={handleSort} className="w-[50%]" />
+                      <SortableHeader label="Código" column="codigo" sortBy={sortBy} sortDirection={sortDirection} onSort={handleSort} className="w-[15%]" />
+                      <SortableHeader label="Status" column="status" sortBy={sortBy} sortDirection={sortDirection} onSort={handleSort} align="center" className="w-[20%]" />
                       <th className="app-table-head-cell-center w-[15%]">Ações</th>
                     </tr>
                   </thead>

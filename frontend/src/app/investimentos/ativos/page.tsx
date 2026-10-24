@@ -1,8 +1,8 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { ArrowDownWideNarrow, ArrowUpNarrowWide, Filter, Search, Wallet, X, Plus } from "lucide-react";
-import { InputAdornment, MenuItem, TextField } from "@mui/material";
+import { Wallet, Plus } from "lucide-react";
+import { MenuItem, TextField } from "@mui/material";
 import AppButton from "@/components/AppButton";
 import ConfirmDeleteModal from "@/components/ConfirmDeleteModal";
 import InvestimentoAtivoModal from "@/components/InvestimentoAtivoModal";
@@ -20,6 +20,10 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { formatCurrency, formatDateBR } from "@/utils/format";
 import ActiveBadge from "@/components/ActiveBadge";
+import SortableHeader from "@/components/SortableHeader";
+import FilterBar from "@/components/FilterBar";
+import { FilterChip } from "@/components/FilterChips";
+import { parsePositiveInt, useUrlFilterSync } from "@/utils/useUrlFilterSync";
 
 type AtivoFilter = "TODOS" | "ATIVOS" | "INATIVOS";
 
@@ -50,7 +54,25 @@ export default function InvestimentosAtivosPage() {
   const [editingAtivo, setEditingAtivo] = useState<InvestimentoAtivo | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<InvestimentoAtivo | null>(null);
   const [viewingAtivo, setViewingAtivo] = useState<InvestimentoAtivo | null>(null);
-  const [showFilters, setShowFilters] = useState(false);
+  // Filtros na URL: permite recarregar, compartilhar e voltar ao mesmo estado
+  const filtersReady = useUrlFilterSync(
+    (params) => {
+      const busca = params.get("busca");
+      if (busca) setSearchTerm(busca);
+      const ano = params.get("ano");
+      if (ano && /^\d{4}$/.test(ano)) setFilterAno(ano);
+      const status = params.get("status");
+      if (status === "ATIVOS" || status === "INATIVOS") setFilterAtivo(status);
+      const banco = parsePositiveInt(params.get("banco"));
+      if (banco) setFilterBanco(banco);
+    },
+    {
+      busca: searchTerm,
+      ano: filterAno === "TODOS" ? null : filterAno,
+      status: filterAtivo === "TODOS" ? null : filterAtivo,
+      banco: filterBanco === "TODOS" ? null : String(filterBanco),
+    },
+  );
   const [sortBy, setSortBy] = useState<"data_saldo_inicial" | "nome" | "banco" | "saldo_inicial" | "saldo_atual" | "status">("nome");
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
 
@@ -82,11 +104,13 @@ export default function InvestimentosAtivosPage() {
     };
   }, [currentPage, itemsPerPage, searchTerm, filterAno, filterAtivo, filterBanco]);
 
-  const { data: ativosData, isLoading: loading, isFetching } = useQuery({
+  const { data: ativosData, isLoading: loadingQuery, isFetching } = useQuery({
     queryKey: ["ativos", queryFilters],
+    enabled: filtersReady,
     queryFn: () => investimentoAtivoService.getAll(queryFilters),
     placeholderData: (prev) => prev,
   });
+  const loading = loadingQuery || !filtersReady;
 
   const deleteMutation = useMutation({
     mutationFn: (id: number) => investimentoAtivoService.delete(id),
@@ -159,6 +183,26 @@ export default function InvestimentosAtivosPage() {
     setShowModal(true);
   };
 
+  const handleSearchChange = (value: string) => {
+    setSearchTerm(value);
+    setCurrentPage(1);
+  };
+
+  const filterChips: FilterChip[] = [];
+  if (searchTerm) {
+    filterChips.push({ key: "busca", label: `Busca: “${searchTerm}”`, onRemove: () => handleSearchChange("") });
+  }
+  if (filterAno !== "TODOS") {
+    filterChips.push({ key: "ano", label: `Ano: ${filterAno}`, onRemove: () => { setFilterAno("TODOS"); setCurrentPage(1); } });
+  }
+  if (filterAtivo !== "TODOS") {
+    filterChips.push({ key: "status", label: `Status: ${filterAtivo === "ATIVOS" ? "Ativos" : "Inativos"}`, onRemove: () => { setFilterAtivo("TODOS"); setCurrentPage(1); } });
+  }
+  if (filterBanco !== "TODOS") {
+    const nome = banks.find((bank) => bank.id === filterBanco)?.nome ?? `#${filterBanco}`;
+    filterChips.push({ key: "banco", label: `Banco: ${nome}`, onRemove: () => { setFilterBanco("TODOS"); setCurrentPage(1); } });
+  }
+
   return (
     <div className="app-page py-4 sm:py-8">
       <div className="mx-auto max-w-7xl space-y-6 px-4 sm:px-6 lg:px-8">
@@ -167,42 +211,37 @@ export default function InvestimentosAtivosPage() {
           description="Registre e mantenha os ativos da carteira de investimentos."
           actions={
             <>
-              <AppButton
-                tone={showFilters ? "outline-primary" : "outline"}
-                onClick={() => setShowFilters(!showFilters)}
-                className="relative"
-                startIcon={<Filter size={18} />}
-              >
-                {showFilters ? "Ocultar Filtros" : "Mostrar Filtros"}
-                {activeFiltersCount > 0 && <span className="absolute -right-2 -top-2 flex h-5 w-5 items-center justify-center rounded-full bg-blue-600 text-xs font-bold text-white shadow-md ring-2 ring-white dark:ring-slate-900">{activeFiltersCount}</span>}
-              </AppButton>
               <AppButton onClick={handleCreate} tone="primary" startIcon={<Plus size={18} />} className="w-full sm:w-auto">Novo Ativo</AppButton>
             </>
           }
         />
 
-        <div className={`filter-panel-surface ${!showFilters ? "hidden" : "block animate-in fade-in slide-in-from-top-2 duration-300"}`}>
-          <div className="mb-4 flex items-center justify-between border-b border-gray-100 pb-3">
-            <h3 className="text-sm font-semibold text-gray-700">Filtros de Ativos</h3>
-            <button type="button" onClick={handleClearFilters} className="text-xs font-medium text-blue-600 hover:text-blue-800 transition">Limpar tudo</button>
-          </div>
-          <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-4">
-            <TextField type="text" label="Buscar ativo" variant="outlined" size="small" fullWidth value={searchTerm} onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }} InputLabelProps={{ shrink: true }} InputProps={{ startAdornment: (<InputAdornment position="start"><Search size={16} className="text-gray-400" /></InputAdornment>), endAdornment: searchTerm ? (<InputAdornment position="end"><button type="button" onClick={() => { setSearchTerm(""); setCurrentPage(1); }} className="rounded p-1 hover:bg-gray-100"><X size={14} /></button></InputAdornment>) : undefined }} />
-            <TextField select label="Ano" variant="outlined" size="small" fullWidth InputLabelProps={{ shrink: true }} value={filterAno} onChange={(e) => { setFilterAno(e.target.value); setCurrentPage(1); }}>
-              <MenuItem value="TODOS">Todos</MenuItem>
-              {availableYears.map((year) => (<MenuItem key={year} value={year}>{year}</MenuItem>))}
-            </TextField>
-            <TextField select label="Status" variant="outlined" size="small" fullWidth InputLabelProps={{ shrink: true }} value={filterAtivo} onChange={(e) => { setFilterAtivo(e.target.value as AtivoFilter); setCurrentPage(1); }}>
-              <MenuItem value="TODOS">Todos</MenuItem>
-              <MenuItem value="ATIVOS">Ativos</MenuItem>
-              <MenuItem value="INATIVOS">Inativos</MenuItem>
-            </TextField>
-            <TextField select label="Banco" variant="outlined" size="small" fullWidth InputLabelProps={{ shrink: true }} value={filterBanco} onChange={(e) => { setFilterBanco(e.target.value === "TODOS" ? "TODOS" : Number(e.target.value)); setCurrentPage(1); }}>
-              <MenuItem value="TODOS">Todos</MenuItem>
-              {sortedBanks.map((bank) => (<MenuItem key={bank.id} value={bank.id}>{bank.nome}</MenuItem>))}
-            </TextField>
-          </div>
-        </div>
+        <FilterBar
+          label="Filtros de ativos"
+          search={{ value: searchTerm, onChange: handleSearchChange, placeholder: "Buscar ativo por nome" }}
+          advancedCount={(filterAno !== "TODOS" ? 1 : 0) + (filterAtivo !== "TODOS" ? 1 : 0) + (filterBanco !== "TODOS" ? 1 : 0)}
+          chips={filterChips}
+          onClearAll={handleClearFilters}
+          advanced={
+            <>
+              <TextField select label="Ano" variant="outlined" size="small" fullWidth InputLabelProps={{ shrink: true }} value={filterAno} onChange={(e) => { setFilterAno(e.target.value); setCurrentPage(1); }}>
+                <MenuItem value="TODOS">Todos</MenuItem>
+                {availableYears.map((year) => (<MenuItem key={year} value={year}>{year}</MenuItem>))}
+              </TextField>
+
+              <TextField select label="Status" variant="outlined" size="small" fullWidth InputLabelProps={{ shrink: true }} value={filterAtivo} onChange={(e) => { setFilterAtivo(e.target.value as AtivoFilter); setCurrentPage(1); }}>
+                <MenuItem value="TODOS">Todos</MenuItem>
+                <MenuItem value="ATIVOS">Ativos</MenuItem>
+                <MenuItem value="INATIVOS">Inativos</MenuItem>
+              </TextField>
+
+              <TextField select label="Banco" variant="outlined" size="small" fullWidth InputLabelProps={{ shrink: true }} value={filterBanco} onChange={(e) => { setFilterBanco(e.target.value === "TODOS" ? "TODOS" : Number(e.target.value)); setCurrentPage(1); }}>
+                <MenuItem value="TODOS">Todos</MenuItem>
+                {sortedBanks.map((bank) => (<MenuItem key={bank.id} value={bank.id}>{bank.nome}</MenuItem>))}
+              </TextField>
+            </>
+          }
+        />
 
         <div className={`app-surface p-4 transition-opacity duration-200 ${isFetching && !loading ? "opacity-50" : "opacity-100"}`}>
           {loading ? (
@@ -234,16 +273,16 @@ export default function InvestimentosAtivosPage() {
                 ))}
               </div>
 
-              <div className="hidden overflow-x-auto md:block">
+              <div className="app-table-scroll hidden md:block">
                 <table className="w-full table-fixed divide-y divide-gray-200 text-xs">
                   <thead className="app-table-head">
                     <tr>
-                      <th className="app-table-head-cell hidden w-[12%] xl:table-cell"><button type="button" onClick={() => handleSort("data_saldo_inicial")} className="inline-flex items-center gap-1">Início Ativo{sortBy === "data_saldo_inicial" && sortDirection === "asc" ? <ArrowUpNarrowWide size={14} /> : sortBy === "data_saldo_inicial" ? <ArrowDownWideNarrow size={14} /> : null}</button></th>
-                      <th className="app-table-head-cell w-[25%]"><button type="button" onClick={() => handleSort("nome")} className="inline-flex items-center gap-1">Ativo{sortBy === "nome" && sortDirection === "asc" ? <ArrowUpNarrowWide size={14} /> : sortBy === "nome" ? <ArrowDownWideNarrow size={14} /> : null}</button></th>
-                      <th className="app-table-head-cell w-[18%]"><button type="button" onClick={() => handleSort("banco")} className="inline-flex items-center gap-1">Banco{sortBy === "banco" && sortDirection === "asc" ? <ArrowUpNarrowWide size={14} /> : sortBy === "banco" ? <ArrowDownWideNarrow size={14} /> : null}</button></th>
-                      <th className="app-table-head-cell-right hidden w-[12%] lg:table-cell"><button type="button" onClick={() => handleSort("saldo_inicial")} className="inline-flex items-center gap-1">Saldo Inicial{sortBy === "saldo_inicial" && sortDirection === "asc" ? <ArrowUpNarrowWide size={14} /> : sortBy === "saldo_inicial" ? <ArrowDownWideNarrow size={14} /> : null}</button></th>
-                      <th className="app-table-head-cell-right w-[12%]"><button type="button" onClick={() => handleSort("saldo_atual")} className="inline-flex items-center gap-1">Saldo Atual{sortBy === "saldo_atual" && sortDirection === "asc" ? <ArrowUpNarrowWide size={14} /> : sortBy === "saldo_atual" ? <ArrowDownWideNarrow size={14} /> : null}</button></th>
-                      <th className="app-table-head-cell-center w-[10%]"><button type="button" onClick={() => handleSort("status")} className="inline-flex items-center gap-1">Status{sortBy === "status" && sortDirection === "asc" ? <ArrowUpNarrowWide size={14} /> : sortBy === "status" ? <ArrowDownWideNarrow size={14} /> : null}</button></th>
+                      <SortableHeader label="Início Ativo" column="data_saldo_inicial" sortBy={sortBy} sortDirection={sortDirection} onSort={handleSort} className="hidden w-[12%] xl:table-cell" />
+                      <SortableHeader label="Ativo" column="nome" sortBy={sortBy} sortDirection={sortDirection} onSort={handleSort} className="w-[25%]" />
+                      <SortableHeader label="Banco" column="banco" sortBy={sortBy} sortDirection={sortDirection} onSort={handleSort} className="w-[18%]" />
+                      <SortableHeader label="Saldo Inicial" column="saldo_inicial" sortBy={sortBy} sortDirection={sortDirection} onSort={handleSort} align="right" className="hidden w-[12%] lg:table-cell" />
+                      <SortableHeader label="Saldo Atual" column="saldo_atual" sortBy={sortBy} sortDirection={sortDirection} onSort={handleSort} align="right" className="w-[12%]" />
+                      <SortableHeader label="Status" column="status" sortBy={sortBy} sortDirection={sortDirection} onSort={handleSort} align="center" className="w-[10%]" />
                       <th className="app-table-head-cell-center w-[11%]">Ações</th>
                     </tr>
                   </thead>

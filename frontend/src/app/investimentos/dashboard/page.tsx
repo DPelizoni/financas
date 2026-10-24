@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { DollarSign, TrendingUp, Filter, ArrowUpRight, ArrowDownRight, Activity, PieChart as PieIcon } from "lucide-react";
+import { DollarSign, TrendingUp, ArrowUpRight, ArrowDownRight, Activity, PieChart as PieIcon } from "lucide-react";
 import { MenuItem, TextField } from "@mui/material";
 import {
   Cell,
@@ -18,12 +18,16 @@ import {
 } from "recharts";
 import FeedbackAlert from "@/components/FeedbackAlert";
 import PageHeader from "@/components/PageHeader";
-import AppButton from "@/components/AppButton";
 import { bankService } from "@/services/bankService";
 import { investimentoDashboardService } from "@/services/investimentoService";
 import { Bank } from "@/types/bank";
 import { InvestimentoDashboardResponse } from "@/types/investimento";
-import { formatCurrency, formatMonthYearLabel } from "@/utils/format";
+import { formatCurrency, formatMonthShort, formatMonthYearLabel, previousMonthKey } from "@/utils/format";
+import StatCard, { StatCardComparison } from "@/components/StatCard";
+import FilterBar from "@/components/FilterBar";
+import { FilterChip } from "@/components/FilterChips";
+import MonthSwitcher from "@/components/MonthSwitcher";
+import { parsePositiveInt, useUrlFilterSync } from "@/utils/useUrlFilterSync";
 
 type AtivoFilter = "TODOS" | "ATIVOS" | "INATIVOS";
 
@@ -56,7 +60,28 @@ export default function InvestimentosDashboardPage() {
   const [filterMesAno, setFilterMesAno] = useState(currentMonthKey);
   const [filterAno, setFilterAno] = useState<string>(currentYearStr);
   const [filterBanco, setFilterBanco] = useState<number | "TODOS">("TODOS");
-  const [showFilters, setShowFilters] = useState(false);
+
+  // Filtros na URL: permite recarregar, compartilhar e voltar ao mesmo estado
+  const filtersReady = useUrlFilterSync(
+    (params) => {
+      const mes = params.get("mes");
+      if (mes === "todos") setFilterMesAno("");
+      else if (mes && /^\d{4}-\d{2}$/.test(mes)) setFilterMesAno(mes);
+      const ano = params.get("ano");
+      if (ano && /^\d{4}$/.test(ano)) setFilterAno(ano);
+      else if (mes && /^\d{4}-\d{2}$/.test(mes)) setFilterAno(mes.slice(0, 4));
+      const status = params.get("status");
+      if (status === "ATIVOS" || status === "INATIVOS" || status === "TODOS") setFilterAtivo(status);
+      const banco = parsePositiveInt(params.get("banco"));
+      if (banco) setFilterBanco(banco);
+    },
+    {
+      mes: filterMesAno === currentMonthKey ? null : filterMesAno || "todos",
+      ano: filterAno === currentYearStr ? null : filterAno,
+      status: filterAtivo === DEFAULT_ATIVO_FILTER ? null : filterAtivo,
+      banco: filterBanco === "TODOS" ? null : String(filterBanco),
+    },
+  );
 
   const [feedback, setFeedback] = useState<{
     type: "success" | "error";
@@ -68,15 +93,6 @@ export default function InvestimentosDashboardPage() {
     carteira: { total_ativos: 0, saldo_total: 0, ativos: [] },
     timeline: [],
   });
-
-  const activeFiltersCount = useMemo(() => {
-    let count = 0;
-    if (filterMesAno !== currentMonthKey) count++;
-    if (filterAno !== currentYearStr) count++;
-    if (filterAtivo !== DEFAULT_ATIVO_FILTER) count++;
-    if (filterBanco !== "TODOS") count++;
-    return count;
-  }, [filterMesAno, filterAno, filterAtivo, filterBanco, currentMonthKey, currentYearStr]);
 
   useEffect(() => {
     const mediaQuery = window.matchMedia("(max-width: 767px)");
@@ -107,6 +123,7 @@ export default function InvestimentosDashboardPage() {
   }, []);
 
   useEffect(() => {
+    if (!filtersReady) return;
     const loadDashboard = async () => {
       try {
         setLoading(true);
@@ -124,7 +141,7 @@ export default function InvestimentosDashboardPage() {
         setDashboard(response);
 
         // Sincroniza o filterMesAno para o novo ano se necessário
-        if (filterAno !== "TODOS") {
+        if (filterAno !== "TODOS" && filterMesAno) {
           const [currYear, currMonth] = filterMesAno.split("-");
           if (currYear !== filterAno) {
             setFilterMesAno(`${filterAno}-${currMonth}`);
@@ -137,7 +154,7 @@ export default function InvestimentosDashboardPage() {
       }
     };
     loadDashboard();
-  }, [filterAtivo, filterAno, filterBanco]);
+  }, [filtersReady, filterAtivo, filterAno, filterBanco]);
 
   const handleClearFilters = () => {
     setFilterMesAno(currentMonthKey);
@@ -145,6 +162,33 @@ export default function InvestimentosDashboardPage() {
     setFilterAtivo(DEFAULT_ATIVO_FILTER);
     setFilterBanco("TODOS");
   };
+
+  // O histórico é carregado por ano: ao navegar para um mês de outro ano, o ano acompanha
+  const handleMonthChange = (value: string) => {
+    setFilterMesAno(value);
+    if (value) setFilterAno(value.slice(0, 4));
+  };
+
+  const filterChips: FilterChip[] = [];
+  if (filterAno !== currentYearStr && !filterMesAno) {
+    filterChips.push({ key: "ano", label: `Ano: ${filterAno}`, onRemove: () => setFilterAno(currentYearStr) });
+  }
+  if (filterAtivo !== DEFAULT_ATIVO_FILTER) {
+    filterChips.push({
+      key: "status",
+      label: `Status: ${filterAtivo === "TODOS" ? "Todos" : "Inativos"}`,
+      onRemove: () => setFilterAtivo(DEFAULT_ATIVO_FILTER),
+    });
+  }
+  if (filterBanco !== "TODOS") {
+    const nome = banks.find((bank) => bank.id === filterBanco)?.nome ?? `#${filterBanco}`;
+    filterChips.push({ key: "banco", label: `Banco: ${nome}`, onRemove: () => setFilterBanco("TODOS") });
+  }
+
+  const advancedCount =
+    (filterAno !== currentYearStr && !filterMesAno ? 1 : 0) +
+    (filterAtivo !== DEFAULT_ATIVO_FILTER ? 1 : 0) +
+    (filterBanco !== "TODOS" ? 1 : 0);
 
   // Dados do Mês Selecionado para Donut e Cards
   const selectedMonthPoint = useMemo(() => {
@@ -159,6 +203,21 @@ export default function InvestimentosDashboardPage() {
       rendimentos: acc.rendimentos + point.rendimentos,
     }), { aporte: 0, resgate: 0, rendimentos: 0 });
   }, [dashboard.timeline]);
+
+  // Ponto do mês anterior ao selecionado, para a variação dos cards (o histórico é carregado por ano)
+  const previousMonthPoint = useMemo(() => {
+    if (!selectedMonthPoint || !filterMesAno) return null;
+    const prevKey = previousMonthKey(filterMesAno);
+    return dashboard.timeline.find((p) => p.month_key === prevKey) || null;
+  }, [dashboard.timeline, selectedMonthPoint, filterMesAno]);
+
+  const compareWithPrevious = (
+    key: "aporte" | "resgate" | "rendimentos" | "saldo",
+    higherIsBetter?: boolean,
+  ): StatCardComparison | undefined =>
+    previousMonthPoint
+      ? { previous: previousMonthPoint[key], label: formatMonthShort(previousMonthPoint.month_key), higherIsBetter }
+      : undefined;
 
   // Se houver mês selecionado, os cards e donut usam esse ponto. Caso contrário, o consolidado do ano.
   const displayPoint = useMemo(() => {
@@ -251,64 +310,38 @@ export default function InvestimentosDashboardPage() {
         <PageHeader
           title="Investimentos"
           description="Análise consolidada da sua carteira de ativos."
-          actions={
+        />
+
+        <FilterBar
+          label="Filtros da carteira"
+          leading={<MonthSwitcher value={filterMesAno} onChange={handleMonthChange} allowAll />}
+          advancedCount={advancedCount}
+          chips={filterChips}
+          onClearAll={handleClearFilters}
+          advanced={
             <>
-              <AppButton
-                tone={showFilters ? "outline-primary" : "outline"}
-                onClick={() => setShowFilters(!showFilters)}
-                className="relative"
-                startIcon={<Filter size={18} />}
-              >
-                {showFilters ? "Ocultar Filtros" : "Mostrar Filtros"}
-                {activeFiltersCount > 0 && <span className="absolute -right-2 -top-2 flex h-5 w-5 items-center justify-center rounded-full bg-blue-600 text-xs font-bold text-white shadow-md ring-2 ring-white dark:ring-slate-900">{activeFiltersCount}</span>}
-              </AppButton>
+              <TextField select label="Ano" variant="outlined" size="small" fullWidth InputLabelProps={{ shrink: true }} value={filterAno} onChange={(e) => setFilterAno(e.target.value)}>
+                {availableYears.map((year) => <MenuItem key={year} value={year}>{year}</MenuItem>)}
+              </TextField>
+              <TextField select label="Status" variant="outlined" size="small" fullWidth InputLabelProps={{ shrink: true }} value={filterAtivo} onChange={(e) => setFilterAtivo(e.target.value as AtivoFilter)}>
+                <MenuItem value="TODOS">Todos</MenuItem>
+                <MenuItem value="ATIVOS">Ativos</MenuItem>
+                <MenuItem value="INATIVOS">Inativos</MenuItem>
+              </TextField>
+              <TextField select label="Banco" variant="outlined" size="small" fullWidth InputLabelProps={{ shrink: true }} value={filterBanco} onChange={(e) => setFilterBanco(e.target.value === "TODOS" ? "TODOS" : Number(e.target.value))}>
+                <MenuItem value="TODOS">Todos</MenuItem>
+                {[...banks].sort((x, y) => x.nome.localeCompare(y.nome, "pt-BR")).map((bank) => <MenuItem key={bank.id} value={bank.id}>{bank.nome}</MenuItem>)}
+              </TextField>
             </>
           }
         />
 
-        <div className={`filter-panel-surface ${!showFilters ? "hidden" : "block animate-in fade-in slide-in-from-top-2"}`}>
-          <div className="mb-4 flex items-center justify-between border-b border-gray-100 pb-3 dark:border-slate-800">
-            <h3 className="text-sm font-semibold text-gray-700 dark:text-slate-300">Filtros de Carteira</h3>
-            <button onClick={handleClearFilters} className="text-xs font-medium text-blue-600 hover:text-blue-800 transition dark:text-blue-400">Limpar tudo</button>
-          </div>
-          <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-4">
-            <TextField type="month" label="Mês/Ano" variant="outlined" size="small" fullWidth value={filterMesAno} onChange={(e) => setFilterMesAno(e.target.value)} InputLabelProps={{ shrink: true }} />
-            <TextField select label="Ano" variant="outlined" size="small" fullWidth value={filterAno} onChange={(e) => setFilterAno(e.target.value)}>
-              {availableYears.map((year) => <MenuItem key={year} value={year}>{year}</MenuItem>)}
-            </TextField>
-            <TextField select label="Status" variant="outlined" size="small" fullWidth value={filterAtivo} onChange={(e) => setFilterAtivo(e.target.value as AtivoFilter)}>
-              <MenuItem value="TODOS">Todos</MenuItem>
-              <MenuItem value="ATIVOS">Ativos</MenuItem>
-              <MenuItem value="INATIVOS">Inativos</MenuItem>
-            </TextField>
-            <TextField select label="Banco" variant="outlined" size="small" fullWidth value={filterBanco} onChange={(e) => setFilterBanco(e.target.value === "TODOS" ? "TODOS" : Number(e.target.value))}>
-              <MenuItem value="TODOS">Todos</MenuItem>
-              {banks.sort((a,b) => a.nome.localeCompare(b.nome)).map((bank) => <MenuItem key={bank.id} value={bank.id}>{bank.nome}</MenuItem>)}
-            </TextField>
-          </div>
-        </div>
-
         {/* Cards Premium com Ícone na Direita e Cores Sincronizadas */}
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-4">
-          {[
-            { title: "Aporte", value: displayPoint?.aporte || 0, icon: ArrowUpRight, color: "amber", text: "text-amber-900 dark:text-amber-200", bg: "bg-amber-50/80 dark:bg-amber-900/20", border: "border-amber-200 dark:border-amber-800/50 border-t-amber-500", iconContainer: "bg-amber-100 dark:bg-amber-800/40 text-amber-600 dark:text-amber-300", glow: "hover:shadow-[0_8px_30px_rgb(245,158,11,0.12)]" },
-            { title: "Resgate", value: displayPoint?.resgate || 0, icon: ArrowDownRight, color: "red", text: "text-red-900 dark:text-red-200", bg: "bg-red-50/80 dark:bg-red-900/20", border: "border-red-200 dark:border-red-800/50 border-t-red-500", iconContainer: "bg-red-100 dark:bg-red-800/40 text-red-600 dark:text-red-300", glow: "hover:shadow-[0_8px_30px_rgb(239,68,68,0.12)]" },
-            { title: "Rendimentos", value: displayPoint?.rendimentos || 0, icon: TrendingUp, color: "emerald", text: "text-emerald-900 dark:text-emerald-200", bg: "bg-emerald-50/80 dark:bg-emerald-900/20", border: "border-emerald-200 dark:border-emerald-800/50 border-t-emerald-500", iconContainer: "bg-emerald-100 dark:bg-emerald-800/40 text-emerald-600 dark:text-emerald-300", glow: "hover:shadow-[0_8px_30px_rgb(16,185,129,0.12)]" },
-            { title: "Saldo Atual", value: displayPoint?.saldo || 0, icon: DollarSign, color: "blue", text: "text-blue-900 dark:text-blue-200", bg: "bg-blue-50/80 dark:bg-blue-900/20", border: "border-blue-200 dark:border-blue-800/50 border-t-blue-500", iconContainer: "bg-blue-100 dark:bg-blue-800/40 text-blue-600 dark:text-blue-300", glow: "hover:shadow-[0_8px_30px_rgb(59,130,246,0.12)]" },
-          ].map((card, i) => (
-            <div key={i} className={`kpi-card group relative overflow-hidden rounded-lg border-t-4 border p-5 backdrop-blur-sm transition-all duration-500 hover:-translate-y-2 ${card.bg} ${card.border} ${card.glow}`}>
-              <div className="flex items-center justify-between gap-4">
-                <div className="min-w-0 flex-1 overflow-hidden">
-                  <p className={`text-sm font-semibold opacity-80 ${card.text}`}>{card.title}</p>
-                  <p className={`kpi-value mt-1 whitespace-nowrap font-bold tabular-nums tracking-tight ${card.text}`} title={formatCurrency(card.value)}>{formatCurrency(card.value)}</p>
-                </div>
-                <div className={`shrink-0 rounded-md p-2.5 transition-transform duration-500 group-hover:rotate-12 group-hover:scale-110 ${card.iconContainer}`}>
-                  <card.icon size={24} />
-                </div>
-              </div>
-              <div className={`absolute -right-10 -top-10 h-32 w-32 rounded-full bg-current opacity-10 blur-3xl transition-opacity duration-700 group-hover:opacity-40`} />
-            </div>
-          ))}
+          <StatCard title="Aporte" value={displayPoint?.aporte || 0} icon={ArrowUpRight} tone="warning" comparison={compareWithPrevious("aporte", true)} />
+          <StatCard title="Resgate" value={displayPoint?.resgate || 0} icon={ArrowDownRight} tone="error" comparison={compareWithPrevious("resgate")} />
+          <StatCard title="Rendimentos" value={displayPoint?.rendimentos || 0} icon={TrendingUp} tone="success" comparison={compareWithPrevious("rendimentos", true)} />
+          <StatCard title="Saldo Atual" value={displayPoint?.saldo || 0} icon={DollarSign} tone="info" comparison={compareWithPrevious("saldo", true)} />
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

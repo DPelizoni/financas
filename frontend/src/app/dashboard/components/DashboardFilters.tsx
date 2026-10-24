@@ -1,9 +1,11 @@
 import { MenuItem, TextField } from "@mui/material";
 import { Bank } from "@/types/bank";
 import { Category } from "@/types/category";
+import FilterBar from "@/components/FilterBar";
+import { FilterChip } from "@/components/FilterChips";
+import MonthSwitcher from "@/components/MonthSwitcher";
 
 interface DashboardFiltersProps {
-  showFilters: boolean;
   periodMonths: number;
   setPeriodMonths: (value: number) => void;
   filterMesAno: string;
@@ -21,11 +23,12 @@ interface DashboardFiltersProps {
   availableYears: string[];
   sortedBanks: Bank[];
   sortedCategories: Category[];
-  currentYear: string;
+  onClearFilters: () => void;
 }
 
+const DEFAULT_PERIOD_MONTHS = 12;
+
 export function DashboardFilters({
-  showFilters,
   periodMonths,
   setPeriodMonths,
   filterMesAno,
@@ -43,34 +46,59 @@ export function DashboardFilters({
   availableYears,
   sortedBanks,
   sortedCategories,
-  currentYear,
+  onClearFilters,
 }: DashboardFiltersProps) {
-  if (!showFilters) return null;
+  // Período e ano só valem quando nenhum mês específico está selecionado
+  const usesPeriod = !filterMesAno;
 
-  const handleClearFilters = () => {
-    setFilterMesAno("");
-    setFilterAno(currentYear);
-    setFilterTipo("TODOS");
-    setFilterSituacao("TODOS");
-    setFilterCategoria("TODOS");
-    setFilterBanco("TODOS");
-    setPeriodMonths(12);
-  };
+  const chips: FilterChip[] = [];
+  if (usesPeriod && periodMonths !== DEFAULT_PERIOD_MONTHS) {
+    chips.push({
+      key: "periodo",
+      label: `Período: últimos ${periodMonths} meses`,
+      onRemove: () => setPeriodMonths(DEFAULT_PERIOD_MONTHS),
+    });
+  }
+  if (usesPeriod && filterAno !== "TODOS") {
+    chips.push({ key: "ano", label: `Ano: ${filterAno}`, onRemove: () => setFilterAno("TODOS") });
+  }
+  if (filterTipo !== "TODOS") {
+    chips.push({
+      key: "tipo",
+      label: `Tipo: ${filterTipo === "DESPESA" ? "Despesas" : "Receitas"}`,
+      onRemove: () => setFilterTipo("TODOS"),
+    });
+  }
+  if (filterSituacao !== "TODOS") {
+    chips.push({
+      key: "situacao",
+      label: `Situação: ${filterSituacao === "PAGO" ? "Pagos" : "Pendentes"}`,
+      onRemove: () => setFilterSituacao("TODOS"),
+    });
+  }
+  if (filterBanco !== "TODOS") {
+    const nome = sortedBanks.find((bank) => bank.id === filterBanco)?.nome ?? `#${filterBanco}`;
+    chips.push({ key: "banco", label: `Banco: ${nome}`, onRemove: () => setFilterBanco("TODOS") });
+  }
+  if (filterCategoria !== "TODOS") {
+    const nome = sortedCategories.find((cat) => cat.id === filterCategoria)?.nome ?? `#${filterCategoria}`;
+    chips.push({ key: "categoria", label: `Categoria: ${nome}`, onRemove: () => setFilterCategoria("TODOS") });
+  }
+
+  const advancedCount =
+    (usesPeriod && periodMonths !== DEFAULT_PERIOD_MONTHS ? 1 : 0) +
+    (usesPeriod && filterAno !== "TODOS" ? 1 : 0) +
+    [filterTipo, filterSituacao, filterBanco, filterCategoria].filter((value) => value !== "TODOS").length;
 
   return (
-    <div className="filter-panel-surface animate-in fade-in slide-in-from-top-2 duration-300">
-      <div className="mb-4 flex items-center justify-between border-b border-gray-100 pb-3">
-        <h3 className="text-sm font-semibold text-gray-700">Filtros de Análise</h3>
-        <button
-          type="button"
-          onClick={handleClearFilters}
-          className="text-xs font-medium text-blue-600 hover:text-blue-800 transition"
-        >
-          Limpar tudo
-        </button>
-      </div>
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <div>
+    <FilterBar
+      label="Filtros do dashboard"
+      leading={<MonthSwitcher value={filterMesAno} onChange={setFilterMesAno} allowAll />}
+      advancedCount={advancedCount}
+      chips={chips}
+      onClearAll={onClearFilters}
+      advanced={
+        <>
           <TextField
             select
             label="Período"
@@ -80,38 +108,25 @@ export function DashboardFilters({
             InputLabelProps={{ shrink: true }}
             value={periodMonths}
             onChange={(e) => setPeriodMonths(Number(e.target.value))}
-            disabled={Boolean(filterMesAno)}
+            disabled={!usesPeriod}
+            helperText={!usesPeriod ? "Selecione “Todos os meses” para usar" : undefined}
           >
             <MenuItem value={3}>Últimos 3 meses</MenuItem>
             <MenuItem value={6}>Últimos 6 meses</MenuItem>
             <MenuItem value={12}>Últimos 12 meses</MenuItem>
           </TextField>
-        </div>
 
-        <div>
-          <TextField
-            type="month"
-            label="Mês Específico"
-            variant="outlined"
-            size="small"
-            fullWidth
-            value={filterMesAno}
-            onChange={(e) => setFilterMesAno(e.target.value)}
-            InputLabelProps={{ shrink: true }}
-          />
-        </div>
-
-        <div>
           <TextField
             select
-            label="Ano Base"
+            label="Ano"
             variant="outlined"
             size="small"
             fullWidth
             InputLabelProps={{ shrink: true }}
             value={filterAno}
             onChange={(e) => setFilterAno(e.target.value)}
-            disabled={Boolean(filterMesAno)}
+            disabled={!usesPeriod}
+            helperText={!usesPeriod ? "Selecione “Todos os meses” para usar" : undefined}
           >
             <MenuItem value="TODOS">Todos</MenuItem>
             {availableYears.map((year) => (
@@ -120,66 +135,46 @@ export function DashboardFilters({
               </MenuItem>
             ))}
           </TextField>
-        </div>
 
-        <div>
           <TextField
             select
-            label="Tipo de Fluxo"
+            label="Tipo"
             variant="outlined"
             size="small"
             fullWidth
             InputLabelProps={{ shrink: true }}
             value={filterTipo}
-            onChange={(e) =>
-              setFilterTipo(
-                e.target.value as "TODOS" | "DESPESA" | "RECEITA",
-              )
-            }
+            onChange={(e) => setFilterTipo(e.target.value as "TODOS" | "DESPESA" | "RECEITA")}
           >
             <MenuItem value="TODOS">Todos</MenuItem>
-            <MenuItem value="DESPESA">Apenas Despesas</MenuItem>
-            <MenuItem value="RECEITA">Apenas Receitas</MenuItem>
+            <MenuItem value="DESPESA">Despesas</MenuItem>
+            <MenuItem value="RECEITA">Receitas</MenuItem>
           </TextField>
-        </div>
 
-        <div>
           <TextField
             select
-            label="Status"
+            label="Situação"
             variant="outlined"
             size="small"
             fullWidth
             InputLabelProps={{ shrink: true }}
             value={filterSituacao}
-            onChange={(e) =>
-              setFilterSituacao(
-                e.target.value as "TODOS" | "PENDENTE" | "PAGO",
-              )
-            }
+            onChange={(e) => setFilterSituacao(e.target.value as "TODOS" | "PENDENTE" | "PAGO")}
           >
-            <MenuItem value="TODOS">Todos</MenuItem>
-            <MenuItem value="PAGO">Somente Pagos</MenuItem>
-            <MenuItem value="PENDENTE">Somente Pendentes</MenuItem>
+            <MenuItem value="TODOS">Todas</MenuItem>
+            <MenuItem value="PAGO">Pagos</MenuItem>
+            <MenuItem value="PENDENTE">Pendentes</MenuItem>
           </TextField>
-        </div>
 
-        <div>
           <TextField
             select
-            label="Instituição/Banco"
+            label="Banco"
             variant="outlined"
             size="small"
             fullWidth
             InputLabelProps={{ shrink: true }}
             value={filterBanco}
-            onChange={(e) =>
-              setFilterBanco(
-                e.target.value === "TODOS"
-                  ? "TODOS"
-                  : Number(e.target.value),
-              )
-            }
+            onChange={(e) => setFilterBanco(e.target.value === "TODOS" ? "TODOS" : Number(e.target.value))}
           >
             <MenuItem value="TODOS">Todos</MenuItem>
             {sortedBanks.map((bank) => (
@@ -188,24 +183,16 @@ export function DashboardFilters({
               </MenuItem>
             ))}
           </TextField>
-        </div>
 
-        <div>
           <TextField
             select
-            label="Categoria de Gasto"
+            label="Categoria"
             variant="outlined"
             size="small"
             fullWidth
             InputLabelProps={{ shrink: true }}
             value={filterCategoria}
-            onChange={(e) =>
-              setFilterCategoria(
-                e.target.value === "TODOS"
-                  ? "TODOS"
-                  : Number(e.target.value),
-              )
-            }
+            onChange={(e) => setFilterCategoria(e.target.value === "TODOS" ? "TODOS" : Number(e.target.value))}
           >
             <MenuItem value="TODOS">Todas</MenuItem>
             {sortedCategories.map((category) => (
@@ -214,8 +201,8 @@ export function DashboardFilters({
               </MenuItem>
             ))}
           </TextField>
-        </div>
-      </div>
-    </div>
+        </>
+      }
+    />
   );
 }

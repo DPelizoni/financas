@@ -1,101 +1,49 @@
 "use client";
 
-import React from "react";
-import {
-  ArrowDownWideNarrow,
-  ArrowUpNarrowWide,
-  DollarSign,
-} from "lucide-react";
+import { ArrowDownWideNarrow, ArrowUpNarrowWide, DollarSign } from "lucide-react";
+import StatCard from "@/components/StatCard";
 
-interface SummaryCardsProps {
-  summary: {
-    total_receita: number;
-    total_despesa: number;
-    total_liquido: number;
-  };
-  currency: (value: number) => string;
+interface SummaryTotals {
+  total_receita: number;
+  total_despesa: number;
+  total_liquido: number;
 }
 
-export function SummaryCards({ summary, currency }: SummaryCardsProps) {
-  const Card = ({ 
-    title, 
-    value, 
-    icon: Icon,
-    color 
-  }: { 
-    title: string;
-    value: number;
-    icon: any;
-    color: "green" | "red" | "blue";
-  }) => {
-    const themes = {
-      green: {
-        border: "border-green-200 dark:border-green-800/50 border-t-green-500",
-        bg: "bg-green-50/80 dark:bg-green-900/20",
-        text: "text-green-700 dark:text-green-300",
-        iconContainer: "bg-green-100 dark:bg-green-800/40 text-green-600 dark:text-green-400",
-        glow: "hover:shadow-[0_8px_30px_rgb(34,197,94,0.12)]",
-      },
-      red: {
-        border: "border-red-200 dark:border-red-800/50 border-t-red-500",
-        bg: "bg-red-50/80 dark:bg-red-900/20",
-        text: "text-red-700 dark:text-red-300",
-        iconContainer: "bg-red-100 dark:bg-red-800/40 text-red-600 dark:text-red-400",
-        glow: "hover:shadow-[0_8px_30px_rgb(239,68,68,0.12)]",
-      },
-      blue: {
-        border: "border-blue-200 dark:border-blue-800/50 border-t-blue-500",
-        bg: "bg-blue-50/80 dark:bg-blue-900/20",
-        text: "text-blue-700 dark:text-blue-300",
-        iconContainer: "bg-blue-100 dark:bg-blue-800/40 text-blue-600 dark:text-blue-400",
-        glow: "hover:shadow-[0_8px_30px_rgb(59,130,246,0.12)]",
-      }
-    };
+interface SummaryCardsProps {
+  summary: SummaryTotals;
+  // Totais do mês anterior, quando um mês específico está selecionado
+  previous?: SummaryTotals;
+  previousLabel?: string;
+}
 
-    const theme = themes[color];
-
-    return (
-      <div className={`kpi-card group relative overflow-hidden rounded-lg border-t-4 border ${theme.border} ${theme.bg} p-5 backdrop-blur-sm transition-all duration-500 hover:-translate-y-2 ${theme.glow}`}>
-        <div className="flex items-center justify-between gap-4">
-          <div className="min-w-0 flex-1 overflow-hidden">
-            <p className={`text-sm font-semibold opacity-80 ${theme.text}`}>
-              {title}
-            </p>
-            <p
-              className={`kpi-value mt-1 whitespace-nowrap font-bold tabular-nums tracking-tight ${theme.text}`}
-              title={currency(value)}
-            >
-              {currency(value)}
-            </p>
-          </div>
-          <div className={`shrink-0 rounded-md ${theme.iconContainer} p-2.5 transition-transform duration-500 group-hover:rotate-12 group-hover:scale-110`}>
-            <Icon size={24} />
-          </div>
-        </div>
-        <div className={`absolute -right-8 -top-8 h-24 w-24 rounded-full ${theme.bg} opacity-20 blur-3xl transition-opacity duration-700 group-hover:opacity-40`} />
-      </div>
-    );
-  };
+export function SummaryCards({ summary, previous, previousLabel }: SummaryCardsProps) {
+  const compare = (key: keyof SummaryTotals, higherIsBetter: boolean) =>
+    previous && previousLabel
+      ? { previous: previous[key], label: previousLabel, higherIsBetter }
+      : undefined;
 
   return (
     <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
-      <Card 
-        title="Receitas" 
-        value={summary.total_receita} 
-        icon={ArrowUpNarrowWide} 
-        color="green" 
+      <StatCard
+        title="Receitas"
+        value={summary.total_receita}
+        icon={ArrowUpNarrowWide}
+        tone="success"
+        comparison={compare("total_receita", true)}
       />
-      <Card 
-        title="Despesas" 
-        value={summary.total_despesa} 
-        icon={ArrowDownWideNarrow} 
-        color="red" 
+      <StatCard
+        title="Despesas"
+        value={summary.total_despesa}
+        icon={ArrowDownWideNarrow}
+        tone="error"
+        comparison={compare("total_despesa", false)}
       />
-      <Card 
-        title="Saldo Líquido" 
-        value={summary.total_liquido} 
-        icon={DollarSign} 
-        color={summary.total_liquido >= 0 ? "blue" : "red"} 
+      <StatCard
+        title="Saldo Líquido"
+        value={summary.total_liquido}
+        icon={DollarSign}
+        tone={summary.total_liquido >= 0 ? "info" : "error"}
+        comparison={compare("total_liquido", true)}
       />
     </div>
   );

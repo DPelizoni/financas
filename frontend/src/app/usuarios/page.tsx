@@ -4,11 +4,6 @@ import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   ShieldCheck,
-  Search,
-  X,
-  ArrowDownWideNarrow,
-  ArrowUpNarrowWide,
-  Filter,
   Plus,
 } from "lucide-react";
 import Pagination from "@/components/Pagination";
@@ -21,11 +16,15 @@ import UserModal from "@/components/UserModal";
 import { userService } from "@/services/userService";
 import { User, UserRole, UserStatus } from "@/types/user";
 import { authService } from "@/services/authService";
-import { IconButton, InputAdornment, MenuItem, TextField } from "@mui/material";
+import { MenuItem, TextField } from "@mui/material";
 import { TableSkeleton, CardSkeleton } from "@/components/skeletons/DataSkeletons";
 import EmptyState from "@/components/EmptyState";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import SortableHeader from "@/components/SortableHeader";
+import FilterBar from "@/components/FilterBar";
+import { FilterChip } from "@/components/FilterChips";
+import { useUrlFilterSync } from "@/utils/useUrlFilterSync";
 
 const roleBadgeClass: Record<UserRole, string> = {
   ADMIN: "bg-violet-100 text-violet-700 dark:bg-violet-900/30 dark:text-violet-400",
@@ -60,7 +59,22 @@ export default function UsuariosPage() {
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const [showUserModal, setShowUserModal] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<User | null>(null);
-  const [showFilters, setShowFilters] = useState(false);
+  // Filtros na URL: permite recarregar, compartilhar e voltar ao mesmo estado
+  const filtersReady = useUrlFilterSync(
+    (params) => {
+      const busca = params.get("busca");
+      if (busca) setSearchTerm(busca);
+      const status = params.get("status");
+      if (status === "ATIVO" || status === "INATIVO") setStatusFilter(status);
+      const papel = params.get("papel");
+      if (papel === "USUARIO" || papel === "GESTOR" || papel === "ADMIN") setRoleFilter(papel);
+    },
+    {
+      busca: searchTerm,
+      status: statusFilter === "TODOS" ? null : statusFilter,
+      papel: roleFilter === "TODOS" ? null : roleFilter,
+    },
+  );
 
   // Auth Query
   const { data: me, isLoading: loadingAuth, isError: authError } = useQuery({
@@ -93,12 +107,13 @@ export default function UsuariosPage() {
     role: roleFilter === "TODOS" ? undefined : roleFilter,
   }), [currentPage, itemsPerPage, searchTerm, statusFilter, roleFilter]);
 
-  const { data: usersData, isLoading: loading, isFetching } = useQuery({
+  const { data: usersData, isLoading: loadingQuery, isFetching } = useQuery({
     queryKey: ["users", queryFilters],
     queryFn: () => userService.getAll(queryFilters),
-    enabled: !!authorized,
+    enabled: !!authorized && filtersReady,
     placeholderData: (prev) => prev,
   });
+  const loading = loadingQuery || !filtersReady;
 
   const deleteMutation = useMutation({
     mutationFn: (id: number) => userService.delete(id),
@@ -170,6 +185,29 @@ export default function UsuariosPage() {
   if (authorized === null) return <div className="py-12 text-center text-gray-500">Validando acesso...</div>;
   if (!authorized) return <div className="py-12 text-center text-gray-500">Redirecionando...</div>;
 
+  const handleSearchChange = (value: string) => {
+    setSearchTerm(value);
+    setCurrentPage(1);
+  };
+
+  const handleClearFilters = () => {
+    setSearchTerm("");
+    setStatusFilter("TODOS");
+    setRoleFilter("TODOS");
+    setCurrentPage(1);
+  };
+
+  const filterChips: FilterChip[] = [];
+  if (searchTerm) {
+    filterChips.push({ key: "busca", label: `Busca: “${searchTerm}”`, onRemove: () => handleSearchChange("") });
+  }
+  if (statusFilter !== "TODOS") {
+    filterChips.push({ key: "status", label: `Status: ${statusLabel[statusFilter]}`, onRemove: () => { setStatusFilter("TODOS"); setCurrentPage(1); } });
+  }
+  if (roleFilter !== "TODOS") {
+    filterChips.push({ key: "papel", label: `Papel: ${roleLabel[roleFilter]}`, onRemove: () => { setRoleFilter("TODOS"); setCurrentPage(1); } });
+  }
+
   return (
     <div className="app-page py-4 sm:py-8">
       <div className="mx-auto max-w-7xl space-y-6 px-4 sm:px-6 lg:px-8">
@@ -178,41 +216,34 @@ export default function UsuariosPage() {
           description="Gerencie o status de acesso dos usuários do sistema."
           actions={
             <>
-              <AppButton tone={showFilters ? "outline-primary" : "outline"} onClick={() => setShowFilters(!showFilters)} className="relative" startIcon={<Filter size={18} />}>
-                {showFilters ? "Ocultar Filtros" : "Mostrar Filtros"}
-                {activeFiltersCount > 0 && <span className="absolute -right-2 -top-2 flex h-5 w-5 items-center justify-center rounded-full bg-blue-600 text-xs font-bold text-white shadow-md ring-2 ring-white dark:ring-slate-900">{activeFiltersCount}</span>}
-              </AppButton>
               <AppButton onClick={() => { setEditingUser(null); setShowUserModal(true); }} tone="primary" startIcon={<Plus size={18} />} className="w-full sm:w-auto">Novo Usuário</AppButton>
             </>
           }
         />
 
-        <div className={`filter-panel-surface ${!showFilters ? "hidden" : "block animate-in fade-in slide-in-from-top-2 duration-300"}`}>
-          <div className="mb-4 flex items-center justify-between border-b border-gray-100 pb-3 dark:border-slate-800">
-            <h3 className="text-sm font-semibold text-gray-700 dark:text-slate-300">Filtros de Usuários</h3>
-            <button type="button" onClick={() => { setSearchTerm(""); setStatusFilter("TODOS"); setRoleFilter("TODOS"); setCurrentPage(1); }} className="text-xs font-medium text-blue-600 hover:text-blue-800 transition dark:text-blue-400 dark:hover:text-blue-300">Limpar tudo</button>
-          </div>
-          <div className="grid grid-cols-1 gap-3 md:grid-cols-4">
-            <div className="md:col-span-2">
-              <TextField type="text" label="Buscar" variant="outlined" size="small" fullWidth value={searchTerm} onChange={(e) => { setCurrentPage(1); setSearchTerm(e.target.value); }} InputLabelProps={{ shrink: true }} InputProps={{ startAdornment: (<InputAdornment position="start"><Search size={18} className="text-gray-400" /></InputAdornment>), endAdornment: searchTerm ? (<InputAdornment position="end"><IconButton size="small" onClick={() => { setCurrentPage(1); setSearchTerm(""); }} aria-label="Limpar busca"><X size={16} /></IconButton></InputAdornment>) : undefined }} />
-            </div>
-            <div>
+        <FilterBar
+          label="Filtros de usuários"
+          search={{ value: searchTerm, onChange: handleSearchChange, placeholder: "Buscar usuário por nome ou e-mail" }}
+          advancedCount={(statusFilter !== "TODOS" ? 1 : 0) + (roleFilter !== "TODOS" ? 1 : 0)}
+          chips={filterChips}
+          onClearAll={handleClearFilters}
+          advanced={
+            <>
               <TextField select label="Status" variant="outlined" size="small" fullWidth InputLabelProps={{ shrink: true }} value={statusFilter} onChange={(e) => { setCurrentPage(1); setStatusFilter(e.target.value as UserStatus | "TODOS"); }}>
                 <MenuItem value="TODOS">Todos</MenuItem>
                 <MenuItem value="ATIVO">Ativos</MenuItem>
                 <MenuItem value="INATIVO">Inativos</MenuItem>
               </TextField>
-            </div>
-            <div>
+
               <TextField select label="Papel" variant="outlined" size="small" fullWidth InputLabelProps={{ shrink: true }} value={roleFilter} onChange={(e) => { setCurrentPage(1); setRoleFilter(e.target.value as UserRole | "TODOS"); }}>
                 <MenuItem value="TODOS">Todos</MenuItem>
                 <MenuItem value="USUARIO">Usuário</MenuItem>
                 <MenuItem value="GESTOR">Gestor</MenuItem>
                 <MenuItem value="ADMIN">Admin</MenuItem>
               </TextField>
-            </div>
-          </div>
-        </div>
+            </>
+          }
+        />
 
         <div className={`app-surface p-4 transition-opacity duration-200 ${isFetching && !loading ? "opacity-50" : "opacity-100"}`}>
           {loading ? (
@@ -244,14 +275,14 @@ export default function UsuariosPage() {
                 ))}
               </div>
 
-              <div className="hidden overflow-x-auto md:block">
+              <div className="app-table-scroll hidden md:block">
                 <table className="min-w-[640px] w-full table-fixed divide-y divide-gray-200 dark:divide-slate-800 text-xs">
                   <thead className="app-table-head">
                     <tr>
-                      <th className="app-table-head-cell w-[25%]"><button type="button" onClick={() => handleSort("nome")} className="inline-flex items-center gap-1">Nome{sortBy === "nome" && sortDirection === "asc" ? <ArrowUpNarrowWide size={14} /> : sortBy === "nome" ? <ArrowDownWideNarrow size={14} /> : null}</button></th>
-                      <th className="app-table-head-cell w-[30%]"><button type="button" onClick={() => handleSort("email")} className="inline-flex items-center gap-1">Email{sortBy === "email" && sortDirection === "asc" ? <ArrowUpNarrowWide size={14} /> : sortBy === "email" ? <ArrowDownWideNarrow size={14} /> : null}</button></th>
+                      <SortableHeader label="Nome" column="nome" sortBy={sortBy} sortDirection={sortDirection} onSort={handleSort} className="w-[25%]" />
+                      <SortableHeader label="Email" column="email" sortBy={sortBy} sortDirection={sortDirection} onSort={handleSort} className="w-[30%]" />
                       <th className="app-table-head-cell-center w-[15%]">Papel</th>
-                      <th className="app-table-head-cell-center w-[15%]"><button type="button" onClick={() => handleSort("status")} className="inline-flex items-center gap-1">Status{sortBy === "status" && sortDirection === "asc" ? <ArrowUpNarrowWide size={14} /> : sortBy === "status" ? <ArrowDownWideNarrow size={14} /> : null}</button></th>
+                      <SortableHeader label="Status" column="status" sortBy={sortBy} sortDirection={sortDirection} onSort={handleSort} align="center" className="w-[15%]" />
                       <th className="app-table-head-cell-center w-[15%]">Ações</th>
                     </tr>
                   </thead>

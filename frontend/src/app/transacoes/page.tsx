@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useId, useMemo, useRef, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   Transacao,
   TransacaoFilters,
@@ -17,7 +17,6 @@ import { bankService } from "@/services/bankService";
 import { TransacaoModal } from "@/components/TransacaoModal";
 import Pagination from "@/components/Pagination";
 import {
-  Filter,
   MoreVertical,
   ChevronDown,
   Copy,
@@ -29,7 +28,7 @@ import ConfirmDeleteModal from "@/components/ConfirmDeleteModal";
 import PageHeader from "@/components/PageHeader";
 import AppButton from "@/components/AppButton";
 import ViewDataModal from "@/components/ViewDataModal";
-import { useAccessibleModal } from "@/utils/useAccessibleModal";
+import { parsePositiveInt, useUrlFilterSync } from "@/utils/useUrlFilterSync";
 import { createPortal } from "react-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
@@ -103,12 +102,6 @@ const parseDateToTimestamp = (value: string): number => {
 
 export default function TransacoesPage() {
   const queryClient = useQueryClient();
-  const copyModalRef = useRef<HTMLDivElement>(null);
-  const copyModalTitleId = useId();
-  const deleteModalRef = useRef<HTMLDivElement>(null);
-  const deleteModalTitleId = useId();
-  const deleteTransactionMonthsModalRef = useRef<HTMLDivElement>(null);
-  const deleteTransactionMonthsModalTitleId = useId();
 
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
@@ -156,7 +149,6 @@ export default function TransacoesPage() {
   const [advancedActionsOpen, setAdvancedActionsOpen] = useState(false);
   const [copyModalOpen, setCopyModalOpen] = useState(false);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
-  const [showFilters, setShowFilters] = useState(false);
   const [isPortalReady, setIsPortalReady] = useState(false);
 
   // TanStack Queries
@@ -169,6 +161,33 @@ export default function TransacoesPage() {
     queryKey: ["banks"],
     queryFn: () => bankService.getAll({ limit: 999 }).then((res) => res.data || []),
   });
+
+  // Filtros na URL: permite recarregar, compartilhar e voltar ao mesmo estado
+  const filtersReady = useUrlFilterSync(
+    (params) => {
+      const mes = params.get("mes");
+      if (mes === "todos") setFilterMes("");
+      else if (mes && /^\d{4}-\d{2}$/.test(mes)) setFilterMes(mes);
+      const busca = params.get("busca");
+      if (busca) setSearchTerm(busca);
+      const tipo = params.get("tipo");
+      if (tipo === "DESPESA" || tipo === "RECEITA") setFilterTipo(tipo);
+      const situacao = params.get("situacao");
+      if (situacao === "PAGO" || situacao === "PENDENTE") setFilterSituacao(situacao);
+      const categoria = parsePositiveInt(params.get("categoria"));
+      if (categoria) setFilterCategoria(categoria);
+      const banco = parsePositiveInt(params.get("banco"));
+      if (banco) setFilterBanco(banco);
+    },
+    {
+      mes: filterMes === currentMonthInputValue() ? null : filterMes || "todos",
+      busca: searchTerm,
+      tipo: filterTipo === "TODOS" ? null : filterTipo,
+      categoria: filterCategoria === "TODOS" ? null : String(filterCategoria),
+      banco: filterBanco === "TODOS" ? null : String(filterBanco),
+      situacao: filterSituacao === "TODOS" ? null : filterSituacao,
+    },
+  );
 
   const queryFilters = useMemo(() => {
     const filters: TransacaoFilters = {
@@ -192,12 +211,14 @@ export default function TransacoesPage() {
   } = useQuery({
     queryKey: ["transacoes", queryFilters],
     queryFn: () => transacaoService.getAll(queryFilters),
+    enabled: filtersReady,
     placeholderData: (previousData) => previousData,
   });
 
   const { data: summary } = useQuery({
     queryKey: ["transacoes-summary", queryFilters],
     queryFn: () => transacaoService.getSummary(queryFilters),
+    enabled: filtersReady,
     placeholderData: (previousData) => previousData,
   });
 
@@ -235,7 +256,13 @@ export default function TransacoesPage() {
     },
     onSuccess: (data, variables) => {
       const novaSituacao = variables.situacao === "PAGO" ? "PENDENTE" : "PAGO";
-      toast.success(`Transação marcada como ${situacaoLabel[novaSituacao]}.`);
+      toast.success(`Transação marcada como ${situacaoLabel[novaSituacao]}.`, {
+        action: {
+          label: "Desfazer",
+          // Reaplica o toggle a partir da nova situação, voltando à anterior
+          onClick: () => toggleSituacaoMutation.mutate({ ...variables, situacao: novaSituacao }),
+        },
+      });
       queryClient.invalidateQueries({ queryKey: ["transacoes"] });
       queryClient.invalidateQueries({ queryKey: ["transacoes-summary"] });
     }
@@ -254,15 +281,6 @@ export default function TransacoesPage() {
     }
   });
 
-  const activeFiltersCount = useMemo(() => {
-    let count = 0;
-    if (searchTerm) count++;
-    if (filterTipo !== "TODOS") count++;
-    if (filterCategoria !== "TODOS") count++;
-    if (filterBanco !== "TODOS") count++;
-    if (filterSituacao !== "TODOS") count++;
-    return count;
-  }, [searchTerm, filterTipo, filterCategoria, filterBanco, filterSituacao]);
 
   const handleSort = (column: any) => {
     if (sortBy === column) {
@@ -281,24 +299,6 @@ export default function TransacoesPage() {
     setEditingTransacao(transacao);
     setIsModalOpen(true);
   };
-
-  useAccessibleModal({
-    isOpen: copyModalOpen,
-    modalRef: copyModalRef,
-    onClose: () => setCopyModalOpen(false),
-  });
-
-  useAccessibleModal({
-    isOpen: deleteModalOpen,
-    modalRef: deleteModalRef,
-    onClose: () => setDeleteModalOpen(false),
-  });
-
-  useAccessibleModal({
-    isOpen: deleteTransactionMonthsModalOpen,
-    modalRef: deleteTransactionMonthsModalRef,
-    onClose: () => setDeleteTransactionMonthsModalOpen(false),
-  });
 
   const handleView = (transacao: Transacao) => {
     setViewingTransacao(transacao);
@@ -661,20 +661,6 @@ export default function TransacoesPage() {
           description="Controle suas receitas e despesas mensais"
           actions={
             <>
-              <AppButton
-                tone={showFilters ? "outline-primary" : "outline"}
-                onClick={() => setShowFilters(!showFilters)}
-                className="relative w-full md:w-auto"
-                startIcon={<Filter size={18} className={showFilters ? "fill-blue-100 dark:fill-blue-900/50" : ""} />}
-              >
-                {showFilters ? "Ocultar Filtros" : "Mostrar Filtros"}
-                {activeFiltersCount > 0 && (
-                  <span className="absolute -right-2 -top-2 flex h-5 w-5 items-center justify-center rounded-full bg-blue-600 text-xs font-bold text-white shadow-md ring-2 ring-white dark:ring-slate-900">
-                    {activeFiltersCount}
-                  </span>
-                )}
-              </AppButton>
-
               <div className="relative inline-block text-left">
                 <div className="hidden sm:block">
                   <AppButton
@@ -802,7 +788,6 @@ export default function TransacoesPage() {
           filterBanco={filterBanco}
           filterSituacao={filterSituacao}
           filterMes={filterMes}
-          showFilters={showFilters}
           categories={categories}
           banks={banks}
           onSearch={handleSearch}
@@ -837,7 +822,7 @@ export default function TransacoesPage() {
         <div className="app-surface p-4 w-full overflow-hidden">
           <TransactionList
             transacoes={sortedTransacoes}
-            loading={loadingTransacoes}
+            loading={loadingTransacoes || !filtersReady}
             sortBy={sortBy}
             sortDirection={sortDirection}
             onSort={handleSort}
@@ -890,7 +875,6 @@ export default function TransacoesPage() {
       />
 
       <AdvancedActionModals
-        isPortalReady={isPortalReady}
         copyModalOpen={copyModalOpen}
         onCopyModalClose={() => setCopyModalOpen(false)}
         copyMesOrigem={copyMesOrigem}
@@ -929,12 +913,6 @@ export default function TransacoesPage() {
         onAddDeleteTransactionNextMonths={handleAddDeleteTransactionNextMonths}
         onRequestDeleteTransactionByMonths={requestDeleteTransactionByMonths}
         deleteTransactionMonthsLoading={deleteTransactionMonthsLoading}
-        copyModalRef={copyModalRef}
-        copyModalTitleId={copyModalTitleId}
-        deleteModalRef={deleteModalRef}
-        deleteModalTitleId={deleteModalTitleId}
-        deleteTransactionMonthsModalRef={deleteTransactionMonthsModalRef}
-        deleteTransactionMonthsModalTitleId={deleteTransactionMonthsModalTitleId}
         monthApiToInput={monthApiToInput}
       />
 

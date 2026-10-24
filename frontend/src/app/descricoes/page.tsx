@@ -2,12 +2,7 @@
 
 import { useMemo, useState } from "react";
 import {
-  Search,
   FileText,
-  X,
-  ArrowDownWideNarrow,
-  ArrowUpNarrowWide,
-  Filter,
   Plus,
 } from "lucide-react";
 import { descricaoService } from "@/services/descricaoService";
@@ -22,11 +17,15 @@ import PageHeader from "@/components/PageHeader";
 import AppButton from "@/components/AppButton";
 import TableActionButton from "@/components/TableActionButton";
 import ViewDataModal from "@/components/ViewDataModal";
-import { IconButton, InputAdornment, MenuItem, TextField } from "@mui/material";
+import { MenuItem, TextField } from "@mui/material";
 import { TableSkeleton, CardSkeleton } from "@/components/skeletons/DataSkeletons";
 import EmptyState from "@/components/EmptyState";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import ActiveBadge from "@/components/ActiveBadge";
+import SortableHeader from "@/components/SortableHeader";
+import FilterBar from "@/components/FilterBar";
+import { FilterChip } from "@/components/FilterChips";
+import { parsePositiveInt, useUrlFilterSync } from "@/utils/useUrlFilterSync";
 
 export default function DescricoesPage() {
   const queryClient = useQueryClient();
@@ -41,7 +40,22 @@ export default function DescricoesPage() {
   const [viewingDescricao, setViewingDescricao] = useState<Descricao | null>(null);
   const [sortBy, setSortBy] = useState<"nome" | "categoria" | "status">("nome");
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
-  const [showFilters, setShowFilters] = useState(false);
+  // Filtros na URL: permite recarregar, compartilhar e voltar ao mesmo estado
+  const filtersReady = useUrlFilterSync(
+    (params) => {
+      const busca = params.get("busca");
+      if (busca) setSearchTerm(busca);
+      const categoria = parsePositiveInt(params.get("categoria"));
+      if (categoria) setFilterCategoria(categoria);
+      const status = params.get("status");
+      if (status === "ativos" || status === "inativos") setFilterAtivo(status === "ativos");
+    },
+    {
+      busca: searchTerm,
+      categoria: filterCategoria === "TODOS" ? null : String(filterCategoria),
+      status: filterAtivo === undefined ? null : filterAtivo ? "ativos" : "inativos",
+    },
+  );
 
   // TanStack Queries
   const { data: categories = [] } = useQuery({
@@ -60,11 +74,13 @@ export default function DescricoesPage() {
     return filters;
   }, [currentPage, itemsPerPage, searchTerm, filterAtivo, filterCategoria]);
 
-  const { data: descricoesData, isLoading: loading, isFetching } = useQuery({
+  const { data: descricoesData, isLoading: loadingQuery, isFetching } = useQuery({
     queryKey: ["descricoes", queryFilters],
+    enabled: filtersReady,
     queryFn: () => descricaoService.getAll(queryFilters),
     placeholderData: (prev) => prev,
   });
+  const loading = loadingQuery || !filtersReady;
 
   const deleteMutation = useMutation({
     mutationFn: (id: number) => descricaoService.delete(id),
@@ -82,14 +98,6 @@ export default function DescricoesPage() {
   const descricoes = descricoesData?.data || [];
   const total = descricoesData?.pagination?.total || 0;
   const totalPages = descricoesData?.pagination?.totalPages || 1;
-
-  const activeFiltersCount = useMemo(() => {
-    let count = 0;
-    if (searchTerm) count++;
-    if (filterCategoria !== "TODOS") count++;
-    if (filterAtivo !== undefined) count++;
-    return count;
-  }, [searchTerm, filterCategoria, filterAtivo]);
 
   const handleSort = (column: "nome" | "categoria" | "status") => {
     if (sortBy === column) {
@@ -155,6 +163,25 @@ export default function DescricoesPage() {
     handleCloseModal();
   };
 
+  const handleClearFilters = () => {
+    setSearchTerm("");
+    setFilterAtivo(undefined);
+    setFilterCategoria("TODOS");
+    setCurrentPage(1);
+  };
+
+  const filterChips: FilterChip[] = [];
+  if (searchTerm) {
+    filterChips.push({ key: "busca", label: `Busca: “${searchTerm}”`, onRemove: () => handleSearch("") });
+  }
+  if (filterCategoria !== "TODOS") {
+    const nome = categories.find((cat) => cat.id === filterCategoria)?.nome ?? `#${filterCategoria}`;
+    filterChips.push({ key: "categoria", label: `Categoria: ${nome}`, onRemove: () => { setFilterCategoria("TODOS"); setCurrentPage(1); } });
+  }
+  if (filterAtivo !== undefined) {
+    filterChips.push({ key: "status", label: `Status: ${filterAtivo ? "Ativos" : "Inativos"}`, onRemove: () => { setFilterAtivo(undefined); setCurrentPage(1); } });
+  }
+
   return (
     <div className="app-page py-4 sm:py-8">
       <div className="mx-auto max-w-7xl space-y-6 px-4 sm:px-6 lg:px-8">
@@ -163,19 +190,6 @@ export default function DescricoesPage() {
           description="Gerencie descrições vinculadas às categorias"
           actions={
             <>
-              <AppButton
-                tone={showFilters ? "outline-primary" : "outline"}
-                onClick={() => setShowFilters(!showFilters)}
-                className="relative"
-                startIcon={<Filter size={18} />}
-              >
-                {showFilters ? "Ocultar Filtros" : "Mostrar Filtros"}
-                {activeFiltersCount > 0 && (
-                  <span className="absolute -right-2 -top-2 flex h-5 w-5 items-center justify-center rounded-full bg-blue-600 text-xs font-bold text-white shadow-md ring-2 ring-white dark:ring-slate-900">
-                    {activeFiltersCount}
-                  </span>
-                )}
-              </AppButton>
               <AppButton
                 onClick={handleCreate}
                 tone="primary"
@@ -188,91 +202,56 @@ export default function DescricoesPage() {
           }
         />
 
-        <div className={`filter-panel-surface ${!showFilters ? "hidden" : "block animate-in fade-in slide-in-from-top-2 duration-300"}`}>
-          <div className="mb-4 flex items-center justify-between border-b border-gray-100 pb-3 dark:border-slate-800">
-            <h3 className="text-sm font-semibold text-gray-700 dark:text-slate-300">Filtros de Descrições</h3>
-            <button
-              type="button"
-              onClick={() => {
-                setSearchTerm("");
-                setFilterAtivo(undefined);
-                setFilterCategoria("TODOS");
-                setCurrentPage(1);
-              }}
-              className="text-xs font-medium text-blue-600 hover:text-blue-800 transition dark:text-blue-400 dark:hover:text-blue-300"
-            >
-              Limpar tudo
-            </button>
-          </div>
-          <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
-            <div>
+        <FilterBar
+          label="Filtros de descrições"
+          search={{ value: searchTerm, onChange: handleSearch, placeholder: "Buscar descrição por nome" }}
+          advancedCount={(filterCategoria !== "TODOS" ? 1 : 0) + (filterAtivo !== undefined ? 1 : 0)}
+          chips={filterChips}
+          onClearAll={handleClearFilters}
+          advanced={
+            <>
               <TextField
-                type="text"
-                label="Buscar"
+                select
+                label="Categoria"
                 variant="outlined"
                 size="small"
                 fullWidth
-                value={searchTerm}
-                onChange={(e) => handleSearch(e.target.value)}
                 InputLabelProps={{ shrink: true }}
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <Search size={20} className="text-gray-400" />
-                    </InputAdornment>
-                  ),
-                  endAdornment: searchTerm ? (
-                    <InputAdornment position="end">
-                      <IconButton size="small" onClick={() => handleSearch("")} aria-label="Limpar pesquisa">
-                        <X size={16} />
-                      </IconButton>
-                    </InputAdornment>
-                  ) : undefined,
+                value={filterCategoria}
+                onChange={(e) => {
+                  setFilterCategoria(e.target.value === "TODOS" ? "TODOS" : Number(e.target.value));
+                  setCurrentPage(1);
                 }}
-              />
-            </div>
+              >
+                <MenuItem value="TODOS">Todas</MenuItem>
+                {sortedCategories.map((cat) => (
+                  <MenuItem key={cat.id} value={cat.id}>
+                    {cat.nome}
+                  </MenuItem>
+                ))}
+              </TextField>
 
-            <TextField
-              select
-              label="Categoria"
-              variant="outlined"
-              size="small"
-              fullWidth
-              InputLabelProps={{ shrink: true }}
-              value={filterCategoria}
-              onChange={(e) => {
-                setFilterCategoria(e.target.value === "TODOS" ? "TODOS" : Number(e.target.value));
-                setCurrentPage(1);
-              }}
-            >
-              <MenuItem value="TODOS">Todas</MenuItem>
-              {sortedCategories.map((cat) => (
-                <MenuItem key={cat.id} value={cat.id}>
-                  {cat.nome}
-                </MenuItem>
-              ))}
-            </TextField>
-
-            <TextField
-              select
-              label="Status"
-              variant="outlined"
-              size="small"
-              fullWidth
-              InputLabelProps={{ shrink: true }}
-              value={filterAtivo === undefined ? "TODOS" : filterAtivo.toString()}
-              onChange={(e) => {
-                const val = e.target.value;
-                setFilterAtivo(val === "TODOS" ? undefined : val === "true");
-                setCurrentPage(1);
-              }}
-            >
-              <MenuItem value="TODOS">Todos</MenuItem>
-              <MenuItem value="true">Ativos</MenuItem>
-              <MenuItem value="false">Inativos</MenuItem>
-            </TextField>
-          </div>
-        </div>
+              <TextField
+                select
+                label="Status"
+                variant="outlined"
+                size="small"
+                fullWidth
+                InputLabelProps={{ shrink: true }}
+                value={filterAtivo === undefined ? "TODOS" : filterAtivo.toString()}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  setFilterAtivo(val === "TODOS" ? undefined : val === "true");
+                  setCurrentPage(1);
+                }}
+              >
+                <MenuItem value="TODOS">Todos</MenuItem>
+                <MenuItem value="true">Ativos</MenuItem>
+                <MenuItem value="false">Inativos</MenuItem>
+              </TextField>
+            </>
+          }
+        />
 
         <div className={`app-surface p-4 transition-opacity duration-200 ${isFetching && !loading ? "opacity-50" : "opacity-100"}`}>
           {loading ? (
@@ -328,28 +307,13 @@ export default function DescricoesPage() {
                 ))}
               </div>
 
-              <div className="hidden overflow-x-auto md:block">
+              <div className="app-table-scroll hidden md:block">
                 <table className="min-w-[640px] w-full table-fixed divide-y divide-gray-200 dark:divide-slate-800 text-xs">
                   <thead className="app-table-head">
                     <tr>
-                      <th className="app-table-head-cell w-[45%]">
-                        <button type="button" onClick={() => handleSort("nome")} className="inline-flex items-center gap-1">
-                          Descrição
-                          {sortBy === "nome" && sortDirection === "asc" ? <ArrowUpNarrowWide size={14} /> : sortBy === "nome" ? <ArrowDownWideNarrow size={14} /> : null}
-                        </button>
-                      </th>
-                      <th className="app-table-head-cell w-[25%]">
-                        <button type="button" onClick={() => handleSort("categoria")} className="inline-flex items-center gap-1">
-                          Categoria
-                          {sortBy === "categoria" && sortDirection === "asc" ? <ArrowUpNarrowWide size={14} /> : sortBy === "categoria" ? <ArrowDownWideNarrow size={14} /> : null}
-                        </button>
-                      </th>
-                      <th className="app-table-head-cell-center w-[15%]">
-                        <button type="button" onClick={() => handleSort("status")} className="inline-flex items-center gap-1">
-                          Status
-                          {sortBy === "status" && sortDirection === "asc" ? <ArrowUpNarrowWide size={14} /> : sortBy === "status" ? <ArrowDownWideNarrow size={14} /> : null}
-                        </button>
-                      </th>
+                      <SortableHeader label="Descrição" column="nome" sortBy={sortBy} sortDirection={sortDirection} onSort={handleSort} className="w-[45%]" />
+                      <SortableHeader label="Categoria" column="categoria" sortBy={sortBy} sortDirection={sortDirection} onSort={handleSort} className="w-[25%]" />
+                      <SortableHeader label="Status" column="status" sortBy={sortBy} sortDirection={sortDirection} onSort={handleSort} align="center" className="w-[15%]" />
                       <th className="app-table-head-cell-center w-[15%]">Ações</th>
                     </tr>
                   </thead>

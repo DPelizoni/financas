@@ -1,19 +1,16 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import {
-  Filter,
-} from "lucide-react";
 import { transacaoService } from "@/services/transacaoService";
 import { categoryService } from "@/services/categoryService";
 import { bankService } from "@/services/bankService";
 import { Transacao } from "@/types/transacao";
 import { toast } from "sonner";
 import PageHeader from "@/components/PageHeader";
-import AppButton from "@/components/AppButton";
 import { useQuery } from "@tanstack/react-query";
 import { motion } from "framer-motion";
-import { formatCurrency } from "@/utils/format";
+import { formatCurrency, formatMonthShort, previousMonthKey } from "@/utils/format";
+import { parsePositiveInt, useUrlFilterSync } from "@/utils/useUrlFilterSync";
 
 // New Components
 import { SummaryCards } from "./components/SummaryCards";
@@ -32,11 +29,6 @@ interface MonthlyPoint {
 const tipoLabel: Record<"DESPESA" | "RECEITA", string> = {
   DESPESA: "Despesa",
   RECEITA: "Receita",
-};
-
-const situacaoLabel: Record<"PENDENTE" | "PAGO", string> = {
-  PENDENTE: "Pendente",
-  PAGO: "Pago",
 };
 
 const chartColors = {
@@ -107,7 +99,6 @@ const currentMonthValue = (): string => {
 export default function DashboardPage() {
   const currentYear = String(new Date().getFullYear());
   const [isMobile, setIsMobile] = useState(false);
-  const [showFilters, setShowFilters] = useState(false);
 
   useEffect(() => {
     const mediaQuery = window.matchMedia("(max-width: 767px)");
@@ -126,17 +117,46 @@ export default function DashboardPage() {
   const [filterMesAno, setFilterMesAno] = useState(currentMonthValue);
   const [filterAno, setFilterAno] = useState<string>(currentYear);
 
-  const activeFiltersCount = useMemo(() => {
-    let count = 0;
-    if (filterMesAno !== currentMonthValue()) count++;
-    if (filterAno !== currentYear && filterAno !== "TODOS") count++;
-    if (filterTipo !== "TODOS") count++;
-    if (filterSituacao !== "TODOS") count++;
-    if (filterCategoria !== "TODOS") count++;
-    if (filterBanco !== "TODOS") count++;
-    if (periodMonths !== 12 && !filterMesAno) count++;
-    return count;
-  }, [filterMesAno, filterAno, filterTipo, filterSituacao, filterCategoria, filterBanco, periodMonths, currentYear]);
+  // Filtros na URL: permite recarregar, compartilhar e voltar ao mesmo estado
+  const filtersReady = useUrlFilterSync(
+    (params) => {
+      const mes = params.get("mes");
+      if (mes === "todos") setFilterMesAno("");
+      else if (mes && /^\d{4}-\d{2}$/.test(mes)) setFilterMesAno(mes);
+      const periodo = Number(params.get("periodo"));
+      if (periodo === 3 || periodo === 6 || periodo === 12) setPeriodMonths(periodo);
+      const ano = params.get("ano");
+      if (ano === "todos") setFilterAno("TODOS");
+      else if (ano && /^\d{4}$/.test(ano)) setFilterAno(ano);
+      const tipo = params.get("tipo");
+      if (tipo === "DESPESA" || tipo === "RECEITA") setFilterTipo(tipo);
+      const situacao = params.get("situacao");
+      if (situacao === "PAGO" || situacao === "PENDENTE") setFilterSituacao(situacao);
+      const categoria = parsePositiveInt(params.get("categoria"));
+      if (categoria) setFilterCategoria(categoria);
+      const banco = parsePositiveInt(params.get("banco"));
+      if (banco) setFilterBanco(banco);
+    },
+    {
+      mes: filterMesAno === currentMonthValue() ? null : filterMesAno || "todos",
+      periodo: periodMonths === 12 ? null : String(periodMonths),
+      ano: filterAno === currentYear ? null : filterAno === "TODOS" ? "todos" : filterAno,
+      tipo: filterTipo === "TODOS" ? null : filterTipo,
+      situacao: filterSituacao === "TODOS" ? null : filterSituacao,
+      categoria: filterCategoria === "TODOS" ? null : String(filterCategoria),
+      banco: filterBanco === "TODOS" ? null : String(filterBanco),
+    },
+  );
+
+  const handleClearFilters = () => {
+    setFilterMesAno(currentMonthValue());
+    setFilterAno(currentYear);
+    setPeriodMonths(12);
+    setFilterTipo("TODOS");
+    setFilterSituacao("TODOS");
+    setFilterCategoria("TODOS");
+    setFilterBanco("TODOS");
+  };
 
   const [tableSortBy, setTableSortBy] = useState<"mes" | "tipo" | "categoria" | "banco" | "situacao" | "valor">("mes");
   const [tableSortDirection, setTableSortDirection] = useState<"asc" | "desc">("asc");
@@ -243,6 +263,26 @@ export default function DashboardPage() {
     });
   }, [filteredTransacoes, filterMesAno, periodMonths]);
 
+  // Totais do mês anterior ao selecionado, com os mesmos filtros, para a variação dos cards
+  const previousMonthSummary = useMemo(() => {
+    if (!filterMesAno) return undefined;
+    const prevKey = previousMonthKey(filterMesAno);
+    const items = transacoes.filter((t) => {
+      if (parseMesToKey(t.mes) !== prevKey) return false;
+      if (filterTipo !== "TODOS" && t.tipo !== filterTipo) return false;
+      if (filterSituacao !== "TODOS" && t.situacao !== filterSituacao) return false;
+      if (filterCategoria !== "TODOS" && t.categoria_id !== filterCategoria) return false;
+      if (filterBanco !== "TODOS" && t.banco_id !== filterBanco) return false;
+      return true;
+    });
+    const receita = items.filter((t) => t.tipo === "RECEITA").reduce((acc, t) => acc + Number(t.valor), 0);
+    const despesa = items.filter((t) => t.tipo === "DESPESA").reduce((acc, t) => acc + Number(t.valor), 0);
+    return {
+      label: formatMonthShort(prevKey),
+      totals: { total_receita: receita, total_despesa: despesa, total_liquido: receita - despesa },
+    };
+  }, [transacoes, filterMesAno, filterTipo, filterSituacao, filterCategoria, filterBanco]);
+
   const summaryCardsData = useMemo(() => {
     const totalReceita = periodFilteredTransacoes.filter((t) => t.tipo === "RECEITA").reduce((acc, t) => acc + Number(t.valor), 0);
     const totalDespesa = periodFilteredTransacoes.filter((t) => t.tipo === "DESPESA").reduce((acc, t) => acc + Number(t.valor), 0);
@@ -295,7 +335,7 @@ export default function DashboardPage() {
       .slice(0, 12);
   }, [filteredTransacoes, tableSortBy, tableSortDirection]);
 
-  if (loadingTransacoes) {
+  if (loadingTransacoes || !filtersReady) {
     return (
       <div className="app-page py-4 sm:py-8">
         <div className="mx-auto max-w-7xl space-y-6 px-4 sm:px-6 lg:px-8">
@@ -314,27 +354,15 @@ export default function DashboardPage() {
         <PageHeader
           title="Dashboard"
           description="Visão consolidada de desempenho financeiro."
-          actions={
-            <>
-              <AppButton
-                tone={showFilters ? "outline-primary" : "outline"}
-                onClick={() => setShowFilters(!showFilters)}
-                className="relative"
-                startIcon={<Filter size={18} />}
-              >
-                {showFilters ? "Ocultar Filtros" : "Mostrar Filtros"}
-                {activeFiltersCount > 0 && <span className="absolute -right-2 -top-2 flex h-5 w-5 items-center justify-center rounded-full bg-blue-600 text-xs font-bold text-white shadow-md ring-2 ring-white dark:ring-slate-900">{activeFiltersCount}</span>}
-              </AppButton>
-            </>
-          }
         />
 
-        <DashboardFilters 
-          showFilters={showFilters} periodMonths={periodMonths} setPeriodMonths={setPeriodMonths} 
+        <DashboardFilters
+          periodMonths={periodMonths} setPeriodMonths={setPeriodMonths} 
           filterMesAno={filterMesAno} setFilterMesAno={setFilterMesAno} filterAno={filterAno} setFilterAno={setFilterAno} 
           filterTipo={filterTipo} setFilterTipo={setFilterTipo} filterSituacao={filterSituacao} setFilterSituacao={setFilterSituacao} 
           filterBanco={filterBanco} setFilterBanco={setFilterBanco} filterCategoria={filterCategoria} setFilterCategoria={setFilterCategoria} 
-          availableYears={availableYears} sortedBanks={sortedBanks} sortedCategories={sortedCategories} currentYear={currentYear}
+          availableYears={availableYears} sortedBanks={sortedBanks} sortedCategories={sortedCategories}
+          onClearFilters={handleClearFilters}
         />
 
         <motion.div
@@ -342,7 +370,11 @@ export default function DashboardPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
         >
-          <SummaryCards summary={summaryCardsData} currency={currency} />
+          <SummaryCards
+            summary={summaryCardsData}
+            previous={previousMonthSummary?.totals}
+            previousLabel={previousMonthSummary?.label}
+          />
         </motion.div>
 
         <motion.div
@@ -373,7 +405,7 @@ export default function DashboardPage() {
         >
           <DashboardTransactionsTable 
             detailedRows={detailedRows} tableSortBy={tableSortBy} tableSortDirection={tableSortDirection} 
-            handleTableSort={handleTableSort} tipoLabel={tipoLabel} situacaoLabel={situacaoLabel} currency={currency}
+            handleTableSort={handleTableSort} tipoLabel={tipoLabel}
           />
         </motion.div>
       </div>
