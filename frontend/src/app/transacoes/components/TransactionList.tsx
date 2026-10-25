@@ -13,6 +13,56 @@ import EmptyState from "@/components/EmptyState";
 import MoneyValue from "@/components/MoneyValue";
 import SituacaoBadge from "@/components/SituacaoBadge";
 import SortableHeader from "@/components/SortableHeader";
+import CategoryIcon from "@/components/CategoryIcon";
+import BankLogo from "@/components/BankLogo";
+import { formatSignedCurrency } from "@/utils/format";
+
+interface DayGroup {
+  key: string;
+  label: string | null;
+  net: number;
+  items: Transacao[];
+}
+
+const DAY_MS = 24 * 60 * 60 * 1000;
+
+// "24/10/2026" -> "Hoje · sexta-feira, 24 de outubro"
+const dayLabel = (vencimento: string): string => {
+  const match = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec(vencimento || "");
+  if (!match) return vencimento || "Sem vencimento";
+  const date = new Date(Number(match[3]), Number(match[2]) - 1, Number(match[1]));
+  const now = new Date();
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const diff = Math.round((date.getTime() - today.getTime()) / DAY_MS);
+  const formatted = date.toLocaleDateString("pt-BR", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+    ...(date.getFullYear() !== today.getFullYear() ? { year: "numeric" } : {}),
+  });
+  const relative = diff === 0 ? "Hoje" : diff === 1 ? "Amanhã" : diff === -1 ? "Ontem" : null;
+  return relative ? `${relative} · ${formatted}` : formatted.charAt(0).toUpperCase() + formatted.slice(1);
+};
+
+// Agrupa itens consecutivos com o mesmo vencimento. Só faz sentido com a lista ordenada por
+// vencimento; em outra ordenação, a lista fica num grupo só, sem cabeçalho.
+const groupByDay = (transacoes: Transacao[], sortBy: string): DayGroup[] => {
+  if (sortBy !== "vencimento") {
+    return [{ key: "todos", label: null, net: 0, items: transacoes }];
+  }
+  const groups: DayGroup[] = [];
+  transacoes.forEach((t) => {
+    const signed = t.tipo === "DESPESA" ? -Number(t.valor) : Number(t.valor);
+    const last = groups[groups.length - 1];
+    if (last && last.key === t.vencimento) {
+      last.items.push(t);
+      last.net += signed;
+    } else {
+      groups.push({ key: t.vencimento, label: dayLabel(t.vencimento), net: signed, items: [t] });
+    }
+  });
+  return groups;
+};
 
 interface TransactionListProps {
   transacoes: Transacao[];
@@ -77,57 +127,64 @@ export function TransactionList({
     );
   }
 
+  const groups = groupByDay(transacoes, sortBy);
+
   return (
     <>
-      {/* Visão Mobile - Cards */}
-      <div className="px-2 sm:px-0 sm:hidden">
-        <div className="space-y-3">
-          {transacoes.map((transacao) => (
-            <div
-              key={transacao.id}
-              className={`relative overflow-hidden rounded-lg border border-gray-200/80 bg-white p-4 shadow-sm transition-all active:scale-[0.98] dark:border-slate-800 dark:bg-slate-900 ${
-                transacao.tipo === "DESPESA" 
-                  ? "border-l-4 border-l-red-500" 
-                  : "border-l-4 border-l-green-500"
-              }`}
-            >
-              <div className="flex items-start justify-between gap-3">
-                <div className="flex items-center gap-3 min-w-0">
-                  <div
-                    className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full font-bold text-white shadow-md ${
-                      transacao.tipo === "DESPESA" ? "bg-red-500" : "bg-green-500"
-                    }`}
-                  >
-                    {transacao.tipo === "DESPESA" ? "D" : "R"}
-                  </div>
-                  <div className="min-w-0">
-                    <p className="truncate text-sm font-semibold text-gray-900 dark:text-white">
+      {/* Visão Mobile: lista agrupada por dia de vencimento; tocar no item abre o detalhe */}
+      <div className="-mx-4 -my-4 sm:hidden">
+        {groups.map((group) => (
+          <section key={group.key}>
+            {group.label && (
+              <div className="flex items-center justify-between gap-3 border-b border-[rgb(var(--app-border-subtle))] bg-[rgb(var(--app-bg-muted))] px-4 py-2 text-xs">
+                <span className="font-medium text-[rgb(var(--app-text-secondary))]">{group.label}</span>
+                {group.items.length > 1 && (
+                  <span className={`font-semibold tabular-nums ${group.net < 0 ? "text-[rgb(var(--app-status-error-text))]" : "text-[rgb(var(--app-status-success-text))]"}`}>
+                    {formatSignedCurrency(group.net, group.net < 0 ? "DESPESA" : "RECEITA")}
+                  </span>
+                )}
+              </div>
+            )}
+            <ul>
+              {group.items.map((transacao) => (
+                <li
+                  key={transacao.id}
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => onView(transacao)}
+                  onKeyDown={(event) => {
+                    if (event.key === "Enter" || event.key === " ") {
+                      event.preventDefault();
+                      onView(transacao);
+                    }
+                  }}
+                  aria-label={`${transacao.descricao_nome || "Sem descrição"}, ${formatSignedCurrency(transacao.valor, transacao.tipo)}. Abrir detalhes`}
+                  className="flex min-h-[64px] cursor-pointer items-center gap-3 border-b border-[rgb(var(--app-border-subtle))] px-4 py-3 transition-colors last:border-b-0 active:bg-[rgb(var(--app-bg-muted))] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[rgb(var(--app-focus-ring))]"
+                >
+                  <CategoryIcon nome={transacao.categoria_nome || ""} tipo={transacao.tipo} />
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-medium text-[rgb(var(--app-text-primary))]">
                       {transacao.descricao_nome || "Sem descrição"}
                     </p>
-                    <div className="flex flex-wrap items-center gap-x-2 text-xs text-gray-600 dark:text-slate-400">
-                      <span>{transacao.mes}</span>
-                      <span className="text-gray-300 dark:text-slate-700">•</span>
-                      <span>{transacao.vencimento}</span>
+                    <div className="mt-0.5 flex min-w-0 items-center gap-1.5 text-xs text-[rgb(var(--app-text-muted))]">
+                      {transacao.banco_nome && <BankLogo nome={transacao.banco_nome} size="sm" />}
+                      <span className="truncate">
+                        {[transacao.categoria_nome, transacao.banco_nome].filter(Boolean).join(" · ")}
+                      </span>
                     </div>
                   </div>
-                </div>
-
-                <div className="flex flex-col items-end shrink-0">
-                  <MoneyValue value={transacao.valor} tipo={transacao.tipo} className="text-sm" />
-                  <div className="mt-1">
-                    <SituacaoBadge situacao={transacao.situacao} onToggle={() => onToggleSituacao(transacao)} />
+                  <div className="flex shrink-0 flex-col items-end gap-1">
+                    <MoneyValue value={transacao.valor} tipo={transacao.tipo} className="text-sm" />
+                    {/* A tag alterna a situação sem abrir o detalhe */}
+                    <span onClick={(event) => event.stopPropagation()} onKeyDown={(event) => event.stopPropagation()}>
+                      <SituacaoBadge situacao={transacao.situacao} onToggle={() => onToggleSituacao(transacao)} />
+                    </span>
                   </div>
-                </div>
-              </div>
-
-              <div className="mt-3 flex items-center justify-end gap-2 border-t border-gray-100 pt-3 dark:border-slate-800">
-                <TableActionButton action="view" title="Visualizar" onClick={() => onView(transacao)} />
-                <TableActionButton action="edit" title="Editar" onClick={() => onEdit(transacao)} />
-                <TableActionButton action="delete" title="Excluir" onClick={() => onDelete(transacao.id, transacao.mes)} />
-              </div>
-            </div>
-          ))}
-        </div>
+                </li>
+              ))}
+            </ul>
+          </section>
+        ))}
       </div>
 
       {/* Visão Desktop/Tablet - Tabela */}

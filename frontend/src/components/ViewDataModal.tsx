@@ -30,6 +30,8 @@ interface ViewDataModalProps {
   excludeCopyFields?: string[];
   hideCopy?: boolean;
   renderField?: (key: string, value: unknown) => ReactNode | undefined;
+  // Botões extras no rodapé, depois do "Fechar" (ex.: Excluir e Editar)
+  footerActions?: ReactNode;
 }
 
 const defaultFieldLabels: Record<string, string> = {
@@ -220,6 +222,7 @@ export default function ViewDataModal({
   excludeCopyFields = [],
   hideCopy = false,
   renderField,
+  footerActions,
 }: ViewDataModalProps) {
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
 
@@ -422,6 +425,7 @@ export default function ViewDataModal({
         >
           Fechar
         </AppButton>
+        {footerActions}
       </div>
     </AppModal>
   );

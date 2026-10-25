@@ -21,6 +21,7 @@ import {
   ChevronDown,
   Copy,
   Trash,
+  Pencil,
   Plus,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -654,7 +655,7 @@ export default function TransacoesPage() {
   }, [viewingTransacao]);
 
   return (
-    <div className="app-page py-4 sm:py-8">
+    <div className="app-page pb-24 pt-4 sm:py-8">
       <div className="mx-auto max-w-7xl space-y-6 px-4 sm:px-6 lg:px-8">
         <PageHeader
           title="Transações"
@@ -773,7 +774,7 @@ export default function TransacoesPage() {
                 }}
                 tone="primary"
                 startIcon={<Plus size={18} />}
-                className="w-full sm:w-auto"
+                className="hidden sm:inline-flex"
               >
                 Nova Transação
               </AppButton>
@@ -857,7 +858,49 @@ export default function TransacoesPage() {
         title="Visualizar Transação"
         data={viewingTransacaoData}
         onClose={() => setViewingTransacao(null)}
+        footerActions={
+          viewingTransacao && (
+            <>
+              <AppButton
+                tone="outline-danger"
+                startIcon={<Trash size={16} />}
+                onClick={() => {
+                  const { id, mes } = viewingTransacao;
+                  setViewingTransacao(null);
+                  handleDelete(id, mes);
+                }}
+              >
+                Excluir
+              </AppButton>
+              <AppButton
+                tone="primary"
+                startIcon={<Pencil size={16} />}
+                onClick={() => {
+                  const transacao = viewingTransacao;
+                  setViewingTransacao(null);
+                  handleEdit(transacao);
+                }}
+              >
+                Editar
+              </AppButton>
+            </>
+          )
+        }
       />
+
+      {/* Botão flutuante no celular: substitui o "Nova Transação" do cabeçalho */}
+      <button
+        type="button"
+        onClick={() => {
+          setEditingTransacao(undefined);
+          setIsModalOpen(true);
+        }}
+        aria-label="Nova transação"
+        title="Nova transação"
+        className="fixed bottom-6 right-4 z-30 flex h-14 w-14 items-center justify-center rounded-full bg-[rgb(var(--app-brand-primary))] text-white shadow-lg transition active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[rgb(var(--app-focus-ring))] focus-visible:ring-offset-2 sm:hidden"
+      >
+        <Plus size={24} />
+      </button>
 
       <TransacaoModal
         isOpen={isModalOpen}
