@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Ban, Save } from "lucide-react";
 import { MenuItem, TextField } from "@mui/material";
+import PasswordField from "@/forms/components/PasswordField";
 import AppButton from "@/components/AppButton";
 import FormErrorSummary from "@/forms/components/FormErrorSummary";
 import {
@@ -282,10 +283,9 @@ export default function UserModal({
       </div>
 
       <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-        <TextField
+        <PasswordField
           id="senha"
           name="senha"
-          type="password"
           label="Senha"
           variant="outlined"
           size="small"
@@ -304,10 +304,9 @@ export default function UserModal({
           }
         />
 
-        <TextField
+        <PasswordField
           id="confirmarSenha"
           name="confirmarSenha"
-          type="password"
           label="Confirmar senha"
           variant="outlined"
           size="small"

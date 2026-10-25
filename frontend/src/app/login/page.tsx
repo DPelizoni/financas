@@ -8,6 +8,8 @@ import { TextField } from "@mui/material";
 import AppButton from "@/components/AppButton";
 import FeedbackAlert from "@/components/FeedbackAlert";
 import ThemeToggle from "@/components/ThemeToggle";
+import AuthHeader from "@/components/AuthHeader";
+import PasswordField from "@/forms/components/PasswordField";
 import FormErrorSummary from "@/forms/components/FormErrorSummary";
 import { authFieldSx } from "@/forms/core/auth-field-sx";
 import {
@@ -163,17 +165,10 @@ export default function LoginPage() {
         className="app-surface relative z-10 w-full max-w-md border p-8 backdrop-blur-sm"
         style={{ boxShadow: "var(--app-shadow-lg)" }}
       >
-        <div className="mb-6 text-center">
-          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[rgb(var(--app-text-muted))]">
-            Sistema Financeiro
-          </p>
-          <h1 className="mt-2 text-3xl font-bold tracking-tight text-[rgb(var(--app-text-primary))]">
-            Entrar
-          </h1>
-          <p className="mt-1 text-sm text-[rgb(var(--app-text-secondary))]">
-            Acesse sua conta para continuar.
-          </p>
-        </div>
+        <AuthHeader
+          title="Entrar"
+          description="Acesse sua conta para continuar."
+        />
 
         <FeedbackAlert feedback={feedback} onClose={clearFeedback} />
 
@@ -196,10 +191,9 @@ export default function LoginPage() {
             helperText={shouldShowError("email") ? fieldErrors.email : ""}
           />
 
-          <TextField
+          <PasswordField
             id="senha"
             name="senha"
-            type="password"
             label="Senha"
             variant="outlined"
             size="small"
