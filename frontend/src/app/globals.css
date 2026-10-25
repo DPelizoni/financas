@@ -517,7 +517,7 @@ body {
   }
 
   .app-table-row {
-    @apply transition-colors border-b border-gray-100 dark:border-slate-800;
+    @apply transition-colors border-b border-neutral-200 dark:border-slate-800;
   }
 
   .dashboard-summary-card-success {
@@ -614,15 +614,15 @@ body {
   }
 
   .app-table-head-cell {
-    @apply px-3 py-2.5 text-left text-sm font-semibold text-gray-900;
+    @apply px-3 py-2.5 text-left text-sm font-semibold text-neutral-900;
   }
 
   .app-table-head-cell-right {
-    @apply px-3 py-2.5 text-right text-sm font-semibold text-gray-900;
+    @apply px-3 py-2.5 text-right text-sm font-semibold text-neutral-900;
   }
 
   .app-table-head-cell-center {
-    @apply px-3 py-2.5 text-center text-sm font-semibold text-gray-900;
+    @apply px-3 py-2.5 text-center text-sm font-semibold text-neutral-900;
   }
 
   .app-pagination-button {
