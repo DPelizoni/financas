@@ -11,7 +11,8 @@
 
   --app-text-primary: 15 23 42;
   --app-text-secondary: 71 85 105;
-  --app-text-muted: 100 116 139;
+  /* slate-500 dava 4,3:1 sobre bg-muted; este tom passa de 4,5:1 (AA) em todos os fundos claros */
+  --app-text-muted: 91 105 125;
   --app-text-inverse: 248 250 252;
 
   --app-border-subtle: 226 232 240;
@@ -21,7 +22,8 @@
   --app-brand-primary: 37 99 235;
   --app-brand-primary-hover: 29 78 216;
   --app-brand-secondary: 14 165 233;
-  --app-focus-ring: 56 189 248;
+  /* Azul da marca: o sky-400 dava 2,1:1 sobre branco, abaixo do 3:1 exigido para o anel de foco */
+  --app-focus-ring: 37 99 235;
 
   --app-semantic-success: 22 163 74;
   --app-semantic-warning: 217 119 6;
@@ -81,6 +83,7 @@ html.dark {
   --app-text-primary: 226 232 240;
   --app-text-secondary: 203 213 225;
   --app-text-muted: 148 163 184;
+  --app-focus-ring: 56 189 248;
   --app-text-inverse: 2 6 23;
 
   --app-border-subtle: 30 41 59;
@@ -712,211 +715,6 @@ body {
   }
 }
 
-/* Compatibility layer for legacy utility classes already spread in pages/components */
-.bg-white {
-  background-color: rgb(var(--app-bg-surface));
-}
-
-.bg-white\/95 {
-  background-color: rgb(var(--app-bg-surface) / 0.95);
-}
-
-.bg-gray-50,
-.bg-slate-50 {
-  background-color: rgb(var(--app-neutral-50));
-}
-
-.bg-gray-100,
-.bg-slate-100 {
-  background-color: rgb(var(--app-neutral-100));
-}
-
-.bg-gray-200 {
-  background-color: rgb(var(--app-neutral-200));
-}
-
-.bg-gray-300 {
-  background-color: rgb(var(--app-neutral-300));
-}
-
-.text-gray-900,
-.text-gray-800,
-.text-slate-900,
-.text-slate-800 {
-  color: rgb(var(--app-neutral-900));
-}
-
-.text-gray-700,
-.text-gray-600,
-.text-slate-700,
-.text-slate-600 {
-  color: rgb(var(--app-neutral-700));
-}
-
-.text-gray-500,
-.text-slate-500 {
-  color: rgb(var(--app-neutral-500));
-}
-
-.text-gray-400,
-.text-slate-400 {
-  color: rgb(var(--app-neutral-400));
-}
-
-.text-gray-300,
-.text-slate-300 {
-  color: rgb(var(--app-neutral-300));
-}
-
-.text-gray-200,
-.text-slate-200 {
-  color: rgb(var(--app-neutral-200));
-}
-
-.border-gray-100,
-.border-gray-200,
-.border-gray-300,
-.border-slate-200 {
-  border-color: rgb(var(--app-neutral-200));
-}
-
-.divide-gray-100 > :not([hidden]) ~ :not([hidden]),
-.divide-gray-200 > :not([hidden]) ~ :not([hidden]) {
-  border-color: rgb(var(--app-neutral-200));
-}
-
-.hover\:bg-gray-50:hover,
-.hover\:bg-slate-50:hover {
-  background-color: rgb(var(--app-neutral-100));
-}
-
-.hover\:bg-gray-100:hover,
-.hover\:bg-slate-100:hover,
-.hover\:bg-gray-300:hover {
-  background-color: rgb(var(--app-neutral-200));
-}
-
-.disabled\:bg-gray-100:disabled {
-  background-color: rgb(var(--app-neutral-100));
-}
-
-.disabled\:text-gray-500:disabled {
-  color: rgb(var(--app-neutral-500));
-}
-
-.from-white {
-  --tw-gradient-from: rgb(var(--app-bg-surface)) var(--tw-gradient-from-position);
-  --tw-gradient-to: rgb(var(--app-bg-surface) / 0) var(--tw-gradient-to-position);
-  --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
-}
-
-.to-gray-50 {
-  --tw-gradient-to: rgb(var(--app-neutral-50)) var(--tw-gradient-to-position);
-}
-
-.bg-blue-50,
-.bg-blue-100 {
-  background-color: rgb(var(--app-status-info-bg));
-}
-
-.text-blue-600,
-.text-blue-700 {
-  color: rgb(var(--app-brand-primary));
-}
-
-.text-blue-800,
-.text-blue-900,
-.text-violet-700 {
-  color: rgb(var(--app-status-info-text));
-}
-
-.border-blue-200 {
-  border-color: rgb(var(--app-status-info-border));
-}
-
-.border-blue-600 {
-  border-color: rgb(var(--app-brand-primary));
-}
-
-.bg-violet-100 {
-  background-color: rgb(var(--app-status-info-bg));
-}
-
-.bg-green-50,
-.bg-green-100,
-.bg-emerald-100 {
-  background-color: rgb(var(--app-status-success-bg));
-}
-
-.text-green-500,
-.text-green-600,
-.text-green-700,
-.text-green-800,
-.text-green-900,
-.text-emerald-700 {
-  color: rgb(var(--app-status-success-text));
-}
-
-.border-green-200 {
-  border-color: rgb(var(--app-status-success-border));
-}
-
-.bg-red-50,
-.bg-red-100 {
-  background-color: rgb(var(--app-status-error-bg));
-}
-
-.text-red-500,
-.text-red-600,
-.text-red-700,
-.text-red-800,
-.text-red-900 {
-  color: rgb(var(--app-status-error-text));
-}
-
-.border-red-200,
-.border-red-300 {
-  border-color: rgb(var(--app-status-error-border));
-}
-
-.bg-yellow-50,
-.bg-yellow-100,
-.bg-amber-100 {
-  background-color: rgb(var(--app-status-warning-bg));
-}
-
-.text-yellow-700,
-.text-yellow-800,
-.text-yellow-900,
-.text-amber-700 {
-  color: rgb(var(--app-status-warning-text));
-}
-
-.border-yellow-300 {
-  border-color: rgb(var(--app-status-warning-border));
-}
-
-.hover\:bg-blue-50:hover {
-  background-color: rgb(var(--app-status-info-border));
-}
-
-.hover\:bg-blue-700:hover {
-  background-color: rgb(var(--app-brand-primary-hover));
-}
-
-.hover\:bg-green-200:hover {
-  background-color: rgb(var(--app-status-success-border));
-}
-
-.hover\:bg-red-50:hover,
-.hover\:bg-red-200:hover {
-  background-color: rgb(var(--app-status-error-border));
-}
-
-.hover\:bg-yellow-200:hover {
-  background-color: rgb(var(--app-status-warning-border));
-}
-
 .recharts-cartesian-grid line {
   stroke: rgb(var(--app-border-default));
 }
@@ -971,5 +769,45 @@ body {
   .app-dialog-panel,
   .app-drawer-panel {
     animation: none;
+  }
+
+  /* Com "reduzir movimento" ligado no sistema, transições e animações viram instantâneas.
+     O spinner de carregamento continua girando, porque indica que algo está acontecendo. */
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  *:not(.animate-spin),
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}
+
+/* Em telas de toque, botões pequenos ganham uma área de toque invisível de pelo menos 44×44px,
+   sem mudar o tamanho visual */
+@media (pointer: coarse) {
+  .app-hit-area,
+  .app-control-button,
+  .app-pagination-button,
+  .app-pagination-button-active {
+    position: relative;
+  }
+
+  .app-hit-area::after,
+  .app-control-button::after,
+  .app-pagination-button::after,
+  .app-pagination-button-active::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: max(100%, 44px);
+    height: max(100%, 44px);
+    transform: translate(-50%, -50%);
   }
 }

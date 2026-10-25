@@ -26,7 +26,7 @@ const shiftMonth = (value: string, offset: number): string => {
 const capitalize = (text: string): string => text.charAt(0).toUpperCase() + text.slice(1);
 
 const navButtonClass =
-  "flex h-10 w-10 items-center justify-center text-[rgb(var(--app-text-secondary))] transition-colors hover:bg-[rgb(var(--app-bg-muted))] hover:text-[rgb(var(--app-text-primary))] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[rgb(var(--app-focus-ring))]";
+  "app-hit-area flex h-10 w-10 items-center justify-center text-[rgb(var(--app-text-secondary))] transition-colors hover:bg-[rgb(var(--app-bg-muted))] hover:text-[rgb(var(--app-text-primary))] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[rgb(var(--app-focus-ring))]";
 
 const linkButtonClass =
   "whitespace-nowrap rounded-md px-2 py-1 text-sm font-medium text-[rgb(var(--app-brand-primary))] hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[rgb(var(--app-focus-ring))]";

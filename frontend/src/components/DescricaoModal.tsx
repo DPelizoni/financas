@@ -259,11 +259,11 @@ export default function DescricaoModal({
       <div>
         {categoriesLoading ? (
           <div className="app-surface-muted flex h-11 items-center justify-center">
-            <p className="text-sm text-gray-500">Carregando categorias...</p>
+            <p className="text-sm text-app-text-muted">Carregando categorias...</p>
           </div>
         ) : categories.length === 0 ? (
           <div className="app-inline-error flex h-11 items-center justify-center">
-            <p className="text-sm text-red-600">Nenhuma categoria disponível</p>
+            <p className="text-sm text-app-error-text">Nenhuma categoria disponível</p>
           </div>
         ) : (
           <TextField

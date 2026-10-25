@@ -674,14 +674,14 @@ export default function TransacoesPage() {
                   </AppButton>
 
                   {advancedActionsOpen && (
-                    <div className="absolute right-0 z-20 mt-2 w-full rounded-lg border border-gray-200 bg-white p-2 shadow-lg sm:w-72 dark:bg-slate-800 dark:border-slate-700">
+                    <div className="absolute right-0 z-20 mt-2 w-full rounded-lg border border-neutral-200 bg-app-surface p-2 shadow-lg sm:w-72 dark:bg-slate-800 dark:border-slate-700">
                       <button
                         type="button"
                         onClick={() => {
                           setAdvancedActionsOpen(false);
                           setCopyModalOpen(true);
                         }}
-                        className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-left text-sm font-medium text-blue-700 transition hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-900/30"
+                        className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-left text-sm font-medium text-app-brand-primary transition hover:bg-app-info-border dark:text-blue-400 dark:hover:bg-blue-900/30"
                       >
                         <Copy size={16} />
                         Copiar transações por mês
@@ -692,7 +692,7 @@ export default function TransacoesPage() {
                           setAdvancedActionsOpen(false);
                           setDeleteModalOpen(true);
                         }}
-                        className="mt-1 flex w-full items-center gap-2 rounded-md px-3 py-2 text-left text-sm font-medium text-red-700 transition hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/30"
+                        className="mt-1 flex w-full items-center gap-2 rounded-md px-3 py-2 text-left text-sm font-medium text-app-error-text transition hover:bg-app-error-border dark:text-red-400 dark:hover:bg-red-900/30"
                       >
                         <Trash size={16} />
                         Excluir transações por mês
@@ -717,9 +717,9 @@ export default function TransacoesPage() {
                         className="absolute inset-0 bg-black/40 backdrop-blur-[2px]"
                         onClick={() => setAdvancedActionsOpen(false)}
                       />
-                      <div className="absolute inset-x-0 bottom-0 animate-in slide-in-from-bottom duration-300 rounded-t-xl bg-white p-4 pb-8 shadow-2xl dark:bg-slate-900">
-                        <div className="mx-auto mb-4 h-1.5 w-12 rounded-full bg-gray-200 dark:bg-slate-700" />
-                        <h3 className="mb-4 text-center text-xs font-bold text-gray-400 uppercase tracking-widest">
+                      <div className="absolute inset-x-0 bottom-0 animate-in slide-in-from-bottom duration-300 rounded-t-xl bg-app-surface p-4 pb-8 shadow-2xl dark:bg-slate-900">
+                        <div className="mx-auto mb-4 h-1.5 w-12 rounded-full bg-neutral-200 dark:bg-slate-700" />
+                        <h3 className="mb-4 text-center text-sm font-medium text-[rgb(var(--app-text-muted))]">
                           Menu de Ações
                         </h3>
                         <div className="grid grid-cols-1 gap-3">
@@ -728,9 +728,9 @@ export default function TransacoesPage() {
                               setAdvancedActionsOpen(false);
                               setCopyModalOpen(true);
                             }}
-                            className="flex w-full items-center gap-4 rounded-lg border border-blue-100 bg-blue-50/50 p-4 text-left text-blue-700 transition active:bg-blue-100 dark:border-blue-900/30 dark:bg-blue-900/20 dark:text-blue-400"
+                            className="flex w-full items-center gap-4 rounded-lg border border-blue-100 bg-blue-50/50 p-4 text-left text-app-brand-primary transition active:bg-blue-100 dark:border-blue-900/30 dark:bg-blue-900/20 dark:text-blue-400"
                           >
-                            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-100 text-blue-600 dark:bg-blue-900 dark:text-blue-400">
+                            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-app-info-surface text-app-brand-primary dark:bg-blue-900 dark:text-blue-400">
                               <Copy size={20} />
                             </div>
                             <div>
@@ -743,20 +743,20 @@ export default function TransacoesPage() {
                               setAdvancedActionsOpen(false);
                               setDeleteModalOpen(true);
                             }}
-                            className="flex w-full items-center gap-4 rounded-lg border border-red-100 bg-red-50/50 p-4 text-left text-red-700 transition active:bg-red-100 dark:border-red-900/30 dark:bg-red-900/20 dark:text-red-400"
+                            className="flex w-full items-center gap-4 rounded-lg border border-red-100 bg-red-50/50 p-4 text-left text-app-error-text transition active:bg-red-100 dark:border-red-900/30 dark:bg-red-900/20 dark:text-red-400"
                           >
-                            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-red-100 text-red-600 dark:bg-red-900 dark:text-red-400">
+                            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-app-error-surface text-app-error-text dark:bg-red-900 dark:text-red-400">
                               <Trash size={20} />
                             </div>
                             <div>
-                              <p className="font-bold text-red-700 dark:text-red-400">Excluir por Mês</p>
-                              <p className="text-xs text-red-600 opacity-70 dark:text-red-400">Limpeza de dados em lote</p>
+                              <p className="font-bold text-app-error-text dark:text-red-400">Excluir por Mês</p>
+                              <p className="text-xs text-app-error-text opacity-70 dark:text-red-400">Limpeza de dados em lote</p>
                             </div>
                           </button>
                         </div>
                         <button
                           onClick={() => setAdvancedActionsOpen(false)}
-                          className="mt-4 w-full rounded-lg bg-gray-100 p-4 text-sm font-bold text-gray-700 transition active:bg-gray-200 dark:bg-slate-800 dark:text-slate-300"
+                          className="mt-4 w-full rounded-lg bg-neutral-100 p-4 text-sm font-bold text-neutral-700 transition active:bg-gray-200 dark:bg-slate-800 dark:text-slate-300"
                         >
                           Cancelar
                         </button>
@@ -971,7 +971,7 @@ export default function TransacoesPage() {
               <button
                 type="button"
                 onClick={handleOpenDeleteTransactionMonths}
-                className="font-semibold text-red-700 underline-offset-2 hover:underline dark:text-red-400"
+                className="font-semibold text-app-error-text underline-offset-2 hover:underline dark:text-red-400"
               >
                 Selecionar meses
               </button>

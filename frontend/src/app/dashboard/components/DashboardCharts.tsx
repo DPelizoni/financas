@@ -4,6 +4,7 @@ import React from "react";
 import ChartCardHeader from "@/components/ChartCardHeader";
 import { formatCompactCurrency } from "@/utils/format";
 import CategoryIcon from "@/components/CategoryIcon";
+import { useReducedMotion } from "framer-motion";
 import { BarChart3, BarChartHorizontal, TrendingUp, PieChart as PieChartIcon, Activity, ArrowUpRight, ArrowDownRight } from "lucide-react";
 import {
   Bar,
@@ -82,6 +83,8 @@ export function DashboardCharts({
   };
 
   const periodLabel = formatPeriodLabel();
+  // Sem animação de entrada nos gráficos quando o sistema pede "reduzir movimento"
+  const animateCharts = !useReducedMotion();
   
   const compositionData = [
     { name: "Receitas", value: summary.total_receita, fill: chartColors.receitas },
@@ -97,7 +100,7 @@ export function DashboardCharts({
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
       return (
-        <div className="rounded-lg border border-white/20 bg-white/95 p-3 shadow-2xl backdrop-blur-md dark:border-slate-700/50 dark:bg-slate-900/95">
+        <div className="rounded-lg border border-white/20 bg-app-surface/95 p-3 shadow-2xl backdrop-blur-md dark:border-slate-700/50 dark:bg-slate-900/95">
           {label && <p className="mb-2 text-xs font-medium text-[rgb(var(--app-text-muted))]">{label}</p>}
           <div className="space-y-2">
             {payload.map((item: any, index: number) => (
@@ -122,8 +125,8 @@ export function DashboardCharts({
     return (
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <div className="app-surface flex h-80 flex-col items-center justify-center p-6 text-center">
-          <BarChart3 size={48} className="mb-4 text-gray-200 dark:text-slate-800" />
-          <p className="text-sm font-medium text-gray-500">Sem dados para análise visual.</p>
+          <BarChart3 size={48} className="mb-4 text-neutral-200 dark:text-slate-800" />
+          <p className="text-sm font-medium text-app-text-muted">Sem dados para análise visual.</p>
         </div>
       </div>
     );
@@ -137,7 +140,7 @@ export function DashboardCharts({
           title="Evolução Financeira"
           subtitle={filterAno === "TODOS" ? "Histórico Completo" : `Análise de ${filterAno}`}
           icon={<TrendingUp size={20} />}
-          iconClassName="bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400"
+          iconClassName="bg-app-info-surface text-app-brand-primary dark:bg-blue-900/20 dark:text-blue-400"
         />
         <div className="flex-1 w-full">
           <ResponsiveContainer width="100%" height="100%">
@@ -163,9 +166,9 @@ export function DashboardCharts({
               <YAxis hide />
               <Tooltip content={<CustomTooltip />} />
               <Legend verticalAlign="top" align="right" iconType="circle" iconSize={6} wrapperStyle={{ fontSize: '12px', fontWeight: 500, paddingBottom: '24px' }} />
-              <Area type="monotone" dataKey="receitas" name="Receitas" stroke={chartColors.receitas} strokeWidth={4} fillOpacity={1} fill="url(#color-receitas)" animationDuration={1500} />
-              <Area type="monotone" dataKey="despesas" name="Despesas" stroke={chartColors.despesas} strokeWidth={4} fillOpacity={1} fill="url(#color-despesas)" animationDuration={1500} />
-              <Area type="monotone" dataKey="saldo" name="Saldo" stroke={chartColors.saldo} strokeWidth={4} fillOpacity={1} fill="url(#color-saldo)" animationDuration={1500} />
+              <Area type="monotone" dataKey="receitas" name="Receitas" stroke={chartColors.receitas} strokeWidth={4} fillOpacity={1} fill="url(#color-receitas)" animationDuration={1500} isAnimationActive={animateCharts} />
+              <Area type="monotone" dataKey="despesas" name="Despesas" stroke={chartColors.despesas} strokeWidth={4} fillOpacity={1} fill="url(#color-despesas)" animationDuration={1500} isAnimationActive={animateCharts} />
+              <Area type="monotone" dataKey="saldo" name="Saldo" stroke={chartColors.saldo} strokeWidth={4} fillOpacity={1} fill="url(#color-saldo)" animationDuration={1500} isAnimationActive={animateCharts} />
             </AreaChart>
           </ResponsiveContainer>
         </div>
@@ -193,7 +196,7 @@ export function DashboardCharts({
                   cornerRadius={10} 
                   dataKey="value" 
                   stroke="none" 
-                  animationDuration={1200}
+                  animationDuration={1200} isAnimationActive={animateCharts}
                 >
                   {compositionData.map((entry, index) => <Cell key={`cell-${index}`} fill={entry.fill} />)}
                 </Pie>
@@ -201,17 +204,17 @@ export function DashboardCharts({
             </ResponsiveContainer>
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center pointer-events-none">
               <span className="mb-1 block text-xs font-medium text-[rgb(var(--app-text-muted))]">Resultado</span>
-              <span className="text-2xl font-bold tabular-nums tracking-tighter text-blue-600 dark:text-blue-400">
+              <span className="text-2xl font-bold tabular-nums tracking-tighter text-app-brand-primary dark:text-blue-400">
                 {currency(summary.total_liquido)}
               </span>
             </div>
           </div>
           <div className="mt-8 grid grid-cols-2 gap-4 max-w-sm mx-auto w-full">
-            <div className="bg-gray-50 dark:bg-slate-800/40 rounded-lg p-3 border border-gray-100 dark:border-slate-700/30 flex flex-col items-center">
+            <div className="bg-neutral-50 dark:bg-slate-800/40 rounded-lg p-3 border border-neutral-200 dark:border-slate-700/30 flex flex-col items-center">
               <span className="mb-1 text-xs font-medium text-emerald-600 dark:text-emerald-400">Receitas</span>
               <span className="text-sm font-semibold tabular-nums text-emerald-600 dark:text-emerald-400">{currency(summary.total_receita)}</span>
             </div>
-            <div className="bg-gray-50 dark:bg-slate-800/40 rounded-lg p-3 border border-gray-100 dark:border-slate-700/30 flex flex-col items-center">
+            <div className="bg-neutral-50 dark:bg-slate-800/40 rounded-lg p-3 border border-neutral-200 dark:border-slate-700/30 flex flex-col items-center">
               <span className="mb-1 text-xs font-medium text-rose-600 dark:text-rose-400">Despesas</span>
               <span className="text-sm font-semibold tabular-nums text-rose-600 dark:text-rose-400">{currency(summary.total_despesa)}</span>
             </div>
@@ -235,13 +238,13 @@ export function DashboardCharts({
               <YAxis hide />
               <Tooltip content={<CustomTooltip />} cursor={{ fill: 'currentColor', opacity: 0.04 }} />
               <Legend verticalAlign="top" align="right" iconType="circle" iconSize={6} wrapperStyle={{ fontSize: '12px', fontWeight: 500, paddingBottom: '24px' }} />
-              <Bar dataKey="Pago" fill={chartColors.pago} radius={[8, 8, 0, 0]} barSize={isMobile ? 32 : 56} animationDuration={1500}>
+              <Bar dataKey="Pago" fill={chartColors.pago} radius={[8, 8, 0, 0]} barSize={isMobile ? 32 : 56} animationDuration={1500} isAnimationActive={animateCharts}>
                 {/* Valor compacto sobre a barra; o valor completo aparece no tooltip. No celular não há espaço para o rótulo */}
                 {!isMobile && (
                   <LabelList dataKey="Pago" position="top" offset={15} formatter={(v: any) => formatCompactCurrency(Number(v))} style={{ fontSize: 12, fontWeight: 600, fill: chartColors.pago }} />
                 )}
               </Bar>
-              <Bar dataKey="Provisao" name="Provisão" fill={chartColors.pendente} radius={[8, 8, 0, 0]} barSize={isMobile ? 32 : 56} animationDuration={1500}>
+              <Bar dataKey="Provisao" name="Provisão" fill={chartColors.pendente} radius={[8, 8, 0, 0]} barSize={isMobile ? 32 : 56} animationDuration={1500} isAnimationActive={animateCharts}>
                 {!isMobile && (
                   <LabelList dataKey="Provisao" position="top" offset={15} formatter={(v: any) => formatCompactCurrency(Number(v))} style={{ fontSize: 12, fontWeight: 600, fill: chartColors.pendente }} />
                 )}

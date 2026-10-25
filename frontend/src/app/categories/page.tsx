@@ -145,9 +145,9 @@ export default function CategoriesPage() {
 
   const tipoBadge = (tipo: CategoryType) => {
     if (tipo === "RECEITA") {
-      return "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400";
+      return "bg-app-success-surface text-app-success-text dark:bg-emerald-900/30 dark:text-emerald-400";
     }
-    return "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400";
+    return "bg-app-warning-surface text-app-warning-text dark:bg-amber-900/30 dark:text-amber-400";
   };
 
   return (
@@ -218,13 +218,13 @@ export default function CategoriesPage() {
                 {categories.map((category) => (
                   <div
                     key={category.id}
-                    className="rounded-lg border border-gray-200/80 bg-gradient-to-b from-white to-gray-50 p-4 shadow-[0_1px_2px_rgba(0,0,0,0.06)] dark:border-slate-800 dark:from-slate-900 dark:to-slate-900/50"
+                    className="rounded-lg border border-gray-200/80 bg-gradient-to-b from-app-surface to-neutral-50 p-4 shadow-[0_1px_2px_rgba(0,0,0,0.06)] dark:border-slate-800 dark:from-slate-900 dark:to-slate-900/50"
                   >
                     <div className="flex items-start justify-between gap-3">
                       <div className="flex items-center gap-3">
                         <CategoryIcon nome={category.nome} tipo={category.tipo} />
                         <div>
-                          <p className="text-sm font-semibold text-gray-900 dark:text-white">
+                          <p className="text-sm font-semibold text-neutral-900 dark:text-white">
                             {category.nome}
                           </p>
                           <span
@@ -242,7 +242,7 @@ export default function CategoriesPage() {
                       <ActiveBadge ativo={category.ativo} />
                     </div>
 
-                    <div className="mt-3 flex items-center justify-end gap-2 border-t border-gray-100 pt-3 dark:border-slate-800">
+                    <div className="mt-3 flex items-center justify-end gap-2 border-t border-neutral-200 pt-3 dark:border-slate-800">
                       <TableActionButton action="view" title="Visualizar" onClick={() => setViewingCategory(category)} />
                       <TableActionButton action="edit" title="Editar" onClick={() => handleEdit(category)} />
                       <TableActionButton action="delete" title="Excluir" onClick={() => setDeleteTarget(category)} />
@@ -252,7 +252,7 @@ export default function CategoriesPage() {
               </div>
 
               <div className="app-table-scroll hidden md:block">
-                <table className="min-w-[640px] w-full table-fixed divide-y divide-gray-200 text-xs dark:divide-slate-800">
+                <table className="min-w-[640px] w-full table-fixed divide-y divide-neutral-200 text-xs dark:divide-slate-800">
                   <thead className="app-table-head">
                     <tr>
                       <SortableHeader label="Categoria" column="nome" sortBy={sortBy} sortDirection={sortDirection} onSort={handleSort} className="w-[55%]" />
@@ -261,13 +261,13 @@ export default function CategoriesPage() {
                       <th className="app-table-head-cell-center w-[15%]">Ações</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-gray-200 bg-white dark:divide-slate-800 dark:bg-slate-900">
+                  <tbody className="divide-y divide-neutral-200 bg-app-surface dark:divide-slate-800 dark:bg-slate-900">
                     {categories.map((category) => (
                       <tr key={category.id} className="app-table-row">
                         <td className="whitespace-nowrap px-3 py-2">
                           <div className="flex items-center gap-2">
                             <CategoryIcon nome={category.nome} tipo={category.tipo} size="sm" />
-                            <div className="text-xs font-medium text-gray-900 dark:text-slate-200">{category.nome}</div>
+                            <div className="text-xs font-medium text-neutral-900 dark:text-slate-200">{category.nome}</div>
                           </div>
                         </td>
                         <td className="whitespace-nowrap px-3 py-2 text-center">

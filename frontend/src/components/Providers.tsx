@@ -3,6 +3,7 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactNode, useState } from "react";
 import { Toaster } from "sonner";
+import { MotionConfig } from "framer-motion";
 
 export function Providers({ children }: { children: ReactNode }) {
   const [queryClient] = useState(
@@ -18,7 +19,8 @@ export function Providers({ children }: { children: ReactNode }) {
 
   return (
     <QueryClientProvider client={queryClient}>
-      {children}
+      {/* Respeita o "reduzir movimento" do sistema nas animações do framer-motion */}
+      <MotionConfig reducedMotion="user">{children}</MotionConfig>
       <Toaster 
         richColors 
         closeButton 

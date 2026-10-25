@@ -289,16 +289,16 @@ export default function DescricoesPage() {
                 {sortedDescricoes.map((descricao) => (
                   <div
                     key={descricao.id}
-                    className="rounded-lg border border-gray-200/80 bg-gradient-to-b from-white to-gray-50 p-4 shadow-[0_1px_2px_rgba(0,0,0,0.06)] dark:border-slate-800 dark:from-slate-900 dark:to-slate-900/50 dark:shadow-none"
+                    className="rounded-lg border border-gray-200/80 bg-gradient-to-b from-app-surface to-neutral-50 p-4 shadow-[0_1px_2px_rgba(0,0,0,0.06)] dark:border-slate-800 dark:from-slate-900 dark:to-slate-900/50 dark:shadow-none"
                   >
                     <div className="flex items-start justify-between gap-3">
                       <div>
-                        <p className="text-sm font-semibold text-gray-900 dark:text-white">{descricao.nome}</p>
-                        <p className="mt-1 text-xs text-gray-600 dark:text-slate-400">Categoria: {getCategoryNameById(descricao.categoria_id)}</p>
+                        <p className="text-sm font-semibold text-neutral-900 dark:text-white">{descricao.nome}</p>
+                        <p className="mt-1 text-xs text-neutral-700 dark:text-slate-400">Categoria: {getCategoryNameById(descricao.categoria_id)}</p>
                       </div>
                       <ActiveBadge ativo={descricao.ativo} />
                     </div>
-                    <div className="mt-3 flex items-center justify-end gap-2 border-t border-gray-100 pt-3 dark:border-slate-800">
+                    <div className="mt-3 flex items-center justify-end gap-2 border-t border-neutral-200 pt-3 dark:border-slate-800">
                       <TableActionButton action="view" title="Visualizar" onClick={() => setViewingDescricao(descricao)} />
                       <TableActionButton action="edit" title="Editar" onClick={() => handleEdit(descricao)} />
                       <TableActionButton action="delete" title="Excluir" onClick={() => setDeleteTarget(descricao)} />
@@ -308,7 +308,7 @@ export default function DescricoesPage() {
               </div>
 
               <div className="app-table-scroll hidden md:block">
-                <table className="min-w-[640px] w-full table-fixed divide-y divide-gray-200 dark:divide-slate-800 text-xs">
+                <table className="min-w-[640px] w-full table-fixed divide-y divide-neutral-200 dark:divide-slate-800 text-xs">
                   <thead className="app-table-head">
                     <tr>
                       <SortableHeader label="Descrição" column="nome" sortBy={sortBy} sortDirection={sortDirection} onSort={handleSort} className="w-[45%]" />
@@ -317,11 +317,11 @@ export default function DescricoesPage() {
                       <th className="app-table-head-cell-center w-[15%]">Ações</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-gray-200 dark:divide-slate-800 bg-white dark:bg-slate-900">
+                  <tbody className="divide-y divide-neutral-200 dark:divide-slate-800 bg-app-surface dark:bg-slate-900">
                     {sortedDescricoes.map((descricao) => (
                       <tr key={descricao.id} className="app-table-row">
-                        <td className="whitespace-nowrap px-3 py-2 text-xs font-medium text-gray-900 dark:text-slate-200"><span className="block truncate" title={descricao.nome}>{descricao.nome}</span></td>
-                        <td className="whitespace-nowrap px-3 py-2 text-xs text-gray-600 dark:text-slate-400"><span className="block truncate" title={getCategoryNameById(descricao.categoria_id)}>{getCategoryNameById(descricao.categoria_id)}</span></td>
+                        <td className="whitespace-nowrap px-3 py-2 text-xs font-medium text-neutral-900 dark:text-slate-200"><span className="block truncate" title={descricao.nome}>{descricao.nome}</span></td>
+                        <td className="whitespace-nowrap px-3 py-2 text-xs text-neutral-700 dark:text-slate-400"><span className="block truncate" title={getCategoryNameById(descricao.categoria_id)}>{getCategoryNameById(descricao.categoria_id)}</span></td>
                         <td className="whitespace-nowrap px-3 py-2 text-center">
                           <ActiveBadge ativo={descricao.ativo} />
                         </td>

@@ -255,16 +255,16 @@ export default function InvestimentosAtivosPage() {
             <>
               <div className="space-y-2 px-2 sm:px-0 md:hidden">
                 {sortedAtivos.map((item) => (
-                  <div key={item.id} className="rounded-lg border border-gray-200/80 bg-gradient-to-b from-white to-gray-50 p-4 shadow-[0_1px_2px_rgba(0,0,0,0.06)]">
+                  <div key={item.id} className="rounded-lg border border-gray-200/80 bg-gradient-to-b from-app-surface to-neutral-50 p-4 shadow-[0_1px_2px_rgba(0,0,0,0.06)]">
                     <div className="flex items-start justify-between gap-3">
-                      <div><p className="text-sm font-semibold text-gray-900">{item.nome}</p><p className="mt-1 text-xs text-gray-600">Início: {formatDateBR(item.data_saldo_inicial)}</p><p className="mt-1 text-xs text-gray-600">Banco: {item.banco_nome || "-"}</p></div>
+                      <div><p className="text-sm font-semibold text-neutral-900">{item.nome}</p><p className="mt-1 text-xs text-neutral-700">Início: {formatDateBR(item.data_saldo_inicial)}</p><p className="mt-1 text-xs text-neutral-700">Banco: {item.banco_nome || "-"}</p></div>
                       <ActiveBadge ativo={item.ativo} />
                     </div>
-                    <div className="mt-3 space-y-1 text-xs text-gray-700">
+                    <div className="mt-3 space-y-1 text-xs text-neutral-700">
                       <p><span className="font-medium">Saldo inicial: </span>{formatCurrency(Number(item.saldo_inicial))}</p>
-                      <p><span className="font-medium">Saldo atual: </span><span className="font-semibold text-gray-900">{formatCurrency(Number(item.saldo_atual || 0))}</span></p>
+                      <p><span className="font-medium">Saldo atual: </span><span className="font-semibold text-neutral-900">{formatCurrency(Number(item.saldo_atual || 0))}</span></p>
                     </div>
-                    <div className="mt-3 flex items-center justify-end gap-2 border-t border-gray-100 pt-3">
+                    <div className="mt-3 flex items-center justify-end gap-2 border-t border-neutral-200 pt-3">
                       <TableActionButton action="view" title="Visualizar" onClick={() => setViewingAtivo(item)} />
                       <TableActionButton action="edit" title="Editar" onClick={() => handleEdit(item)} />
                       <TableActionButton action="delete" title="Excluir" onClick={() => setDeleteTarget(item)} />
@@ -274,7 +274,7 @@ export default function InvestimentosAtivosPage() {
               </div>
 
               <div className="app-table-scroll hidden md:block">
-                <table className="w-full table-fixed divide-y divide-gray-200 text-xs">
+                <table className="w-full table-fixed divide-y divide-neutral-200 text-xs">
                   <thead className="app-table-head">
                     <tr>
                       <SortableHeader label="Início Ativo" column="data_saldo_inicial" sortBy={sortBy} sortDirection={sortDirection} onSort={handleSort} className="hidden w-[12%] xl:table-cell" />
@@ -286,14 +286,14 @@ export default function InvestimentosAtivosPage() {
                       <th className="app-table-head-cell-center w-[11%]">Ações</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-gray-100 bg-white">
+                  <tbody className="divide-y divide-neutral-200 bg-app-surface">
                     {sortedAtivos.map((item) => (
                       <tr key={item.id} className="app-table-row">
-                        <td className="hidden px-3 py-2 text-xs text-gray-700 xl:table-cell">{formatDateBR(item.data_saldo_inicial)}</td>
-                        <td className="px-3 py-2 text-xs text-gray-700"><span className="block truncate" title={item.nome}>{item.nome}</span></td>
-                        <td className="px-3 py-2 text-xs text-gray-700"><span className="block truncate" title={item.banco_nome || "-"}>{item.banco_nome || "-"}</span></td>
-                        <td className="hidden px-3 py-2 text-right text-xs text-gray-700 lg:table-cell">{formatCurrency(Number(item.saldo_inicial))}</td>
-                        <td className="px-3 py-2 text-right text-xs font-semibold text-gray-900">{formatCurrency(Number(item.saldo_atual || 0))}</td>
+                        <td className="hidden px-3 py-2 text-xs text-neutral-700 xl:table-cell">{formatDateBR(item.data_saldo_inicial)}</td>
+                        <td className="px-3 py-2 text-xs text-neutral-700"><span className="block truncate" title={item.nome}>{item.nome}</span></td>
+                        <td className="px-3 py-2 text-xs text-neutral-700"><span className="block truncate" title={item.banco_nome || "-"}>{item.banco_nome || "-"}</span></td>
+                        <td className="hidden px-3 py-2 text-right text-xs text-neutral-700 lg:table-cell">{formatCurrency(Number(item.saldo_inicial))}</td>
+                        <td className="px-3 py-2 text-right text-xs font-semibold text-neutral-900">{formatCurrency(Number(item.saldo_atual || 0))}</td>
                         <td className="px-3 py-2 text-center text-xs"><ActiveBadge ativo={item.ativo} /></td>
                         <td className="px-3 py-2 text-center text-xs">
                           <div className="flex justify-center gap-1">

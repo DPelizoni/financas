@@ -21,24 +21,24 @@ interface StatCardProps {
 
 const toneClasses: Record<StatCardTone, { card: string; text: string; icon: string }> = {
   success: {
-    card: "border-green-200 border-t-green-500 bg-green-50/80 dark:border-green-800/50 dark:bg-green-900/20",
-    text: "text-green-700 dark:text-green-300",
-    icon: "bg-green-100 text-green-600 dark:bg-green-800/40 dark:text-green-400",
+    card: "border-app-success-border border-t-green-500 bg-green-50/80 dark:border-green-800/50 dark:bg-green-900/20",
+    text: "text-app-success-text dark:text-green-300",
+    icon: "bg-app-success-surface text-app-success-text dark:bg-green-800/40 dark:text-green-400",
   },
   error: {
-    card: "border-red-200 border-t-red-500 bg-red-50/80 dark:border-red-800/50 dark:bg-red-900/20",
-    text: "text-red-700 dark:text-red-300",
-    icon: "bg-red-100 text-red-600 dark:bg-red-800/40 dark:text-red-400",
+    card: "border-app-error-border border-t-red-500 bg-red-50/80 dark:border-red-800/50 dark:bg-red-900/20",
+    text: "text-app-error-text dark:text-red-300",
+    icon: "bg-app-error-surface text-app-error-text dark:bg-red-800/40 dark:text-red-400",
   },
   info: {
-    card: "border-blue-200 border-t-blue-500 bg-blue-50/80 dark:border-blue-800/50 dark:bg-blue-900/20",
-    text: "text-blue-700 dark:text-blue-300",
-    icon: "bg-blue-100 text-blue-600 dark:bg-blue-800/40 dark:text-blue-400",
+    card: "border-app-info-border border-t-blue-500 bg-blue-50/80 dark:border-blue-800/50 dark:bg-blue-900/20",
+    text: "text-app-brand-primary dark:text-blue-300",
+    icon: "bg-app-info-surface text-app-brand-primary dark:bg-blue-800/40 dark:text-blue-400",
   },
   warning: {
     card: "border-amber-200 border-t-amber-500 bg-amber-50/80 dark:border-amber-800/50 dark:bg-amber-900/20",
     text: "text-amber-800 dark:text-amber-200",
-    icon: "bg-amber-100 text-amber-600 dark:bg-amber-800/40 dark:text-amber-300",
+    icon: "bg-app-warning-surface text-amber-600 dark:bg-amber-800/40 dark:text-amber-300",
   },
 };
 

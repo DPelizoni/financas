@@ -139,8 +139,8 @@ interface CategoryIconProps {
 // Mesma paleta dos badges de tipo: verde para receita, âmbar para despesa
 const tipoClasses = (tipo?: CategoryType) =>
   tipo === "RECEITA"
-    ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400"
-    : "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400";
+    ? "bg-app-success-surface text-app-success-text dark:bg-emerald-900/30 dark:text-emerald-400"
+    : "bg-app-warning-surface text-app-warning-text dark:bg-amber-900/30 dark:text-amber-400";
 
 export default function CategoryIcon({ nome, tipo, size = "md" }: CategoryIconProps) {
   const IconComponent = getCategoryIcon(nome, tipo);

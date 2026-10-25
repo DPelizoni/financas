@@ -21,6 +21,7 @@ export default function PasswordField({ InputProps, ...props }: PasswordFieldPro
             <IconButton
               edge="end"
               size="small"
+              className="app-hit-area"
               onClick={() => setVisible((prev) => !prev)}
               // Mantém o foco no campo ao clicar no botão
               onMouseDown={(event) => event.preventDefault()}

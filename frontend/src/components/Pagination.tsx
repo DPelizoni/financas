@@ -86,7 +86,7 @@ export default function Pagination({
             centeredLayout ? "w-1/3 justify-start" : ""
           }`}
         >
-          <p className="whitespace-nowrap text-sm text-gray-700">
+          <p className="whitespace-nowrap text-sm text-neutral-700">
             Registros: <span className="font-medium">{total === 0 ? 0 : (currentPage - 1) * itemsPerPage + 1}</span>
             -<span className="font-medium">{Math.min(currentPage * itemsPerPage, total)}</span> de{" "}
             <span className="font-medium">{total}</span>
@@ -121,7 +121,7 @@ export default function Pagination({
             <button
               onClick={() => onPageChange(1)}
               disabled={currentPage === 1}
-              className="app-pagination-button relative inline-flex items-center rounded-l px-2 py-2 text-sm font-medium focus-visible:z-20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400 disabled:opacity-50"
+              className="app-pagination-button relative inline-flex items-center rounded-l px-2 py-2 text-sm font-medium focus-visible:z-20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[rgb(var(--app-focus-ring))] disabled:opacity-50"
               aria-label="Primeira página"
             >
               <ChevronsLeft size={18} />
@@ -130,7 +130,7 @@ export default function Pagination({
             <button
               onClick={() => onPageChange(Math.max(1, currentPage - 1))}
               disabled={currentPage === 1}
-              className="app-pagination-button relative inline-flex items-center px-2 py-2 text-sm font-medium focus-visible:z-20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400 disabled:opacity-50"
+              className="app-pagination-button relative inline-flex items-center px-2 py-2 text-sm font-medium focus-visible:z-20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[rgb(var(--app-focus-ring))] disabled:opacity-50"
               aria-label="Página anterior"
             >
               <ChevronLeft size={18} />
@@ -142,8 +142,8 @@ export default function Pagination({
                 onClick={() => onPageChange(page)}
                 className={`relative inline-flex items-center border px-4 py-2 text-sm font-medium ${
                   page === currentPage
-                    ? "app-pagination-button-active z-10 focus-visible:ring-blue-400"
-                    : "app-pagination-button focus-visible:ring-cyan-400"
+                    ? "app-pagination-button-active z-10 focus-visible:ring-[rgb(var(--app-focus-ring))]"
+                    : "app-pagination-button focus-visible:ring-[rgb(var(--app-focus-ring))]"
                 } focus-visible:z-20 focus-visible:outline-none focus-visible:ring-2`}
               >
                 {page}
@@ -153,7 +153,7 @@ export default function Pagination({
             <button
               onClick={() => onPageChange(Math.min(totalPages, currentPage + 1))}
               disabled={currentPage === totalPages}
-              className="app-pagination-button relative inline-flex items-center px-2 py-2 text-sm font-medium focus-visible:z-20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400 disabled:opacity-50"
+              className="app-pagination-button relative inline-flex items-center px-2 py-2 text-sm font-medium focus-visible:z-20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[rgb(var(--app-focus-ring))] disabled:opacity-50"
               aria-label="Próxima página"
             >
               <ChevronRight size={18} />
@@ -162,7 +162,7 @@ export default function Pagination({
             <button
               onClick={() => onPageChange(totalPages)}
               disabled={currentPage === totalPages}
-              className="app-pagination-button relative inline-flex items-center rounded-r px-2 py-2 text-sm font-medium focus-visible:z-20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400 disabled:opacity-50"
+              className="app-pagination-button relative inline-flex items-center rounded-r px-2 py-2 text-sm font-medium focus-visible:z-20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[rgb(var(--app-focus-ring))] disabled:opacity-50"
               aria-label="Última página"
             >
               <ChevronsRight size={18} />

@@ -113,7 +113,7 @@ export function UpcomingDues({ transacoes }: UpcomingDuesProps) {
             </span>
             <Link
               href="/transacoes?mes=todos&situacao=PENDENTE"
-              className="inline-flex items-center gap-1 font-medium text-blue-600 hover:underline dark:text-blue-400"
+              className="inline-flex items-center gap-1 font-medium text-app-brand-primary hover:underline dark:text-blue-400"
             >
               Ver pendentes em Transações
               <ChevronRight size={16} />

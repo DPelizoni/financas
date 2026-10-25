@@ -60,17 +60,17 @@ const defaultFieldLabels: Record<string, string> = {
 const getFieldIcon = (key: string) => {
   const k = key.toLowerCase();
   if (k === "id") return <Fingerprint size={14} className="text-blue-500" />;
-  if (k.includes("nome")) return <Info size={14} className="text-slate-500" />;
+  if (k.includes("nome")) return <Info size={14} className="text-app-text-muted" />;
   if (k === "codigo" || k === "code") return <Hash size={14} className="text-amber-500" />;
   if (k === "cor" || k === "color") return <Palette size={14} className="text-pink-500" />;
   if (k === "icone" || k === "icon") return <FileText size={14} className="text-indigo-500" />;
   if (k.includes("saldo") || k.includes("valor") || k.includes("preco") || k.includes("total")) return <Coins size={14} className="text-emerald-500" />;
   if (k === "ativo" || k === "status" || k.endsWith("_status") || k === "situacao") return <Activity size={14} className="text-cyan-500" />;
   if (k === "vencimento" || k === "data" || k.includes("date")) return <Calendar size={14} className="text-rose-500" />;
-  if (k.includes("banco")) return <Building2 size={14} className="text-blue-600" />;
+  if (k.includes("banco")) return <Building2 size={14} className="text-app-brand-primary" />;
   if (k.includes("categoria")) return <Tag size={14} className="text-purple-500" />;
-  if (k === "created_at" || k === "updated_at") return <Clock size={14} className="text-slate-400" />;
-  return <FileText size={14} className="text-slate-400" />;
+  if (k === "created_at" || k === "updated_at") return <Clock size={14} className="text-neutral-400" />;
+  return <FileText size={14} className="text-neutral-400" />;
 };
 
 const formatLabel = (key: string): string => {
@@ -263,7 +263,7 @@ export default function ViewDataModal({
     if (customValue !== undefined) return customValue;
 
     if (value === null || value === undefined || value === "") {
-      return <span className="text-slate-400 italic">Nulo</span>;
+      return <span className="italic text-[rgb(var(--app-text-muted))]">Nulo</span>;
     }
 
     // Color field
@@ -272,7 +272,7 @@ export default function ViewDataModal({
       return (
         <div className="flex items-center gap-2">
           <div 
-            className="h-4 w-4 rounded-full border border-slate-200 shadow-sm" 
+            className="h-4 w-4 rounded-full border border-neutral-200 shadow-sm" 
             style={{ backgroundColor: colorValue }}
           />
           <code className="text-xs font-mono">{colorValue}</code>
@@ -301,9 +301,9 @@ export default function ViewDataModal({
       if (k.includes("aporte")) {
         colorClass = "text-amber-600 dark:text-amber-400";
       } else if (k.includes("resgate")) {
-        colorClass = "text-red-600 dark:text-red-400";
+        colorClass = "text-app-error-text dark:text-red-400";
       } else if (k.includes("saldo")) {
-        colorClass = "text-blue-600 dark:text-blue-400";
+        colorClass = "text-app-brand-primary dark:text-blue-400";
       } else if (k.includes("rendimento")) {
         colorClass = "text-emerald-600 dark:text-emerald-400";
       }
@@ -351,7 +351,7 @@ export default function ViewDataModal({
       onClose={onClose}
       size="lg"
       headerIcon={
-        <div className="shrink-0 rounded-md bg-blue-50 p-2 text-blue-600 dark:bg-blue-900/30">
+        <div className="shrink-0 rounded-md bg-app-info-surface p-2 text-app-brand-primary dark:bg-blue-900/30">
           {title.toLowerCase().includes("banco") ? <Building2 size={20} /> : <FileText size={20} />}
         </div>
       }
@@ -359,7 +359,7 @@ export default function ViewDataModal({
       <div>
         <div className="p-6">
           {regularEntries.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-8 text-slate-400">
+            <div className="flex flex-col items-center justify-center py-8 text-[rgb(var(--app-text-muted))]">
               <Info size={48} strokeWidth={1} className="mb-2 opacity-20" />
               <p>Nenhum dado disponível.</p>
             </div>
@@ -367,23 +367,23 @@ export default function ViewDataModal({
             <div className="grid grid-cols-1 gap-x-6 gap-y-5 md:grid-cols-2">
               {regularEntries.map(([key, value]) => (
                 <div key={key} className="group flex flex-col space-y-1">
-                  <div className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                  <div className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-app-text-muted dark:text-slate-400">
                     {getFieldIcon(key)}
                     {fieldLabels[key] || formatLabel(key)}
                   </div>
                   
-                  <div className="flex items-center justify-between gap-2 rounded-lg bg-slate-50 dark:bg-slate-800/40 p-3 border border-transparent hover:border-slate-200 dark:hover:border-slate-700 transition-all">
-                    <div className="text-sm font-medium text-slate-800 dark:text-slate-200 break-words flex-1">
+                  <div className="flex items-center justify-between gap-2 rounded-lg bg-neutral-50 dark:bg-slate-800/40 p-3 border border-transparent hover:border-slate-200 dark:hover:border-slate-700 transition-all">
+                    <div className="text-sm font-medium text-neutral-900 dark:text-slate-200 break-words flex-1">
                       {renderValue(key, value)}
                     </div>
                     
                     {isCopyable(key) && (
                       <button
                         onClick={() => handleCopy(key, String(value))}
-                        className="p-1.5 rounded-md hover:bg-white dark:hover:bg-slate-700 text-slate-400 hover:text-blue-500 transition-all opacity-0 group-hover:opacity-100 shadow-sm border border-transparent hover:border-slate-100 dark:hover:border-slate-600"
+                        className="p-1.5 rounded-md hover:bg-white dark:hover:bg-slate-700 text-neutral-400 hover:text-blue-500 transition-all opacity-0 group-hover:opacity-100 focus-visible:opacity-100 shadow-sm border border-transparent hover:border-slate-100 dark:hover:border-slate-600"
                         title="Copiar valor"
                       >
-                        {copiedKey === key ? <Check size={14} className="text-green-500" /> : <Copy size={14} />}
+                        {copiedKey === key ? <Check size={14} className="text-app-success-text" /> : <Copy size={14} />}
                       </button>
                     )}
                   </div>
@@ -398,14 +398,14 @@ export default function ViewDataModal({
             <div className="flex flex-wrap gap-x-8 gap-y-3">
               {timestampEntries.map(([key, value]) => (
                 <div key={key} className="flex items-center gap-2">
-                  <div className="p-1.5 bg-white dark:bg-slate-800 rounded-md border border-slate-200 dark:border-slate-700 text-slate-400">
+                  <div className="p-1.5 bg-app-surface dark:bg-slate-800 rounded-md border border-neutral-200 dark:border-slate-700 text-neutral-400">
                     {getFieldIcon(key)}
                   </div>
                   <div>
-                    <p className="text-xs font-bold uppercase text-slate-400 leading-none mb-1">
+                    <p className="mb-1 text-xs font-medium leading-none text-[rgb(var(--app-text-muted))]">
                       {fieldLabels[key] || formatLabel(key)}
                     </p>
-                    <p className="text-xs font-medium text-slate-600 dark:text-slate-400">
+                    <p className="text-xs font-medium text-neutral-700 dark:text-slate-400">
                       {renderValue(key, value)}
                     </p>
                   </div>

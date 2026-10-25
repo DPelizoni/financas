@@ -171,7 +171,7 @@ export default function UserMenu({ nome, email, role, onLogout }: UserMenuProps)
                 }`}
               >
                 <span
-                  className={`absolute top-0.5 h-4 w-4 rounded-full bg-white shadow-sm transition-transform ${
+                  className={`absolute top-0.5 h-4 w-4 rounded-full bg-app-surface shadow-sm transition-transform ${
                     isDarkMode ? "translate-x-[1.125rem]" : "translate-x-0.5"
                   }`}
                 />

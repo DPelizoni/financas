@@ -23,10 +23,10 @@ export function DashboardTransactionsTable({
   return (
     <div className="app-surface p-4">
       <div className="mb-3 flex items-center justify-between">
-        <h3 className="text-sm font-semibold text-gray-700 dark:text-slate-300">
+        <h3 className="text-sm font-semibold text-neutral-700 dark:text-slate-300">
           Dados Detalhados
         </h3>
-        <span className="text-xs text-gray-500 dark:text-slate-500">
+        <span className="text-xs text-app-text-muted dark:text-slate-500">
           Registros filtrados exibidos: {detailedRows.length}
         </span>
       </div>
@@ -35,7 +35,7 @@ export function DashboardTransactionsTable({
         <div className="space-y-3">
           {detailedRows.length === 0 ? (
             <div
-              className="rounded-lg border border-dashed border-gray-300 px-4 py-8 text-center text-sm text-gray-500 dark:border-slate-700 dark:text-slate-500"
+              className="rounded-lg border border-dashed border-neutral-200 px-4 py-8 text-center text-sm text-app-text-muted dark:border-slate-700 dark:text-slate-500"
             >
               Nenhum registro encontrado com os filtros atuais.
             </div>
@@ -43,27 +43,27 @@ export function DashboardTransactionsTable({
             detailedRows.map((t) => (
               <div
                 key={t.id}
-                className="rounded-lg border border-gray-200/80 bg-gradient-to-b from-white to-gray-50 p-4 shadow-[0_1px_2px_rgba(0,0,0,0.06)] dark:border-slate-800 dark:from-slate-900 dark:to-slate-900/50"
+                className="rounded-lg border border-gray-200/80 bg-gradient-to-b from-app-surface to-neutral-50 p-4 shadow-[0_1px_2px_rgba(0,0,0,0.06)] dark:border-slate-800 dark:from-slate-900 dark:to-slate-900/50"
               >
                 <div className="flex items-start justify-between gap-3">
                   <div>
-                    <p className="text-sm font-semibold text-gray-900 dark:text-white">
+                    <p className="text-sm font-semibold text-neutral-900 dark:text-white">
                       {t.descricao_nome || "Sem descrição"}
                     </p>
-                    <p className="mt-1 text-xs text-gray-600 dark:text-slate-400">{t.mes}</p>
+                    <p className="mt-1 text-xs text-neutral-700 dark:text-slate-400">{t.mes}</p>
                   </div>
                   <span
                     className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold leading-none ${
                       t.tipo === "RECEITA"
-                        ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400"
-                        : "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
+                        ? "bg-app-success-surface text-app-success-text dark:bg-emerald-900/30 dark:text-emerald-400"
+                        : "bg-app-error-surface text-app-error-text dark:bg-red-900/30 dark:text-red-400"
                     }`}
                   >
                     {tipoLabel[t.tipo]}
                   </span>
                 </div>
 
-                <div className="mt-3 space-y-1 text-sm text-gray-700 dark:text-slate-300">
+                <div className="mt-3 space-y-1 text-sm text-neutral-700 dark:text-slate-300">
                   <p>
                     <span className="font-medium">Categoria: </span>
                     {t.categoria_nome || "-"}
@@ -85,7 +85,7 @@ export function DashboardTransactionsTable({
       </div>
 
       <div className="app-table-scroll hidden md:block">
-        <table className="w-full table-fixed divide-y divide-gray-200 text-xs dark:divide-slate-800">
+        <table className="w-full table-fixed divide-y divide-neutral-200 text-xs dark:divide-slate-800">
           <thead className="app-table-head">
             <tr>
               <SortableHeader label="Mês" column="mes" sortBy={tableSortBy} sortDirection={tableSortDirection} onSort={handleTableSort} className="w-[10%]" />
@@ -99,12 +99,12 @@ export function DashboardTransactionsTable({
               <SortableHeader label="Valor" column="valor" sortBy={tableSortBy} sortDirection={tableSortDirection} onSort={handleTableSort} align="right" className="w-[10%]" />
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-100 bg-white dark:divide-slate-800 dark:bg-slate-900">
+          <tbody className="divide-y divide-neutral-200 bg-app-surface dark:divide-slate-800 dark:bg-slate-900">
             {detailedRows.length === 0 ? (
               <tr>
                 <td
                   colSpan={7}
-                  className="px-3 py-8 text-center text-xs text-gray-500 dark:text-slate-500"
+                  className="px-3 py-8 text-center text-xs text-app-text-muted dark:text-slate-500"
                 >
                   Nenhum registro encontrado com os filtros atuais.
                 </td>
@@ -112,21 +112,21 @@ export function DashboardTransactionsTable({
             ) : (
               detailedRows.map((t) => (
                 <tr key={t.id} className="app-table-row">
-                  <td className="px-3 py-2 text-xs text-gray-700 dark:text-slate-300">
+                  <td className="px-3 py-2 text-xs text-neutral-700 dark:text-slate-300">
                     {t.mes}
                   </td>
                   <td className="px-3 py-2 text-xs text-center">
                     <span
                       className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold leading-none ${
                         t.tipo === "RECEITA"
-                          ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400"
-                          : "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
+                          ? "bg-app-success-surface text-app-success-text dark:bg-emerald-900/30 dark:text-emerald-400"
+                          : "bg-app-error-surface text-app-error-text dark:bg-red-900/30 dark:text-red-400"
                       }`}
                     >
                       {tipoLabel[t.tipo]}
                     </span>
                   </td>
-                  <td className="px-3 py-2 text-xs text-gray-700 dark:text-slate-300">
+                  <td className="px-3 py-2 text-xs text-neutral-700 dark:text-slate-300">
                     <span
                       className="block truncate"
                       title={t.categoria_nome || "-"}
@@ -134,7 +134,7 @@ export function DashboardTransactionsTable({
                       {t.categoria_nome || "-"}
                     </span>
                   </td>
-                  <td className="px-3 py-2 text-xs text-gray-700 dark:text-slate-300">
+                  <td className="px-3 py-2 text-xs text-neutral-700 dark:text-slate-300">
                     <span
                       className="block truncate"
                       title={t.descricao_nome || "-"}
@@ -142,7 +142,7 @@ export function DashboardTransactionsTable({
                       {t.descricao_nome || "-"}
                     </span>
                   </td>
-                  <td className="px-3 py-2 text-xs text-gray-700 dark:text-slate-300">
+                  <td className="px-3 py-2 text-xs text-neutral-700 dark:text-slate-300">
                     <span
                       className="block truncate"
                       title={t.banco_nome || "-"}

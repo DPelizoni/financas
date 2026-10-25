@@ -99,7 +99,7 @@ export function AdvancedActionModals({
       >
 
         <div className="space-y-6 p-6">
-          <p className="text-sm text-gray-600 dark:text-slate-400">
+          <p className="text-sm text-neutral-700 dark:text-slate-400">
             Selecione um mês de origem e um ou mais meses de destino para
             replicar todos os lançamentos.
           </p>
@@ -130,7 +130,7 @@ export function AdvancedActionModals({
               <button
                 type="button"
                 onClick={onAddDestinoMes}
-                className="flex h-10 w-10 items-center justify-center rounded-md border border-blue-200 bg-blue-50 text-blue-600 transition-colors hover:bg-blue-100 dark:bg-blue-900/30 dark:border-blue-800 dark:text-blue-400 dark:hover:bg-blue-900/50"
+                className="flex h-10 w-10 items-center justify-center rounded-md border border-app-info-border bg-app-info-surface text-app-brand-primary transition-colors hover:bg-blue-100 dark:bg-blue-900/30 dark:border-blue-800 dark:text-blue-400 dark:hover:bg-blue-900/50"
                 title="Adicionar mês"
               >
                 <Plus size={20} />
@@ -139,7 +139,7 @@ export function AdvancedActionModals({
           </div>
 
           <div className="space-y-2">
-            <p className="text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-slate-500">
+            <p className="text-xs font-semibold uppercase tracking-wider text-app-text-muted dark:text-slate-500">
               Atalhos para Destino
             </p>
             <div className="flex flex-wrap gap-2">
@@ -148,7 +148,7 @@ export function AdvancedActionModals({
                   key={n}
                   type="button"
                   onClick={() => onAddNextMonths(n)}
-                  className="inline-flex items-center gap-1 rounded-md border border-gray-200 bg-white px-3 py-1.5 text-xs font-medium text-gray-700 transition hover:bg-gray-50 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-700"
+                  className="inline-flex items-center gap-1 rounded-md border border-neutral-200 bg-app-surface px-3 py-1.5 text-xs font-medium text-neutral-700 transition hover:bg-neutral-100 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-700"
                 >
                   <Plus size={14} />
                   Próximos {n} meses
@@ -157,20 +157,20 @@ export function AdvancedActionModals({
             </div>
           </div>
 
-          <div className="min-h-[60px] rounded-lg border border-dashed border-gray-200 p-3 dark:border-slate-800">
-            <p className="mb-2 text-xs font-medium text-gray-500 dark:text-slate-500">
+          <div className="min-h-[60px] rounded-lg border border-dashed border-neutral-200 p-3 dark:border-slate-800">
+            <p className="mb-2 text-xs font-medium text-app-text-muted dark:text-slate-500">
               Meses de destino selecionados:
             </p>
             <div className="flex flex-wrap gap-2">
               {copyMesesDestino.length === 0 ? (
-                <span className="text-xs italic text-gray-400 dark:text-slate-600">
+                <span className="text-xs italic text-[rgb(var(--app-text-muted))]">
                   Nenhum mês selecionado
                 </span>
               ) : (
                 copyMesesDestino.map((mes) => (
                   <span
                     key={mes}
-                    className="inline-flex items-center gap-1.5 rounded-full bg-blue-50 px-2.5 py-1 text-xs font-medium text-blue-700 border border-blue-100 dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-800"
+                    className="inline-flex items-center gap-1.5 rounded-full bg-app-info-surface px-2.5 py-1 text-xs font-medium text-app-brand-primary border border-blue-100 dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-800"
                   >
                     {monthApiToInput(mes)}
                     <button
@@ -218,7 +218,7 @@ export function AdvancedActionModals({
       >
 
         <div className="space-y-6 p-6">
-          <p className="text-sm text-gray-600 dark:text-slate-400">
+          <p className="text-sm text-neutral-700 dark:text-slate-400">
             Selecione um ou mais meses para excluir permanentemente todos os
             lançamentos.
           </p>
@@ -237,7 +237,7 @@ export function AdvancedActionModals({
             <button
               type="button"
               onClick={onAddDeleteMes}
-              className="flex h-10 w-10 items-center justify-center rounded-md border border-red-200 bg-red-50 text-red-600 transition-colors hover:bg-red-100 dark:bg-red-900/30 dark:border-red-800 dark:text-red-400 dark:hover:bg-red-900/50"
+              className="flex h-10 w-10 items-center justify-center rounded-md border border-app-error-border bg-app-error-surface text-app-error-text transition-colors hover:bg-red-100 dark:bg-red-900/30 dark:border-red-800 dark:text-red-400 dark:hover:bg-red-900/50"
               title="Adicionar mês"
             >
               <Plus size={20} />
@@ -245,7 +245,7 @@ export function AdvancedActionModals({
           </div>
 
           <div className="space-y-2">
-            <p className="text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-slate-500">
+            <p className="text-xs font-semibold uppercase tracking-wider text-app-text-muted dark:text-slate-500">
               Atalhos para Exclusão
             </p>
             <div className="flex flex-wrap gap-2">
@@ -254,7 +254,7 @@ export function AdvancedActionModals({
                   key={n}
                   type="button"
                   onClick={() => onAddDeleteNextMonths(n)}
-                  className="inline-flex items-center gap-1 rounded-md border border-gray-200 bg-white px-3 py-1.5 text-xs font-medium text-gray-700 transition hover:bg-gray-50 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-700"
+                  className="inline-flex items-center gap-1 rounded-md border border-neutral-200 bg-app-surface px-3 py-1.5 text-xs font-medium text-neutral-700 transition hover:bg-neutral-100 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-700"
                 >
                   <Plus size={14} />
                   Incluir próximos {n} meses
@@ -263,26 +263,26 @@ export function AdvancedActionModals({
             </div>
           </div>
 
-          <div className="min-h-[60px] rounded-lg border border-dashed border-red-200 p-3 dark:border-red-900/30">
-            <p className="mb-2 text-xs font-medium text-red-700 dark:text-red-400">
+          <div className="min-h-[60px] rounded-lg border border-dashed border-app-error-border p-3 dark:border-red-900/30">
+            <p className="mb-2 text-xs font-medium text-app-error-text dark:text-red-400">
               Meses marcados para exclusão:
             </p>
             <div className="flex flex-wrap gap-2">
               {deleteMeses.length === 0 ? (
-                <span className="text-xs italic text-gray-400 dark:text-slate-600">
+                <span className="text-xs italic text-[rgb(var(--app-text-muted))]">
                   Nenhum mês selecionado
                 </span>
               ) : (
                 deleteMeses.map((mes) => (
                   <span
                     key={mes}
-                    className="inline-flex items-center gap-1.5 rounded-full bg-red-50 px-2.5 py-1 text-xs font-medium text-red-700 border border-red-100 dark:bg-red-900/30 dark:text-red-400 dark:border-red-800"
+                    className="inline-flex items-center gap-1.5 rounded-full bg-app-error-surface px-2.5 py-1 text-xs font-medium text-app-error-text border border-red-100 dark:bg-red-900/30 dark:text-red-400 dark:border-red-800"
                   >
                     {monthApiToInput(mes)}
                     <button
                       type="button"
                       onClick={() => onRemoveDeleteMes(mes)}
-                      className="rounded-full hover:bg-red-200 dark:hover:bg-red-800"
+                      className="rounded-full hover:bg-app-error-border dark:hover:bg-red-800"
                     >
                       <XCircle size={14} />
                     </button>
@@ -344,14 +344,14 @@ export function AdvancedActionModals({
             <button
               type="button"
               onClick={onAddDeleteTransactionMes}
-              className="flex h-10 w-10 items-center justify-center rounded-md border border-red-200 bg-red-50 text-red-600 transition-colors hover:bg-red-100 dark:bg-red-900/30 dark:border-red-800 dark:text-red-400 dark:hover:bg-red-900/50"
+              className="flex h-10 w-10 items-center justify-center rounded-md border border-app-error-border bg-app-error-surface text-app-error-text transition-colors hover:bg-red-100 dark:bg-red-900/30 dark:border-red-800 dark:text-red-400 dark:hover:bg-red-900/50"
             >
               <Plus size={20} />
             </button>
           </div>
 
           <div className="space-y-2">
-            <p className="text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-slate-500">
+            <p className="text-xs font-semibold uppercase tracking-wider text-app-text-muted dark:text-slate-500">
               Atalhos
             </p>
             <div className="flex flex-wrap gap-2">
@@ -360,7 +360,7 @@ export function AdvancedActionModals({
                   key={n}
                   type="button"
                   onClick={() => onAddDeleteTransactionNextMonths(n)}
-                  className="inline-flex items-center gap-1 rounded-md border border-gray-200 bg-white px-3 py-1.5 text-xs font-medium text-gray-700 transition hover:bg-gray-50 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-700"
+                  className="inline-flex items-center gap-1 rounded-md border border-neutral-200 bg-app-surface px-3 py-1.5 text-xs font-medium text-neutral-700 transition hover:bg-neutral-100 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-700"
                 >
                   <Plus size={14} />
                   + {n} meses
@@ -369,23 +369,23 @@ export function AdvancedActionModals({
             </div>
           </div>
 
-          <div className="min-h-[60px] rounded-lg border border-dashed border-red-200 p-3 dark:border-red-900/30">
+          <div className="min-h-[60px] rounded-lg border border-dashed border-app-error-border p-3 dark:border-red-900/30">
             <div className="flex flex-wrap gap-2">
               {deleteTransactionMeses.length === 0 ? (
-                <span className="text-xs italic text-gray-400 dark:text-slate-600">
+                <span className="text-xs italic text-[rgb(var(--app-text-muted))]">
                   Selecione os meses que deseja limpar
                 </span>
               ) : (
                 deleteTransactionMeses.map((mes) => (
                   <span
                     key={mes}
-                    className="inline-flex items-center gap-1.5 rounded-full bg-red-50 px-2.5 py-1 text-xs font-medium text-red-700 border border-red-100 dark:bg-red-900/30 dark:text-red-400 dark:border-red-800"
+                    className="inline-flex items-center gap-1.5 rounded-full bg-app-error-surface px-2.5 py-1 text-xs font-medium text-app-error-text border border-red-100 dark:bg-red-900/30 dark:text-red-400 dark:border-red-800"
                   >
                     {monthApiToInput(mes)}
                     <button
                       type="button"
                       onClick={() => onRemoveDeleteTransactionMes(mes)}
-                      className="rounded-full hover:bg-red-200 dark:hover:bg-red-800"
+                      className="rounded-full hover:bg-app-error-border dark:hover:bg-red-800"
                     >
                       <XCircle size={14} />
                     </button>

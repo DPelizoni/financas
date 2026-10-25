@@ -27,9 +27,9 @@ import { FilterChip } from "@/components/FilterChips";
 import { useUrlFilterSync } from "@/utils/useUrlFilterSync";
 
 const roleBadgeClass: Record<UserRole, string> = {
-  ADMIN: "bg-violet-100 text-violet-700 dark:bg-violet-900/30 dark:text-violet-400",
-  GESTOR: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400",
-  USUARIO: "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300",
+  ADMIN: "bg-app-info-surface text-app-info-text dark:bg-violet-900/30 dark:text-violet-400",
+  GESTOR: "bg-app-info-surface text-app-brand-primary dark:bg-blue-900/30 dark:text-blue-400",
+  USUARIO: "bg-neutral-100 text-neutral-700 dark:bg-slate-800 dark:text-slate-300",
 };
 
 const roleLabel: Record<UserRole, string> = {
@@ -182,8 +182,8 @@ export default function UsuariosPage() {
     });
   }, [users, sortBy, sortDirection]);
 
-  if (authorized === null) return <div className="py-12 text-center text-gray-500">Validando acesso...</div>;
-  if (!authorized) return <div className="py-12 text-center text-gray-500">Redirecionando...</div>;
+  if (authorized === null) return <div className="py-12 text-center text-app-text-muted">Validando acesso...</div>;
+  if (!authorized) return <div className="py-12 text-center text-app-text-muted">Redirecionando...</div>;
 
   const handleSearchChange = (value: string) => {
     setSearchTerm(value);
@@ -257,16 +257,16 @@ export default function UsuariosPage() {
             <>
               <div className="space-y-2 px-2 sm:px-0 md:hidden">
                 {sortedUsers.map((user) => (
-                  <div key={user.id} className="rounded-lg border border-gray-200/80 bg-gradient-to-b from-white to-gray-50 p-4 shadow-[0_1px_2px_rgba(0,0,0,0.06)] dark:border-slate-800 dark:from-slate-900 dark:to-slate-900/50 dark:shadow-none">
+                  <div key={user.id} className="rounded-lg border border-gray-200/80 bg-gradient-to-b from-app-surface to-neutral-50 p-4 shadow-[0_1px_2px_rgba(0,0,0,0.06)] dark:border-slate-800 dark:from-slate-900 dark:to-slate-900/50 dark:shadow-none">
                     <div className="flex items-start justify-between gap-3">
-                      <div><p className="text-sm font-semibold text-gray-900 dark:text-white">{user.nome}</p><p className="mt-1 text-xs text-gray-600 dark:text-slate-400">{user.email}</p></div>
+                      <div><p className="text-sm font-semibold text-neutral-900 dark:text-white">{user.nome}</p><p className="mt-1 text-xs text-neutral-700 dark:text-slate-400">{user.email}</p></div>
                       <button type="button" onClick={() => handleToggleStatus(user)} disabled={updatingId === user.id} className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium leading-none transition ${user.status === "ATIVO" ? "app-status-toggle-success" : "app-status-toggle-error"}`} title="Clique para alternar o status">{updatingId === user.id ? "Atualizando..." : statusLabel[user.status]}</button>
                     </div>
                     <div className="mt-3">
-                      <p className="mb-1 text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-slate-400">Papel</p>
+                      <p className="mb-1 text-xs font-medium uppercase tracking-wide text-app-text-muted dark:text-slate-400">Papel</p>
                       <span className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold leading-none ${roleBadgeClass[user.role]}`}>{roleLabel[user.role]}</span>
                     </div>
-                    <div className="mt-3 flex items-center justify-end gap-2 border-t border-gray-100 pt-3 dark:border-slate-800">
+                    <div className="mt-3 flex items-center justify-end gap-2 border-t border-neutral-200 pt-3 dark:border-slate-800">
                       <TableActionButton action="view" title="Visualizar" onClick={() => setViewingUser(user)} />
                       <TableActionButton action="edit" title="Editar" onClick={() => { setEditingUser(user); setShowUserModal(true); }} />
                       {isAdmin && <TableActionButton action="delete" title="Excluir usuário" onClick={() => setDeleteTarget(user)} disabled={updatingId === user.id} />}
@@ -276,7 +276,7 @@ export default function UsuariosPage() {
               </div>
 
               <div className="app-table-scroll hidden md:block">
-                <table className="min-w-[640px] w-full table-fixed divide-y divide-gray-200 dark:divide-slate-800 text-xs">
+                <table className="min-w-[640px] w-full table-fixed divide-y divide-neutral-200 dark:divide-slate-800 text-xs">
                   <thead className="app-table-head">
                     <tr>
                       <SortableHeader label="Nome" column="nome" sortBy={sortBy} sortDirection={sortDirection} onSort={handleSort} className="w-[25%]" />
@@ -286,11 +286,11 @@ export default function UsuariosPage() {
                       <th className="app-table-head-cell-center w-[15%]">Ações</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-gray-100 dark:divide-slate-800 bg-white dark:bg-slate-900">
+                  <tbody className="divide-y divide-neutral-200 dark:divide-slate-800 bg-app-surface dark:bg-slate-900">
                     {sortedUsers.map((user) => (
                       <tr key={user.id} className="app-table-row">
-                        <td className="whitespace-nowrap px-3 py-2 text-xs text-gray-700 dark:text-slate-300"><span className="block truncate" title={user.nome}>{user.nome}</span></td>
-                        <td className="whitespace-nowrap px-3 py-2 text-xs text-gray-700 dark:text-slate-300"><span className="block truncate" title={user.email}>{user.email}</span></td>
+                        <td className="whitespace-nowrap px-3 py-2 text-xs text-neutral-700 dark:text-slate-300"><span className="block truncate" title={user.nome}>{user.nome}</span></td>
+                        <td className="whitespace-nowrap px-3 py-2 text-xs text-neutral-700 dark:text-slate-300"><span className="block truncate" title={user.email}>{user.email}</span></td>
                         <td className="whitespace-nowrap px-3 py-2 text-xs text-center"><span className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold leading-none ${roleBadgeClass[user.role]}`}>{roleLabel[user.role]}</span></td>
                         <td className="whitespace-nowrap px-3 py-2 text-xs text-center"><button type="button" onClick={() => handleToggleStatus(user)} disabled={updatingId === user.id} className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium leading-none transition ${user.status === "ATIVO" ? "app-status-toggle-success" : "app-status-toggle-error"}`} title="Clique para alternar o status">{updatingId === user.id ? "Atualizando..." : statusLabel[user.status]}</button></td>
                         <td className="whitespace-nowrap px-3 py-2 text-center text-xs font-medium"><div className="flex justify-center gap-1"><TableActionButton action="view" title="Visualizar" onClick={() => setViewingUser(user)} compact /><TableActionButton action="edit" title="Editar" onClick={() => { setEditingUser(user); setShowUserModal(true); }} compact />{isAdmin && <TableActionButton action="delete" title="Excluir usuário" onClick={() => setDeleteTarget(user)} compact disabled={updatingId === user.id} />}</div></td>

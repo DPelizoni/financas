@@ -259,19 +259,19 @@ export default function InvestimentosMovimentacoesPage() {
             <>
               <div className="space-y-2 px-2 sm:px-0 md:hidden">
                 {sortedMovimentacoes.map((item) => (
-                  <div key={item.id} className="rounded-lg border border-gray-200/80 bg-gradient-to-b from-white to-gray-50 p-4 shadow-[0_1px_2px_rgba(0,0,0,0.06)]">
+                  <div key={item.id} className="rounded-lg border border-gray-200/80 bg-gradient-to-b from-app-surface to-neutral-50 p-4 shadow-[0_1px_2px_rgba(0,0,0,0.06)]">
                     <div className="flex items-start justify-between gap-3">
-                      <div><p className="text-sm font-semibold text-gray-900">{item.ativo_nome}</p><p className="mt-1 text-xs text-gray-600">Data: {formatDateBR(item.data)}</p><p className="mt-1 text-xs text-gray-600">Banco: {item.banco_nome || "-"}</p></div>
+                      <div><p className="text-sm font-semibold text-neutral-900">{item.ativo_nome}</p><p className="mt-1 text-xs text-neutral-700">Data: {formatDateBR(item.data)}</p><p className="mt-1 text-xs text-neutral-700">Banco: {item.banco_nome || "-"}</p></div>
                       <span className={`${item.tipo === "APORTE" ? "app-badge-info" : item.tipo === "RESGATE" ? "app-badge-error" : "app-badge-success"}`}>{tipoLabel[item.tipo]}</span>
                     </div>
-                    <div className="mt-3 text-xs text-gray-700"><span className="font-medium">Valor: </span><span className="font-semibold text-gray-900">{formatCurrency(Number(item.valor))}</span></div>
-                    <div className="mt-3 flex items-center justify-end gap-2 border-t border-gray-100 pt-3"><TableActionButton action="view" title="Visualizar" onClick={() => setViewingMovimentacao(item)} /><TableActionButton action="edit" title="Editar" onClick={() => { setEditingMovimentacao(item); setShowModal(true); }} /><TableActionButton action="delete" title="Excluir" onClick={() => setDeleteTarget(item)} /></div>
+                    <div className="mt-3 text-xs text-neutral-700"><span className="font-medium">Valor: </span><span className="font-semibold text-neutral-900">{formatCurrency(Number(item.valor))}</span></div>
+                    <div className="mt-3 flex items-center justify-end gap-2 border-t border-neutral-200 pt-3"><TableActionButton action="view" title="Visualizar" onClick={() => setViewingMovimentacao(item)} /><TableActionButton action="edit" title="Editar" onClick={() => { setEditingMovimentacao(item); setShowModal(true); }} /><TableActionButton action="delete" title="Excluir" onClick={() => setDeleteTarget(item)} /></div>
                   </div>
                 ))}
               </div>
 
               <div className="app-table-scroll hidden md:block">
-                <table className="w-full table-fixed divide-y divide-gray-200 text-xs">
+                <table className="w-full table-fixed divide-y divide-neutral-200 text-xs">
                   <thead className="app-table-head">
                     <tr>
                       <SortableHeader label="Data" column="data" sortBy={sortBy} sortDirection={sortDirection} onSort={handleSort} className="w-[12%]" />
@@ -282,14 +282,14 @@ export default function InvestimentosMovimentacoesPage() {
                       <th className="app-table-head-cell-center w-[16%]">Ações</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-gray-100 bg-white">
+                  <tbody className="divide-y divide-neutral-200 bg-app-surface">
                     {sortedMovimentacoes.map((item) => (
                       <tr key={item.id} className="app-table-row">
-                        <td className="px-3 py-2 text-xs text-gray-700">{formatDateBR(item.data)}</td>
-                        <td className="px-3 py-2 text-xs text-gray-700"><span className="block truncate" title={item.ativo_nome || "-"}>{item.ativo_nome || "-"}</span></td>
-                        <td className="hidden px-3 py-2 text-xs text-gray-700 xl:table-cell"><span className="block truncate" title={item.banco_nome || "-"}>{item.banco_nome || "-"}</span></td>
+                        <td className="px-3 py-2 text-xs text-neutral-700">{formatDateBR(item.data)}</td>
+                        <td className="px-3 py-2 text-xs text-neutral-700"><span className="block truncate" title={item.ativo_nome || "-"}>{item.ativo_nome || "-"}</span></td>
+                        <td className="hidden px-3 py-2 text-xs text-neutral-700 xl:table-cell"><span className="block truncate" title={item.banco_nome || "-"}>{item.banco_nome || "-"}</span></td>
                         <td className="px-3 py-2 text-center text-xs"><div className="flex justify-center"><span className={`${item.tipo === "APORTE" ? "app-badge-info" : item.tipo === "RESGATE" ? "app-badge-error" : "app-badge-success"}`}>{tipoLabel[item.tipo]}</span></div></td>
-                        <td className="px-3 py-2 text-right text-xs font-semibold text-gray-900">{formatCurrency(Number(item.valor))}</td>
+                        <td className="px-3 py-2 text-right text-xs font-semibold text-neutral-900">{formatCurrency(Number(item.valor))}</td>
                         <td className="px-3 py-2 text-center text-xs"><div className="flex justify-center gap-1"><TableActionButton action="view" title="Visualizar" onClick={() => setViewingMovimentacao(item)} compact /><TableActionButton action="edit" title="Editar" onClick={() => { setEditingMovimentacao(item); setShowModal(true); }} compact /><TableActionButton action="delete" title="Excluir" onClick={() => setDeleteTarget(item)} compact /></div></td>
                       </tr>
                     ))}

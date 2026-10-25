@@ -13,13 +13,13 @@ const config: Record<Situacao, { label: string; classes: string; nextLabel: stri
   PAGO: {
     label: "Pago",
     classes:
-      "border-green-200 bg-green-100 text-green-700 dark:border-green-800/50 dark:bg-green-900/30 dark:text-green-400",
+      "border-app-success-border bg-app-success-surface text-app-success-text dark:border-green-800/50 dark:bg-green-900/30 dark:text-green-400",
     nextLabel: "pendente",
   },
   PENDENTE: {
     label: "Pendente",
     classes:
-      "border-amber-200 bg-amber-100 text-amber-700 dark:border-amber-800/50 dark:bg-amber-900/30 dark:text-amber-400",
+      "border-amber-200 bg-app-warning-surface text-app-warning-text dark:border-amber-800/50 dark:bg-amber-900/30 dark:text-amber-400",
     nextLabel: "pago",
   },
 };
@@ -48,7 +48,7 @@ export default function SituacaoBadge({ situacao, onToggle, disabled = false }: 
       disabled={disabled}
       title={`Marcar como ${nextLabel}`}
       aria-label={`${label}. Marcar como ${nextLabel}`}
-      className={`${baseClasses} ${classes} transition hover:brightness-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[rgb(var(--app-focus-ring))] disabled:cursor-not-allowed disabled:opacity-60 dark:hover:brightness-125`}
+      className={`app-hit-area ${baseClasses} ${classes} transition hover:brightness-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[rgb(var(--app-focus-ring))] disabled:cursor-not-allowed disabled:opacity-60 dark:hover:brightness-125`}
     >
       {content}
     </button>

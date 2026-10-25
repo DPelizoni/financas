@@ -25,6 +25,7 @@ import { InvestimentoDashboardResponse } from "@/types/investimento";
 import { formatCurrency, formatMonthShort, formatMonthYearLabel, previousMonthKey } from "@/utils/format";
 import StatCard, { StatCardComparison } from "@/components/StatCard";
 import ChartCardHeader from "@/components/ChartCardHeader";
+import { useReducedMotion } from "framer-motion";
 import ActiveBadge from "@/components/ActiveBadge";
 import FilterBar from "@/components/FilterBar";
 import { FilterChip } from "@/components/FilterChips";
@@ -54,6 +55,8 @@ export default function InvestimentosDashboardPage() {
 
   const [loading, setLoading] = useState(true);
   const [isMobile, setIsMobile] = useState(false);
+  // Sem animação de entrada nos gráficos quando o sistema pede "reduzir movimento"
+  const animateCharts = !useReducedMotion();
   const [banks, setBanks] = useState<Bank[]>([]);
   const [availableYears, setAvailableYears] = useState<string[]>([]);
   
@@ -270,7 +273,7 @@ export default function InvestimentosDashboardPage() {
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
       return (
-        <div className="rounded-lg border border-white/20 bg-white/95 p-3 shadow-2xl backdrop-blur-md dark:border-slate-700/50 dark:bg-slate-900/95">
+        <div className="rounded-lg border border-white/20 bg-app-surface/95 p-3 shadow-2xl backdrop-blur-md dark:border-slate-700/50 dark:bg-slate-900/95">
           {label && <p className="mb-2 text-xs font-medium text-[rgb(var(--app-text-muted))]">{label}</p>}
           <div className="space-y-2">
             {payload.map((item: any, index: number) => (
@@ -295,9 +298,9 @@ export default function InvestimentosDashboardPage() {
     return (
       <div className="app-page py-4 sm:py-8">
         <div className="mx-auto max-w-7xl space-y-6 px-4 sm:px-6 lg:px-8">
-          <div className="h-8 w-48 animate-pulse rounded-md bg-gray-200" />
+          <div className="h-8 w-48 animate-pulse rounded-md bg-neutral-200" />
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-            {[1, 2, 3, 4].map((i) => <div key={i} className="h-32 w-full animate-pulse rounded-lg bg-gray-200" />)}
+            {[1, 2, 3, 4].map((i) => <div key={i} className="h-32 w-full animate-pulse rounded-lg bg-neutral-200" />)}
           </div>
         </div>
       </div>
@@ -353,7 +356,7 @@ export default function InvestimentosDashboardPage() {
               title="Movimentações Mensais"
               subtitle={`Ano ${filterAno === "TODOS" ? currentYearStr : filterAno}`}
               icon={<Activity size={20} />}
-              iconClassName="bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400"
+              iconClassName="bg-app-info-surface text-app-brand-primary dark:bg-blue-900/20 dark:text-blue-400"
             />
             <div className="flex-1 w-full">
               <ResponsiveContainer width="100%" height="100%">
@@ -380,9 +383,9 @@ export default function InvestimentosDashboardPage() {
                   <YAxis hide />
                   <Tooltip content={<CustomTooltip />} />
                   <Legend verticalAlign="top" align="right" iconType="circle" iconSize={6} wrapperStyle={{ fontSize: '12px', fontWeight: 500, paddingBottom: '24px' }} />
-                  <Area type="monotone" dataKey="aporte" name="Aporte" stroke={chartColors.aporte} strokeWidth={4} fillOpacity={1} fill="url(#color-inv-aporte)" animationDuration={1500} />
-                  <Area type="monotone" dataKey="resgate" name="Resgate" stroke={chartColors.resgate} strokeWidth={4} fillOpacity={1} fill="url(#color-inv-resgate)" animationDuration={1500} />
-                  <Area type="monotone" dataKey="rendimentos" name="Rendimento" stroke={chartColors.rendimento} strokeWidth={4} fillOpacity={1} fill="url(#color-inv-rendimento)" animationDuration={1500} />
+                  <Area type="monotone" dataKey="aporte" name="Aporte" stroke={chartColors.aporte} strokeWidth={4} fillOpacity={1} fill="url(#color-inv-aporte)" animationDuration={1500} isAnimationActive={animateCharts} />
+                  <Area type="monotone" dataKey="resgate" name="Resgate" stroke={chartColors.resgate} strokeWidth={4} fillOpacity={1} fill="url(#color-inv-resgate)" animationDuration={1500} isAnimationActive={animateCharts} />
+                  <Area type="monotone" dataKey="rendimentos" name="Rendimento" stroke={chartColors.rendimento} strokeWidth={4} fillOpacity={1} fill="url(#color-inv-rendimento)" animationDuration={1500} isAnimationActive={animateCharts} />
                 </AreaChart>
               </ResponsiveContainer>
             </div>
@@ -418,7 +421,7 @@ export default function InvestimentosDashboardPage() {
                   />
                   <YAxis hide />
                   <Tooltip content={<CustomTooltip />} />
-                  <Area type="monotone" dataKey="saldo" name="Saldo" stroke={chartColors.resultado} strokeWidth={4} fillOpacity={1} fill="url(#color-inv-saldo)" animationDuration={1500} />
+                  <Area type="monotone" dataKey="saldo" name="Saldo" stroke={chartColors.resultado} strokeWidth={4} fillOpacity={1} fill="url(#color-inv-saldo)" animationDuration={1500} isAnimationActive={animateCharts} />
                 </AreaChart>
               </ResponsiveContainer>
             </div>
@@ -449,7 +452,7 @@ export default function InvestimentosDashboardPage() {
                       cornerRadius={10} 
                       dataKey="value" 
                       stroke="none" 
-                      animationDuration={1200}
+                      animationDuration={1200} isAnimationActive={animateCharts}
                     >
                       {monthAnalysisData.map((entry, index) => <Cell key={`cell-${index}`} fill={entry.fill} style={{ outline: 'none' }} />)}
                     </Pie>
@@ -458,7 +461,7 @@ export default function InvestimentosDashboardPage() {
                 
                 <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center pointer-events-none">
                   <span className="mb-1 block text-xs font-medium text-[rgb(var(--app-text-muted))]">Saldo</span>
-                  <span className="text-2xl font-bold tabular-nums tracking-tighter text-blue-600 dark:text-blue-400 block">
+                  <span className="text-2xl font-bold tabular-nums tracking-tighter text-app-brand-primary dark:text-blue-400 block">
                     {formatCurrency(displayPoint?.saldo || 0)}
                   </span>
                 </div>
@@ -466,7 +469,7 @@ export default function InvestimentosDashboardPage() {
 
               <div className="mt-8 grid grid-cols-3 gap-4 w-full max-w-2xl mx-auto">
                 {monthAnalysisData.length > 0 ? monthAnalysisData.map((d, i) => (
-                  <div key={i} className="bg-gray-50 dark:bg-slate-800/40 rounded-lg p-4 border border-gray-100 dark:border-slate-700/30 flex flex-col items-center text-center shadow-sm">
+                  <div key={i} className="bg-neutral-50 dark:bg-slate-800/40 rounded-lg p-4 border border-neutral-200 dark:border-slate-700/30 flex flex-col items-center text-center shadow-sm">
                     <span className="mb-1 text-xs font-medium" style={{ color: d.fill }}>{d.name}</span>
                     <span className="text-base font-semibold tabular-nums" style={{ color: d.fill }}>{formatCurrency(d.value)}</span>
                   </div>
@@ -481,25 +484,25 @@ export default function InvestimentosDashboardPage() {
             <ChartCardHeader title="Carteira Atual" />
             
             <div className="mb-6 rounded-lg bg-blue-50/50 p-4 dark:bg-blue-900/10 border border-blue-100 dark:border-blue-800/50">
-               <p className="mb-1 text-xs font-medium text-blue-600 dark:text-blue-400">Saldo Total</p>
-               <p className="text-xl font-bold text-blue-600 dark:text-blue-400 tabular-nums">{formatCurrency(dashboard.carteira.saldo_total)}</p>
+               <p className="mb-1 text-xs font-medium text-app-brand-primary dark:text-blue-400">Saldo Total</p>
+               <p className="text-xl font-bold text-app-brand-primary dark:text-blue-400 tabular-nums">{formatCurrency(dashboard.carteira.saldo_total)}</p>
                <p className="mt-1 text-xs text-[rgb(var(--app-text-muted))]">{carteiraTotalLabel}</p>
             </div>
 
             <div className="overflow-y-auto max-h-[300px] custom-scrollbar">
               <div className="space-y-3 pr-2">
                 {dashboard.carteira.ativos.length === 0 ? (
-                  <p className="py-8 text-center text-gray-400 text-xs">Nenhum ativo encontrado.</p>
+                  <p className="py-8 text-center text-xs text-[rgb(var(--app-text-muted))]">Nenhum ativo encontrado.</p>
                 ) : (
                   dashboard.carteira.ativos.map((item) => (
-                    <div key={item.id} className="flex flex-col gap-1 p-3 rounded-lg bg-gray-50/50 dark:bg-slate-800/30 border border-gray-100 dark:border-slate-700/30 hover:border-blue-200 transition-colors">
+                    <div key={item.id} className="flex flex-col gap-1 p-3 rounded-lg bg-gray-50/50 dark:bg-slate-800/30 border border-neutral-200 dark:border-slate-700/30 hover:border-blue-200 transition-colors">
                       <div className="flex items-center justify-between gap-2">
                         <span className="truncate text-sm font-medium text-[rgb(var(--app-text-primary))]" title={item.nome}>{item.nome}</span>
                         <ActiveBadge ativo={item.ativo} />
                       </div>
                       <div className="flex items-center justify-between text-xs">
-                        <span className="text-gray-500 dark:text-slate-400 truncate max-w-[100px]">{item.banco_nome || "Sem Banco"}</span>
-                        <span className="font-semibold tabular-nums text-blue-600 dark:text-blue-400">{formatCurrency(Number(item.saldo_atual || 0))}</span>
+                        <span className="text-app-text-muted dark:text-slate-400 truncate max-w-[100px]">{item.banco_nome || "Sem Banco"}</span>
+                        <span className="font-semibold tabular-nums text-app-brand-primary dark:text-blue-400">{formatCurrency(Number(item.saldo_atual || 0))}</span>
                       </div>
                     </div>
                   ))

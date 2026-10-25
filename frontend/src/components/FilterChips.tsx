@@ -25,7 +25,7 @@ export default function FilterChips({ chips, onClearAll }: FilterChipsProps) {
           <button
             type="button"
             onClick={chip.onRemove}
-            className="flex h-5 w-5 items-center justify-center rounded-full transition-colors hover:bg-[rgb(var(--app-brand-primary)/0.15)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[rgb(var(--app-focus-ring))]"
+            className="app-hit-area flex h-5 w-5 items-center justify-center rounded-full transition-colors hover:bg-[rgb(var(--app-brand-primary)/0.15)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[rgb(var(--app-focus-ring))]"
             aria-label={`Remover filtro ${chip.label}`}
           >
             <X size={12} />

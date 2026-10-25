@@ -504,10 +504,10 @@ export const TransacaoModal: React.FC<TransacaoModalProps> = ({
     >
       <form ref={formRef} onSubmit={handleSubmit} className="space-y-6 p-6" noValidate>
         {/* Seção 1: Valor e Tipo Principal */}
-        <div className="rounded-lg bg-slate-50 p-4 dark:bg-slate-900/50 border border-slate-100 dark:border-slate-800">
+        <div className="rounded-lg bg-neutral-50 p-4 dark:bg-slate-900/50 border border-slate-100 dark:border-slate-800">
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3 items-end">
             <div className="lg:col-span-2">
-              <p className="mb-2 text-xs font-bold uppercase tracking-wider text-slate-500">Valor da Transação</p>
+              <p className="mb-2 text-xs font-bold uppercase tracking-wider text-app-text-muted">Valor da Transação</p>
               <TextField
                 id="valor"
                 name="valor"
@@ -533,7 +533,7 @@ export const TransacaoModal: React.FC<TransacaoModalProps> = ({
                 onBlur={() => handleFieldBlur("valor")}
                 InputProps={{
                   startAdornment: (
-                    <span className="mr-2 text-xl font-bold text-blue-600">
+                    <span className="mr-2 text-xl font-bold text-app-brand-primary">
                       R$
                     </span>
                   ),
@@ -569,7 +569,7 @@ export const TransacaoModal: React.FC<TransacaoModalProps> = ({
 
         {/* Seção 2: Classificação e Origem */}
         <div>
-          <h3 className="mb-4 flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-slate-500">
+          <h3 className="mb-4 flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-app-text-muted">
             <span className="h-1.5 w-1.5 rounded-full bg-blue-500"></span>
             Classificação
           </h3>
@@ -664,7 +664,7 @@ export const TransacaoModal: React.FC<TransacaoModalProps> = ({
 
         {/* Seção 3: Prazos e Status */}
         <div>
-          <h3 className="mb-4 flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-slate-500">
+          <h3 className="mb-4 flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-app-text-muted">
             <span className="h-1.5 w-1.5 rounded-full bg-blue-500"></span>
             Agendamento e Status
           </h3>
@@ -738,8 +738,8 @@ export const TransacaoModal: React.FC<TransacaoModalProps> = ({
 
         {/* Seção 4: Recorrência (Apenas Criação) */}
         {!isEditing && (
-          <div className="rounded-lg border border-dashed border-slate-200 bg-slate-50/50 p-4 dark:border-slate-800 dark:bg-slate-900/30">
-            <h3 className="mb-3 text-xs font-bold uppercase tracking-wider text-slate-500">Configuração de Recorrência</h3>
+          <div className="rounded-lg border border-dashed border-neutral-200 bg-slate-50/50 p-4 dark:border-slate-800 dark:bg-slate-900/30">
+            <h3 className="mb-3 text-xs font-bold uppercase tracking-wider text-app-text-muted">Configuração de Recorrência</h3>
             <div className="flex items-center gap-4">
               <div className="w-48">
                 <TextField
@@ -764,7 +764,7 @@ export const TransacaoModal: React.FC<TransacaoModalProps> = ({
                   InputLabelProps={{ shrink: true }}
                 />
               </div>
-              <p className="text-xs text-slate-500">
+              <p className="text-xs text-app-text-muted">
                 Isso criará automaticamente a transação para o mês atual e os próximos {quantidadeMeses - 1} meses.
               </p>
             </div>

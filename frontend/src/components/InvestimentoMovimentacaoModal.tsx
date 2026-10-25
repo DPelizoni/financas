@@ -358,7 +358,7 @@ export default function InvestimentoMovimentacaoModal({
           InputLabelProps={{ shrink: true }}
           InputProps={{
             startAdornment: (
-              <span className="mr-2 font-semibold text-blue-600">
+              <span className="mr-2 font-semibold text-app-brand-primary">
                 R$
               </span>
             ),

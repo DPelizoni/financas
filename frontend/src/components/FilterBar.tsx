@@ -67,7 +67,7 @@ export default function FilterBar({
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">
-                    <Search size={18} className="text-gray-400" />
+                    <Search size={18} className="text-neutral-400" />
                   </InputAdornment>
                 ),
               }}

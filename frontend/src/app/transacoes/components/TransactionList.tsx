@@ -114,7 +114,7 @@ export function TransactionList({
           actionLabel="Novo Lançamento"
           onAction={onAddTransaction}
         />
-        <div className="mt-4 flex justify-center border-t border-gray-100 pt-4 dark:border-slate-800">
+        <div className="mt-4 flex justify-center border-t border-neutral-200 pt-4 dark:border-slate-800">
           <AppButton
             tone="outline"
             onClick={onClearFilters}
@@ -189,7 +189,7 @@ export function TransactionList({
 
       {/* Visão Desktop/Tablet - Tabela */}
       <div className="app-table-scroll hidden sm:block w-full">
-        <table className="min-w-[1000px] w-full table-fixed divide-y divide-gray-200 text-xs dark:divide-slate-800">
+        <table className="min-w-[1000px] w-full table-fixed divide-y divide-neutral-200 text-xs dark:divide-slate-800">
           <thead className="app-table-head">
             <tr>
               <SortableHeader label="Mês" column="mes" sortBy={sortBy} sortDirection={sortDirection} onSort={onSort} className="w-[8%]" />
@@ -205,22 +205,22 @@ export function TransactionList({
               </th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-200 bg-white dark:divide-slate-800 dark:bg-slate-900">
+          <tbody className="divide-y divide-neutral-200 bg-app-surface dark:divide-slate-800 dark:bg-slate-900">
             {transacoes.map((transacao) => (
               <tr 
                 key={transacao.id} 
                 className="app-table-row group"
               >
-                <td className="whitespace-nowrap px-3 py-2 text-gray-900 dark:text-slate-200">{transacao.mes}</td>
-                <td className="whitespace-nowrap px-3 py-2 text-gray-900 dark:text-slate-200">{transacao.vencimento}</td>
+                <td className="whitespace-nowrap px-3 py-2 text-neutral-900 dark:text-slate-200">{transacao.mes}</td>
+                <td className="whitespace-nowrap px-3 py-2 text-neutral-900 dark:text-slate-200">{transacao.vencimento}</td>
                 <td className="whitespace-nowrap px-3 py-2 text-center">
-                  <span className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold leading-none ${transacao.tipo === "DESPESA" ? "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400" : "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400"}`}>
+                  <span className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold leading-none ${transacao.tipo === "DESPESA" ? "bg-app-error-surface text-app-error-text dark:bg-red-900/30 dark:text-red-400" : "bg-app-success-surface text-app-success-text dark:bg-green-900/30 dark:text-green-400"}`}>
                     {transacao.tipo === "DESPESA" ? "Despesa" : "Receita"}
                   </span>
                 </td>
-                <td className="whitespace-nowrap px-3 py-2 text-gray-900 dark:text-slate-200"><span className="block truncate" title={transacao.categoria_nome || "-"}>{transacao.categoria_nome || "-"}</span></td>
-                <td className="whitespace-nowrap px-3 py-2 text-gray-900 dark:text-slate-200"><span className="block truncate" title={transacao.descricao_nome || "-"}>{transacao.descricao_nome || "-"}</span></td>
-                <td className="whitespace-nowrap px-3 py-2 text-gray-900 dark:text-slate-200"><span className="block truncate" title={transacao.banco_nome || "-"}>{transacao.banco_nome || "-"}</span></td>
+                <td className="whitespace-nowrap px-3 py-2 text-neutral-900 dark:text-slate-200"><span className="block truncate" title={transacao.categoria_nome || "-"}>{transacao.categoria_nome || "-"}</span></td>
+                <td className="whitespace-nowrap px-3 py-2 text-neutral-900 dark:text-slate-200"><span className="block truncate" title={transacao.descricao_nome || "-"}>{transacao.descricao_nome || "-"}</span></td>
+                <td className="whitespace-nowrap px-3 py-2 text-neutral-900 dark:text-slate-200"><span className="block truncate" title={transacao.banco_nome || "-"}>{transacao.banco_nome || "-"}</span></td>
                 <td className="whitespace-nowrap px-3 py-2 text-right"><MoneyValue value={transacao.valor} tipo={transacao.tipo} /></td>
                 <td className="whitespace-nowrap px-3 py-2 text-center">
                   <SituacaoBadge situacao={transacao.situacao} onToggle={() => onToggleSituacao(transacao)} />

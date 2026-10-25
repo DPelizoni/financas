@@ -343,9 +343,9 @@ export default function DashboardPage() {
     return (
       <div className="app-page py-4 sm:py-8">
         <div className="mx-auto max-w-7xl space-y-6 px-4 sm:px-6 lg:px-8">
-          <div className="h-8 w-48 animate-pulse rounded-md bg-gray-200" />
+          <div className="h-8 w-48 animate-pulse rounded-md bg-neutral-200" />
           <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-            {[1, 2, 3].map((i) => <div key={i} className="h-32 w-full animate-pulse rounded-lg bg-gray-200" />)}
+            {[1, 2, 3].map((i) => <div key={i} className="h-32 w-full animate-pulse rounded-lg bg-neutral-200" />)}
           </div>
         </div>
       </div>

@@ -244,16 +244,16 @@ export default function BanksPage() {
                 {sortedBanks.map((bank) => (
                   <div
                     key={bank.id}
-                    className="rounded-lg border border-gray-200/80 bg-gradient-to-b from-white to-gray-50 p-4 shadow-[0_1px_2_rgba(0,0,0,0.06)] dark:border-slate-800 dark:from-slate-900 dark:to-slate-900/50 dark:shadow-none"
+                    className="rounded-lg border border-gray-200/80 bg-gradient-to-b from-app-surface to-neutral-50 p-4 shadow-[0_1px_2_rgba(0,0,0,0.06)] dark:border-slate-800 dark:from-slate-900 dark:to-slate-900/50 dark:shadow-none"
                   >
                     <div className="flex items-start justify-between gap-3">
                       <div className="flex items-center gap-3">
                         <BankLogo nome={bank.nome} codigo={bank.codigo} />
                         <div>
-                          <p className="text-sm font-semibold text-gray-900 dark:text-white">
+                          <p className="text-sm font-semibold text-neutral-900 dark:text-white">
                             {bank.nome}
                           </p>
-                          <p className="text-xs text-gray-600 dark:text-slate-400">
+                          <p className="text-xs text-neutral-700 dark:text-slate-400">
                             Código: {bank.codigo || "-"}
                           </p>
                         </div>
@@ -261,7 +261,7 @@ export default function BanksPage() {
                       <ActiveBadge ativo={bank.ativo} />
                     </div>
 
-                    <div className="mt-3 flex items-center justify-end gap-2 border-t border-gray-100 pt-3 dark:border-slate-800">
+                    <div className="mt-3 flex items-center justify-end gap-2 border-t border-neutral-200 pt-3 dark:border-slate-800">
                       <TableActionButton action="view" title="Visualizar" onClick={() => setViewingBank(bank)} />
                       <TableActionButton action="edit" title="Editar" onClick={() => handleEdit(bank)} />
                       <TableActionButton action="delete" title="Excluir" onClick={() => setDeleteTarget(bank)} />
@@ -271,7 +271,7 @@ export default function BanksPage() {
               </div>
 
               <div className="app-table-scroll hidden md:block">
-                <table className="min-w-[640px] w-full table-fixed divide-y divide-gray-200 dark:divide-slate-800 text-xs">
+                <table className="min-w-[640px] w-full table-fixed divide-y divide-neutral-200 dark:divide-slate-800 text-xs">
                   <thead className="app-table-head">
                     <tr>
                       <SortableHeader label="Banco" column="nome" sortBy={sortBy} sortDirection={sortDirection} onSort={handleSort} className="w-[50%]" />
@@ -280,16 +280,16 @@ export default function BanksPage() {
                       <th className="app-table-head-cell-center w-[15%]">Ações</th>
                     </tr>
                   </thead>
-                  <tbody className="bg-white divide-y divide-gray-200 dark:bg-slate-900 dark:divide-slate-800">
+                  <tbody className="bg-app-surface divide-y divide-neutral-200 dark:bg-slate-900 dark:divide-slate-800">
                     {sortedBanks.map((bank) => (
                       <tr key={bank.id} className="app-table-row">
                         <td className="px-3 py-2 whitespace-nowrap">
                           <div className="flex items-center gap-2">
                             <BankLogo nome={bank.nome} codigo={bank.codigo} size="sm" />
-                            <div className="text-xs font-medium text-gray-900 dark:text-slate-200">{bank.nome}</div>
+                            <div className="text-xs font-medium text-neutral-900 dark:text-slate-200">{bank.nome}</div>
                           </div>
                         </td>
-                        <td className="px-3 py-2 whitespace-nowrap text-xs text-gray-900 dark:text-slate-300">{bank.codigo || "-"}</td>
+                        <td className="px-3 py-2 whitespace-nowrap text-xs text-neutral-900 dark:text-slate-300">{bank.codigo || "-"}</td>
                         <td className="px-3 py-2 whitespace-nowrap text-center">
                           <ActiveBadge ativo={bank.ativo} />
                         </td>

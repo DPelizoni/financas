@@ -73,7 +73,7 @@ export default function BankLogo({ nome, codigo, size = "md" }: BankLogoProps) {
   if (!logo || failed) {
     return (
       <div
-        className={`flex shrink-0 items-center justify-center rounded-full bg-blue-100 text-blue-700 shadow-sm dark:bg-blue-900/40 dark:text-blue-300 ${sizeClass}`}
+        className={`flex shrink-0 items-center justify-center rounded-full bg-app-info-surface text-app-brand-primary shadow-sm dark:bg-blue-900/40 dark:text-blue-300 ${sizeClass}`}
         title={nome}
       >
         <Landmark size={isSmall ? 14 : 20} strokeWidth={2.25} />
@@ -83,7 +83,7 @@ export default function BankLogo({ nome, codigo, size = "md" }: BankLogoProps) {
 
   return (
     <div
-      className={`flex shrink-0 items-center justify-center overflow-hidden rounded-full border border-gray-200 bg-white shadow-sm dark:border-slate-600 ${sizeClass}`}
+      className={`flex shrink-0 items-center justify-center overflow-hidden rounded-full border border-neutral-200 bg-app-surface shadow-sm dark:border-slate-600 ${sizeClass}`}
       title={nome}
     >
       {/* eslint-disable-next-line @next/next/no-img-element */}
