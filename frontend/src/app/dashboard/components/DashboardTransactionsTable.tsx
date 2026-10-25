@@ -7,9 +7,9 @@ import SortableHeader from "@/components/SortableHeader";
 
 interface DashboardTransactionsTableProps {
   detailedRows: Transacao[];
-  tableSortBy: "mes" | "tipo" | "categoria" | "banco" | "situacao" | "valor";
+  tableSortBy: "mes" | "tipo" | "categoria" | "descricao" | "banco" | "situacao" | "valor";
   tableSortDirection: "asc" | "desc";
-  handleTableSort: (column: "mes" | "tipo" | "categoria" | "banco" | "situacao" | "valor") => void;
+  handleTableSort: (column: "mes" | "tipo" | "categoria" | "descricao" | "banco" | "situacao" | "valor") => void;
   tipoLabel: Record<"DESPESA" | "RECEITA", string>;
 }
 
@@ -91,9 +91,7 @@ export function DashboardTransactionsTable({
               <SortableHeader label="Mês" column="mes" sortBy={tableSortBy} sortDirection={tableSortDirection} onSort={handleTableSort} className="w-[10%]" />
               <SortableHeader label="Tipo" column="tipo" sortBy={tableSortBy} sortDirection={tableSortDirection} onSort={handleTableSort} align="center" className="w-[10%]" />
               <SortableHeader label="Categoria" column="categoria" sortBy={tableSortBy} sortDirection={tableSortDirection} onSort={handleTableSort} className="w-[18%]" />
-              <th className="app-table-head-cell w-[22%] dark:text-slate-400">
-                Descrição
-              </th>
+              <SortableHeader label="Descrição" column="descricao" sortBy={tableSortBy} sortDirection={tableSortDirection} onSort={handleTableSort} className="w-[22%]" />
               <SortableHeader label="Banco" column="banco" sortBy={tableSortBy} sortDirection={tableSortDirection} onSort={handleTableSort} className="w-[18%]" />
               <SortableHeader label="Situação" column="situacao" sortBy={tableSortBy} sortDirection={tableSortDirection} onSort={handleTableSort} align="center" className="w-[12%]" />
               <SortableHeader label="Valor" column="valor" sortBy={tableSortBy} sortDirection={tableSortDirection} onSort={handleTableSort} align="right" className="w-[10%]" />

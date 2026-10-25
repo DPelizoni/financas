@@ -159,10 +159,10 @@ export default function DashboardPage() {
     setFilterBanco("TODOS");
   };
 
-  const [tableSortBy, setTableSortBy] = useState<"mes" | "tipo" | "categoria" | "banco" | "situacao" | "valor">("mes");
+  const [tableSortBy, setTableSortBy] = useState<"mes" | "tipo" | "categoria" | "descricao" | "banco" | "situacao" | "valor">("mes");
   const [tableSortDirection, setTableSortDirection] = useState<"asc" | "desc">("asc");
 
-  const handleTableSort = (column: "mes" | "tipo" | "categoria" | "banco" | "situacao" | "valor") => {
+  const handleTableSort = (column: "mes" | "tipo" | "categoria" | "descricao" | "banco" | "situacao" | "valor") => {
     if (tableSortBy === column) {
       setTableSortDirection((prev) => (prev === "asc" ? "desc" : "asc"));
       return;
@@ -332,6 +332,7 @@ export default function DashboardPage() {
         if (tableSortBy === "mes") return a.mes.localeCompare(b.mes, "pt-BR") * direction;
         if (tableSortBy === "tipo") return a.tipo.localeCompare(b.tipo, "pt-BR") * direction;
         if (tableSortBy === "categoria") return (a.categoria_nome || "").localeCompare(b.categoria_nome || "", "pt-BR") * direction;
+        if (tableSortBy === "descricao") return (a.descricao_nome || "").localeCompare(b.descricao_nome || "", "pt-BR") * direction;
         if (tableSortBy === "banco") return (a.banco_nome || "").localeCompare(b.banco_nome || "", "pt-BR") * direction;
         if (tableSortBy === "situacao") return a.situacao.localeCompare(b.situacao, "pt-BR") * direction;
         return (Number(a.valor) - Number(b.valor)) * direction;
