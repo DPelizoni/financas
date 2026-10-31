@@ -39,7 +39,7 @@ interface UpcomingDuesProps {
 // Pendências vencidas e dos próximos 7 dias. Não segue os filtros do Dashboard:
 // o que importa aqui é a data de hoje, não o período em análise.
 export function UpcomingDues({ transacoes }: UpcomingDuesProps) {
-  const { items, overdueCount, total, limitLabel } = useMemo(() => {
+  const { items, overdueCount, total, balance, limitLabel } = useMemo(() => {
     const now = new Date();
     const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
     const limit = new Date(today.getTime() + DAYS_AHEAD * DAY_MS);
@@ -55,6 +55,11 @@ export function UpcomingDues({ transacoes }: UpcomingDuesProps) {
       items: pending.slice(0, MAX_ITEMS),
       overdueCount: pending.filter((item) => item.days < 0).length,
       total: pending.length,
+      // Receitas − despesas de todas as pendências do card, inclusive as fora do limite exibido
+      balance: pending.reduce(
+        (acc, { transacao: t }) => acc + (t.tipo === "RECEITA" ? 1 : -1) * Number(t.valor),
+        0,
+      ),
       limitLabel: limit.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" }),
     };
   }, [transacoes]);
@@ -109,7 +114,9 @@ export function UpcomingDues({ transacoes }: UpcomingDuesProps) {
 
           <div className="mt-4 flex items-center justify-between gap-4 text-sm">
             <span className="text-[rgb(var(--app-text-muted))]">
-              {total > items.length ? `Mostrando ${items.length} de ${total}` : ""}
+              Saldo das pendências:{" "}
+              <MoneyValue value={Math.abs(balance)} tipo={balance >= 0 ? "RECEITA" : "DESPESA"} />
+              {total > items.length ? ` · Mostrando ${items.length} de ${total}` : ""}
             </span>
             <Link
               href="/transacoes?mes=todos&situacao=PENDENTE"
