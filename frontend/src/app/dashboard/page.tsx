@@ -177,7 +177,8 @@ export default function DashboardPage() {
     isLoading: loadingTransacoes,
     isFetching: fetchingTransacoes 
   } = useQuery({
-    queryKey: ["all-transacoes-dashboard"],
+    // Prefixo "transacoes": as mutações da tela de Transações invalidam este cache também
+    queryKey: ["transacoes", "dashboard"],
     queryFn: () => transacaoService.getAll({ page: 1, limit: 5000 }).then(res => res.data || []),
     placeholderData: (previousData) => previousData,
   });
