@@ -249,6 +249,12 @@ export default function InvestimentosDashboardPage() {
     return data;
   }, [displayPoint]);
 
+  // Saldo do período exibido no donut: movimentação líquida (não a posição acumulada)
+  const periodBalance = useMemo(
+    () => (displayPoint ? displayPoint.aporte - displayPoint.resgate + displayPoint.rendimentos : 0),
+    [displayPoint],
+  );
+
   const monthLabel = useMemo(() => {
     if (displayPoint?.month_key) {
       return formatMonthYearLabel(displayPoint.month_key);
@@ -460,9 +466,9 @@ export default function InvestimentosDashboardPage() {
                 </ResponsiveContainer>
                 
                 <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center pointer-events-none">
-                  <span className="mb-1 block text-xs font-medium text-[rgb(var(--app-text-muted))]">Saldo</span>
+                  <span className="mb-1 block text-xs font-medium text-[rgb(var(--app-text-muted))]">Saldo do período</span>
                   <span className="text-2xl font-bold tabular-nums tracking-tighter text-app-brand-primary dark:text-blue-400 block">
-                    {formatCurrency(displayPoint?.saldo || 0)}
+                    {formatCurrency(periodBalance)}
                   </span>
                 </div>
               </div>
