@@ -298,7 +298,12 @@ export default function ViewDataModal({
       let colorClass = "text-emerald-600 dark:text-emerald-400";
       
       const k = key.toLowerCase();
-      if (k.includes("aporte")) {
+      // Transações: a cor segue o tipo do lançamento, não o nome do campo
+      if (dataRecord.tipo === "DESPESA") {
+        colorClass = "text-app-error-text dark:text-red-400";
+      } else if (dataRecord.tipo === "RECEITA") {
+        colorClass = "text-emerald-600 dark:text-emerald-400";
+      } else if (k.includes("aporte")) {
         colorClass = "text-amber-600 dark:text-amber-400";
       } else if (k.includes("resgate")) {
         colorClass = "text-app-error-text dark:text-red-400";

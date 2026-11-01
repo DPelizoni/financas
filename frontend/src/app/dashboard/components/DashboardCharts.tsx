@@ -153,7 +153,7 @@ export function DashboardCharts({
                   </linearGradient>
                 ))}
               </defs>
-              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(var(--app-border-default), 0.1)" />
+              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgb(var(--app-border-default) / 0.5)" />
               <XAxis 
                 dataKey="monthLabel" 
                 axisLine={false} 
@@ -233,7 +233,7 @@ export function DashboardCharts({
         <div className="flex-1 w-full">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={comparisonData} barGap={16} margin={{ top: 40, bottom: 10 }}>
-              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(var(--app-border-default), 0.1)" />
+              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgb(var(--app-border-default) / 0.5)" />
               <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 12, fontWeight: 500, fill: "rgb(var(--app-text-secondary))" }} />
               <YAxis hide />
               <Tooltip content={<CustomTooltip />} cursor={{ fill: 'currentColor', opacity: 0.04 }} />

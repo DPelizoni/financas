@@ -765,7 +765,11 @@ export const TransacaoModal: React.FC<TransacaoModalProps> = ({
                 />
               </div>
               <p className="text-xs text-app-text-muted">
-                Isso criará automaticamente a transação para o mês atual e os próximos {quantidadeMeses - 1} meses.
+                {quantidadeMeses <= 1
+                  ? "Será criada apenas a transação do mês atual."
+                  : quantidadeMeses === 2
+                    ? "Isso criará automaticamente a transação para o mês atual e o próximo mês."
+                    : `Isso criará automaticamente a transação para o mês atual e os próximos ${quantidadeMeses - 1} meses.`}
               </p>
             </div>
           </div>

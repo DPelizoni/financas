@@ -2,6 +2,7 @@
 
 import { CssBaseline, ThemeProvider } from "@mui/material";
 import { useMemo } from "react";
+import { Toaster } from "sonner";
 import { ThemeModeProvider, useThemeMode } from "@/theme/theme-context";
 import { createMuiTheme } from "@/theme/create-mui-theme";
 
@@ -18,6 +19,17 @@ function MuiThemeBridge({ children }: MuiAppProviderProps) {
     <ThemeProvider theme={theme}>
       <CssBaseline />
       {children}
+      <Toaster
+        theme={mode}
+        richColors
+        closeButton
+        position="top-right"
+        toastOptions={{
+          style: {
+            fontFamily: "var(--font-app)",
+          },
+        }}
+      />
     </ThemeProvider>
   );
 }

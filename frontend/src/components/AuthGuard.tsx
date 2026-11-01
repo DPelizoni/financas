@@ -37,7 +37,7 @@ export default function AuthGuard({ children }: AuthGuardProps) {
       <div className="app-page flex items-center justify-center">
         <div className="app-surface px-6 py-5">
           <p className="text-sm font-medium text-[rgb(var(--app-text-secondary))]">
-            Validando sessao...
+            Validando sessão...
           </p>
         </div>
       </div>
