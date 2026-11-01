@@ -20,6 +20,7 @@ import ViewDataModal from "@/components/ViewDataModal";
 import { MenuItem, TextField } from "@mui/material";
 import { TableSkeleton, CardSkeleton } from "@/components/skeletons/DataSkeletons";
 import EmptyState from "@/components/EmptyState";
+import ErrorState from "@/components/ErrorState";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import ActiveBadge from "@/components/ActiveBadge";
 import SortableHeader from "@/components/SortableHeader";
@@ -74,7 +75,7 @@ export default function DescricoesPage() {
     return filters;
   }, [currentPage, itemsPerPage, searchTerm, filterAtivo, filterCategoria]);
 
-  const { data: descricoesData, isLoading: loadingQuery, isFetching } = useQuery({
+  const { data: descricoesData, isLoading: loadingQuery, isFetching, isError, refetch } = useQuery({
     queryKey: ["descricoes", queryFilters],
     enabled: filtersReady,
     queryFn: () => descricaoService.getAll(queryFilters),
@@ -263,6 +264,8 @@ export default function DescricoesPage() {
                 <TableSkeleton rows={5} columns={4} />
               </div>
             </>
+          ) : isError ? (
+            <ErrorState onRetry={() => refetch()} />
           ) : descricoes.length === 0 ? (
             <EmptyState
               icon={FileText}
@@ -275,11 +278,7 @@ export default function DescricoesPage() {
               actionLabel={searchTerm || filterAtivo !== undefined || filterCategoria !== "TODOS" ? "Limpar Filtros" : "Nova Descrição"}
               onAction={
                 searchTerm || filterAtivo !== undefined || filterCategoria !== "TODOS"
-                  ? () => {
-                      setSearchTerm("");
-                      setFilterAtivo(undefined);
-                      setFilterCategoria("TODOS");
-                    }
+                  ? handleClearFilters
                   : handleCreate
               }
             />
@@ -371,6 +370,7 @@ export default function DescricoesPage() {
       />
 
       <ConfirmDeleteModal
+        isLoading={deleteMutation.isPending}
         isOpen={!!deleteTarget}
         title="Confirmar exclusão"
         description={<>Esta ação removerá a descrição <strong>{deleteTarget?.nome}</strong>.</>}

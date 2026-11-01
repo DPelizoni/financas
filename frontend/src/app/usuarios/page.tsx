@@ -19,6 +19,7 @@ import { authService } from "@/services/authService";
 import { MenuItem, TextField } from "@mui/material";
 import { TableSkeleton, CardSkeleton } from "@/components/skeletons/DataSkeletons";
 import EmptyState from "@/components/EmptyState";
+import ErrorState from "@/components/ErrorState";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import SortableHeader from "@/components/SortableHeader";
@@ -107,7 +108,7 @@ export default function UsuariosPage() {
     role: roleFilter === "TODOS" ? undefined : roleFilter,
   }), [currentPage, itemsPerPage, searchTerm, statusFilter, roleFilter]);
 
-  const { data: usersData, isLoading: loadingQuery, isFetching } = useQuery({
+  const { data: usersData, isLoading: loadingQuery, isFetching, isError, refetch } = useQuery({
     queryKey: ["users", queryFilters],
     queryFn: () => userService.getAll(queryFilters),
     enabled: !!authorized && filtersReady,
@@ -251,6 +252,8 @@ export default function UsuariosPage() {
               <div className="md:hidden"><CardSkeleton count={3} /></div>
               <div className="hidden md:block"><TableSkeleton rows={5} columns={5} /></div>
             </>
+          ) : isError ? (
+            <ErrorState onRetry={() => refetch()} />
           ) : users.length === 0 ? (
             <EmptyState icon={ShieldCheck} title="Nenhum usuário encontrado" description={activeFiltersCount > 0 ? "Tente ajustar seus filtros para encontrar o que procura." : "Nenhum usuário cadastrado no sistema além de você."} actionLabel={activeFiltersCount > 0 ? "Limpar Filtros" : "Novo Usuário"} onAction={activeFiltersCount > 0 ? () => { setSearchTerm(""); setStatusFilter("TODOS"); setRoleFilter("TODOS"); setCurrentPage(1); } : () => { setEditingUser(null); setShowUserModal(true); }} />
           ) : (
@@ -316,7 +319,7 @@ export default function UsuariosPage() {
         hideCopy={true}
       />
 
-      <ConfirmDeleteModal isOpen={!!deleteTarget} title="Confirmar exclusão" description={<>Esta ação excluirá definitivamente o usuário <strong>{deleteTarget?.nome}</strong>.</>} confirmLabel="Excluir usuário" onCancel={() => setDeleteTarget(null)} onConfirm={handleConfirmDelete} />
+      <ConfirmDeleteModal isLoading={deleteMutation.isPending} isOpen={!!deleteTarget} title="Confirmar exclusão" description={<>Esta ação excluirá definitivamente o usuário <strong>{deleteTarget?.nome}</strong>.</>} confirmLabel="Excluir usuário" onCancel={() => setDeleteTarget(null)} onConfirm={handleConfirmDelete} />
     </div>
   );
 }

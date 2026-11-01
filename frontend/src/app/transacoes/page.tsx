@@ -208,7 +208,9 @@ export default function TransacoesPage() {
   const { 
     data: transacoesData, 
     isLoading: loadingTransacoes,
-    isFetching: fetchingTransacoes 
+    isFetching: fetchingTransacoes,
+    isError: transacoesError,
+    refetch: refetchTransacoes,
   } = useQuery({
     queryKey: ["transacoes", queryFilters],
     queryFn: () => transacaoService.getAll(queryFilters),
@@ -273,6 +275,11 @@ export default function TransacoesPage() {
     mutationFn: (id: number) => transacaoService.delete(id),
     onSuccess: () => {
       toast.success("Transação excluída com sucesso.");
+      setDeleteConfirm({
+        isOpen: false,
+        transacaoId: null,
+        transacaoMes: null,
+      });
       queryClient.invalidateQueries({ queryKey: ["transacoes"] });
       queryClient.invalidateQueries({ queryKey: ["transacoes-summary"] });
     },
@@ -316,11 +323,6 @@ export default function TransacoesPage() {
   const confirmDelete = async () => {
     if (deleteConfirm.transacaoId) {
       deleteMutation.mutate(deleteConfirm.transacaoId);
-      setDeleteConfirm({
-        isOpen: false,
-        transacaoId: null,
-        transacaoMes: null,
-      });
     }
   };
 
@@ -824,6 +826,8 @@ export default function TransacoesPage() {
           <TransactionList
             transacoes={sortedTransacoes}
             loading={loadingTransacoes || !filtersReady}
+            isError={transacoesError}
+            onRetry={() => refetchTransacoes()}
             sortBy={sortBy}
             sortDirection={sortDirection}
             onSort={handleSort}
@@ -961,6 +965,7 @@ export default function TransacoesPage() {
 
       <ConfirmDeleteModal
         isOpen={deleteConfirm.isOpen}
+        isLoading={deleteMutation.isPending}
         title="Confirmar exclusão"
         description={
           <>
@@ -1007,9 +1012,10 @@ export default function TransacoesPage() {
         }
         confirmLabel="Excluir transações"
         onCancel={() => setDeleteMonthsConfirmOpen(false)}
+        isLoading={deleteMonthsLoading}
         onConfirm={async () => {
-          setDeleteMonthsConfirmOpen(false);
           await handleDeleteByMonths();
+          setDeleteMonthsConfirmOpen(false);
         }}
       />
 
@@ -1031,9 +1037,10 @@ export default function TransacoesPage() {
         }
         confirmLabel="Excluir transação"
         onCancel={() => setDeleteTransactionMonthsConfirmOpen(false)}
+        isLoading={deleteTransactionMonthsLoading}
         onConfirm={async () => {
-          setDeleteTransactionMonthsConfirmOpen(false);
           await handleDeleteTransactionByMonths();
+          setDeleteTransactionMonthsConfirmOpen(false);
         }}
       />
     </div>

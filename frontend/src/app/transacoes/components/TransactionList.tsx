@@ -10,6 +10,7 @@ import AppButton from "@/components/AppButton";
 import TableActionButton from "@/components/TableActionButton";
 import { TableSkeleton, CardSkeleton } from "@/components/skeletons/DataSkeletons";
 import EmptyState from "@/components/EmptyState";
+import ErrorState from "@/components/ErrorState";
 import MoneyValue from "@/components/MoneyValue";
 import SituacaoBadge from "@/components/SituacaoBadge";
 import SortableHeader from "@/components/SortableHeader";
@@ -67,6 +68,8 @@ const groupByDay = (transacoes: Transacao[], sortBy: string): DayGroup[] => {
 interface TransactionListProps {
   transacoes: Transacao[];
   loading: boolean;
+  isError?: boolean;
+  onRetry?: () => void;
   sortBy: string;
   sortDirection: "asc" | "desc";
   onSort: (column: any) => void;
@@ -81,6 +84,8 @@ interface TransactionListProps {
 export function TransactionList({
   transacoes,
   loading,
+  isError = false,
+  onRetry,
   sortBy,
   sortDirection,
   onSort,
@@ -104,6 +109,10 @@ export function TransactionList({
     );
   }
 
+  if (isError) {
+    return <ErrorState onRetry={onRetry} />;
+  }
+
   if (transacoes.length === 0) {
     return (
       <div className="py-8">
@@ -111,7 +120,7 @@ export function TransactionList({
           icon={Search}
           title="Nenhum lançamento encontrado"
           description="Tente ajustar seus filtros ou busque por um termo diferente para encontrar o que procura."
-          actionLabel="Novo Lançamento"
+          actionLabel="Nova Transação"
           onAction={onAddTransaction}
         />
         <div className="mt-4 flex justify-center border-t border-neutral-200 pt-4 dark:border-slate-800">

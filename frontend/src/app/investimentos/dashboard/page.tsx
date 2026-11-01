@@ -16,7 +16,8 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import FeedbackAlert from "@/components/FeedbackAlert";
+import { toast } from "sonner";
+import ErrorState from "@/components/ErrorState";
 import PageHeader from "@/components/PageHeader";
 import { bankService } from "@/services/bankService";
 import { investimentoDashboardService } from "@/services/investimentoService";
@@ -88,10 +89,8 @@ export default function InvestimentosDashboardPage() {
     },
   );
 
-  const [feedback, setFeedback] = useState<{
-    type: "success" | "error";
-    message: string;
-  } | null>(null);
+  const [loadError, setLoadError] = useState(false);
+  const [reloadKey, setReloadKey] = useState(0);
   
   const [dashboard, setDashboard] = useState<InvestimentoDashboardResponse>({
     cards: { aporte: 0, resgate: 0, rendimentos: 0, liquido: 0 },
@@ -112,7 +111,10 @@ export default function InvestimentosDashboardPage() {
       try {
         const response = await bankService.getAll({ page: 1, limit: 999 });
         setBanks(response.data || []);
-      } catch (error) { console.error(error); }
+      } catch (error) {
+        console.error(error);
+        toast.error("Não foi possível carregar a lista de bancos.");
+      }
     };
     loadBanks();
   }, []);
@@ -122,7 +124,10 @@ export default function InvestimentosDashboardPage() {
       try {
         const years = await investimentoDashboardService.getAvailableYears({});
         setAvailableYears(years);
-      } catch (error) { console.error(error); }
+      } catch (error) {
+        console.error(error);
+        toast.error("Não foi possível carregar os anos disponíveis.");
+      }
     };
     loadAvailableYears();
   }, []);
@@ -132,6 +137,7 @@ export default function InvestimentosDashboardPage() {
     const loadDashboard = async () => {
       try {
         setLoading(true);
+        setLoadError(false);
         // ITEM 3: Busca sempre o ano completo para a Evolução Histórica (independente do filtro de mês)
         const yearToFetch = filterAno === "TODOS" ? now.getFullYear() : Number(filterAno);
         const data_de = toIsoDate(new Date(yearToFetch, 0, 1));
@@ -153,13 +159,13 @@ export default function InvestimentosDashboardPage() {
           }
         }
       } catch (error) {
-        setFeedback({ type: "error", message: "Erro ao carregar dados." });
+        setLoadError(true);
       } finally {
         setLoading(false);
       }
     };
     loadDashboard();
-  }, [filtersReady, filterAtivo, filterAno, filterBanco]);
+  }, [filtersReady, filterAtivo, filterAno, filterBanco, reloadKey]);
 
   const handleClearFilters = () => {
     setFilterMesAno(currentMonthKey);
@@ -316,8 +322,6 @@ export default function InvestimentosDashboardPage() {
   return (
     <div className="app-page py-4 sm:py-8">
       <div className="mx-auto max-w-7xl space-y-6 px-4 sm:px-6 lg:px-8">
-        <FeedbackAlert feedback={feedback} onClose={() => setFeedback(null)} />
-
         <PageHeader
           title="Investimentos"
           description="Análise consolidada da sua carteira de ativos."
@@ -347,6 +351,12 @@ export default function InvestimentosDashboardPage() {
           }
         />
 
+        {loadError ? (
+          <div className="app-surface p-4">
+            <ErrorState onRetry={() => setReloadKey((key) => key + 1)} />
+          </div>
+        ) : (
+        <>
         {/* Cards Premium com Ícone na Direita e Cores Sincronizadas */}
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-4">
           <StatCard title="Aporte" value={displayPoint?.aporte || 0} icon={ArrowUpRight} tone="warning" comparison={compareWithPrevious("aporte", true)} />
@@ -375,7 +385,7 @@ export default function InvestimentosDashboardPage() {
                       </linearGradient>
                     ))}
                   </defs>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(var(--app-border-default), 0.1)" />
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgb(var(--app-border-default) / 0.5)" />
                   <XAxis 
                     dataKey="month_label" 
                     axisLine={false} 
@@ -414,7 +424,7 @@ export default function InvestimentosDashboardPage() {
                       <stop offset="95%" stopColor={chartColors.resultado} stopOpacity={0}/>
                     </linearGradient>
                   </defs>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(var(--app-border-default), 0.1)" />
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgb(var(--app-border-default) / 0.5)" />
                   <XAxis 
                     dataKey="month_label" 
                     axisLine={false} 
@@ -517,6 +527,8 @@ export default function InvestimentosDashboardPage() {
             </div>
           </div>
         </div>
+        </>
+        )}
       </div>
     </div>
   );

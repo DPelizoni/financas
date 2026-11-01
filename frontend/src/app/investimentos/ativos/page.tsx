@@ -16,6 +16,7 @@ import { Bank } from "@/types/bank";
 import { InvestimentoAtivo, InvestimentoAtivoFilters } from "@/types/investimento";
 import { TableSkeleton, CardSkeleton } from "@/components/skeletons/DataSkeletons";
 import EmptyState from "@/components/EmptyState";
+import ErrorState from "@/components/ErrorState";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { formatCurrency, formatDateBR } from "@/utils/format";
@@ -104,7 +105,7 @@ export default function InvestimentosAtivosPage() {
     };
   }, [currentPage, itemsPerPage, searchTerm, filterAno, filterAtivo, filterBanco]);
 
-  const { data: ativosData, isLoading: loadingQuery, isFetching } = useQuery({
+  const { data: ativosData, isLoading: loadingQuery, isFetching, isError, refetch } = useQuery({
     queryKey: ["ativos", queryFilters],
     enabled: filtersReady,
     queryFn: () => investimentoAtivoService.getAll(queryFilters),
@@ -249,6 +250,8 @@ export default function InvestimentosAtivosPage() {
               <div className="md:hidden"><CardSkeleton count={3} /></div>
               <div className="hidden md:block"><TableSkeleton rows={5} columns={6} /></div>
             </>
+          ) : isError ? (
+            <ErrorState onRetry={() => refetch()} />
           ) : sortedAtivos.length === 0 ? (
             <EmptyState icon={Wallet} title="Nenhum ativo encontrado" description={activeFiltersCount > 0 ? "Tente ajustar seus filtros para encontrar o que procura." : "Comece cadastrando seus primeiros ativos para gerenciar sua carteira de investimentos."} actionLabel={activeFiltersCount > 0 ? "Limpar Filtros" : "Novo Ativo"} onAction={activeFiltersCount > 0 ? handleClearFilters : handleCreate} />
           ) : (
@@ -327,7 +330,7 @@ export default function InvestimentosAtivosPage() {
 
       <InvestimentoAtivoModal isOpen={showModal} ativo={editingAtivo} banks={sortedBanks} onClose={() => { setShowModal(false); setEditingAtivo(null); }} onSave={async (message) => { toast.success(message); queryClient.invalidateQueries({ queryKey: ["ativos"] }); setShowModal(false); setEditingAtivo(null); }} />
 
-      <ConfirmDeleteModal isOpen={!!deleteTarget} title="Confirmar exclusão" description={<>Esta ação removerá o ativo <strong>{deleteTarget?.nome}</strong>.</>} confirmLabel="Excluir ativo" onCancel={() => setDeleteTarget(null)} onConfirm={handleConfirmDelete} />
+      <ConfirmDeleteModal isLoading={deleteMutation.isPending} isOpen={!!deleteTarget} title="Confirmar exclusão" description={<>Esta ação removerá o ativo <strong>{deleteTarget?.nome}</strong>.</>} confirmLabel="Excluir ativo" onCancel={() => setDeleteTarget(null)} onConfirm={handleConfirmDelete} />
 
       <ViewDataModal 
         isOpen={!!viewingAtivo} 

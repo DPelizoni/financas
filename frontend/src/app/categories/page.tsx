@@ -19,6 +19,7 @@ import TableActionButton from "@/components/TableActionButton";
 import ViewDataModal from "@/components/ViewDataModal";
 import { TableSkeleton, CardSkeleton } from "@/components/skeletons/DataSkeletons";
 import EmptyState from "@/components/EmptyState";
+import ErrorState from "@/components/ErrorState";
 import { CategoryFilters } from "./components/CategoryFilters";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import ActiveBadge from "@/components/ActiveBadge";
@@ -70,7 +71,7 @@ export default function CategoriesPage() {
     return filters;
   }, [currentPage, itemsPerPage, searchTerm, filterAtivo, filterTipo, sortBy, sortDirection]);
 
-  const { data: categoriesData, isLoading, isFetching } = useQuery({
+  const { data: categoriesData, isLoading, isFetching, isError, refetch } = useQuery({
     queryKey: ["categories", queryFilters],
     queryFn: () => categoryService.getAll(queryFilters),
     placeholderData: (prev) => prev,
@@ -196,6 +197,8 @@ export default function CategoriesPage() {
                 <TableSkeleton rows={5} columns={4} />
               </div>
             </>
+          ) : isError ? (
+            <ErrorState onRetry={() => refetch()} />
           ) : categories.length === 0 ? (
             <EmptyState
               icon={Tags}
@@ -324,6 +327,7 @@ export default function CategoriesPage() {
       />
 
       <ConfirmDeleteModal
+        isLoading={deleteMutation.isPending}
         isOpen={!!deleteTarget}
         title="Confirmar exclusão"
         description={<>Esta ação removerá a categoria <strong>{deleteTarget?.nome}</strong>.</>}

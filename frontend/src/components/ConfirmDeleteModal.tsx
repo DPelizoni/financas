@@ -11,6 +11,7 @@ interface ConfirmDeleteModalProps {
   confirmLabel: string;
   onCancel: () => void;
   onConfirm: () => void;
+  isLoading?: boolean;
 }
 
 export default function ConfirmDeleteModal({
@@ -20,13 +21,14 @@ export default function ConfirmDeleteModal({
   confirmLabel,
   onCancel,
   onConfirm,
+  isLoading = false,
 }: ConfirmDeleteModalProps) {
   return (
     <AppModal
       isOpen={isOpen}
       title={title}
       description={description}
-      onClose={onCancel}
+      onClose={isLoading ? () => {} : onCancel}
       size="sm"
       headerIcon={
         <div className="app-badge-error shrink-0 rounded-full p-2">
@@ -46,6 +48,7 @@ export default function ConfirmDeleteModal({
           tone="outline"
           className="w-full sm:w-auto"
           data-modal-initial-focus
+          disabled={isLoading}
         >
           Cancelar
         </AppButton>
@@ -54,8 +57,9 @@ export default function ConfirmDeleteModal({
           tone="danger"
           className="w-full sm:w-auto"
           startIcon={<Trash2 size={16} />}
+          disabled={isLoading}
         >
-          {confirmLabel}
+          {isLoading ? "Excluindo..." : confirmLabel}
         </AppButton>
       </div>
     </AppModal>

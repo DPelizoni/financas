@@ -7,6 +7,7 @@ import { bankService } from "@/services/bankService";
 import { Transacao } from "@/types/transacao";
 import { toast } from "sonner";
 import PageHeader from "@/components/PageHeader";
+import ErrorState from "@/components/ErrorState";
 import { useQuery } from "@tanstack/react-query";
 import { motion } from "framer-motion";
 import { formatCurrency, formatMonthShort, previousMonthKey } from "@/utils/format";
@@ -175,7 +176,9 @@ export default function DashboardPage() {
   const { 
     data: transacoes = [], 
     isLoading: loadingTransacoes,
-    isFetching: fetchingTransacoes 
+    isFetching: fetchingTransacoes,
+    isError: transacoesError,
+    refetch: refetchTransacoes,
   } = useQuery({
     // Prefixo "transacoes": as mutações da tela de Transações invalidam este cache também
     queryKey: ["transacoes", "dashboard"],
@@ -371,6 +374,12 @@ export default function DashboardPage() {
           onClearFilters={handleClearFilters}
         />
 
+        {transacoesError ? (
+          <div className="app-surface p-4">
+            <ErrorState onRetry={() => refetchTransacoes()} />
+          </div>
+        ) : (
+        <>
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -422,6 +431,8 @@ export default function DashboardPage() {
             handleTableSort={handleTableSort} tipoLabel={tipoLabel}
           />
         </motion.div>
+        </>
+        )}
       </div>
     </div>
   );

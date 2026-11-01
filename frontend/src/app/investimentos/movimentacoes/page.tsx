@@ -25,6 +25,7 @@ import {
 } from "@/types/investimento";
 import { TableSkeleton, CardSkeleton } from "@/components/skeletons/DataSkeletons";
 import EmptyState from "@/components/EmptyState";
+import ErrorState from "@/components/ErrorState";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { formatCurrency, formatDateBR } from "@/utils/format";
@@ -132,7 +133,7 @@ export default function InvestimentosMovimentacoesPage() {
     };
   }, [currentPage, itemsPerPage, searchTerm, filterMesAno, filterAno, filterBanco, filterTipo, filterAtivo]);
 
-  const { data: movsData, isLoading: loadingQuery, isFetching } = useQuery({
+  const { data: movsData, isLoading: loadingQuery, isFetching, isError, refetch } = useQuery({
     queryKey: ["movimentacoes", queryFilters],
     enabled: filtersReady,
     queryFn: () => investimentoMovimentacaoService.getAll(queryFilters),
@@ -146,6 +147,10 @@ export default function InvestimentosMovimentacoesPage() {
       toast.success("Movimentação excluída com sucesso.");
       queryClient.invalidateQueries({ queryKey: ["movimentacoes"] });
       setDeleteTarget(null);
+    },
+    onError: (error: any) => {
+      const apiMessage = error?.response?.data?.message;
+      toast.error(apiMessage || "Não foi possível excluir a movimentação.");
     }
   });
 
@@ -253,6 +258,8 @@ export default function InvestimentosMovimentacoesPage() {
         <div className={`app-surface p-4 transition-opacity duration-200 ${isFetching && !loading ? "opacity-50" : "opacity-100"}`}>
           {loading ? (
             <><div className="md:hidden"><CardSkeleton count={3} /></div><div className="hidden md:block"><TableSkeleton rows={5} columns={5} /></div></>
+          ) : isError ? (
+            <ErrorState onRetry={() => refetch()} />
           ) : sortedMovimentacoes.length === 0 ? (
             <EmptyState icon={Search} title="Nenhuma movimentação encontrada" description={activeFiltersCount > 0 ? "Tente ajustar seus filtros para encontrar o que procura." : "Comece registrando seus aportes e rendimentos."} actionLabel={activeFiltersCount > 0 ? "Limpar Filtros" : "Nova Movimentação"} onAction={activeFiltersCount > 0 ? handleClearFilters : () => { setEditingMovimentacao(null); setShowModal(true); }} />
           ) : (
@@ -305,7 +312,7 @@ export default function InvestimentosMovimentacoesPage() {
 
       <InvestimentoMovimentacaoModal isOpen={showModal} movimentacao={editingMovimentacao} ativos={ativos} onClose={() => { setShowModal(false); setEditingMovimentacao(null); }} onSave={async (message) => { toast.success(message); queryClient.invalidateQueries({ queryKey: ["movimentacoes"] }); setShowModal(false); setEditingMovimentacao(null); }} />
 
-      <ConfirmDeleteModal isOpen={!!deleteTarget} title="Confirmar exclusão" description={<>Esta ação removerá a movimentação de <strong>{deleteTarget?.ativo_nome}</strong>.</>} confirmLabel="Excluir movimentação" onCancel={() => setDeleteTarget(null)} onConfirm={() => deleteMutation.mutate(deleteTarget!.id)} />
+      <ConfirmDeleteModal isLoading={deleteMutation.isPending} isOpen={!!deleteTarget} title="Confirmar exclusão" description={<>Esta ação removerá a movimentação de <strong>{deleteTarget?.ativo_nome}</strong>.</>} confirmLabel="Excluir movimentação" onCancel={() => setDeleteTarget(null)} onConfirm={() => deleteMutation.mutate(deleteTarget!.id)} />
 
       <ViewDataModal 
         isOpen={!!viewingMovimentacao} 

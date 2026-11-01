@@ -16,6 +16,7 @@ import ViewDataModal from "@/components/ViewDataModal";
 import { MenuItem, TextField } from "@mui/material";
 import { TableSkeleton, CardSkeleton } from "@/components/skeletons/DataSkeletons";
 import EmptyState from "@/components/EmptyState";
+import ErrorState from "@/components/ErrorState";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import ActiveBadge from "@/components/ActiveBadge";
 import SortableHeader from "@/components/SortableHeader";
@@ -61,7 +62,7 @@ export default function BanksPage() {
     return filters;
   }, [currentPage, itemsPerPage, searchTerm, filterAtivo]);
 
-  const { data: banksData, isLoading, isFetching } = useQuery({
+  const { data: banksData, isLoading, isFetching, isError, refetch } = useQuery({
     queryKey: ["banks", queryFilters],
     queryFn: () => bankService.getAll(queryFilters),
     placeholderData: (prev) => prev,
@@ -219,6 +220,8 @@ export default function BanksPage() {
                 <TableSkeleton rows={5} columns={5} />
               </div>
             </>
+          ) : isError ? (
+            <ErrorState onRetry={() => refetch()} />
           ) : banks.length === 0 ? (
             <EmptyState
               icon={Building2}
@@ -231,10 +234,7 @@ export default function BanksPage() {
               actionLabel={searchTerm || filterAtivo !== undefined ? "Limpar Filtros" : "Novo Banco"}
               onAction={
                 searchTerm || filterAtivo !== undefined
-                  ? () => {
-                      setSearchTerm("");
-                      setFilterAtivo(undefined);
-                    }
+                  ? handleClearFilters
                   : handleCreate
               }
             />
@@ -244,7 +244,7 @@ export default function BanksPage() {
                 {sortedBanks.map((bank) => (
                   <div
                     key={bank.id}
-                    className="rounded-lg border border-gray-200/80 bg-gradient-to-b from-app-surface to-neutral-50 p-4 shadow-[0_1px_2_rgba(0,0,0,0.06)] dark:border-slate-800 dark:from-slate-900 dark:to-slate-900/50 dark:shadow-none"
+                    className="rounded-lg border border-gray-200/80 bg-gradient-to-b from-app-surface to-neutral-50 p-4 shadow-[0_1px_2px_rgba(0,0,0,0.06)] dark:border-slate-800 dark:from-slate-900 dark:to-slate-900/50 dark:shadow-none"
                   >
                     <div className="flex items-start justify-between gap-3">
                       <div className="flex items-center gap-3">
@@ -352,6 +352,7 @@ export default function BanksPage() {
       />
 
       <ConfirmDeleteModal
+        isLoading={deleteMutation.isPending}
         isOpen={!!deleteTarget}
         title="Confirmar exclusão"
         description={<>Esta ação removerá o banco <strong>{deleteTarget?.nome}</strong>.</>}
